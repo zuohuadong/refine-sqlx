@@ -3,8 +3,8 @@ import {dataProvider} from "../../src";
 describe("getMany", () => {
     const apiUrl = "./test/test.db";
 
-    it("correct response", () => {
-        const response = dataProvider(apiUrl)
+    it("correct response", async () => {
+        const response = await dataProvider(apiUrl)
             .getMany({ resource: "posts", ids: [2, 5]});
 
         const { data } = response;

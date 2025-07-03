@@ -3,8 +3,8 @@ import {dataProvider} from "../../src/"
 describe("getOne", () => {
     const apiUrl = "./test/test.db";
 
-    it("correct response", () => {
-        const response = dataProvider(apiUrl)
+    it("correct response", async () => {
+        const response = await dataProvider(apiUrl)
             .getOne({ resource: "posts", id: "2" });
 
         const { data } = response;

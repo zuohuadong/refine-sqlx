@@ -3,8 +3,8 @@ import {dataProvider} from "../../src";
 describe("create", () => {
     const apiUrl = "./test/test.db"
 
-    it("correct response", () => {
-        const response = dataProvider(
+    it("correct response", async () => {
+        const response = await dataProvider(
             apiUrl
         ).create({
             resource: "posts",

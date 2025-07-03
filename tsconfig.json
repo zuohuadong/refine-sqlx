@@ -1,10 +1,10 @@
 {
   "include": [
       "src",
-      "types"
+      "types",
+      "test"
   ],
   "compilerOptions": {
-      "rootDir": "./src",
       "baseUrl": ".",
       "module": "esnext",
       "lib": ["dom", "esnext", "DOM.Iterable", "webworker"],
@@ -21,6 +21,6 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "allowSyntheticDefaultImports": true,
-      "types": ["@cloudflare/workers-types", "node"]
+      "types": ["@cloudflare/workers-types", "node", "jest"]
   }
 }

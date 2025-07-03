@@ -3,8 +3,8 @@ import {dataProvider} from "../../src";
 describe("update", () => {
     const apiUrl = "./test/test.db"
 
-    it("correct response", () => {
-        const response = dataProvider(apiUrl)
+    it("correct response", async () => {
+        const response = await dataProvider(apiUrl)
             .update({
                 resource: "posts",
                 id: "1",
