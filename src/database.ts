@@ -11,12 +11,8 @@ try {
 
 // Runtime detection utilities
 export function detectRuntime(): RuntimeEnvironment {
-  const isCloudflareWorker = typeof globalThis !== 'undefined' && 
-    'caches' in globalThis && 
-    'Request' in globalThis &&
-    'Response' in globalThis &&
-    typeof navigator !== 'undefined' &&
-    navigator.userAgent === 'Cloudflare-Workers';
+  const isCloudflareWorker = typeof navigator !== 'undefined' &&
+    navigator.userAgent.toLowerCase().startsWith('cloudflare');
 
   // Use try-catch to safely check for Node.js environment
   let isNode = false;
@@ -42,16 +38,8 @@ export class DatabaseAdapter {
   constructor(dbOrPath: string | D1Database) {
     this.runtime = detectRuntime();
     
-    if (typeof dbOrPath === 'string') {
-      this.config = {
-        type: 'sqlite',
-        connection: dbOrPath
-      };
-      return;
-    }
-    
     this.config = {
-      type: 'd1',
+      type: typeof dbOrPath === 'string' ? 'sqlite' : 'd1',
       connection: dbOrPath
     };
   }
