@@ -1,5 +1,15 @@
 import { D1Database, DatabaseConfig, RuntimeEnvironment } from './types';
 
+// Import better-sqlite3 dynamically for Node.js environments
+let Database: any = null;
+try {
+  if (typeof require !== 'undefined') {
+    Database = require('better-sqlite3');
+  }
+} catch (error) {
+  // better-sqlite3 not available, will handle in getDatabase method
+}
+
 // Runtime detection utilities
 export function detectRuntime(): RuntimeEnvironment {
   const isCloudflareWorker = typeof globalThis !== 'undefined' && 
@@ -52,11 +62,8 @@ export class DatabaseAdapter {
         throw new Error('SQLite is not supported in this environment. Use Cloudflare D1 instead.');
       }
       
-      // Dynamic import for better-sqlite3 to avoid bundling issues
-      let Database;
-      try {
-        Database = (globalThis as any).require('better-sqlite3');
-      } catch {
+      // Use pre-loaded Database constructor
+      if (!Database) {
         throw new Error('better-sqlite3 not available. Make sure it is installed.');
       }
       const db = new Database(this.config.connection as string);
