@@ -17,11 +17,9 @@ export function detectRuntime(): RuntimeEnvironment {
   // Use try-catch to safely check for Node.js environment
   let isNode = false;
   try {
-    isNode = typeof (globalThis as any).process !== 'undefined' && 
-      (globalThis as any).process.versions && 
-      (globalThis as any).process.versions.node;
+    isNode = !!(globalThis as any).process?.versions?.node;
   } catch {
-    isNode = false;
+    // isNode is already false, no need to reassign
   }
 
   return {
@@ -64,14 +62,13 @@ export class DatabaseAdapter {
 
   async query(sql: string, params: unknown[] = []): Promise<any[]> {
     const db = this.getDatabase();
+    const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
-      const stmt = db.prepare(sql);
       return stmt.all(params);
     }
     
     // D1 database
-    const stmt = db.prepare(sql);
     const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
     const result = await boundStmt.all();
     return result.results || [];
@@ -79,23 +76,22 @@ export class DatabaseAdapter {
 
   async queryFirst(sql: string, params: unknown[] = []): Promise<any> {
     const db = this.getDatabase();
+    const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
-      const stmt = db.prepare(sql);
       return stmt.get(params);
     }
     
     // D1 database
-    const stmt = db.prepare(sql);
     const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
     return await boundStmt.first();
   }
 
   async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid?: number }> {
     const db = this.getDatabase();
+    const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
-      const stmt = db.prepare(sql);
       const result = stmt.run(params);
       return {
         changes: result.changes || 0,
@@ -104,7 +100,6 @@ export class DatabaseAdapter {
     }
     
     // D1 database
-    const stmt = db.prepare(sql);
     const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
     const result = await boundStmt.run();
     return {
