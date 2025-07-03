@@ -36,8 +36,23 @@ With **refine-sqlite** you can quickly start creating your app as fast as possib
 
 ## Installation
 
+### For Refine Applications
+
 ```bash
 npm install refine-sqlite @refinedev/core
+```
+
+### For Cloudflare Workers
+
+```bash
+npm install refine-sqlite
+npm install wrangler --save-dev  # For development and deployment
+```
+
+### Standalone Usage
+
+```bash
+npm install refine-sqlite
 ```
 
 ## Quick Start

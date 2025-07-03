@@ -21,9 +21,8 @@
 - `src/types.ts` - Cloudflare D1 and common type definitions
 - `src/database.ts` - Database adapter and runtime detection
 - `src/worker.ts` - Cloudflare Workers example implementation
-- `wrangler.toml` - Cloudflare Workers configuration
 - `migrations/001_initial.sql` - Example database schema
-- `examples/usage.ts` - Usage examples
+- `examples/usage.ts` - Usage examples for developers
 - `CLOUDFLARE.md` - Cloudflare D1 support documentation
 - `DEPLOYMENT.md` - Deployment guide
 
@@ -36,17 +35,17 @@
 ### 📦 Dependencies
 
 #### Added
-- `@cloudflare/workers-types` - Cloudflare Workers type definitions
-- `wrangler` - Cloudflare Workers CLI tool
+- `@cloudflare/workers-types` - Cloudflare Workers type definitions (dev dependency)
 
 #### Updated
 - Enhanced TypeScript configuration for multi-platform support
 
 ### 🏗️ Build System
 
-- **Scripts**: Added `dev:worker` and `deploy:worker` scripts
+- **Scripts**: Removed Cloudflare Workers specific scripts (users should configure their own)
 - **TypeScript**: Updated configuration to support Cloudflare Workers and Node.js
 - **Build**: Maintains compatibility with existing build system
+- **Package**: Optimized for library distribution, removed development-specific dependencies
 
 ### 📚 Documentation
 
@@ -89,7 +88,12 @@
    const provider = dataProvider('./database.db');
    ```
 
-3. **Update package.json** scripts for Cloudflare Workers:
+3. **For Cloudflare Workers**, install required tools separately:
+   ```bash
+   npm install wrangler --save-dev
+   ```
+   
+   Then configure your own `wrangler.toml` and scripts in `package.json`:
    ```json
    {
      "scripts": {
