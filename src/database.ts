@@ -1,14 +1,5 @@
 import { D1Database, DatabaseConfig, RuntimeEnvironment } from './types';
 
-// Import better-sqlite3 for Node.js environments
-let Database: any = null;
-try {
-  // Try to import better-sqlite3
-  Database = require('better-sqlite3');
-} catch (error) {
-  // better-sqlite3 not available in this environment
-}
-
 // Runtime detection utilities
 export function detectRuntime(): RuntimeEnvironment {
   const isCloudflareWorker = typeof navigator !== 'undefined' &&
@@ -32,6 +23,7 @@ export function detectRuntime(): RuntimeEnvironment {
 export class DatabaseAdapter {
   private config: DatabaseConfig;
   private runtime: RuntimeEnvironment;
+  private db: any; // Cache the database instance
 
   constructor(dbOrPath: string | D1Database) {
     this.runtime = detectRuntime();
@@ -42,26 +34,32 @@ export class DatabaseAdapter {
     };
   }
 
-  private getDatabase() {
+  private async getDatabase() {
+    if (this.db) {
+      return this.db;
+    }
+
     if (this.config.type === 'sqlite') {
       if (!this.runtime.supportsSQLite) {
         throw new Error('SQLite is not supported in this environment. Use Cloudflare D1 instead.');
       }
       
-      // Use pre-loaded Database constructor
-      if (!Database) {
-        throw new Error('better-sqlite3 not available. Make sure it is installed.');
+      try {
+        const Database = await import('better-sqlite3');
+        this.db = new Database.default(this.config.connection as string);
+        this.db.pragma('journal_mode = WAL');
+        return this.db;
+      } catch (error) {
+        throw new Error('better-sqlite3 not available. Make sure it is installed: npm install better-sqlite3');
       }
-      const db = new Database(this.config.connection as string);
-      db.pragma('journal_mode = WAL');
-      return db;
     }
     
-    return this.config.connection as D1Database;
+    this.db = this.config.connection as D1Database;
+    return this.db;
   }
 
   async query(sql: string, params: unknown[] = []): Promise<any[]> {
-    const db = this.getDatabase();
+    const db = await this.getDatabase();
     const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
@@ -75,7 +73,7 @@ export class DatabaseAdapter {
   }
 
   async queryFirst(sql: string, params: unknown[] = []): Promise<any> {
-    const db = this.getDatabase();
+    const db = await this.getDatabase();
     const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
@@ -88,7 +86,7 @@ export class DatabaseAdapter {
   }
 
   async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid?: number }> {
-    const db = this.getDatabase();
+    const db = await this.getDatabase();
     const stmt = db.prepare(sql);
     
     if (this.config.type === 'sqlite') {
@@ -109,13 +107,14 @@ export class DatabaseAdapter {
   }
 
   close(): void {
-    if (this.config.type === 'sqlite') {
-      const db = this.getDatabase();
-      if (db && typeof db.close === 'function') {
-        db.close();
-      }
+    if (this.config.type === 'sqlite' && this.db) {
+      if ("close" in this.db) this.db.close();
+      this.db = null; // Clear the cached instance
     }
-    // D1 doesn't need to be closed
+    // D1 doesn't need to be closed, but clear the reference
+    if (this.config.type === 'd1') {
+      this.db = null;
+    }
   }
 
   getType(): string {
