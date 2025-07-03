@@ -7,7 +7,7 @@
       "rootDir": "./src",
       "baseUrl": ".",
       "module": "esnext",
-      "lib": ["dom", "esnext", "DOM.Iterable"],
+      "lib": ["dom", "esnext", "DOM.Iterable", "webworker"],
       "importHelpers": true,
       "declaration": true,
       "sourceMap": true,   
@@ -21,5 +21,6 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "allowSyntheticDefaultImports": true,
+      "types": ["@cloudflare/workers-types", "node"]
   }
 }

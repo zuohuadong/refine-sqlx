@@ -24,19 +24,45 @@
 
 ## Getting Started
 
-With **refine-sqlite** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQLite database.
+With **refine-sqlite** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQLite database or Cloudflare D1.
 
 ## Features
 
 - **Well tested** - All the methods are tested using [Jest](https://jestjs.io/).
 - **Fully featured** - All CRUD operations are supported.
-- **Synchronous** - Everything works synchronously using [better-sqlite3](https://www.npmjs.com/package/better-sqlite3).
+- **Multi-platform** - Works with both SQLite (Node.js) and Cloudflare D1 (Workers).
 - **Type safe** - Written in TypeScript with strict mode enabled.
+- **Edge ready** - Optimized for Cloudflare Workers and edge computing.
 
 ## Installation
 
 ```bash
 npm install refine-sqlite
+```
+
+## Quick Start
+
+### Node.js with SQLite
+
+```ts
+import { dataProvider } from "refine-sqlite";
+
+const provider = dataProvider("database.db");
+const response = await provider.getList({ resource: "posts" });
+```
+
+### Cloudflare Workers with D1
+
+```ts
+import { dataProvider } from "refine-sqlite";
+
+export default {
+  async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
+    const provider = dataProvider(env.DB);
+    const response = await provider.getList({ resource: "posts" });
+    return new Response(JSON.stringify(response));
+  }
+};
 ```
 
 ## Usage
@@ -51,7 +77,8 @@ npm install refine-sqlite
 ```ts
 import { dataProvider } from "refine-sqlite";
 
-const response = dataProvider("database.db")
+// For SQLite (Node.js)
+const response = await dataProvider("database.db")
   .getList({
     resource: "posts",
     filters: [
@@ -69,6 +96,9 @@ const response = dataProvider("database.db")
     ],
   });
 
+// For Cloudflare D1 (Workers)
+// const response = await dataProvider(env.DB).getList({ ... });
+
 console.log(response)
 
 // {
@@ -85,6 +115,7 @@ console.log(response)
 - [Methods](https://github.com/mateusabelli/refine-sqlite/wiki/Methods)
 - [Filters](https://github.com/mateusabelli/refine-sqlite/wiki/Filters)
 - [Sorters](https://github.com/mateusabelli/refine-sqlite/wiki/Sorters)
+- [Cloudflare D1 Support](./CLOUDFLARE.md)
  
 ## Development
 

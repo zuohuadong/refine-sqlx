@@ -34,12 +34,15 @@
     "start": "tsup --watch --format esm,cjs,iife --legacy-output",
     "build": "tsup --format esm,cjs,iife --minify --legacy-output",
     "test": "jest --passWithNoTests --runInBand",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240815.0",
     "@esbuild-plugins/node-resolve": "^0.2.2",
     "@refinedev/core": "^4.51.0",
     "@types/better-sqlite3": "^7.6.10",
@@ -49,6 +52,7 @@
     "ts-jest": "^29.1.5",
     "tslib": "^2.6.3",
     "tsup": "^8.1.0",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "wrangler": "^3.78.2"
   }
 }

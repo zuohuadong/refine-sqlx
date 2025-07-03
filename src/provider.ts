@@ -8,20 +8,14 @@ import {
     UpdateParams
 } from "@refinedev/core";
 import { generateSort, generateFilter } from "./utils";
-import Database from "better-sqlite3";
-
-const dbConnect = (dbPath: string) => {
-    const db = new Database(dbPath)
-    db.pragma('journal_mode = WAL');
-
-    return db;
-}
+import { DatabaseAdapter } from "./database";
+import { D1Database } from "./types";
 
 export const dataProvider = (
-    dbPath: string
+    dbOrPath: string | D1Database
 ) => ({
-    getList: ({ resource, pagination, filters, sorters }: GetListParams) => {
-        const db = dbConnect(dbPath);
+    getList: async ({ resource, pagination, filters, sorters }: GetListParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
 
         const {
             current = 1,
@@ -51,8 +45,7 @@ export const dataProvider = (
         if (pagination) sql += ` LIMIT ${query._start}, ${query._end}`;
 
         try {
-            const stmt = db.prepare(sql)
-            const data = stmt.all() as Array<BaseRecord>;
+            const data = await db.query(sql) as Array<BaseRecord>;
 
             return {
                 data,
@@ -69,13 +62,12 @@ export const dataProvider = (
         }
     },
 
-    getMany: ({ resource, ids }: GetManyParams) => {
-        const db = dbConnect(dbPath);
-        const idString = ids.join(", ")
+    getMany: async ({ resource, ids }: GetManyParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
+        const placeholders = ids.map(() => '?').join(', ');
 
         try {
-            const stmt = db.prepare(`SELECT * FROM ${resource} WHERE id IN (${idString})`)
-            const data = stmt.all() as Array<BaseRecord>;
+            const data = await db.query(`SELECT * FROM ${resource} WHERE id IN (${placeholders})`, ids) as Array<BaseRecord>;
 
             return {
                 data,
@@ -90,18 +82,18 @@ export const dataProvider = (
         }
     },
 
-    create: ({ resource, variables }: CreateParams) => {
-        const db = dbConnect(dbPath);
+    create: async ({ resource, variables }: CreateParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
 
-        const columns = Object.keys(variables || {}).join(", ")
-        const values = Object.values(variables || {}).map((value) => `'${value}'`).join(", ")
+        const columns = Object.keys(variables || {});
+        const values = Object.values(variables || {});
+        const placeholders = columns.map(() => '?').join(', ');
 
         try {
-            const stmt = db.prepare(`INSERT INTO ${resource} (${columns}) VALUES (${values})`)
-            const { lastInsertRowid } = stmt.run()
+            const result = await db.execute(`INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`, values);
+            const lastInsertRowid = result.lastInsertRowid;
 
-            const stmt2 = db.prepare(`SELECT * FROM ${resource} WHERE id = ${lastInsertRowid}`)
-            const data = stmt2.get() as BaseRecord;
+            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [lastInsertRowid]) as BaseRecord;
 
             return {
                 data,
@@ -116,26 +108,17 @@ export const dataProvider = (
         }
     },
 
-    update: ({ resource, id, variables }: UpdateParams) => {
-        const db = dbConnect(dbPath);
-        let updateQuery = "";
-
-        const columns = Object.keys(variables || {})
+    update: async ({ resource, id, variables }: UpdateParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
+        
+        const columns = Object.keys(variables || {});
         const values = Object.values(variables || {});
-
-        columns.forEach((column, index) => {
-            updateQuery += `${column} = '${values[index]}', `;
-        });
-
-        // Slices the last comma
-        updateQuery = updateQuery.slice(0, -2);
+        const updateQuery = columns.map(column => `${column} = ?`).join(', ');
 
         try {
-            db.prepare(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`)
-                .run(id)
+            await db.execute(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`, [...values, id]);
 
-            const stmt = db.prepare(`SELECT * FROM ${resource} WHERE id = ?`)
-            const data = stmt.get(id) as BaseRecord;
+            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
 
             return {
                 data,
@@ -150,11 +133,10 @@ export const dataProvider = (
         }
     },
 
-    getOne: ({ resource, id }: GetOneParams) => {
-        const db = dbConnect(dbPath);
+    getOne: async ({ resource, id }: GetOneParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
         try {
-            const stmt = db.prepare(`SELECT * FROM ${resource} WHERE id = ?`)
-            const data = stmt.get(id) as BaseRecord;
+            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
 
             return {
                 data,
@@ -169,14 +151,13 @@ export const dataProvider = (
         }
     },
 
-    deleteOne: ({ resource, id }: DeleteOneParams) => {
-        const db = dbConnect(dbPath);
+    deleteOne: async ({ resource, id }: DeleteOneParams) => {
+        const db = new DatabaseAdapter(dbOrPath);
 
         try {
-            const stmt = db.prepare(`DELETE FROM ${resource} WHERE id = ?`);
-            const { changes } = stmt.run(id);
+            const result = await db.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
 
-            if (changes !== 1) {
+            if (result.changes !== 1) {
                 throw new Error(`Failed to delete ${resource} with id ${id}`);
             }
 

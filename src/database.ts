@@ -1,0 +1,134 @@
+import { D1Database, DatabaseConfig, RuntimeEnvironment } from './types';
+
+// Runtime detection utilities
+export function detectRuntime(): RuntimeEnvironment {
+  const isCloudflareWorker = typeof globalThis !== 'undefined' && 
+    'caches' in globalThis && 
+    'Request' in globalThis &&
+    'Response' in globalThis &&
+    typeof navigator !== 'undefined' &&
+    navigator.userAgent === 'Cloudflare-Workers';
+
+  // Use try-catch to safely check for Node.js environment
+  let isNode = false;
+  try {
+    isNode = typeof (globalThis as any).process !== 'undefined' && 
+      (globalThis as any).process.versions && 
+      (globalThis as any).process.versions.node;
+  } catch {
+    isNode = false;
+  }
+
+  return {
+    isCloudflareWorker,
+    isNode,
+    supportsSQLite: isNode
+  };
+}
+
+export class DatabaseAdapter {
+  private config: DatabaseConfig;
+  private runtime: RuntimeEnvironment;
+
+  constructor(dbOrPath: string | D1Database) {
+    this.runtime = detectRuntime();
+    
+    if (typeof dbOrPath === 'string') {
+      this.config = {
+        type: 'sqlite',
+        connection: dbOrPath
+      };
+    } else {
+      this.config = {
+        type: 'd1',
+        connection: dbOrPath
+      };
+    }
+  }
+
+  private getDatabase() {
+    if (this.config.type === 'sqlite') {
+      if (!this.runtime.supportsSQLite) {
+        throw new Error('SQLite is not supported in this environment. Use Cloudflare D1 instead.');
+      }
+      
+      // Dynamic import for better-sqlite3 to avoid bundling issues
+      let Database;
+      try {
+        Database = (globalThis as any).require('better-sqlite3');
+      } catch {
+        throw new Error('better-sqlite3 not available. Make sure it is installed.');
+      }
+      const db = new Database(this.config.connection as string);
+      db.pragma('journal_mode = WAL');
+      return db;
+    } else {
+      return this.config.connection as D1Database;
+    }
+  }
+
+  async query(sql: string, params: unknown[] = []): Promise<any[]> {
+    const db = this.getDatabase();
+    
+    if (this.config.type === 'sqlite') {
+      const stmt = db.prepare(sql);
+      return params.length > 0 ? stmt.all(params) : stmt.all();
+    } else {
+      // D1 database
+      const stmt = db.prepare(sql);
+      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+      const result = await boundStmt.all();
+      return result.results || [];
+    }
+  }
+
+  async queryFirst(sql: string, params: unknown[] = []): Promise<any> {
+    const db = this.getDatabase();
+    
+    if (this.config.type === 'sqlite') {
+      const stmt = db.prepare(sql);
+      return params.length > 0 ? stmt.get(params) : stmt.get();
+    } else {
+      // D1 database
+      const stmt = db.prepare(sql);
+      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+      return await boundStmt.first();
+    }
+  }
+
+  async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid?: number }> {
+    const db = this.getDatabase();
+    
+    if (this.config.type === 'sqlite') {
+      const stmt = db.prepare(sql);
+      const result = params.length > 0 ? stmt.run(params) : stmt.run();
+      return {
+        changes: result.changes || 0,
+        lastInsertRowid: result.lastInsertRowid
+      };
+    } else {
+      // D1 database
+      const stmt = db.prepare(sql);
+      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+      const result = await boundStmt.run();
+      return {
+        changes: result.meta.changes,
+        lastInsertRowid: result.meta.last_row_id
+      };
+    }
+  }
+
+  close(): void {
+    if (this.config.type === 'sqlite') {
+      const db = this.getDatabase();
+      if (db && typeof db.close === 'function') {
+        db.close();
+      }
+    }
+    // D1 doesn't need to be closed
+  }
+
+  getType(): string {
+    return this.config.type;
+  }
+}
