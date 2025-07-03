@@ -47,12 +47,13 @@ export class DatabaseAdapter {
         type: 'sqlite',
         connection: dbOrPath
       };
-    } else {
-      this.config = {
-        type: 'd1',
-        connection: dbOrPath
-      };
+      return;
     }
+    
+    this.config = {
+      type: 'd1',
+      connection: dbOrPath
+    };
   }
 
   private getDatabase() {
@@ -68,9 +69,9 @@ export class DatabaseAdapter {
       const db = new Database(this.config.connection as string);
       db.pragma('journal_mode = WAL');
       return db;
-    } else {
-      return this.config.connection as D1Database;
     }
+    
+    return this.config.connection as D1Database;
   }
 
   async query(sql: string, params: unknown[] = []): Promise<any[]> {
@@ -78,14 +79,14 @@ export class DatabaseAdapter {
     
     if (this.config.type === 'sqlite') {
       const stmt = db.prepare(sql);
-      return params.length > 0 ? stmt.all(params) : stmt.all();
-    } else {
-      // D1 database
-      const stmt = db.prepare(sql);
-      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
-      const result = await boundStmt.all();
-      return result.results || [];
+      return stmt.all(params);
     }
+    
+    // D1 database
+    const stmt = db.prepare(sql);
+    const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+    const result = await boundStmt.all();
+    return result.results || [];
   }
 
   async queryFirst(sql: string, params: unknown[] = []): Promise<any> {
@@ -93,13 +94,13 @@ export class DatabaseAdapter {
     
     if (this.config.type === 'sqlite') {
       const stmt = db.prepare(sql);
-      return params.length > 0 ? stmt.get(params) : stmt.get();
-    } else {
-      // D1 database
-      const stmt = db.prepare(sql);
-      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
-      return await boundStmt.first();
+      return stmt.get(params);
     }
+    
+    // D1 database
+    const stmt = db.prepare(sql);
+    const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+    return await boundStmt.first();
   }
 
   async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid?: number }> {
@@ -107,21 +108,21 @@ export class DatabaseAdapter {
     
     if (this.config.type === 'sqlite') {
       const stmt = db.prepare(sql);
-      const result = params.length > 0 ? stmt.run(params) : stmt.run();
+      const result = stmt.run(params);
       return {
         changes: result.changes || 0,
         lastInsertRowid: result.lastInsertRowid
       };
-    } else {
-      // D1 database
-      const stmt = db.prepare(sql);
-      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
-      const result = await boundStmt.run();
-      return {
-        changes: result.meta.changes,
-        lastInsertRowid: result.meta.last_row_id
-      };
     }
+    
+    // D1 database
+    const stmt = db.prepare(sql);
+    const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+    const result = await boundStmt.run();
+    return {
+      changes: result.meta.changes,
+      lastInsertRowid: result.meta.last_row_id
+    };
   }
 
   close(): void {
