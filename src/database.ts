@@ -1,13 +1,12 @@
 import { D1Database, DatabaseConfig, RuntimeEnvironment } from './types';
 
-// Import better-sqlite3 dynamically for Node.js environments
+// Import better-sqlite3 for Node.js environments
 let Database: any = null;
 try {
-  if (typeof require !== 'undefined') {
-    Database = require('better-sqlite3');
-  }
+  // Try to import better-sqlite3
+  Database = require('better-sqlite3');
 } catch (error) {
-  // better-sqlite3 not available, will handle in getDatabase method
+  // better-sqlite3 not available in this environment
 }
 
 // Runtime detection utilities
