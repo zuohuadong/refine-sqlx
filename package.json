@@ -1,7 +1,7 @@
 {
   "name": "refine-sqlite",
-  "description": "SQLite data provider for the refine framework",
-  "version": "1.0.0",
+  "description": "SQLite and Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with local SQLite or edge D1 databases",
+  "version": "2.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -9,7 +9,12 @@
   "keywords": [
     "refine",
     "data provider",
-    "sqlite"
+    "sqlite",
+    "cloudflare",
+    "d1",
+    "database",
+    "edge",
+    "workers"
   ],
   "private": false,
   "files": [

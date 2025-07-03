@@ -1,102 +1,116 @@
-// Example usage of refine-sqlite with both SQLite and Cloudflare D1
+// Example usage of refine-sqlite as a dataProvider for Refine framework
+// npm install refine-sqlite @refinedev/core
 
-import { dataProvider, D1Database } from '../src';
+import { dataProvider } from '../src';
+import type { D1Database } from '../src';
 
-// Example 1: Using with local SQLite (Node.js)
-async function exampleWithSQLite() {
-  console.log('=== SQLite Example ===');
-  
-  const provider = dataProvider('./test.db');
-  
-  try {
-    // Get all posts
-    const posts = await provider.getList({
-      resource: 'posts',
-      pagination: { current: 1, pageSize: 10 }
-    });
-    console.log('Posts:', posts);
-
-    // Create a new post
-    const newPost = await provider.create({
-      resource: 'posts',
-      variables: {
-        title: 'New Post from Example',
-        content: 'This is a test post created via the data provider',
-        category_id: 1,
-        published: true
-      }
-    });
-    console.log('Created post:', newPost);
-
-    // Update the post
-    if (newPost.data.id) {
-      const updatedPost = await provider.update({
-        resource: 'posts',
-        id: newPost.data.id,
-        variables: {
-          title: 'Updated Post Title',
-          content: 'This post has been updated'
-        }
-      });
-      console.log('Updated post:', updatedPost);
-
-      // Get single post
-      const singlePost = await provider.getOne({
-        resource: 'posts',
-        id: newPost.data.id
-      });
-      console.log('Single post:', singlePost);
-
-      // Delete the post
-      await provider.deleteOne({
-        resource: 'posts',
-        id: newPost.data.id
-      });
-      console.log('Post deleted');
-    }
-
-  } catch (error) {
-    console.error('SQLite Example Error:', error);
-  }
-}
-
-// Example 2: Cloudflare Worker handler
+// Example 1: Cloudflare Worker with Refine + D1
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
-    console.log('=== Cloudflare D1 Example ===');
-    
     const provider = dataProvider(env.DB);
     
     try {
       const url = new URL(request.url);
       const path = url.pathname;
+      const method = request.method;
       
-      if (path === '/api/posts') {
-        const posts = await provider.getList({
-          resource: 'posts',
-          pagination: { current: 1, pageSize: 5 }
-        });
+      // Handle Refine dataProvider API calls
+      if (path.startsWith('/api/refine/')) {
+        const resource = url.searchParams.get('resource');
+        const id = url.searchParams.get('id');
         
-        return new Response(JSON.stringify(posts), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+        if (!resource) {
+          return new Response(JSON.stringify({ error: 'Resource is required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        
+        switch (method) {
+          case 'GET':
+            if (id) {
+              // getOne
+              const result = await provider.getOne({ resource, id });
+              return new Response(JSON.stringify(result), {
+                headers: { 'Content-Type': 'application/json' }
+              });
+            } else {
+              // getList with pagination and filters from URL params
+              const current = parseInt(url.searchParams.get('current') || '1');
+              const pageSize = parseInt(url.searchParams.get('pageSize') || '10');
+              
+              const result = await provider.getList({
+                resource,
+                pagination: { current, pageSize }
+              });
+              return new Response(JSON.stringify(result), {
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+          case 'POST':
+            // create
+            const createData = await request.json();
+            const created = await provider.create({
+              resource,
+              variables: createData
+            });
+            return new Response(JSON.stringify(created), {
+              status: 201,
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+          case 'PUT':
+            // update
+            if (!id) {
+              return new Response(JSON.stringify({ error: 'ID is required for update' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            const updateData = await request.json();
+            const updated = await provider.update({
+              resource,
+              id,
+              variables: updateData
+            });
+            return new Response(JSON.stringify(updated), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+          case 'DELETE':
+            // deleteOne
+            if (!id) {
+              return new Response(JSON.stringify({ error: 'ID is required for delete' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            const deleted = await provider.deleteOne({ resource, id });
+            return new Response(JSON.stringify(deleted), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+          default:
+            return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+              status: 405,
+              headers: { 'Content-Type': 'application/json' }
+            });
+        }
       }
       
-      if (path === '/api/test') {
-        // Test all operations
-        const results = {
-          list: await provider.getList({ resource: 'posts' }),
-          categories: await provider.getList({ resource: 'categories' })
-        };
-        
-        return new Response(JSON.stringify(results), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
+      // API documentation
       return new Response(JSON.stringify({
-        message: 'Refine SQLite + D1 Data Provider',
-        endpoints: ['/api/posts', '/api/test']
+        message: 'Refine SQLite + D1 DataProvider API',
+        version: '2.0.0',
+        endpoints: {
+          'GET /api/refine/?resource=posts': 'List posts (supports current, pageSize params)',
+          'GET /api/refine/?resource=posts&id=1': 'Get specific post',
+          'POST /api/refine/?resource=posts': 'Create new post',
+          'PUT /api/refine/?resource=posts&id=1': 'Update specific post',
+          'DELETE /api/refine/?resource=posts&id=1': 'Delete specific post'
+        },
+        usage: 'This API is designed to work with Refine framework dataProvider'
       }), {
         headers: { 'Content-Type': 'application/json' }
       });
@@ -112,7 +126,29 @@ export default {
   }
 };
 
-// Run SQLite example if in Node.js environment
+// Example 2: Direct usage (testing/standalone)
+async function testDataProvider() {
+  console.log('=== Testing DataProvider ===');
+  
+  const provider = dataProvider('./test/test.db');
+  
+  try {
+    // This is how Refine internally calls the dataProvider
+    const posts = await provider.getList({
+      resource: 'posts',
+      pagination: { current: 1, pageSize: 10 },
+      sorters: [{ field: 'id', order: 'desc' }],
+      filters: [{ field: 'published', operator: 'eq', value: [true] }]
+    });
+    
+    console.log('Posts from dataProvider:', posts);
+    
+  } catch (error) {
+    console.error('DataProvider test error:', error);
+  }
+}
+
+// Run test if in Node.js environment
 if (typeof process !== 'undefined' && process.versions?.node) {
-  exampleWithSQLite();
+  testDataProvider();
 }

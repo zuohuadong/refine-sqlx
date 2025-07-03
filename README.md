@@ -37,17 +37,83 @@ With **refine-sqlite** you can quickly start creating your app as fast as possib
 ## Installation
 
 ```bash
-npm install refine-sqlite
+npm install refine-sqlite @refinedev/core
 ```
 
 ## Quick Start
 
-### Node.js with SQLite
+### React App with Refine + SQLite
+
+```tsx
+import React from 'react';
+import { Refine } from '@refinedev/core';
+import { dataProvider } from 'refine-sqlite';
+
+const App: React.FC = () => {
+  return (
+    <Refine
+      dataProvider={dataProvider('./app.db')}
+      resources={[
+        {
+          name: 'posts',
+          list: '/posts',
+          create: '/posts/create',
+          edit: '/posts/edit/:id',
+          show: '/posts/show/:id',
+          meta: {
+            canDelete: true,
+          },
+        },
+        {
+          name: 'categories', 
+          list: '/categories',
+          create: '/categories/create',
+          edit: '/categories/edit/:id',
+          show: '/categories/show/:id',
+        },
+      ]}
+    >
+      {/* Your Refine pages and components */}
+    </Refine>
+  );
+};
+```
+
+### Cloudflare Workers with D1
+
+```tsx
+import { Refine } from '@refinedev/core';
+import { dataProvider } from 'refine-sqlite';
+
+export default {
+  async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
+    // Use in API routes or SSR
+    const provider = dataProvider(env.DB);
+    
+    // Example API endpoint
+    if (request.url.includes('/api/posts')) {
+      const posts = await provider.getList({ resource: 'posts' });
+      return new Response(JSON.stringify(posts));
+    }
+    
+    // Return your Refine app
+    return new Response(/* Your Refine SSR response */);
+  }
+};
+```
+
+### Standalone Usage (without Refine)
 
 ```ts
-import { dataProvider } from "refine-sqlite";
+import { dataProvider } from 'refine-sqlite';
 
-const provider = dataProvider("database.db");
+const provider = dataProvider('./database.db');
+
+// All methods return promises
+const posts = await provider.getList({ 
+  resource: 'posts',
+  pagination: { current: 1, pageSize: 10 }
+});
 const response = await provider.getList({ resource: "posts" });
 ```
 
@@ -67,37 +133,73 @@ export default {
 
 ## Usage
 
-1. Create a database file. You can use the [DB Browser for SQLite](https://sqlitebrowser.org/) to easily create the tables and insert some data, or you can also use the [sqlite3](https://www.sqlite.org/cli.html) command line shell. <br>
-2. Import the `dataProvider` function in your file and pass the database file path as a string parameter. <br>
-3. Use the methods to create, update, delete, and get data from your database, filtering and sorting as you wish.
+The `refine-sqlite` package provides a data provider that seamlessly integrates with the [Refine framework](https://refine.dev) to work with SQLite databases (Node.js) or Cloudflare D1 (Workers/Edge).
 
-> **Note**
-> `resource` is the name of the table in the database.
+> **Note:** `resource` corresponds to the table name in your database.
+
+### Basic CRUD Operations
 
 ```ts
 import { dataProvider } from "refine-sqlite";
 
-// For SQLite (Node.js)
-const response = await dataProvider("database.db")
-  .getList({
-    resource: "posts",
-    filters: [
-      {
-        field: "category_id",
-        operator: "eq",
-        value: ["2"],
-      },
-    ],
-    sorters: [
-      {
-        field: "title",
-        order: "asc",
-      },
-    ],
-  });
+const provider = dataProvider("./database.db"); // SQLite
+// const provider = dataProvider(env.DB); // D1 in Workers
 
-// For Cloudflare D1 (Workers)
-// const response = await dataProvider(env.DB).getList({ ... });
+// List records with filtering and sorting
+const posts = await provider.getList({
+  resource: "posts",
+  pagination: { current: 1, pageSize: 10 },
+  filters: [
+    {
+      field: "category_id",
+      operator: "eq", 
+      value: ["2"]
+    }
+  ],
+  sorters: [
+    {
+      field: "title",
+      order: "asc"
+    }
+  ]
+});
+
+// Create a new record
+const newPost = await provider.create({
+  resource: "posts",
+  variables: {
+    title: "Hello World",
+    content: "My first post",
+    category_id: 1
+  }
+});
+
+// Update a record  
+const updatedPost = await provider.update({
+  resource: "posts",
+  id: "1",
+  variables: {
+    title: "Updated Title"
+  }
+});
+
+// Get a single record
+const post = await provider.getOne({
+  resource: "posts", 
+  id: "1"
+});
+
+// Get multiple records by IDs
+const multiplePosts = await provider.getMany({
+  resource: "posts",
+  ids: ["1", "2", "3"]
+});
+
+// Delete a record
+await provider.deleteOne({
+  resource: "posts",
+  id: "1"
+});
 
 console.log(response)
 
