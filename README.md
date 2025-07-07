@@ -258,7 +258,7 @@ Install the dependencies
 
 ```bash
 cd refine-d1
-pnpm install
+npm install
 ```
 
 Build and test

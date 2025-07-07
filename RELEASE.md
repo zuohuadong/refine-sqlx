@@ -43,13 +43,13 @@ This project uses GitHub Actions to automatically publish to NPM when a new rele
 ### Manual Testing Before Release:
 ```bash
 # Run tests
-pnpm test:run
+npm run test:run
 
 # Build package
-pnpm build
+npm run build
 
 # Check what will be published
-pnpm pack --dry-run
+npm pack --dry-run
 ```
 
 ### Rollback if Needed:
