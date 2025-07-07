@@ -1,11 +1,15 @@
 import {
     BaseRecord,
     CreateParams,
+    CreateManyParams,
     DeleteOneParams,
+    DeleteManyParams,
     GetListParams,
     GetManyParams,
     GetOneParams,
-    UpdateParams
+    UpdateParams,
+    UpdateManyParams,
+    CustomParams
 } from "@refinedev/core";
 import { generateSort, generateFilter } from "./utils";
 import { DatabaseAdapter } from "./database";
@@ -166,6 +170,155 @@ export const dataProvider = (
             return {
                 data: null
             }
+        }
+    },
+
+    createMany: async ({ resource, variables }: CreateManyParams) => {
+        const dbAdapter = new DatabaseAdapter(db);
+
+        if (!variables || variables.length === 0) {
+            return { data: [] };
+        }
+
+        try {
+            const results = [];
+            for (const item of variables) {
+                const columns = Object.keys(item);
+                const values = Object.values(item);
+                const placeholders = columns.map(() => '?').join(', ');
+
+                const result = await dbAdapter.execute(
+                    `INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`,
+                    values
+                );
+                
+                const insertedData = await dbAdapter.queryFirst(
+                    `SELECT * FROM ${resource} WHERE id = ?`,
+                    [result.lastInsertRowid]
+                ) as BaseRecord;
+                
+                results.push(insertedData);
+            }
+
+            return { data: results };
+        } catch (error) {
+            console.error("Error in createMany()", error);
+            return { data: [] };
+        }
+    },
+
+    updateMany: async ({ resource, ids, variables }: UpdateManyParams) => {
+        const dbAdapter = new DatabaseAdapter(db);
+
+        if (!ids || ids.length === 0) {
+            return { data: [] };
+        }
+
+        try {
+            const results = [];
+            const columns = Object.keys(variables || {});
+            const values = Object.values(variables || {});
+            const updateQuery = columns.map(column => `${column} = ?`).join(', ');
+
+            for (const id of ids) {
+                await dbAdapter.execute(
+                    `UPDATE ${resource} SET ${updateQuery} WHERE id = ?`,
+                    [...values, id]
+                );
+
+                const updatedData = await dbAdapter.queryFirst(
+                    `SELECT * FROM ${resource} WHERE id = ?`,
+                    [id]
+                ) as BaseRecord;
+
+                if (updatedData) {
+                    results.push(updatedData);
+                }
+            }
+
+            return { data: results };
+        } catch (error) {
+            console.error("Error in updateMany()", error);
+            return { data: [] };
+        }
+    },
+
+    deleteMany: async ({ resource, ids }: DeleteManyParams) => {
+        const dbAdapter = new DatabaseAdapter(db);
+
+        if (!ids || ids.length === 0) {
+            return { data: [] };
+        }
+
+        try {
+            const results = [];
+            for (const id of ids) {
+                // Get the record before deletion
+                const recordToDelete = await dbAdapter.queryFirst(
+                    `SELECT * FROM ${resource} WHERE id = ?`,
+                    [id]
+                ) as BaseRecord;
+
+                if (recordToDelete) {
+                    const result = await dbAdapter.execute(
+                        `DELETE FROM ${resource} WHERE id = ?`,
+                        [id]
+                    );
+
+                    if (result.changes === 1) {
+                        results.push(recordToDelete);
+                    }
+                }
+            }
+
+            return { data: results };
+        } catch (error) {
+            console.error("Error in deleteMany()", error);
+            return { data: [] };
+        }
+    },
+
+    getApiUrl: () => {
+        // For D1, we don't have a traditional API URL, but we can return a base URL
+        // This is mainly used for relative URL construction in some scenarios
+        return "/api";
+    },
+
+    custom: async ({ url, method, payload, query, headers }: CustomParams) => {
+        const dbAdapter = new DatabaseAdapter(db);
+
+        try {
+            // For D1, custom method can be used for raw SQL queries
+            // The URL can contain the SQL query, or payload can contain it
+            let sql = "";
+            let params: any[] = [];
+
+            if (payload && typeof payload === 'object' && 'sql' in payload) {
+                sql = (payload as any).sql;
+                params = (payload as any).params || [];
+            } else if (url.includes('sql=')) {
+                // Extract SQL from URL query parameter
+                const urlObj = new URL(url, 'http://localhost');
+                sql = urlObj.searchParams.get('sql') || '';
+            }
+
+            if (!sql) {
+                throw new Error('No SQL query provided for custom method');
+            }
+
+            let result;
+            if (method === 'get') {
+                result = await dbAdapter.query(sql, params);
+            } else {
+                result = await dbAdapter.execute(sql, params);
+            }
+
+            return {
+                data: result
+            };
+        } catch (error) {
+            console.error("Error in custom()", error);
+            throw error;
         }
     }
 });
