@@ -1,19 +1,19 @@
-# Cloudflare D1 Support
+# Cloudflare D1 Data Provider
 
-This version of refine-sqlite now supports Cloudflare D1 database and can run in Cloudflare Workers.
+This package provides a data provider for Refine framework specifically designed for Cloudflare D1 database and Cloudflare Workers.
 
 ## Features
 
 - 🚀 Cloudflare D1 Database Support
-- 💻 Local SQLite Support (Node.js/better-sqlite3)
-- 🔄 Automatic Runtime Detection
+- ⚡ Optimized for Cloudflare Workers
 - 📝 Full CRUD Operations Support
 - 🛡️ TypeScript Type Safety
+- 🔄 Complete Refine DataProvider Interface
 
 ## Installation
 
 ```bash
-npm install refine-sqlite
+npm install refine-d1
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ npm install refine-sqlite
 ### Using with Cloudflare Workers
 
 ```typescript
-import { dataProvider } from 'refine-sqlite';
+import { dataProvider } from 'refine-d1';
 
 export interface Env {
   DB: D1Database;
@@ -43,21 +43,30 @@ export default {
 };
 ```
 
-### Using with Node.js (Traditional Way)
+### Example Worker Implementation
 
 ```typescript
-import { dataProvider } from 'refine-sqlite';
+// worker.ts
+import { dataProvider } from 'refine-d1';
 
-// Create data provider with file path
-const provider = dataProvider("./database.db");
+export interface Env {
+  DB: D1Database;
+}
 
-// Use the data provider
-const result = await provider.getList({
-  resource: "posts",
-  pagination: { current: 1, pageSize: 10 }
-});
+export default {
+  async fetch(request: Request, env: Env) {
+    const provider = dataProvider(env.DB);
+    
+    // Handle API requests
+    if (request.url.includes('/api/')) {
+      // Your API logic here
+      return new Response('API endpoint');
+    }
+    
+    return new Response('Worker is running');
+  }
+};
 ```
-
 ## Cloudflare Workers Setup
 
 ### 1. Configure wrangler.toml
@@ -101,47 +110,44 @@ INSERT INTO posts (title, content) VALUES
 
 ## API Reference
 
-### dataProvider(dbOrPath)
+### dataProvider(database)
 
-Creates a data provider instance.
+Creates a data provider instance for Cloudflare D1.
 
 **Parameters:**
-- `dbOrPath`: `string | D1Database` - Can be:
-  - SQLite database file path (Node.js environment)
-  - D1Database instance (Cloudflare Workers environment)
+- `database`: `D1Database` - D1Database instance from Cloudflare Workers environment
 
 **Returns:** Data provider object with the following methods:
 
-- `getList(params)` - Get list of records
-- `getOne(params)` - Get single record
-- `getMany(params)` - Get multiple records
+- `getList(params)` - Get list of records with pagination and filtering
+- `getOne(params)` - Get single record by ID
+- `getMany(params)` - Get multiple records by IDs
 - `create(params)` - Create new record
+- `createMany(params)` - Create multiple records
 - `update(params)` - Update record
-- `deleteOne(params)` - Delete record
+- `updateMany(params)` - Update multiple records
+- `deleteOne(params)` - Delete single record
+- `deleteMany(params)` - Delete multiple records
+- `getApiUrl()` - Get API URL
+- `custom(params)` - Execute custom SQL queries
 
 ## Deploy to Cloudflare Workers
 
 ```bash
 # Development mode
-npm run dev:worker
+npm run start
 
 # Deploy to production
-npm run deploy:worker
+npm run deploy
 ```
-
-## Environment Detection
-
-The library automatically detects the runtime environment:
-- Cloudflare Workers: Uses D1Database
-- Node.js: Uses better-sqlite3
-- Other environments: Throws error
 
 ## Important Notes
 
-1. **Async Operations**: All methods are now async to support D1's async API
+1. **Async Operations**: All methods are async to support D1's async API
 2. **Parameterized Queries**: Automatically uses parameterized queries to prevent SQL injection
-3. **Error Handling**: Improved error handling and logging
+3. **Error Handling**: Comprehensive error handling and logging
 4. **Type Safety**: Full TypeScript support
+5. **Edge Optimized**: Designed specifically for Cloudflare Workers and edge computing
 
 ## Example Project
 

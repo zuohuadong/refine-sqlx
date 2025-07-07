@@ -1,4 +1,4 @@
--- Example database schema for refine-sqlite with Cloudflare D1
+-- Example database schema for refine-d1 with Cloudflare D1
 -- Run this with: wrangler d1 execute your-database-name --file=./migrations/001_initial.sql
 
 -- Create posts table

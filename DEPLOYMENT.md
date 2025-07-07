@@ -1,10 +1,10 @@
 # Deployment Guide
 
-This guide will help you deploy your refine-sqlite project to Cloudflare Workers.
+This guide will help you deploy your refine-d1 project to Cloudflare Workers.
 
 ## Prerequisites
 
-1. Install Node.js (>=16)
+1. Install Node.js (>=20)
 2. Install Wrangler CLI:
    ```bash
    npm install -g wrangler
@@ -37,7 +37,7 @@ wrangler d1 create your-database-name
 Add the returned configuration to your `wrangler.toml` file:
 
 ```toml
-name = "refine-sqlite-worker"
+name = "refine-d1-worker"
 main = "src/worker.ts"
 compatibility_date = "2024-08-15"
 

@@ -1,13 +1,13 @@
 # CHANGELOG
 
-## v2.0.0 - Cloudflare D1 Support
+## v2.0.0 - Cloudflare D1 Only
 
-### 🚀 Major Features
+### 🚀 Major Changes
 
-- **Cloudflare D1 Support**: Full support for Cloudflare D1 database
-- **Edge Computing Ready**: Optimized for Cloudflare Workers and edge computing
-- **Multi-Platform**: Supports both Node.js (SQLite) and Cloudflare Workers (D1)
-- **Runtime Detection**: Automatically detects runtime environment and selects appropriate database driver
+- **Cloudflare D1 Only**: Complete migration to Cloudflare D1 database support
+- **Edge Computing Ready**: Optimized exclusively for Cloudflare Workers and edge computing
+- **Removed Node.js/SQLite**: Eliminated Node.js and SQLite dependencies for simplified architecture
+- **Vitest Migration**: Migrated from Jest to Vitest for better edge environment testing
 
 ### 🔧 Technical Changes
 
