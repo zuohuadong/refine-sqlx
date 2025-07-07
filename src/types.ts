@@ -34,17 +34,8 @@ export interface D1ExecResult {
   duration: number;
 }
 
-// Database connection types
-export type DatabaseType = 'sqlite' | 'd1';
-
-export interface DatabaseConfig {
-  type: DatabaseType;
-  connection: string | D1Database;
-}
-
-// Runtime environment detection
-export interface RuntimeEnvironment {
-  isCloudflareWorker: boolean;
-  isNode: boolean;
-  supportsSQLite: boolean;
+// Worker environment bindings
+export interface Env {
+  DB: D1Database;
+  [key: string]: unknown;
 }

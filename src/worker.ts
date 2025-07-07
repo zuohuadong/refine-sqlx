@@ -1,9 +1,5 @@
 import { dataProvider } from './provider';
-import { D1Database } from './types';
-
-export interface Env {
-  DB: D1Database;
-}
+import { Env } from './types';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -47,7 +43,7 @@ export default {
           case 'GET':
             if (id) {
               // Get single record
-              result = await provider.getOne({ resource, id });
+              result = await provider.getOne({ resource, id, meta: {} });
             } else {
               // Get list with query parameters
               const searchParams = url.searchParams;
@@ -61,6 +57,7 @@ export default {
                 pagination,
                 filters: [],
                 sorters: [],
+                meta: {},
               });
             }
             break;
@@ -70,6 +67,7 @@ export default {
             result = await provider.create({
               resource,
               variables: body as Record<string, any>,
+              meta: {},
             });
             break;
 
@@ -82,6 +80,7 @@ export default {
               resource,
               id,
               variables: body as Record<string, any>,
+              meta: {},
             });
             break;
 
@@ -93,6 +92,7 @@ export default {
             result = await provider.deleteOne({
               resource,
               id,
+              meta: {},
             });
             break;
 

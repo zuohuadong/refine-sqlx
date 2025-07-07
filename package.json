@@ -1,6 +1,6 @@
 {
-  "name": "refine-sqlite",
-  "description": "SQLite and Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with local SQLite or edge D1 databases",
+  "name": "refine-d1",
+  "description": "Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with edge D1 databases",
   "version": "2.0.0",
   "license": "MIT",
   "main": "dist/index.js",
@@ -9,7 +9,6 @@
   "keywords": [
     "refine",
     "data provider",
-    "sqlite",
     "cloudflare",
     "d1",
     "database",
@@ -25,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mateusabelli/refine-sqlite.git"
+    "url": "git+https://github.com/mateusabelli/refine-d1.git"
   },
   "funding": [
     {
@@ -34,17 +33,15 @@
     }
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "module": "dist/esm/index.js",
   "scripts": {
-    "start": "tsup --watch --format esm,cjs,iife --legacy-output",
+    "start": "wrangler dev",
     "build": "tsup --format esm,cjs,iife --minify --legacy-output",
-    "test": "jest --passWithNoTests --runInBand",
-    "prepare": "npm run build"
-  },
-  "dependencies": {
-    "better-sqlite3": "^11.10.0"
+    "test": "vitest",
+    "prepare": "npm run build",
+    "deploy": "wrangler deploy"
   },
   "peerDependencies": {
     "@refinedev/core": "^4.0.0"
@@ -56,15 +53,11 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250703.0",
-    "@esbuild-plugins/node-resolve": "^0.2.2",
     "@refinedev/core": "^4.57.9",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20.19.4",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.4.0",
     "tslib": "^2.8.1",
     "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9",
+    "wrangler": "^3.92.0"
   }
 }

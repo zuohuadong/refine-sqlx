@@ -1,24 +1,14 @@
 import { defineConfig } from "tsup";
-import { NodeResolvePlugin } from "@esbuild-plugins/node-resolve";
 
 export default defineConfig({
     entry: ["src/index.ts"],
     splitting: false,
     sourcemap: true,
-    clean: false,
+    clean: true,
     platform: "browser",
-    esbuildPlugins: [
-        NodeResolvePlugin({
-            extensions: [".js", "ts", "tsx", "jsx"],
-            onResolved: (resolved) => {
-                if (resolved.includes("node_modules")) {
-                    return {
-                        external: true,
-                    };
-                }
-                return resolved;
-            },
-        }),
-    ],
+    target: "es2022",
+    format: ["esm", "cjs"],
+    dts: true,
+    external: ["@cloudflare/workers-types"],
     onSuccess: "tsc --project tsconfig.declarations.json",
 });

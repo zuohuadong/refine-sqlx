@@ -1,19 +1,18 @@
 # Cloudflare D1 Support
 
-This version of refine-sqlite now supports Cloudflare D1 database and can run in Cloudflare Workers.
+This version of refine-d1 is specifically designed for Cloudflare D1 database and runs in Cloudflare Workers.
 
 ## Features
 
 - 🚀 Cloudflare D1 Database Support
-- 💻 Local SQLite Support (Node.js/better-sqlite3)
-- 🔄 Automatic Runtime Detection
+- � Edge-optimized for Workers
 - 📝 Full CRUD Operations Support
 - 🛡️ TypeScript Type Safety
 
 ## Installation
 
 ```bash
-npm install refine-sqlite
+npm install refine-d1
 ```
 
 ## Usage
@@ -21,7 +20,7 @@ npm install refine-sqlite
 ### Using with Cloudflare Workers
 
 ```typescript
-import { dataProvider } from 'refine-sqlite';
+import { dataProvider } from 'refine-d1';
 
 export interface Env {
   DB: D1Database;
@@ -41,21 +40,6 @@ export default {
     return new Response(JSON.stringify(result));
   }
 };
-```
-
-### Using with Node.js (Traditional Way)
-
-```typescript
-import { dataProvider } from 'refine-sqlite';
-
-// Create data provider with file path
-const provider = dataProvider("./database.db");
-
-// Use the data provider
-const result = await provider.getList({
-  resource: "posts",
-  pagination: { current: 1, pageSize: 10 }
-});
 ```
 
 ## Cloudflare Workers Setup

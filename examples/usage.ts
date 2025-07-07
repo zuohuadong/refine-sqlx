@@ -1,5 +1,5 @@
-// Example usage of refine-sqlite as a dataProvider for Refine framework
-// npm install refine-sqlite @refinedev/core
+// Example usage of refine-d1 as a dataProvider for Refine framework
+// npm install refine-d1 @refinedev/core
 
 import { dataProvider } from '../src';
 import type { D1Database } from '../src';
@@ -30,7 +30,7 @@ export default {
           case 'GET':
             if (id) {
               // getOne
-              const result = await provider.getOne({ resource, id });
+              const result = await provider.getOne({ resource, id, meta: {} });
               return new Response(JSON.stringify(result), {
                 headers: { 'Content-Type': 'application/json' }
               });
@@ -41,7 +41,10 @@ export default {
               
               const result = await provider.getList({
                 resource,
-                pagination: { current, pageSize }
+                pagination: { current, pageSize },
+                filters: [],
+                sorters: [],
+                meta: {}
               });
               return new Response(JSON.stringify(result), {
                 headers: { 'Content-Type': 'application/json' }
@@ -53,7 +56,8 @@ export default {
             const createData = await request.json();
             const created = await provider.create({
               resource,
-              variables: createData
+              variables: createData,
+              meta: {}
             });
             return new Response(JSON.stringify(created), {
               status: 201,
@@ -126,11 +130,11 @@ export default {
   }
 };
 
-// Example 2: Direct usage (testing/standalone)
-async function testDataProvider() {
+// Example 2: Direct usage in Cloudflare Worker environment
+export async function testDataProvider(db: D1Database) {
   console.log('=== Testing DataProvider ===');
   
-  const provider = dataProvider('./test/test.db');
+  const provider = dataProvider(db);
   
   try {
     // This is how Refine internally calls the dataProvider
@@ -138,7 +142,8 @@ async function testDataProvider() {
       resource: 'posts',
       pagination: { current: 1, pageSize: 10 },
       sorters: [{ field: 'id', order: 'desc' }],
-      filters: [{ field: 'published', operator: 'eq', value: [true] }]
+      filters: [{ field: 'published', operator: 'eq', value: [true] }],
+      meta: {}
     });
     
     console.log('Posts from dataProvider:', posts);
@@ -148,7 +153,27 @@ async function testDataProvider() {
   }
 }
 
-// Run test if in Node.js environment
-if (typeof process !== 'undefined' && process.versions?.node) {
-  testDataProvider();
+// Example 3: Using with Refine in a React application
+/*
+import { Refine } from '@refinedev/core';
+import { dataProvider } from 'refine-d1';
+
+function App() {
+  return (
+    <Refine
+      dataProvider={dataProvider(yourD1Database)}
+      resources={[
+        {
+          name: 'posts',
+          list: '/posts',
+          create: '/posts/create',
+          edit: '/posts/edit/:id',
+          show: '/posts/show/:id',
+        },
+      ]}
+    >
+      {/* Your Refine components */}
+    </Refine>
+  );
 }
+*/

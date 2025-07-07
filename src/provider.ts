@@ -12,10 +12,10 @@ import { DatabaseAdapter } from "./database";
 import { D1Database } from "./types";
 
 export const dataProvider = (
-    dbOrPath: string | D1Database
+    db: D1Database
 ) => ({
     getList: async ({ resource, pagination, filters, sorters }: GetListParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
 
         const {
             current = 1,
@@ -42,14 +42,21 @@ export const dataProvider = (
 
         if (queryFilters) sql += ` WHERE ${queryFilters}`;
         if (generatedSort) sql += ` ORDER BY ${query._sortString}`;
-        if (pagination) sql += ` LIMIT ${query._start}, ${query._end}`;
+        if (pagination) sql += ` LIMIT ${pageSize} OFFSET ${query._start}`;
 
         try {
-            const data = await db.query(sql) as Array<BaseRecord>;
+            const data = await dbAdapter.query(sql) as Array<BaseRecord>;
+
+            // Get total count
+            let countSql = `SELECT COUNT(*) as count FROM ${resource}`;
+            if (queryFilters) countSql += ` WHERE ${queryFilters}`;
+            
+            const countResult = await dbAdapter.queryFirst(countSql) as { count: number };
+            const total = countResult?.count || 0;
 
             return {
                 data,
-                total: data.length,
+                total,
             };
         } catch (error) {
             console.error("Error in getList()", error);
@@ -57,17 +64,15 @@ export const dataProvider = (
                 data: [],
                 total: 0,
             }
-        } finally {
-            db.close();
         }
     },
 
     getMany: async ({ resource, ids }: GetManyParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
         const placeholders = ids.map(() => '?').join(', ');
 
         try {
-            const data = await db.query(`SELECT * FROM ${resource} WHERE id IN (${placeholders})`, ids) as Array<BaseRecord>;
+            const data = await dbAdapter.query(`SELECT * FROM ${resource} WHERE id IN (${placeholders})`, ids) as Array<BaseRecord>;
 
             return {
                 data,
@@ -77,23 +82,21 @@ export const dataProvider = (
             return {
                 data: [],
             }
-        } finally {
-            db.close()
         }
     },
 
     create: async ({ resource, variables }: CreateParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
 
         const columns = Object.keys(variables || {});
         const values = Object.values(variables || {});
         const placeholders = columns.map(() => '?').join(', ');
 
         try {
-            const result = await db.execute(`INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`, values);
+            const result = await dbAdapter.execute(`INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`, values);
             const lastInsertRowid = result.lastInsertRowid;
 
-            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [lastInsertRowid]) as BaseRecord;
+            const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [lastInsertRowid]) as BaseRecord;
 
             return {
                 data,
@@ -103,22 +106,20 @@ export const dataProvider = (
             return {
                 data: {}
             }
-        } finally {
-            db.close()
         }
     },
 
     update: async ({ resource, id, variables }: UpdateParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
         
         const columns = Object.keys(variables || {});
         const values = Object.values(variables || {});
         const updateQuery = columns.map(column => `${column} = ?`).join(', ');
 
         try {
-            await db.execute(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`, [...values, id]);
+            await dbAdapter.execute(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`, [...values, id]);
 
-            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
+            const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
 
             return {
                 data,
@@ -128,15 +129,13 @@ export const dataProvider = (
             return {
                 data: {}
             }
-        } finally {
-            db.close()
         }
     },
 
     getOne: async ({ resource, id }: GetOneParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
         try {
-            const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
+            const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
 
             return {
                 data,
@@ -146,16 +145,14 @@ export const dataProvider = (
             return {
                 data: {}
             }
-        } finally {
-            db.close()
         }
     },
 
     deleteOne: async ({ resource, id }: DeleteOneParams) => {
-        const db = new DatabaseAdapter(dbOrPath);
+        const dbAdapter = new DatabaseAdapter(db);
 
         try {
-            const result = await db.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
+            const result = await dbAdapter.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
 
             if (result.changes !== 1) {
                 throw new Error(`Failed to delete ${resource} with id ${id}`);
@@ -169,8 +166,6 @@ export const dataProvider = (
             return {
                 data: null
             }
-        } finally {
-            db.close();
         }
     }
 });

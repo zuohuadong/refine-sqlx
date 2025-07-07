@@ -6,17 +6,16 @@
         height="40"
         align="center"
     />
-    refine-sqlite
+    refine-d1
 </h1>
 
-<p align="center">Connector for backends created with <a href="https://www.sqlite.org/index.html">SQLite.</a></p>
+<p align="center">Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with edge D1 databases</p>
 
 <div align="center">
 
-[![npm version](https://badge.fury.io/js/refine-sqlite.svg)](https://www.npmjs.com/package/refine-sqlite)
-[![npm](https://img.shields.io/npm/dt/refine-sqlite.svg)](https://www.npmjs.com/package/refine-sqlite)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mateusabelli/refine-sqlite/blob/main/LICENSE.md)
-[![Node.js CI](https://github.com/mateusabelli/refine-sqlite/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/mateusabelli/refine-sqlite/actions/workflows/node.js.yml)
+[![npm version](https://badge.fury.io/js/refine-d1.svg)](https://www.npmjs.com/package/refine-d1)
+[![npm](https://img.shields.io/npm/dt/refine-d1.svg)](https://www.npmjs.com/package/refine-d1)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mateusabelli/refine-d1/blob/main/LICENSE.md)
 
 </div>
 
@@ -24,50 +23,69 @@
 
 ## Getting Started
 
-With **refine-sqlite** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQLite database or Cloudflare D1.
+With **refine-d1** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your Cloudflare D1 database.
 
 ## Features
 
-- **Well tested** - All the methods are tested using [Jest](https://jestjs.io/).
+- **Well tested** - All the methods are tested using [Vitest](https://vitest.dev/).
 - **Fully featured** - All CRUD operations are supported.
-- **Multi-platform** - Works with both SQLite (Node.js) and Cloudflare D1 (Workers).
-- **Type safe** - Written in TypeScript with strict mode enabled.
 - **Edge ready** - Optimized for Cloudflare Workers and edge computing.
+- **Type safe** - Written in TypeScript with strict mode enabled.
+- **D1 native** - Built specifically for Cloudflare D1 databases.
 
 ## Installation
-
-### For Refine Applications
-
-```bash
-npm install refine-sqlite @refinedev/core
-```
 
 ### For Cloudflare Workers
 
 ```bash
-npm install refine-sqlite
+npm install refine-d1
 npm install wrangler --save-dev  # For development and deployment
 ```
 
-### Standalone Usage
+### For Refine Applications
 
 ```bash
-npm install refine-sqlite
+npm install refine-d1 @refinedev/core
 ```
 
 ## Quick Start
 
-### React App with Refine + SQLite
+### Cloudflare Worker with D1
+
+```typescript
+import { dataProvider } from 'refine-d1';
+
+export default {
+  async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
+    const provider = dataProvider(env.DB);
+    
+    // Your API logic here
+    const posts = await provider.getList({
+      resource: 'posts',
+      pagination: { current: 1, pageSize: 10 },
+      filters: [],
+      sorters: [],
+      meta: {}
+    });
+    
+    return new Response(JSON.stringify(posts), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+};
+```
+
+### React App with Refine + D1
 
 ```tsx
 import React from 'react';
 import { Refine } from '@refinedev/core';
-import { dataProvider } from 'refine-sqlite';
+import { dataProvider } from 'refine-d1';
 
 const App: React.FC = () => {
   return (
     <Refine
-      dataProvider={dataProvider('./app.db')}
+      dataProvider={dataProvider(yourD1Database)}
       resources={[
         {
           name: 'posts',
@@ -93,12 +111,7 @@ const App: React.FC = () => {
   );
 };
 ```
-
-### Cloudflare Workers with D1
-
-```tsx
-import { Refine } from '@refinedev/core';
-import { dataProvider } from 'refine-sqlite';
+import { dataProvider } from 'refine-d1';
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
@@ -120,7 +133,7 @@ export default {
 ### Standalone Usage (without Refine)
 
 ```ts
-import { dataProvider } from 'refine-sqlite';
+import { dataProvider } from 'refine-d1';
 
 const provider = dataProvider('./database.db');
 
@@ -135,7 +148,7 @@ const response = await provider.getList({ resource: "posts" });
 ### Cloudflare Workers with D1
 
 ```ts
-import { dataProvider } from "refine-sqlite";
+import { dataProvider } from "refine-d1";
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
@@ -148,17 +161,16 @@ export default {
 
 ## Usage
 
-The `refine-sqlite` package provides a data provider that seamlessly integrates with the [Refine framework](https://refine.dev) to work with SQLite databases (Node.js) or Cloudflare D1 (Workers/Edge).
+The `refine-d1` package provides a data provider that seamlessly integrates with the [Refine framework](https://refine.dev) to work with Cloudflare D1 databases in Workers/Edge environments.
 
 > **Note:** `resource` corresponds to the table name in your database.
 
 ### Basic CRUD Operations
 
 ```ts
-import { dataProvider } from "refine-sqlite";
+import { dataProvider } from "refine-d1";
 
-const provider = dataProvider("./database.db"); // SQLite
-// const provider = dataProvider(env.DB); // D1 in Workers
+const provider = dataProvider(env.DB); // D1 in Workers
 
 // List records with filtering and sorting
 const posts = await provider.getList({
@@ -229,9 +241,9 @@ console.log(response)
 
 ## Documentation
 
-- [Methods](https://github.com/mateusabelli/refine-sqlite/wiki/Methods)
-- [Filters](https://github.com/mateusabelli/refine-sqlite/wiki/Filters)
-- [Sorters](https://github.com/mateusabelli/refine-sqlite/wiki/Sorters)
+- [Methods](https://github.com/mateusabelli/refine-d1/wiki/Methods)
+- [Filters](https://github.com/mateusabelli/refine-d1/wiki/Filters)
+- [Sorters](https://github.com/mateusabelli/refine-d1/wiki/Sorters)
 - [Cloudflare D1 Support](./CLOUDFLARE.md)
  
 ## Development
@@ -239,13 +251,13 @@ console.log(response)
 Clone the repository
 
 ```bash
-git clone https://github.com/mateusabelli/refine-sqlite.git
+git clone https://github.com/mateusabelli/refine-d1.git
 ```
 
 Install the dependencies
 
 ```bash
-cd refine-sqlite
+cd refine-d1
 pnpm install
 ```
 
@@ -261,12 +273,12 @@ pnpm run test
 
 ## Contributing
 
-All contributions are welcome and appreciated! Please create an [Issue](https://github.com/mateusabelli/refine-sqlite/issues) or [Pull Request](https://github.com/mateusabelli/refine-sqlite/pulls) if you encounter any problems or have suggestions for improvements.
+All contributions are welcome and appreciated! Please create an [Issue](https://github.com/mateusabelli/refine-d1/issues) or [Pull Request](https://github.com/mateusabelli/refine-d1/pulls) if you encounter any problems or have suggestions for improvements.
 
-If you want to say **thank you** or/and support active development of **refine-sqlite**
+If you want to say **thank you** or/and support active development of **refine-d1**
 
--  Add a [GitHub Star](https://github.com/mateusabelli/refine-sqlite) to the project.
-- Tweet about the project [on Twitter / X](https://twitter.com/intent/tweet?text=With%20refine-sqlite%20you%20can%20quickly%20start%20developing%20your%20next%20refine%20project%20with%20a%20lightweight%20local%20database.%20Check%20it%20out!%0A%0A%20https%3A//github.com/mateusabelli/refine-sqlite%20).
+-  Add a [GitHub Star](https://github.com/mateusabelli/refine-d1) to the project.
+- Tweet about the project [on Twitter / X](https://twitter.com/intent/tweet?text=With%20refine-d1%20you%20can%20quickly%20start%20developing%20your%20next%20refine%20project%20with%20Cloudflare%20D1%20database.%20Check%20it%20out!%0A%0A%20https%3A//github.com/mateusabelli/refine-d1%20).
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or personal blog.
 - Consider becoming a sponsor on [GitHub](https://github.com/sponsors/mateusabelli).
 
@@ -287,4 +299,4 @@ For believing and supporting my projects!
 
 ## License
 
-**refine-sqlite** is free and open-source software licensed under the [MIT](./LICENSE.md) License.<br>The feather icon is from [Phosphor Icons](https://phosphoricons.com/) licensed under the MIT License.
+**refine-d1** is free and open-source software licensed under the [MIT](./LICENSE.md) License.<br>The feather icon is from [Phosphor Icons](https://phosphoricons.com/) licensed under the MIT License.

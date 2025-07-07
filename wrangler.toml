@@ -1,0 +1,22 @@
+name = "refine-d1-worker"
+main = "src/worker.ts"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "refine-d1-worker"
+
+[env.staging]
+name = "refine-d1-worker-staging"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "refine-d1-db"
+database_id = "your-database-id-here"
+migrations_dir = "migrations"
+
+[build]
+command = "npm run build"
+
+[vars]
+ENVIRONMENT = "production"
