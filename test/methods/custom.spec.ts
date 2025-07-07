@@ -41,17 +41,21 @@ describe('custom', () => {
   });
 
   it('throws error when no SQL provided', async () => {
+    // Suppress console.error during this test
+    const originalConsoleError = console.error;
+    console.error = () => {};
+    
     try {
-      await dataProvider(mockDb).custom({
-        url: '/custom',
-        method: 'get',
-        meta: {},
-      });
-      // Fail test if no error was thrown
-      expect(true).toBe(false);
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('No SQL query provided for custom method');
+      await expect(
+        dataProvider(mockDb).custom({
+          url: '/custom',
+          method: 'get',
+          meta: {}
+        })
+      ).rejects.toThrow('No SQL query provided for custom method');
+    } finally {
+      // Restore original console.error
+      console.error = originalConsoleError;
     }
   });
 });
