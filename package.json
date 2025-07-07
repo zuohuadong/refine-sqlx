@@ -26,6 +26,13 @@
     "type": "git",
     "url": "git+https://github.com/mateusabelli/refine-d1.git"
   },
+  "bugs": {
+    "url": "https://github.com/mateusabelli/refine-d1/issues"
+  },
+  "homepage": "https://github.com/mateusabelli/refine-d1#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "funding": [
     {
       "type": "github",
@@ -40,8 +47,10 @@
     "start": "wrangler dev",
     "build": "tsup --format esm,cjs,iife --minify --legacy-output",
     "test": "vitest",
+    "test:run": "vitest run",
     "prepare": "npm run build",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "prepublishOnly": "npm run test:run && npm run build"
   },
   "peerDependencies": {
     "@refinedev/core": "^4.0.0"
