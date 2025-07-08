@@ -21,7 +21,8 @@ import type {
     EnhancedConfig, 
     QueryCallback, 
     TransactionCallback, 
-    CustomQueryParams 
+    CustomQueryParams,
+    FlexibleQueryParams
 } from "./enhanced-types";
 
 // 内联工具函数以减少包体积
@@ -246,6 +247,19 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
                     close: adapter.close.bind(adapter)
                 };
                 const data = await params.query(enhancedAdapter);
+                return { data };
+            }
+        },
+        
+        // 灵活的自定义查询（类似 refine-orm 的 customOrm）
+        customFlexible: async ({ query, params }: FlexibleQueryParams) => {
+            const adapter = createEnhancedAdapter();
+            
+            if (typeof query === "string") {
+                const data = await adapter.query(query, params);
+                return { data };
+            } else {
+                const data = await query(adapter);
                 return { data };
             }
         },

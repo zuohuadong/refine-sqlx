@@ -26,3 +26,9 @@ export interface CustomQueryParams {
   query: string | QueryCallback;
   params?: any[];
 }
+
+// 灵活的自定义查询参数（类似 refine-orm 的 customOrm）
+export interface FlexibleQueryParams {
+  query: string | ((adapter: EnhancedAdapter) => Promise<any>);
+  params?: any[];
+}
