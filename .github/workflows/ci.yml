@@ -8,9 +8,6 @@ on:
   release:
     types: [ published ]
 
-env:
-  NODE_OPTIONS: --experimental-sqlite
-
 jobs:
   test:
     name: Test on Node.js ${{ matrix.node-version }}
@@ -54,13 +51,9 @@ jobs:
       
       - name: Run tests (refine-sql)
         run: npm run test:run
-        env:
-          NODE_OPTIONS: --experimental-sqlite
       
       - name: Run tests (all workspaces)
         run: npm run test:all
-        env:
-          NODE_OPTIONS: --experimental-sqlite
       
       - name: Build refine-sql
         run: npm run build
@@ -102,8 +95,6 @@ jobs:
       
       - name: Run tests with coverage
         run: npm run test:coverage
-        env:
-          NODE_OPTIONS: --experimental-sqlite
 
   publish:
     name: Publish to NPM

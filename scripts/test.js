@@ -80,10 +80,9 @@ if (majorVersion >= 22) {
 
 console.log(`Executing: ${testCommand}`);
 
-// Set up environment variables
+// Set up environment variables (without NODE_OPTIONS for CI compatibility)
 const testEnv = {
-  ...process.env,
-  NODE_OPTIONS: '--experimental-sqlite'
+  ...process.env
 };
 
 // Add CI-specific environment variables
