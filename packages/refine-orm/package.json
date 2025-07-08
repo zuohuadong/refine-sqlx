@@ -1,0 +1,70 @@
+{
+  "name": "refine-orm",
+  "description": "ORM extension for refine-sql using Drizzle ORM - Supports PostgreSQL, MySQL, and other SQL databases with type-safe queries",
+  "version": "0.2.0",
+  "license": "MIT",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "sideEffects": false,
+  "typings": "dist/index.d.mts",
+  "author": "zuohuadong",
+  "keywords": [
+    "refine",
+    "data provider",
+    "orm",
+    "drizzle",
+    "postgresql",
+    "mysql",
+    "sql",
+    "database",
+    "type-safe",
+    "typescript"
+  ],
+  "private": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuohuadong/refine-sql.git",
+    "directory": "packages/refine-orm"
+  },
+  "bugs": {
+    "url": "https://github.com/zuohuadong/refine-sql/issues"
+  },
+  "homepage": "https://github.com/zuohuadong/refine-sql/tree/main/packages/refine-orm#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup --minify",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run test:run && npm run build"
+  },
+  "dependencies": {
+    "refine-sql": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@refinedev/core": "^4.0.0",
+    "drizzle-orm": "^0.30.0"
+  },
+  "peerDependenciesMeta": {
+    "@refinedev/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@refinedev/core": "^4.57.9",
+    "drizzle-orm": "^0.30.10"
+  }
+}
