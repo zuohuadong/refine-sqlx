@@ -8,7 +8,8 @@
         "**/*.spec.ts",
         "**/*.test.ts",
         "**/*.spec.tsx",
-        "**/*.test.tsx"
+        "**/*.test.tsx",
+        "vitest.config.ts"
     ],
     "compilerOptions": {
         "outDir": "dist",

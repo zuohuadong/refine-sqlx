@@ -45,7 +45,7 @@
   "module": "dist/esm/index.js",
   "scripts": {
     "start": "wrangler dev",
-    "build": "tsup --format esm,cjs,iife --minify --legacy-output",
+    "build": "tsup --minify",
     "test": "vitest",
     "test:run": "vitest run",
     "prepare": "npm run build",

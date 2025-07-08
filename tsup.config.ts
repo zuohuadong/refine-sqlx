@@ -5,10 +5,15 @@ export default defineConfig({
     splitting: false,
     sourcemap: true,
     clean: true,
-    platform: "browser",
-    target: "es2022",
+    platform: "neutral",
+    target: "es2020",
     format: ["esm", "cjs"],
     dts: true,
-    external: ["@cloudflare/workers-types"],
+    treeshake: true,
+    external: ["better-sqlite3", "@refinedev/core"],
+    esbuildOptions(options) {
+        options.drop = ["console", "debugger"];
+        options.legalComments = "none";
+    },
     onSuccess: "tsc --project tsconfig.declarations.json",
 });
