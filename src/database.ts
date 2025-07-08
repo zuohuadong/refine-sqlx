@@ -41,7 +41,7 @@ export class DatabaseAdapter {
     throw new Error('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
   }
 
-  private async _initNativeDb(path: string) {
+  private async _initNativeDb(path: string): Promise<void> {
     try {
       const sqlite = await import('node:sqlite' as any);
       this.db = new (sqlite as any).DatabaseSync(path);
@@ -113,6 +113,65 @@ export class DatabaseAdapter {
     });
   }
 
+  async transaction<T>(callback: (tx: TransactionAdapter) => Promise<T>): Promise<T> {
+    await this._ensureInit();
+    
+    if (this.runtime === 'd1') {
+      // D1 不支持显式事务，使用 batch 模拟
+      const operations: Array<{ sql: string; params: unknown[] }> = [];
+      let callbackResult: T;
+      
+      const txAdapter: TransactionAdapter = {
+        query: async (sql: string, params: unknown[] = []) => {
+          // 对于查询操作，立即执行（D1 限制）
+          return await this.query(sql, params);
+        },
+        execute: async (sql: string, params: unknown[] = []) => {
+          // 收集写入操作
+          operations.push({ sql, params });
+          return { changes: 0, lastInsertRowid: undefined };
+        }
+      };
+      
+      try {
+        callbackResult = await callback(txAdapter);
+        
+        // 执行所有写入操作
+        if (operations.length > 0) {
+          await this.batch(operations);
+        }
+        
+        return callbackResult;
+      } catch (error) {
+        throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    } else {
+      // Node.js 和 Bun SQLite 支持真正的事务
+      const txAdapter: TransactionAdapter = {
+        query: async (sql: string, params: unknown[] = []) => {
+          return this.db.prepare(sql).all(...params);
+        },
+        execute: async (sql: string, params: unknown[] = []) => {
+          const result = this.db.prepare(sql).run(...params);
+          return {
+            changes: result.changes || 0,
+            lastInsertRowid: result.lastInsertRowid
+          };
+        }
+      };
+      
+      try {
+        this.db.exec('BEGIN TRANSACTION');
+        const result = await callback(txAdapter);
+        this.db.exec('COMMIT');
+        return result;
+      } catch (error) {
+        this.db.exec('ROLLBACK');
+        throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+  }
+
   close(): void {
     if (this.runtime !== 'd1' && this.db?.close) {
       this.db.close();
@@ -122,4 +181,10 @@ export class DatabaseAdapter {
   getType(): string {
     return this.runtime;
   }
+}
+
+// 事务适配器接口
+export interface TransactionAdapter {
+  query(sql: string, params?: unknown[]): Promise<any[]>;
+  execute(sql: string, params?: unknown[]): Promise<{ changes: number; lastInsertRowid?: number }>;
 }

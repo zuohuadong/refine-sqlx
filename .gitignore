@@ -131,3 +131,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+test-nodejs.db
+
+# Test database files
+test-enhanced-*.db
+test-*.db
+*.test.db
