@@ -126,62 +126,47 @@ export class DatabaseAdapter {
 
   async transaction<T>(callback: (tx: TransactionAdapter) => Promise<T>): Promise<T> {
     await this._ensureInit();
+    
     if (this.runtime === 'd1') {
-      // ...existing code...
       const operations: Array<{ sql: string; params: unknown[] }> = [];
-      let callbackResult: T;
       const txAdapter: TransactionAdapter = {
-        query: async (sql: string, params: unknown[] = []) => {
-          return await this.query(sql, params);
-        },
+        query: (sql: string, params: unknown[] = []) => this.query(sql, params),
         execute: async (sql: string, params: unknown[] = []) => {
           operations.push({ sql, params });
           return { changes: 0, lastInsertRowid: undefined };
         }
       };
+      
       try {
-        callbackResult = await callback(txAdapter);
+        const result = await callback(txAdapter);
         if (operations.length > 0) {
           await this.batch(operations);
         }
-        return callbackResult;
+        return result;
       } catch (error) {
         throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     } else {
-      // Node.js 和 Bun SQLite 支持真正的事务
       const txAdapter: TransactionAdapter = {
-        query: async (sql: string, params: unknown[] = []) => {
-          return this.db.prepare(sql).all(...params);
-        },
+        query: (sql: string, params: unknown[] = []) => Promise.resolve(this.db.prepare(sql).all(...params)),
         execute: async (sql: string, params: unknown[] = []) => {
           const result = this.db.prepare(sql).run(...params);
-          return {
-            changes: result.changes || 0,
-            lastInsertRowid: result.lastInsertRowid
-          };
+          return { changes: result.changes || 0, lastInsertRowid: result.lastInsertRowid };
         }
       };
+      
+      const execSql = (sql: string) => {
+        if (this.db.exec) this.db.exec(sql);
+        else this.db.prepare(sql).run();
+      };
+      
       try {
-        // Node.js 22+ sqlite 没有 exec 方法，需用 prepare().run()
-        if (typeof this.db.exec === 'function') {
-          this.db.exec('BEGIN TRANSACTION');
-        } else {
-          this.db.prepare('BEGIN TRANSACTION').run();
-        }
+        execSql('BEGIN TRANSACTION');
         const result = await callback(txAdapter);
-        if (typeof this.db.exec === 'function') {
-          this.db.exec('COMMIT');
-        } else {
-          this.db.prepare('COMMIT').run();
-        }
+        execSql('COMMIT');
         return result;
       } catch (error) {
-        if (typeof this.db.exec === 'function') {
-          this.db.exec('ROLLBACK');
-        } else {
-          this.db.prepare('ROLLBACK').run();
-        }
+        execSql('ROLLBACK');
         throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }

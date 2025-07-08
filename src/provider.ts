@@ -14,14 +14,12 @@ import {
     CrudSorting,
     CrudOperators
 } from "@refinedev/core";
-import { DatabaseAdapter, TransactionAdapter } from "./database";
+import { DatabaseAdapter } from "./database";
 import { D1Database } from "./types";
 import type { 
     EnhancedAdapter, 
     EnhancedConfig, 
-    QueryCallback, 
     TransactionCallback, 
-    CustomQueryParams,
     FlexibleQueryParams
 } from "./enhanced-types";
 
@@ -59,23 +57,11 @@ const generateSort = (sorters?: CrudSorting) => {
     return sorters.map(item => `${item.field} ${item.order}`).join(', ');
 };
 
-export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConfig) => {
-    const sharedAdapter = new DatabaseAdapter(dbInput);
-    const createAdapter = () => sharedAdapter;
-    
-    // 创建增强适配器
-    const createEnhancedAdapter = (): EnhancedAdapter => {
-        return {
-            query: sharedAdapter.query.bind(sharedAdapter),
-            execute: sharedAdapter.execute.bind(sharedAdapter),
-            transaction: sharedAdapter.transaction.bind(sharedAdapter),
-            close: sharedAdapter.close.bind(sharedAdapter)
-        };
-    };
+export const dataProvider = (dbInput: D1Database | string | DatabaseAdapter, config?: EnhancedConfig) => {
+    const db = dbInput instanceof DatabaseAdapter ? dbInput : new DatabaseAdapter(dbInput);
     
     return {
         getList: async ({ resource, pagination, filters, sorters }: GetListParams) => {
-            const db = createAdapter();
             const { current = 1, pageSize = 10 } = pagination ?? {};
             
             const queryFilters = generateFilter(filters);
@@ -96,14 +82,12 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         },
 
         getMany: async ({ resource, ids }: GetManyParams) => {
-            const db = createAdapter();
             const placeholders = ids.map(() => '?').join(', ');
             const data = await db.query(`SELECT * FROM ${resource} WHERE id IN (${placeholders})`, ids) as Array<BaseRecord>;
             return { data };
         },
 
         create: async ({ resource, variables }: CreateParams) => {
-            const db = createAdapter();
             const keys = Object.keys(variables || {});
             const values = Object.values(variables || {});
             const placeholders = keys.map(() => '?').join(', ');
@@ -114,7 +98,6 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         },
 
         update: async ({ resource, id, variables }: UpdateParams) => {
-            const db = createAdapter();
             const keys = Object.keys(variables || {});
             const values = Object.values(variables || {});
             const updateQuery = keys.map(k => `${k} = ?`).join(', ');
@@ -125,20 +108,17 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         },
 
         getOne: async ({ resource, id }: GetOneParams) => {
-            const db = createAdapter();
             const data = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
             return { data };
         },
 
         deleteOne: async ({ resource, id }: DeleteOneParams) => {
-            const db = createAdapter();
             const recordToDelete = await db.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]);
             await db.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
             return { data: recordToDelete };
         },
 
         createMany: async ({ resource, variables }: CreateManyParams) => {
-            const db = createAdapter();
             if (!variables?.length) return { data: [] };
 
             const results = [];
@@ -155,7 +135,6 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         },
 
         updateMany: async ({ resource, ids, variables }: UpdateManyParams) => {
-            const db = createAdapter();
             if (!ids?.length) return { data: [] };
 
             const results = [];
@@ -172,7 +151,6 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         },
 
         deleteMany: async ({ resource, ids }: DeleteManyParams) => {
-            const db = createAdapter();
             if (!ids?.length) return { data: [] };
 
             const results = [];
@@ -189,8 +167,6 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         getApiUrl: () => "/api",
 
         custom: async ({ url, method, payload }: CustomParams) => {
-            const db = createAdapter();
-            
             let sql = "";
             let params: any[] = [];
 
@@ -211,100 +187,52 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
             return { data: result };
         },
 
-        // === 增强功能 ===
-        
-        // 增强的查询方法，支持类型安全的查询
-        queryWithEnhancement: async <T = BaseRecord>(callback: QueryCallback<T>): Promise<{ data: T[] }> => {
-            const adapter = createEnhancedAdapter();
-            try {
-                const data = await callback(adapter);
-                return { data };
-            } finally {
-                if (config?.enableTypeSafety !== false) {
-                    // 类型安全检查可以在这里添加
-                }
-            }
-        },
-        
-        // 事务支持
+        // Enhanced Methods
         transaction: async <T>(callback: TransactionCallback<T>): Promise<T> => {
-            const adapter = createEnhancedAdapter();
-            return await adapter.transaction(callback);
+            return db.transaction(callback);
         },
-        
-        // 自定义查询，支持原始 SQL 和回调函数
-        customEnhanced: async (params: CustomQueryParams) => {
-            const adapter = createAdapter();
-            
-            if (typeof params.query === "string") {
-                // 对于 INSERT, UPDATE, DELETE 等操作，使用 execute
-                if (params.query.trim().toUpperCase().startsWith('INSERT') || 
-                    params.query.trim().toUpperCase().startsWith('UPDATE') || 
-                    params.query.trim().toUpperCase().startsWith('DELETE') ||
-                    params.query.trim().toUpperCase().startsWith('CREATE') ||
-                    params.query.trim().toUpperCase().startsWith('DROP')) {
-                    const result = await adapter.execute(params.query, params.params);
-                    return { data: result };
-                } else {
-                    // 对于 SELECT 等查询操作，使用 query
-                    const data = await adapter.query(params.query, params.params);
-                    return { data };
-                }
-            } else {
-                const enhancedAdapter: EnhancedAdapter = {
-                    query: adapter.query.bind(adapter),
-                    execute: adapter.execute.bind(adapter),
-                    transaction: adapter.transaction.bind(adapter),
-                    close: adapter.close.bind(adapter)
-                };
-                const data = await params.query(enhancedAdapter);
-                return { data };
+
+        customFlexible: async (params: FlexibleQueryParams): Promise<any> => {
+            if (typeof params.query === 'string') {
+                const result = await db.query(params.query, params.params);
+                return { data: result };
             }
-        },
-        
-        // 灵活的自定义查询（类似 refine-orm 的 customOrm）
-        customFlexible: async ({ query, params }: FlexibleQueryParams) => {
-            const adapter = createAdapter();
-            
-            if (typeof query === "string") {
-                // 对于 INSERT, UPDATE, DELETE 等操作，使用 execute
-                if (query.trim().toUpperCase().startsWith('INSERT') || 
-                    query.trim().toUpperCase().startsWith('UPDATE') || 
-                    query.trim().toUpperCase().startsWith('DELETE') ||
-                    query.trim().toUpperCase().startsWith('CREATE') ||
-                    query.trim().toUpperCase().startsWith('DROP')) {
-                    const result = await adapter.execute(query, params);
-                    return { data: result };
-                } else {
-                    // 对于 SELECT 等查询操作，使用 query
-                    const data = await adapter.query(query, params);
-                    return { data };
-                }
-            } else {
-                const enhancedAdapter: EnhancedAdapter = {
-                    query: adapter.query.bind(adapter),
-                    execute: adapter.execute.bind(adapter),
-                    transaction: adapter.transaction.bind(adapter),
-                    close: adapter.close.bind(adapter)
-                };
-                const data = await query(enhancedAdapter);
-                return { data };
+            if (typeof params.query === 'function') {
+                const result = await params.query(db as EnhancedAdapter);
+                return { data: result };
             }
+            throw new Error('Invalid query type provided to customFlexible');
         },
-        
-        // 批量操作支持
-        batch: async (operations: Array<{ sql: string; params?: unknown[] }>) => {
-            const db = createAdapter();
-            const result = await db.batch(operations);
+
+        // customEnhanced - 兼容别名，指向 customFlexible
+        customEnhanced: async (params: FlexibleQueryParams): Promise<any> => {
+            if (typeof params.query === 'string') {
+                const result = await db.query(params.query, params.params);
+                return { data: result };
+            }
+            if (typeof params.query === 'function') {
+                const result = await params.query(db as EnhancedAdapter);
+                return { data: result };
+            }
+            throw new Error('Invalid query type provided to customEnhanced');
+        },
+
+        // queryWithEnhancement - 类型安全查询方法
+        queryWithEnhancement: async <T>(callback: (adapter: EnhancedAdapter) => Promise<T>): Promise<{ data: T }> => {
+            const result = await callback(db as EnhancedAdapter);
             return { data: result };
         },
+
+        // batch - 批量操作方法
+        batch: async (operations: Array<{ sql: string; params?: any[] }>): Promise<{ data: any[] }> => {
+            const results = [];
+            for (const op of operations) {
+                const result = await db.execute(op.sql, op.params || []);
+                results.push(result);
+            }
+            return { data: results };
+        },
         
-        // 获取底层增强适配器
-        getEnhancedAdapter: () => createEnhancedAdapter(),
-        
-        // 关闭连接
-        close: () => {
-            sharedAdapter.close();
-        }
+        getEnhancedAdapter: (): EnhancedAdapter => db as EnhancedAdapter,
     };
 };

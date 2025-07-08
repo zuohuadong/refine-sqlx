@@ -14,21 +14,8 @@ describe('customFlexible Method Tests', () => {
     // 确保数据库正确初始化，等待一下
     await new Promise(resolve => setTimeout(resolve, 200));
     
-    // 尝试初始化数据库连接
-    try {
-      await provider.customEnhanced({
-        query: 'SELECT 1'
-      });
-    } catch (error) {
-      // 再等待一下重试
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await provider.customEnhanced({
-        query: 'SELECT 1'
-      });
-    }
-    
-    // 使用 customEnhanced 来创建表，确保数据库正确初始化
-    const tableResult = await provider.customEnhanced({
+    // 使用 customFlexible 来创建表，确保数据库正确初始化
+    const tableResult = await provider.customFlexible({
       query: `CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -38,34 +25,27 @@ describe('customFlexible Method Tests', () => {
     });
     console.log('Table creation result:', tableResult);
     
-    // 插入测试数据 - 使用逐个插入
-    const insertResult1 = await provider.customEnhanced({
+    // 插入测试数据
+    await provider.customFlexible({
       query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
       params: ['Post 1', 'Content 1', 'published']
     });
     
-    const insertResult2 = await provider.customEnhanced({
+    await provider.customFlexible({
       query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
       params: ['Post 2', 'Content 2', 'draft']
     });
     
-    const insertResult3 = await provider.customEnhanced({
+    await provider.customFlexible({
       query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
       params: ['Post 3', 'Content 3', 'published']
     });
-    
-    console.log('Insert results:', { insertResult1, insertResult2, insertResult3 });
-    
-    // 验证数据插入成功
-    const verifyResult = await provider.customEnhanced({
-      query: 'SELECT COUNT(*) as count FROM posts'
-    });
-    console.log('Data verification:', verifyResult);
   });
 
   afterAll(async () => {
-    if (provider.close) {
-      provider.close();
+    const adapter = provider.getEnhancedAdapter();
+    if (adapter && adapter.close) {
+      adapter.close();
     }
     
     // 清理测试数据库文件
@@ -78,23 +58,6 @@ describe('customFlexible Method Tests', () => {
   });
 
   test('customFlexible - 字符串查询', async () => {
-    // 验证数据存在
-    const checkData = await provider.customFlexible({
-      query: 'SELECT COUNT(*) as count FROM posts WHERE status = ?',
-      params: ['published']
-    });
-    
-    if (!checkData.data || checkData.data.length === 0 || checkData.data[0].count === 0) {
-      await provider.customFlexible({
-        query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
-        params: ['Flexible Test 1', 'Content 1', 'published']
-      });
-      await provider.customFlexible({
-        query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
-        params: ['Flexible Test 2', 'Content 2', 'published']
-      });
-    }
-    
     const result = await provider.customFlexible({
       query: 'SELECT * FROM posts WHERE status = ?',
       params: ['published']
@@ -125,7 +88,6 @@ describe('customFlexible Method Tests', () => {
   test('customFlexible - 函数查询带参数操作', async () => {
     const result = await provider.customFlexible({
       query: async (adapter) => {
-        // 在函数中可以执行多个操作
         await adapter.execute('INSERT INTO posts (title, content) VALUES (?, ?)', ['Test Post', 'Test Content']);
         return await adapter.query('SELECT * FROM posts WHERE title = ?', ['Test Post']);
       }
@@ -140,7 +102,6 @@ describe('customFlexible Method Tests', () => {
   test('customFlexible - 复杂函数查询', async () => {
     const result = await provider.customFlexible({
       query: async (adapter) => {
-        // 复杂的查询逻辑
         const posts = await adapter.query('SELECT * FROM posts WHERE status = ?', ['published']);
         const count = await adapter.query('SELECT COUNT(*) as total FROM posts');
         

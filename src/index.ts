@@ -4,7 +4,5 @@ export type { D1Database } from "./types";
 export type { 
     EnhancedAdapter, 
     EnhancedConfig, 
-    QueryCallback, 
-    TransactionCallback, 
-    CustomQueryParams 
+    TransactionCallback 
 } from "./enhanced-types";
