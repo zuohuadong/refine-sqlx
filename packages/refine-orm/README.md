@@ -7,6 +7,7 @@
 - **🔄 完全兼容 refine-sql**：复用所有基础 CRUD 操作
 - **🛡️ 类型安全**：完整的 TypeScript 类型支持
 - **🗃️ 多数据库支持**：PostgreSQL、MySQL、SQLite、Turso
+- **🚀 多运行时支持**：Bun SQLite、Node.js SQLite、Drizzle ORM
 - **⚡ 事务支持**：原生事务处理
 - **🔧 ORM 集成**：支持 Drizzle ORM 等现代 ORM
 - **📝 增强查询**：类型安全的查询构建器
@@ -14,18 +15,38 @@
 
 ## 📦 安装
 
+### 基础安装
+
 ```bash
-npm install refine-sql @refinedev/refine-orm
+npm install refine-sql refine-orm
 # 或
-pnpm add refine-sql @refinedev/refine-orm
+pnpm add refine-sql refine-orm
+```
+
+### 根据数据库类型安装驱动
+
+```bash
+# PostgreSQL
+npm install pg drizzle-orm
+
+# MySQL  
+npm install mysql2 drizzle-orm
+
+# Bun SQLite (内置支持)
+# 无需额外安装
+
+# Node.js SQLite (内置支持，需要 Node.js 22.5+)
+# 无需额外安装
 ```
 
 ## 🛠️ 使用方法
 
 ### 基础用法
 
+#### 使用 Drizzle ORM（PostgreSQL/MySQL）
+
 ```typescript
-import { ormDataProvider } from '@refinedev/refine-orm';
+import { ormDataProvider } from 'refine-orm';
 
 // 创建数据库连接（示例：PostgreSQL）
 const connection = {
@@ -44,8 +65,37 @@ const dataProvider = ormDataProvider({
   connection,
   logger: true // 可选：启用 SQL 日志
 });
+```
 
-// 在 Refine 应用中使用
+#### 使用 Bun SQLite
+
+```typescript
+import { ormDataProvider } from 'refine-orm';
+
+// Bun 环境中使用 SQLite
+const dataProvider = ormDataProvider({
+  database: 'bun-sqlite',
+  databasePath: './database.db',
+  logger: false
+});
+```
+
+#### 使用 Node.js SQLite
+
+```typescript
+import { ormDataProvider } from 'refine-orm';
+
+// Node.js 22.5+ 环境中使用 SQLite
+const dataProvider = ormDataProvider({
+  database: 'node-sqlite',
+  databasePath: './database.db',
+  logger: false
+});
+```
+
+#### 在 Refine 应用中使用
+
+```typescript
 import { Refine } from '@refinedev/core';
 
 function App() {

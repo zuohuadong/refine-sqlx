@@ -2,10 +2,27 @@
 import type { BaseRecord } from "@refinedev/core";
 import { DrizzleOrmAdapter } from "./adapter";
 import type { OrmConfig, OrmAdapter } from "./types";
+import { generateParamPlaceholder } from "./runtime-adapter";
 
 // ORM 增强的数据提供者 - 始终使用兼容实现
 export const ormDataProvider = (config: OrmConfig) => {
   const ormAdapter = new DrizzleOrmAdapter(config);
+  
+  // 获取占位符生成函数
+  const getPlaceholder = (index: number = 1) => {
+    const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+    return isSqlite ? '?' : `$${index}`;
+  };
+  
+  // 生成多个占位符
+  const getPlaceholders = (count: number) => {
+    const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+    if (isSqlite) {
+      return Array(count).fill('?').join(', ');
+    } else {
+      return Array.from({ length: count }, (_, i) => `$${i + 1}`).join(', ');
+    }
+  };
   
   // 提供与 refine-sql 兼容的基础实现
   const baseProvider = {
@@ -19,10 +36,12 @@ export const ormDataProvider = (config: OrmConfig) => {
       
       // 添加过滤条件（简化实现）
       if (filters?.length) {
-        const conditions = filters.map((filter: any, index: number) => {
+        const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+        const conditions = filters.map((filter: any) => {
           if ('field' in filter) {
             sqlParams.push(filter.value);
-            return `${filter.field} = $${sqlParams.length}`;
+            const placeholder = isSqlite ? '?' : `$${sqlParams.length}`;
+            return `${filter.field} = ${placeholder}`;
           }
           return '';
         }).filter(Boolean);
@@ -50,10 +69,12 @@ export const ormDataProvider = (config: OrmConfig) => {
       const countParams: any[] = [];
       
       if (filters?.length) {
-        const conditions = filters.map((filter: any, index: number) => {
+        const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+        const conditions = filters.map((filter: any) => {
           if ('field' in filter) {
             countParams.push(filter.value);
-            return `${filter.field} = $${countParams.length}`;
+            const placeholder = isSqlite ? '?' : `$${countParams.length}`;
+            return `${filter.field} = ${placeholder}`;
           }
           return '';
         }).filter(Boolean);
@@ -71,7 +92,7 @@ export const ormDataProvider = (config: OrmConfig) => {
     
     getMany: async (params: any) => {
       const { resource, ids } = params;
-      const placeholders = ids.map((_: any, index: number) => `$${index + 1}`).join(', ');
+      const placeholders = getPlaceholders(ids.length);
       const sql = `SELECT * FROM ${resource} WHERE id IN (${placeholders})`;
       const data = await ormAdapter.query(sql, ids);
       return { data };
@@ -81,7 +102,7 @@ export const ormDataProvider = (config: OrmConfig) => {
       const { resource, variables } = params;
       const keys = Object.keys(variables || {});
       const values = Object.values(variables || {});
-      const placeholders = keys.map((_: any, index: number) => `$${index + 1}`).join(', ');
+      const placeholders = getPlaceholders(keys.length);
       const fields = keys.join(', ');
 
       const insertSql = `INSERT INTO ${resource} (${fields}) VALUES (${placeholders}) RETURNING *`;
@@ -93,26 +114,34 @@ export const ormDataProvider = (config: OrmConfig) => {
       const { resource, id, variables } = params;
       const keys = Object.keys(variables || {});
       const values = Object.values(variables || {});
-      const updateFields = keys.map((key: string, index: number) => `${key} = $${index + 1}`).join(', ');
+      const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+      
+      const updateFields = keys.map((key: string, index: number) => {
+        const placeholder = isSqlite ? '?' : `$${index + 1}`;
+        return `${key} = ${placeholder}`;
+      }).join(', ');
 
-      const sql = `UPDATE ${resource} SET ${updateFields} WHERE id = $${keys.length + 1} RETURNING *`;
+      const idPlaceholder = isSqlite ? '?' : `$${keys.length + 1}`;
+      const sql = `UPDATE ${resource} SET ${updateFields} WHERE id = ${idPlaceholder} RETURNING *`;
       const result = await ormAdapter.query(sql, [...values, id]);
       return { data: result[0] };
     },
     
     getOne: async (params: any) => {
       const { resource, id } = params;
-      const sql = `SELECT * FROM ${resource} WHERE id = $1`;
+      const placeholder = getPlaceholder(1);
+      const sql = `SELECT * FROM ${resource} WHERE id = ${placeholder}`;
       const result = await ormAdapter.query(sql, [id]);
       return { data: result[0] };
     },
     
     deleteOne: async (params: any) => {
       const { resource, id } = params;
-      const selectSql = `SELECT * FROM ${resource} WHERE id = $1`;
+      const placeholder = getPlaceholder(1);
+      const selectSql = `SELECT * FROM ${resource} WHERE id = ${placeholder}`;
       const data = await ormAdapter.query(selectSql, [id]);
       
-      const deleteSql = `DELETE FROM ${resource} WHERE id = $1`;
+      const deleteSql = `DELETE FROM ${resource} WHERE id = ${placeholder}`;
       await ormAdapter.execute(deleteSql, [id]);
       
       return { data: data[0] };
@@ -126,7 +155,7 @@ export const ormDataProvider = (config: OrmConfig) => {
       for (const item of variables) {
         const keys = Object.keys(item);
         const values = Object.values(item);
-        const placeholders = keys.map((_: any, index: number) => `$${index + 1}`).join(', ');
+        const placeholders = getPlaceholders(keys.length);
         const fields = keys.join(', ');
 
         const sql = `INSERT INTO ${resource} (${fields}) VALUES (${placeholders}) RETURNING *`;
@@ -143,10 +172,16 @@ export const ormDataProvider = (config: OrmConfig) => {
       const results: any[] = [];
       const keys = Object.keys(variables || {});
       const values = Object.values(variables || {});
-      const updateFields = keys.map((key: string, index: number) => `${key} = $${index + 1}`).join(', ');
+      const isSqlite = ['sqlite', 'bun-sqlite', 'node-sqlite', 'turso'].includes(ormAdapter.config.database);
+      
+      const updateFields = keys.map((key: string, index: number) => {
+        const placeholder = isSqlite ? '?' : `$${index + 1}`;
+        return `${key} = ${placeholder}`;
+      }).join(', ');
 
       for (const id of ids) {
-        const sql = `UPDATE ${resource} SET ${updateFields} WHERE id = $${keys.length + 1} RETURNING *`;
+        const idPlaceholder = isSqlite ? '?' : `$${keys.length + 1}`;
+        const sql = `UPDATE ${resource} SET ${updateFields} WHERE id = ${idPlaceholder} RETURNING *`;
         const result = await ormAdapter.query(sql, [...values, id]);
         if (result[0]) results.push(result[0]);
       }
@@ -158,12 +193,14 @@ export const ormDataProvider = (config: OrmConfig) => {
       if (!ids?.length) return { data: [] };
 
       const results: any[] = [];
+      const placeholder = getPlaceholder(1);
+      
       for (const id of ids) {
-        const selectSql = `SELECT * FROM ${resource} WHERE id = $1`;
+        const selectSql = `SELECT * FROM ${resource} WHERE id = ${placeholder}`;
         const data = await ormAdapter.query(selectSql, [id]);
         
         if (data[0]) {
-          const deleteSql = `DELETE FROM ${resource} WHERE id = $1`;
+          const deleteSql = `DELETE FROM ${resource} WHERE id = ${placeholder}`;
           await ormAdapter.execute(deleteSql, [id]);
           results.push(data[0]);
         }

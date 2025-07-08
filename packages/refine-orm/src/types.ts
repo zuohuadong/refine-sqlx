@@ -12,12 +12,18 @@ export type SupportedDatabase =
   | "postgresql" 
   | "mysql" 
   | "sqlite" 
-  | "turso";
+  | "turso"
+  | "bun-sqlite"
+  | "node-sqlite";
+
+// 运行时类型
+export type RuntimeType = 'drizzle' | 'bun-sqlite' | 'node-sqlite';
 
 // ORM 配置选项
 export interface OrmConfig {
   database: SupportedDatabase;
-  connection: DatabaseConnection;
+  connection?: DatabaseConnection;  // 可选，当使用 bun-sqlite 或 node-sqlite 时
+  databasePath?: string;           // 可选，用于 SQLite 文件路径
   schema?: Record<string, any>;
   logger?: boolean;
 }
