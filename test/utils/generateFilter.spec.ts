@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { CrudFilters } from "@refinedev/core";
 import { generateFilter } from "../../src/utils/generateFilter";
 
@@ -18,9 +19,9 @@ describe("generateFilter", () => {
 
     it.each(["or", "and"])(
         "throws an error for unsupported '%s' operator",
-        (operator) => {
+        (operator: string) => {
             const filters: CrudFilters = [
-                { operator: operator as "or" | "and", value: [] },
+                { field: "name", operator: operator as any, value: "test" },
             ];
             expect(() => generateFilter(filters)).toThrow();
         },

@@ -1,6 +1,6 @@
 {
   "name": "refine-d1",
-  "description": "Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with edge D1 databases",
+  "description": "Multi-runtime SQLite data provider for Refine - Supports Cloudflare D1, Node.js 22.5+ native SQLite, and Bun 1.2+ native SQLite with zero bundle overhead",
   "version": "2.0.0",
   "license": "MIT",
   "main": "dist/index.js",
@@ -13,7 +13,12 @@
     "d1",
     "database",
     "edge",
-    "workers"
+    "workers",
+    "sqlite",
+    "nodejs",
+    "bun",
+    "multi-runtime",
+    "native"
   ],
   "private": false,
   "files": [
@@ -40,14 +45,17 @@
     }
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22.5"
   },
   "module": "dist/esm/index.js",
   "scripts": {
     "start": "wrangler dev",
     "build": "tsup --minify",
+    "build:esm": "tsup --config tsup.esm-only.config.ts",
+    "analyze": "node bundle-size-analysis.js",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:integration": "node --experimental-sqlite integration-test.js",
     "prepare": "npm run build",
     "deploy": "wrangler deploy",
     "prepublishOnly": "npm run test:run && npm run build"

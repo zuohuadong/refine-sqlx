@@ -8,7 +8,16 @@ export const generateFilter = (filters?: CrudFilters) => {
         .filter(filter => "field" in filter)
         .map(filter => {
             const { field, operator, value } = filter as any;
-            return `${field} ${mapOperator(operator)} '${value}'`;
+            const mappedOperator = mapOperator(operator);
+            
+            // Throw error for unsupported logical operators
+            if (operator === 'or' || operator === 'and') {
+                throw new Error(`Logical operator '${operator}' is not supported. Use individual field filters instead.`);
+            }
+            
+            // If operator maps to empty string, use default '='
+            const sqlOperator = mappedOperator || '=';
+            return `${field} ${sqlOperator} '${value}'`;
         });
 
     return conditions.join(" AND ");

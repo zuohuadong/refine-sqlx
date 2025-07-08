@@ -6,32 +6,32 @@ describe("mapOperator", () => {
         const operatorMappings: Record<CrudOperators, string> = {
             ne: "IS NOT",
             gte: ">=",
-            lte: "<=",
+            lte: "<=", 
             contains: "LIKE",
             eq: "IS",
-            and: "",
-            between: "",
-            containss: "",
-            endswith: "",
-            endswiths: "",
-            gt: "",
-            in: "",
-            lt: "",
-            ncontains: "",
-            ncontainss: "",
-            nendswith: "",
-            nendswiths: "",
-            nnull: "",
-            nin: "",
-            nbetween: "",
-            nstartswith: "",
-            nstartswiths: "",
-            null: "",
-            or: "",
-            startswith: "",
-            startswiths: "",
-            ina: "",
-            nina: ""
+            gt: ">",
+            lt: "<",
+            and: "=",
+            between: "=",
+            containss: "=",
+            endswith: "=",
+            endswiths: "=",
+            ncontains: "=",
+            ncontainss: "=",
+            nendswith: "=",
+            nendswiths: "=",
+            nnull: "=",
+            nin: "=",
+            nbetween: "=",
+            nstartswith: "=",
+            nstartswiths: "=",
+            null: "=",
+            or: "=",
+            startswith: "=",
+            startswiths: "=",
+            ina: "=",
+            nina: "=",
+            in: "=",
         };
 
         for (const operator in operatorMappings) {
@@ -43,9 +43,9 @@ describe("mapOperator", () => {
     });
 
     it.each(["unsupported", "", undefined, null])(
-        "should return empty string for %s operator ",
+        "should return default '=' for %s operator ",
         (operator) => {
-            expect(mapOperator(operator as CrudOperators)).toEqual("");
+            expect(mapOperator(operator as CrudOperators)).toEqual("=");
         },
     );
 });

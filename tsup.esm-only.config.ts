@@ -3,17 +3,18 @@ import { defineConfig } from "tsup";
 export default defineConfig({
     entry: ["src/index.ts"],
     splitting: false,
-    sourcemap: true,
+    sourcemap: false,
     clean: true,
     platform: "neutral",
     target: "es2020",
-    format: ["esm", "cjs"],
+    format: ["esm"], // ESM only for minimal bundle size
     dts: true,
     treeshake: true,
-    external: ["@refinedev/core", "node:sqlite"],
+    minify: true,
+    external: ["@refinedev/core"], // External dependencies to reduce bundle size
     esbuildOptions(options) {
         options.drop = ["console", "debugger"];
         options.legalComments = "none";
+        options.treeShaking = true;
     },
-    onSuccess: "tsc --project tsconfig.declarations.json",
 });

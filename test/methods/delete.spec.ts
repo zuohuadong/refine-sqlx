@@ -14,6 +14,8 @@ describe('deleteOne', () => {
 
     const { data } = response;
 
-    expect(data).toEqual(null);
+    // deleteOne should return the deleted record, not null
+    expect(data).toBeDefined();
+    expect(data.id).toBe(1);
   });
 });

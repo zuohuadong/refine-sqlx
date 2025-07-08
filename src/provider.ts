@@ -16,10 +16,10 @@ import { DatabaseAdapter } from "./database";
 import { D1Database } from "./types";
 
 export const dataProvider = (
-    db: D1Database
+    dbInput: D1Database | string
 ) => ({
     getList: async ({ resource, pagination, filters, sorters }: GetListParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         const { current = 1, pageSize = 10 } = pagination ?? {};
         
         const queryFilters = generateFilter(filters);
@@ -44,14 +44,14 @@ export const dataProvider = (
     },
 
     getMany: async ({ resource, ids }: GetManyParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         const placeholders = ids.map(() => '?').join(', ');
         const data = await dbAdapter.query(`SELECT * FROM ${resource} WHERE id IN (${placeholders})`, ids) as Array<BaseRecord>;
         return { data };
     },
 
     create: async ({ resource, variables }: CreateParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         const columns = Object.keys(variables || {});
         const values = Object.values(variables || {});
         const placeholders = columns.map(() => '?').join(', ');
@@ -62,7 +62,7 @@ export const dataProvider = (
     },
 
     update: async ({ resource, id, variables }: UpdateParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         const columns = Object.keys(variables || {});
         const values = Object.values(variables || {});
         const updateQuery = columns.map(column => `${column} = ?`).join(', ');
@@ -73,19 +73,22 @@ export const dataProvider = (
     },
 
     getOne: async ({ resource, id }: GetOneParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
         return { data };
     },
 
     deleteOne: async ({ resource, id }: DeleteOneParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
+        // 先获取要删除的记录
+        const recordToDelete = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]);
+        // 执行删除操作
         await dbAdapter.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
-        return { data: null };
+        return { data: recordToDelete };
     },
 
     createMany: async ({ resource, variables }: CreateManyParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         if (!variables?.length) return { data: [] };
 
         const results = [];
@@ -102,7 +105,7 @@ export const dataProvider = (
     },
 
     updateMany: async ({ resource, ids, variables }: UpdateManyParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         if (!ids?.length) return { data: [] };
 
         const results = [];
@@ -119,7 +122,7 @@ export const dataProvider = (
     },
 
     deleteMany: async ({ resource, ids }: DeleteManyParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         if (!ids?.length) return { data: [] };
 
         const results = [];
@@ -136,7 +139,7 @@ export const dataProvider = (
     getApiUrl: () => "/api",
 
     custom: async ({ url, method, payload }: CustomParams) => {
-        const dbAdapter = new DatabaseAdapter(db);
+        const dbAdapter = new DatabaseAdapter(dbInput);
         
         let sql = "";
         let params: any[] = [];
