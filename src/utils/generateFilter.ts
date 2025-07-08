@@ -12,10 +12,9 @@ export const generateFilter = (filters?: CrudFilters) => {
             
             // Throw error for unsupported logical operators
             if (operator === 'or' || operator === 'and') {
-                throw new Error(`Logical operator '${operator}' is not supported. Use individual field filters instead.`);
+                throw new Error(`Operator '${operator}' not supported`);
             }
             
-            // If operator maps to empty string, use default '='
             const sqlOperator = mappedOperator || '=';
             return `${field} ${sqlOperator} '${value}'`;
         });

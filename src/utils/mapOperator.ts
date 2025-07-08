@@ -1,6 +1,6 @@
 import {CrudOperators} from "@refinedev/core";
 
-const operatorMap: Partial<Record<CrudOperators, string>> = {
+const ops: Partial<Record<CrudOperators, string>> = {
     ne: "IS NOT",
     gte: ">=",
     lte: "<=",
@@ -11,5 +11,5 @@ const operatorMap: Partial<Record<CrudOperators, string>> = {
 };
 
 export const mapOperator = (operator: CrudOperators): string => {
-    return operatorMap[operator] || "=";
+    return ops[operator] || "=";
 };

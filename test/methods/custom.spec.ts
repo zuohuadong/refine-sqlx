@@ -52,7 +52,7 @@ describe('custom', () => {
           method: 'get',
           meta: {}
         })
-      ).rejects.toThrow('No SQL query provided for custom method');
+      ).rejects.toThrow('No SQL provided');
     } finally {
       // Restore original console.error
       console.error = originalConsoleError;

@@ -32,7 +32,7 @@ export const dataProvider = (
 
         const data = await dbAdapter.query(sql) as Array<BaseRecord>;
         
-        // Get total count
+        // Get total
         let countSql = `SELECT COUNT(*) as count FROM ${resource}`;
         if (queryFilters) countSql += ` WHERE ${queryFilters}`;
         const countResult = await dbAdapter.queryFirst(countSql) as { count: number };
@@ -52,20 +52,20 @@ export const dataProvider = (
 
     create: async ({ resource, variables }: CreateParams) => {
         const dbAdapter = new DatabaseAdapter(dbInput);
-        const columns = Object.keys(variables || {});
+        const keys = Object.keys(variables || {});
         const values = Object.values(variables || {});
-        const placeholders = columns.map(() => '?').join(', ');
+        const placeholders = keys.map(() => '?').join(', ');
 
-        const result = await dbAdapter.execute(`INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`, values);
+        const result = await dbAdapter.execute(`INSERT INTO ${resource} (${keys.join(', ')}) VALUES (${placeholders})`, values);
         const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [result.lastInsertRowid]) as BaseRecord;
         return { data };
     },
 
     update: async ({ resource, id, variables }: UpdateParams) => {
         const dbAdapter = new DatabaseAdapter(dbInput);
-        const columns = Object.keys(variables || {});
+        const keys = Object.keys(variables || {});
         const values = Object.values(variables || {});
-        const updateQuery = columns.map(column => `${column} = ?`).join(', ');
+        const updateQuery = keys.map(k => `${k} = ?`).join(', ');
 
         await dbAdapter.execute(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`, [...values, id]);
         const data = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]) as BaseRecord;
@@ -80,9 +80,7 @@ export const dataProvider = (
 
     deleteOne: async ({ resource, id }: DeleteOneParams) => {
         const dbAdapter = new DatabaseAdapter(dbInput);
-        // 先获取要删除的记录
         const recordToDelete = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [id]);
-        // 执行删除操作
         await dbAdapter.execute(`DELETE FROM ${resource} WHERE id = ?`, [id]);
         return { data: recordToDelete };
     },
@@ -93,11 +91,11 @@ export const dataProvider = (
 
         const results = [];
         for (const item of variables) {
-            const columns = Object.keys(item);
+            const keys = Object.keys(item);
             const values = Object.values(item);
-            const placeholders = columns.map(() => '?').join(', ');
+            const placeholders = keys.map(() => '?').join(', ');
 
-            const result = await dbAdapter.execute(`INSERT INTO ${resource} (${columns.join(', ')}) VALUES (${placeholders})`, values);
+            const result = await dbAdapter.execute(`INSERT INTO ${resource} (${keys.join(', ')}) VALUES (${placeholders})`, values);
             const insertedData = await dbAdapter.queryFirst(`SELECT * FROM ${resource} WHERE id = ?`, [result.lastInsertRowid]) as BaseRecord;
             results.push(insertedData);
         }
@@ -109,9 +107,9 @@ export const dataProvider = (
         if (!ids?.length) return { data: [] };
 
         const results = [];
-        const columns = Object.keys(variables || {});
+        const keys = Object.keys(variables || {});
         const values = Object.values(variables || {});
-        const updateQuery = columns.map(column => `${column} = ?`).join(', ');
+        const updateQuery = keys.map(k => `${k} = ?`).join(', ');
 
         for (const id of ids) {
             await dbAdapter.execute(`UPDATE ${resource} SET ${updateQuery} WHERE id = ?`, [...values, id]);
@@ -152,7 +150,7 @@ export const dataProvider = (
             sql = urlObj.searchParams.get('sql') || '';
         }
 
-        if (!sql) throw new Error('No SQL query provided for custom method');
+        if (!sql) throw new Error('No SQL provided');
 
         const result = method === 'get' 
             ? await dbAdapter.query(sql, params)

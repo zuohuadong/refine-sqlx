@@ -745,7 +745,7 @@ describe('D1 Database Complete Coverage Tests', () => {
           url: '/custom',
           method: 'get',
           payload: {}
-        })).rejects.toThrow('No SQL query provided for custom method');
+        })).rejects.toThrow('No SQL provided');
       });
 
       it('should throw error for custom queries with invalid payload', async () => {
@@ -753,7 +753,7 @@ describe('D1 Database Complete Coverage Tests', () => {
           url: '/custom',
           method: 'get',
           payload: null
-        })).rejects.toThrow('No SQL query provided for custom method');
+        })).rejects.toThrow('No SQL provided');
       });
 
       it('should provide API URL', () => {
