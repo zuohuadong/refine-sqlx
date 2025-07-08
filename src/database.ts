@@ -115,32 +115,24 @@ export class DatabaseAdapter {
 
   async transaction<T>(callback: (tx: TransactionAdapter) => Promise<T>): Promise<T> {
     await this._ensureInit();
-    
     if (this.runtime === 'd1') {
-      // D1 不支持显式事务，使用 batch 模拟
+      // ...existing code...
       const operations: Array<{ sql: string; params: unknown[] }> = [];
       let callbackResult: T;
-      
       const txAdapter: TransactionAdapter = {
         query: async (sql: string, params: unknown[] = []) => {
-          // 对于查询操作，立即执行（D1 限制）
           return await this.query(sql, params);
         },
         execute: async (sql: string, params: unknown[] = []) => {
-          // 收集写入操作
           operations.push({ sql, params });
           return { changes: 0, lastInsertRowid: undefined };
         }
       };
-      
       try {
         callbackResult = await callback(txAdapter);
-        
-        // 执行所有写入操作
         if (operations.length > 0) {
           await this.batch(operations);
         }
-        
         return callbackResult;
       } catch (error) {
         throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -159,14 +151,26 @@ export class DatabaseAdapter {
           };
         }
       };
-      
       try {
-        this.db.exec('BEGIN TRANSACTION');
+        // Node.js 22+ sqlite 没有 exec 方法，需用 prepare().run()
+        if (typeof this.db.exec === 'function') {
+          this.db.exec('BEGIN TRANSACTION');
+        } else {
+          this.db.prepare('BEGIN TRANSACTION').run();
+        }
         const result = await callback(txAdapter);
-        this.db.exec('COMMIT');
+        if (typeof this.db.exec === 'function') {
+          this.db.exec('COMMIT');
+        } else {
+          this.db.prepare('COMMIT').run();
+        }
         return result;
       } catch (error) {
-        this.db.exec('ROLLBACK');
+        if (typeof this.db.exec === 'function') {
+          this.db.exec('ROLLBACK');
+        } else {
+          this.db.prepare('ROLLBACK').run();
+        }
         throw new Error(`Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
