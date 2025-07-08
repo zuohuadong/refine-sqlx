@@ -6,16 +6,16 @@
         height="40"
         align="center"
     />
-    refine-d1
+    refine-sql
 </h1>
 
-<p align="center">Cloudflare D1 data provider for Refine framework - Build admin panels and CRUD apps with edge D1 databases</p>
+<p align="center">Multi-runtime SQL data provider for Refine framework - Supports Cloudflare D1, Node.js SQLite, and Bun SQLite</p>
 
 <div align="center">
 
-[![npm version](https://badge.fury.io/js/refine-d1.svg)](https://www.npmjs.com/package/refine-d1)
-[![npm](https://img.shields.io/npm/dt/refine-d1.svg)](https://www.npmjs.com/package/refine-d1)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mateusabelli/refine-d1/blob/main/LICENSE.md)
+[![npm version](https://badge.fury.io/js/refine-sql.svg)](https://www.npmjs.com/package/refine-sql)
+[![npm](https://img.shields.io/npm/dt/refine-sql.svg)](https://www.npmjs.com/package/refine-sql)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zuohuadong/refine-sql/blob/main/LICENSE.md)
 
 </div>
 
@@ -23,37 +23,50 @@
 
 ## Getting Started
 
-With **refine-d1** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your Cloudflare D1 database.
+With **refine-sql** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQL databases across multiple runtimes.
 
 ## Features
 
+- **Multi-runtime** - Supports Cloudflare D1, Node.js SQLite, and Bun SQLite.
 - **Well tested** - All the methods are tested using [Vitest](https://vitest.dev/).
 - **Fully featured** - All CRUD operations are supported.
 - **Edge ready** - Optimized for Cloudflare Workers and edge computing.
 - **Type safe** - Written in TypeScript with strict mode enabled.
-- **D1 native** - Built specifically for Cloudflare D1 databases.
+- **Zero dependencies** - Minimal bundle size with external peer dependencies.
+
+## Packages
+
+This repository contains two packages:
+
+- **refine-sql** - Core SQL data provider for Refine
+- **refine-orm** - Drizzle ORM integration for extended database support
 
 ## Installation
 
-### For Cloudflare Workers
+### refine-sql (Core Package)
 
 ```bash
-npm install refine-d1
-npm install wrangler --save-dev  # For development and deployment
+npm install refine-sql @refinedev/core
 ```
 
-### For Refine Applications
+### refine-orm (ORM Extension)
 
 ```bash
-npm install refine-d1 @refinedev/core
+npm install refine-orm drizzle-orm @refinedev/core
+# Plus your database driver:
+# npm install pg          # for PostgreSQL
+# npm install mysql2      # for MySQL
+# npm install better-sqlite3  # for SQLite
 ```
 
 ## Quick Start
 
-### Cloudflare Worker with D1
+### Using refine-sql
+
+#### Cloudflare Worker with D1
 
 ```typescript
-import { dataProvider } from 'refine-d1';
+import { dataProvider } from 'refine-sql';
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
@@ -75,17 +88,63 @@ export default {
 };
 ```
 
-### React App with Refine + D1
+#### Node.js Application
+
+```typescript
+import { dataProvider } from 'refine-sql';
+
+// Using a SQLite file path
+const provider = dataProvider('./database.db');
+
+// Your application logic
+const users = await provider.getList({
+  resource: 'users',
+  pagination: { current: 1, pageSize: 10 }
+});
+```
+
+### Using refine-orm (Drizzle Integration)
+
+```typescript
+import { dataProvider } from 'refine-orm';
+import { drizzle } from 'drizzle-orm/pg';
+import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { Pool } from 'pg';
+
+// Define your schema
+const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Setup database connection
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool);
+
+// Create data provider
+const provider = dataProvider(db, {
+  resources: {
+    posts: {
+      table: posts,
+      primaryKey: 'id'
+    }
+  }
+});
+```
+
+### React App with Refine
 
 ```tsx
 import React from 'react';
 import { Refine } from '@refinedev/core';
-import { dataProvider } from 'refine-d1';
+import { dataProvider } from 'refine-sql'; // or 'refine-orm'
 
 const App: React.FC = () => {
   return (
     <Refine
-      dataProvider={dataProvider(yourD1Database)}
+      dataProvider={dataProvider(yourDatabase)}
       resources={[
         {
           name: 'posts',
@@ -241,9 +300,9 @@ console.log(response)
 
 ## Documentation
 
-- [Methods](https://github.com/mateusabelli/refine-d1/wiki/Methods)
-- [Filters](https://github.com/mateusabelli/refine-d1/wiki/Filters)
-- [Sorters](https://github.com/mateusabelli/refine-d1/wiki/Sorters)
+- [Methods](https://github.com/zuohuadong/refine-sql/wiki/Methods)
+- [Filters](https://github.com/zuohuadong/refine-sql/wiki/Filters)
+- [Sorters](https://github.com/zuohuadong/refine-sql/wiki/Sorters)
 - [Cloudflare D1 Support](./CLOUDFLARE.md)
  
 ## Development
@@ -251,7 +310,7 @@ console.log(response)
 Clone the repository
 
 ```bash
-git clone https://github.com/mateusabelli/refine-d1.git
+git clone https://github.com/zuohuadong/refine-sql.git
 ```
 
 Install the dependencies
@@ -273,14 +332,14 @@ pnpm run test
 
 ## Contributing
 
-All contributions are welcome and appreciated! Please create an [Issue](https://github.com/mateusabelli/refine-d1/issues) or [Pull Request](https://github.com/mateusabelli/refine-d1/pulls) if you encounter any problems or have suggestions for improvements.
+All contributions are welcome and appreciated! Please create an [Issue](https://github.com/zuohuadong/refine-sql/issues) or [Pull Request](https://github.com/zuohuadong/refine-sql/pulls) if you encounter any problems or have suggestions for improvements.
 
 If you want to say **thank you** or/and support active development of **refine-d1**
 
--  Add a [GitHub Star](https://github.com/mateusabelli/refine-d1) to the project.
-- Tweet about the project [on Twitter / X](https://twitter.com/intent/tweet?text=With%20refine-d1%20you%20can%20quickly%20start%20developing%20your%20next%20refine%20project%20with%20Cloudflare%20D1%20database.%20Check%20it%20out!%0A%0A%20https%3A//github.com/mateusabelli/refine-d1%20).
+-  Add a [GitHub Star](https://github.com/zuohuadong/refine-sql) to the project.
+- Tweet about the project [on Twitter / X](https://twitter.com/intent/tweet?text=With%20refine-sql%20you%20can%20quickly%20start%20developing%20your%20next%20refine%20project%20with%20SQL%20databases.%20Check%20it%20out!%0A%0A%20https%3A//github.com/zuohuadong/refine-sql%20).
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or personal blog.
-- Consider becoming a sponsor on [GitHub](https://github.com/sponsors/mateusabelli).
+- Consider becoming a sponsor on [GitHub](https://github.com/sponsors/zuohuadong).
 
 
 ## Special Thanks

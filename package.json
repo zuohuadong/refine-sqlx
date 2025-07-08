@@ -1,7 +1,7 @@
 {
-  "name": "refine-d1",
-  "description": "Multi-runtime SQLite data provider for Refine - Supports Cloudflare D1, Node.js 22.5+ native SQLite, and Bun 1.2+ native SQLite with zero bundle overhead",
-  "version": "2.0.0",
+  "name": "refine-sql",
+  "description": "Multi-runtime SQL data provider for Refine - Supports Cloudflare D1, Node.js 22.5+ native SQLite, and Bun 1.2+ native SQLite with zero bundle overhead",
+  "version": "0.2.0",
   "license": "MIT",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -13,16 +13,17 @@
   },
   "sideEffects": false,
   "typings": "dist/index.d.mts",
-  "author": "Mateus Abelli",
+  "author": "zuohuadong",
   "keywords": [
     "refine",
     "data provider",
+    "sql",
+    "sqlite",
     "cloudflare",
     "d1",
     "database",
     "edge",
     "workers",
-    "sqlite",
     "nodejs",
     "bun",
     "multi-runtime",
@@ -37,24 +38,21 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mateusabelli/refine-d1.git"
+    "url": "git+https://github.com/zuohuadong/refine-sql.git"
   },
   "bugs": {
-    "url": "https://github.com/mateusabelli/refine-d1/issues"
+    "url": "https://github.com/zuohuadong/refine-sql/issues"
   },
-  "homepage": "https://github.com/mateusabelli/refine-d1#readme",
+  "homepage": "https://github.com/zuohuadong/refine-sql#readme",
   "publishConfig": {
     "access": "public"
   },
   "funding": [
     {
       "type": "github",
-      "url": "https://github.com/sponsors/mateusabelli"
+      "url": "https://github.com/sponsors/zuohuadong"
     }
   ],
-  "engines": {
-    "node": ">=22.5"
-  },
   "scripts": {
     "start": "wrangler dev",
     "build": "tsup --minify",
@@ -79,7 +77,7 @@
     "@cloudflare/workers-types": "^4.20250703.0",
     "@refinedev/core": "^4.57.9",
     "@types/node": "^24.0.10",
-    "terser": "^5.43.1",
+    "terser": "^5.36.0",
     "tslib": "^2.8.1",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
