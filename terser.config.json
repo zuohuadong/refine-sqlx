@@ -1,0 +1,35 @@
+{
+  "compress": {
+    "drop_console": true,
+    "drop_debugger": true,
+    "passes": 3,
+    "pure_getters": true,
+    "unsafe": true,
+    "unsafe_comps": true,
+    "unsafe_math": true,
+    "unsafe_methods": true,
+    "unsafe_proto": true,
+    "unsafe_regexp": true,
+    "conditionals": true,
+    "dead_code": true,
+    "evaluate": true,
+    "if_return": true,
+    "join_vars": true,
+    "loops": true,
+    "reduce_vars": true,
+    "unused": true,
+    "hoist_funs": true,
+    "hoist_vars": true,
+    "inline": 3
+  },
+  "mangle": {
+    "toplevel": true,
+    "properties": {
+      "regex": "^_"
+    }
+  },
+  "format": {
+    "comments": false,
+    "beautify": false
+  }
+}

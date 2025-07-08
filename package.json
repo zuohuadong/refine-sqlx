@@ -3,16 +3,16 @@
   "description": "Multi-runtime SQLite data provider for Refine - Supports Cloudflare D1, Node.js 22.5+ native SQLite, and Bun 1.2+ native SQLite with zero bundle overhead",
   "version": "2.0.0",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.mts"
     }
   },
   "sideEffects": false,
-  "typings": "dist/index.d.ts",
+  "typings": "dist/index.d.mts",
   "author": "Mateus Abelli",
   "keywords": [
     "refine",
@@ -79,6 +79,7 @@
     "@cloudflare/workers-types": "^4.20250703.0",
     "@refinedev/core": "^4.57.9",
     "@types/node": "^24.0.10",
+    "terser": "^5.43.1",
     "tslib": "^2.8.1",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",

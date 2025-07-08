@@ -9,13 +9,10 @@ export class DatabaseAdapter {
   private initPromise?: Promise<void>;
 
   constructor(dbInput: DatabaseInput) {
-    if (!dbInput) {
-      throw new Error('Database instance or path is required');
-    }
+    if (!dbInput) throw new Error('Database instance or path is required');
 
     if (typeof dbInput === 'string') {
-      this.runtime = this.detectRuntime();
-      // For Bun, test the constructor to fail fast
+      this.runtime = this._detectRuntime();
       if (this.runtime === 'bun-sqlite') {
         try {
           this.db = new ((globalThis as any).Bun.sqlite)(dbInput);
@@ -23,7 +20,7 @@ export class DatabaseAdapter {
           throw new Error(`Failed to initialize Bun SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
         }
       } else {
-        this.initPromise = this.initNativeDb(dbInput);
+        this.initPromise = this._initNativeDb(dbInput);
       }
     } else {
       this.runtime = 'd1';
@@ -31,29 +28,20 @@ export class DatabaseAdapter {
     }
   }
 
-  private async ensureInitialized(): Promise<void> {
+  private async _ensureInit(): Promise<void> {
     if (this.initPromise) {
       await this.initPromise;
       this.initPromise = undefined;
     }
   }
 
-  private detectRuntime(): 'node-sqlite' | 'bun-sqlite' {
-    // Check for Bun
-    if (typeof globalThis !== 'undefined' && 'Bun' in globalThis && (globalThis as any).Bun) {
-      return 'bun-sqlite';
-    }
-    
-    // Check for Node.js
-    if (typeof globalThis !== 'undefined' && 'process' in globalThis && (globalThis as any).process) {
-      return 'node-sqlite';
-    }
-    
+  private _detectRuntime(): 'node-sqlite' | 'bun-sqlite' {
+    if (typeof globalThis !== 'undefined' && 'Bun' in globalThis && (globalThis as any).Bun) return 'bun-sqlite';
+    if (typeof globalThis !== 'undefined' && 'process' in globalThis && (globalThis as any).process) return 'node-sqlite';
     throw new Error('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
   }
 
-  private async initNativeDb(path: string) {
-    // Only handle Node.js here since Bun is handled synchronously in constructor
+  private async _initNativeDb(path: string) {
     try {
       const sqlite = await import('node:sqlite' as any);
       this.db = new (sqlite as any).DatabaseSync(path);
@@ -63,7 +51,7 @@ export class DatabaseAdapter {
   }
 
   async query(sql: string, params: unknown[] = []): Promise<any[]> {
-    await this.ensureInitialized();
+    await this._ensureInit();
     
     if (this.runtime === 'd1') {
       const stmt = this.db.prepare(sql);
@@ -76,7 +64,7 @@ export class DatabaseAdapter {
   }
 
   async queryFirst(sql: string, params: unknown[] = []): Promise<any> {
-    await this.ensureInitialized();
+    await this._ensureInit();
     
     if (this.runtime === 'd1') {
       const stmt = this.db.prepare(sql);
@@ -88,7 +76,7 @@ export class DatabaseAdapter {
   }
 
   async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid?: number }> {
-    await this.ensureInitialized();
+    await this._ensureInit();
     
     if (this.runtime === 'd1') {
       const stmt = this.db.prepare(sql);
@@ -108,7 +96,7 @@ export class DatabaseAdapter {
   }
 
   async batch(statements: Array<{ sql: string; params?: unknown[] }>): Promise<any[]> {
-    await this.ensureInitialized();
+    await this._ensureInit();
     
     if (this.runtime === 'd1') {
       const preparedStatements = statements.map(({ sql, params = [] }) => {

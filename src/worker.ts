@@ -1,5 +1,10 @@
 import { dataProvider } from './provider';
-import { Env } from './types';
+
+// 简化的 worker 环境接口
+interface Env {
+  DB: any;
+  [key: string]: unknown;
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
