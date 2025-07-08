@@ -60,16 +60,16 @@ const generateSort = (sorters?: CrudSorting) => {
 };
 
 export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConfig) => {
-    const createAdapter = () => new DatabaseAdapter(dbInput);
+    const sharedAdapter = new DatabaseAdapter(dbInput);
+    const createAdapter = () => sharedAdapter;
     
     // 创建增强适配器
     const createEnhancedAdapter = (): EnhancedAdapter => {
-        const adapter = createAdapter();
         return {
-            query: adapter.query.bind(adapter),
-            execute: adapter.execute.bind(adapter),
-            transaction: adapter.transaction.bind(adapter),
-            close: adapter.close.bind(adapter)
+            query: sharedAdapter.query.bind(sharedAdapter),
+            execute: sharedAdapter.execute.bind(sharedAdapter),
+            transaction: sharedAdapter.transaction.bind(sharedAdapter),
+            close: sharedAdapter.close.bind(sharedAdapter)
         };
     };
     
@@ -253,13 +253,19 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         
         // 灵活的自定义查询（类似 refine-orm 的 customOrm）
         customFlexible: async ({ query, params }: FlexibleQueryParams) => {
-            const adapter = createEnhancedAdapter();
+            const adapter = createAdapter();
             
             if (typeof query === "string") {
                 const data = await adapter.query(query, params);
                 return { data };
             } else {
-                const data = await query(adapter);
+                const enhancedAdapter: EnhancedAdapter = {
+                    query: adapter.query.bind(adapter),
+                    execute: adapter.execute.bind(adapter),
+                    transaction: adapter.transaction.bind(adapter),
+                    close: adapter.close.bind(adapter)
+                };
+                const data = await query(enhancedAdapter);
                 return { data };
             }
         },
@@ -276,8 +282,7 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
         
         // 关闭连接
         close: () => {
-            const adapter = createAdapter();
-            adapter.close();
+            sharedAdapter.close();
         }
     };
 };
