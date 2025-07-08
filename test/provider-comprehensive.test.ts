@@ -280,51 +280,17 @@ describe('DataProvider Comprehensive Tests', () => {
       const provider = dataProvider(mockBadD1);
       
       // But operations should handle errors gracefully
-      await expect(
-        provider.getList({ resource: 'users', pagination: { current: 1, pageSize: 10 } })
-      ).rejects.toThrow();
+      await expect(provider.getList({ resource: 'users' })).rejects.toThrow('Database connection failed');
     });
 
-    it('should handle invalid database path', async () => {
-      // Save current values
-      const currentProcess = globalThis.process;
-      const currentBun = (globalThis as any).Bun;
-      
-      try {
-        // Mock environment where no runtime is available - completely remove them
-        delete (globalThis as any).process;
-        delete (globalThis as any).Bun;
-
-        const provider = dataProvider('./invalid.db'); // Provider creation should not throw
-        
-        // But operations should throw when trying to create DatabaseAdapter
-        await expect(async () => {
-          await provider.getList({
-            resource: 'users',
-            pagination: { current: 1, pageSize: 10 }
-          });
-        }).rejects.toThrow();
-      } finally {
-        // Restore original values immediately
-        if (currentProcess !== undefined) {
-          Object.defineProperty(globalThis, 'process', {
-            value: currentProcess,
-            configurable: true,
-            writable: true
-          });
-        }
-        if (currentBun !== undefined) {
-          Object.defineProperty(globalThis, 'Bun', {
-            value: currentBun,
-            configurable: true,
-            writable: true
-          });
-        }
-      }
+    it('should handle invalid database path', () => {
+      vi.stubGlobal('process', undefined);
+      vi.stubGlobal('Bun', undefined);
+      expect(() => new DatabaseAdapter('./invalid-path.db')).toThrow('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
     });
 
     it('should handle malformed SQL queries', async () => {
-      const mockD1 = {
+      const mockDb = {
         prepare: vi.fn().mockReturnValue({
           bind: vi.fn().mockReturnValue({
             all: vi.fn().mockRejectedValue(new Error('SQL syntax error'))
@@ -336,7 +302,7 @@ describe('DataProvider Comprehensive Tests', () => {
         exec: vi.fn().mockResolvedValue(undefined)
       };
 
-      const provider = dataProvider(mockD1);
+      const provider = dataProvider(mockDb);
       
       await expect(provider.getList({
         resource: 'users',
