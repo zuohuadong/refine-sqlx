@@ -146,7 +146,7 @@ describe('DatabaseAdapter', () => {
 
       expect(() => {
         new DatabaseAdapter('./test.db');
-      }).toThrow('Unsupported runtime');
+      }).toThrow('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
 
       // Restore original globalThis
       (globalThis as any).process = originalProcess;
@@ -209,13 +209,13 @@ describe('DatabaseAdapter', () => {
     it('should throw error for null database input', () => {
       expect(() => {
         new DatabaseAdapter(null as any);
-      }).toThrow('DB required');
+      }).toThrow('Database instance or path is required');
     });
 
     it('should throw error for undefined database input', () => {
       expect(() => {
         new DatabaseAdapter(undefined as any);
-      }).toThrow('DB required');
+      }).toThrow('Database instance or path is required');
     });
   });
 });

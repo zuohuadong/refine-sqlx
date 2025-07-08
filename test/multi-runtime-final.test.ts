@@ -350,8 +350,8 @@ describe('Multi-Runtime Tests - Fully Fixed', () => {
 
   describe('Type Safety and Validation', () => {
     it('should validate required parameters', () => {
-      expect(() => new DatabaseAdapter(null as any)).toThrow('DB required');
-      expect(() => new DatabaseAdapter(undefined as any)).toThrow('DB required');
+      expect(() => new DatabaseAdapter(null as any)).toThrow('Database instance or path is required');
+      expect(() => new DatabaseAdapter(undefined as any)).toThrow('Database instance or path is required');
     });
 
     it('should provide proper TypeScript interfaces', () => {

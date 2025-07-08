@@ -407,9 +407,9 @@ describe('Multi-Runtime Safe Integration Tests', () => {
       
       try {
         delete (globalThis as any).Bun;
-        (globalThis as any).process = { versions: { node: '20.0.0' } }; // Below minimum
+        delete (globalThis as any).process;
         
-        expect(() => new DatabaseAdapter('./test.db')).toThrow();
+        expect(() => new DatabaseAdapter('./test.db')).toThrow('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
       } finally {
         (globalThis as any).Bun = originalBun;
         (globalThis as any).process = originalProcess;

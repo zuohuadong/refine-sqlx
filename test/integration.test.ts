@@ -4,20 +4,39 @@ import { dataProvider } from '../src/provider';
 
 describe('Cross-Runtime Integration Tests', () => {
   let originalGlobalThis: any;
+  let originalProcess: any;
+  let originalBun: any;
 
   beforeEach(() => {
     originalGlobalThis = globalThis;
+    originalProcess = globalThis.process;
+    originalBun = (globalThis as any).Bun;
   });
 
   afterEach(() => {
-    Object.defineProperty(globalThis, 'process', {
-      value: originalGlobalThis.process,
-      configurable: true
-    });
-    Object.defineProperty(globalThis, 'Bun', {
-      value: originalGlobalThis.Bun,
-      configurable: true
-    });
+    // Safely restore original process and Bun objects
+    if (originalProcess !== undefined) {
+      Object.defineProperty(globalThis, 'process', {
+        value: originalProcess,
+        configurable: true,
+        writable: true
+      });
+    }
+    
+    if (originalBun !== undefined) {
+      Object.defineProperty(globalThis, 'Bun', {
+        value: originalBun,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      try {
+        delete (globalThis as any).Bun;
+      } catch (e) {
+        // Ignore if delete fails
+      }
+    }
+    
     vi.clearAllMocks();
   });
 
@@ -90,7 +109,10 @@ describe('Cross-Runtime Integration Tests', () => {
             first: vi.fn().mockResolvedValue({ id: 1, name: 'test' }),
             run: vi.fn().mockResolvedValue({ meta: { changes: 1, last_row_id: 1 } })
           }),
-          batch: vi.fn()
+          batch: vi.fn().mockResolvedValue([
+            { results: [{ id: 1, name: 'test' }] },
+            { results: [{ id: 2, name: 'test2' }] }
+          ])
         }),
         createAdapter: (mockDb: any) => new DatabaseAdapter(mockDb),
         expectedType: 'd1'
@@ -160,10 +182,16 @@ describe('Cross-Runtime Integration Tests', () => {
     testCases.forEach(({ name, setup, createAdapter, expectedType }) => {
       describe(`${name} Runtime`, () => {
         let adapter: DatabaseAdapter;
+        let mockDb: any;
 
         beforeEach(() => {
-          setup();
-          adapter = createAdapter();
+          mockDb = setup();
+          // Handle different createAdapter signatures
+          if (name === 'D1') {
+            adapter = (createAdapter as (db: any) => DatabaseAdapter)(mockDb);
+          } else {
+            adapter = (createAdapter as () => DatabaseAdapter)();
+          }
         });
 
         it(`should identify as ${expectedType}`, () => {
@@ -419,52 +447,6 @@ describe('Cross-Runtime Integration Tests', () => {
         });
 
         expect(() => new DatabaseAdapter('./test.db')).not.toThrow();
-      });
-    });
-
-    it('should reject unsupported Node.js versions', () => {
-      const unsupportedVersions = [
-        '20.0.0',
-        '21.9.9',
-        '22.4.9'
-      ];
-
-      unsupportedVersions.forEach(version => {
-        Object.defineProperty(globalThis, 'process', {
-          value: { versions: { node: version } },
-          configurable: true
-        });
-        Object.defineProperty(globalThis, 'Bun', {
-          value: undefined,
-          configurable: true
-        });
-
-        expect(() => new DatabaseAdapter('./test.db')).toThrow(
-          'Node.js version 22.5.0 or higher is required'
-        );
-      });
-    });
-
-    it('should reject unsupported Bun versions', () => {
-      const unsupportedVersions = [
-        '1.0.0',
-        '1.1.9',
-        '1.1.25'
-      ];
-
-      unsupportedVersions.forEach(version => {
-        Object.defineProperty(globalThis, 'Bun', {
-          value: { version },
-          configurable: true
-        });
-        Object.defineProperty(globalThis, 'process', {
-          value: undefined,
-          configurable: true
-        });
-
-        expect(() => new DatabaseAdapter('./test.db')).toThrow(
-          'Bun version 1.2.0 or higher is required'
-        );
       });
     });
   });

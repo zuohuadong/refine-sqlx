@@ -10,12 +10,21 @@ export class DatabaseAdapter {
 
   constructor(dbInput: DatabaseInput) {
     if (!dbInput) {
-      throw new Error('DB required');
+      throw new Error('Database instance or path is required');
     }
 
     if (typeof dbInput === 'string') {
       this.runtime = this.detectRuntime();
-      this.initPromise = this.initNativeDb(dbInput);
+      // For Bun, test the constructor to fail fast
+      if (this.runtime === 'bun-sqlite') {
+        try {
+          this.db = new ((globalThis as any).Bun.sqlite)(dbInput);
+        } catch (error) {
+          throw new Error(`Failed to initialize Bun SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
+        }
+      } else {
+        this.initPromise = this.initNativeDb(dbInput);
+      }
     } else {
       this.runtime = 'd1';
       this.db = dbInput;
@@ -40,19 +49,16 @@ export class DatabaseAdapter {
       return 'node-sqlite';
     }
     
-    throw new Error('Unsupported runtime');
+    throw new Error('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
   }
 
   private async initNativeDb(path: string) {
-    if (this.runtime === 'bun-sqlite') {
-      this.db = new ((globalThis as any).Bun).sqlite(path);
-    } else {
-      try {
-        const sqlite = await import('node:sqlite' as any);
-        this.db = new (sqlite as any).DatabaseSync(path);
-      } catch (error) {
-        throw new Error(`Init failed: ${error instanceof Error ? error.message : 'Unknown'}`);
-      }
+    // Only handle Node.js here since Bun is handled synchronously in constructor
+    try {
+      const sqlite = await import('node:sqlite' as any);
+      this.db = new (sqlite as any).DatabaseSync(path);
+    } catch (error) {
+      throw new Error(`Failed to initialize Node.js SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
     }
   }
 
@@ -111,7 +117,7 @@ export class DatabaseAdapter {
       });
       
       const results = await this.db.batch(preparedStatements);
-      return results.map((result: any) => result.results || []);
+      return results ? results.map((result: any) => result.results || []) : [];
     }
     
     return statements.map(({ sql, params = [] }) => {

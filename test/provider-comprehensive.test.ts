@@ -3,6 +3,42 @@ import { dataProvider } from '../src/provider';
 import { DatabaseAdapter } from '../src/database';
 
 describe('DataProvider Comprehensive Tests', () => {
+  let originalProcess: any;
+  let originalBun: any;
+
+  beforeEach(() => {
+    // Save original values
+    originalProcess = globalThis.process;
+    originalBun = (globalThis as any).Bun;
+  });
+
+  afterEach(() => {
+    // Restore original values
+    if (originalProcess !== undefined) {
+      Object.defineProperty(globalThis, 'process', {
+        value: originalProcess,
+        configurable: true,
+        writable: true
+      });
+    }
+    
+    if (originalBun !== undefined) {
+      Object.defineProperty(globalThis, 'Bun', {
+        value: originalBun,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      try {
+        delete (globalThis as any).Bun;
+      } catch (e) {
+        // Ignore if delete fails
+      }
+    }
+    
+    vi.clearAllMocks();
+  });
+
   describe('Provider with D1 Database', () => {
     let mockD1: any;
 
@@ -233,7 +269,10 @@ describe('DataProvider Comprehensive Tests', () => {
       const mockBadD1 = {
         prepare: vi.fn().mockImplementation(() => {
           throw new Error('Database connection failed');
-        })
+        }),
+        batch: vi.fn().mockResolvedValue([]),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
 
       expect(() => dataProvider(mockBadD1)).not.toThrow(); // Provider creation shouldn't throw
@@ -246,18 +285,38 @@ describe('DataProvider Comprehensive Tests', () => {
       }).rejects.toThrow();
     });
 
-    it('should handle invalid database path', () => {
-      // Mock environment where no runtime is available
-      Object.defineProperty(globalThis, 'process', {
-        value: { versions: { node: '20.0.0' } }, // Below minimum version
-        configurable: true
-      });
-      Object.defineProperty(globalThis, 'Bun', {
-        value: undefined,
-        configurable: true
-      });
+    it('should handle invalid database path', async () => {
+      // Save current values
+      const currentProcess = globalThis.process;
+      const currentBun = (globalThis as any).Bun;
+      
+      try {
+        // Mock environment where no runtime is available - completely remove them
+        delete (globalThis as any).process;
+        delete (globalThis as any).Bun;
 
-      expect(() => dataProvider('./invalid.db')).toThrow();
+        const provider = dataProvider('./invalid.db'); // Provider creation should not throw
+        
+        // But operations should throw when trying to create DatabaseAdapter
+        await expect(provider.getList({
+          resource: 'users',
+          pagination: { current: 1, pageSize: 10 }
+        })).rejects.toThrow('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
+      } finally {
+        // Restore original values immediately
+        if (currentProcess !== undefined) {
+          Object.defineProperty(globalThis, 'process', {
+            value: currentProcess,
+            configurable: true
+          });
+        }
+        if (currentBun !== undefined) {
+          Object.defineProperty(globalThis, 'Bun', {
+            value: currentBun,
+            configurable: true
+          });
+        }
+      }
     });
 
     it('should handle malformed SQL queries', async () => {
@@ -265,8 +324,12 @@ describe('DataProvider Comprehensive Tests', () => {
         prepare: vi.fn().mockReturnValue({
           bind: vi.fn().mockReturnValue({
             all: vi.fn().mockRejectedValue(new Error('SQL syntax error'))
-          })
-        })
+          }),
+          all: vi.fn().mockRejectedValue(new Error('SQL syntax error'))
+        }),
+        batch: vi.fn().mockResolvedValue([]),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
 
       const provider = dataProvider(mockD1);
@@ -290,9 +353,22 @@ describe('DataProvider Comprehensive Tests', () => {
                 { id: 1, name: 'Alice', age: 30, active: 1 },
                 { id: 2, name: 'Bob', age: 25, active: 0 }
               ]
-            })
-          })
-        })
+            }),
+            first: vi.fn().mockResolvedValue({ id: 1, name: 'Alice', age: 30, active: 1 }),
+            run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1, last_row_id: 1 } })
+          }),
+          all: vi.fn().mockResolvedValue({
+            results: [
+              { id: 1, name: 'Alice', age: 30, active: 1 },
+              { id: 2, name: 'Bob', age: 25, active: 0 }
+            ]
+          }),
+          first: vi.fn().mockResolvedValue({ id: 1, name: 'Alice', age: 30, active: 1 }),
+          run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1, last_row_id: 1 } })
+        }),
+        batch: vi.fn().mockResolvedValue([]),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
     });
 
@@ -367,8 +443,16 @@ describe('DataProvider Comprehensive Tests', () => {
             }),
             first: vi.fn().mockResolvedValue({ result: 'success' }),
             run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1 } })
-          })
-        })
+          }),
+          all: vi.fn().mockResolvedValue({
+            results: [{ count: 5 }]
+          }),
+          first: vi.fn().mockResolvedValue({ result: 'success' }),
+          run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1 } })
+        }),
+        batch: vi.fn().mockResolvedValue([]),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
     });
 
@@ -428,12 +512,18 @@ describe('DataProvider Comprehensive Tests', () => {
         prepare: vi.fn().mockReturnValue({
           bind: vi.fn().mockReturnValue({
             all: vi.fn().mockResolvedValue({ results: [] }),
+            first: vi.fn().mockResolvedValue(null),
             run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1, last_row_id: 1 } })
-          })
+          }),
+          all: vi.fn().mockResolvedValue({ results: [] }),
+          first: vi.fn().mockResolvedValue(null),
+          run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1, last_row_id: 1 } })
         }),
         batch: vi.fn().mockImplementation((statements) => 
           Promise.resolve(statements.map(() => ({ results: [] })))
-        )
+        ),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
     });
 
@@ -496,8 +586,33 @@ describe('DataProvider Comprehensive Tests', () => {
                 }
               ]
             })
+          }),
+          all: vi.fn().mockResolvedValue({
+            results: [
+              { 
+                id: 1, 
+                name: 'John', 
+                age: 30, 
+                active: true, 
+                salary: 50000.50,
+                metadata: JSON.stringify({ role: 'admin' }),
+                created_at: '2023-01-01T10:00:00Z'
+              }
+            ]
+          }),
+          first: vi.fn().mockResolvedValue({ 
+            id: 1, 
+            name: 'John', 
+            age: 30, 
+            active: true, 
+            salary: 50000.50,
+            metadata: JSON.stringify({ role: 'admin' }),
+            created_at: '2023-01-01T10:00:00Z'
           })
-        })
+        }),
+        batch: vi.fn().mockResolvedValue([]),
+        dump: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        exec: vi.fn().mockResolvedValue(undefined)
       };
 
       const provider = dataProvider(mockD1);
