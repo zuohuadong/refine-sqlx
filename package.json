@@ -6,16 +6,17 @@
   "workspaces": [
     "packages/*"
   ],
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "require": "./dist/index.js"
     }
   },
   "sideEffects": false,
-  "typings": "dist/index.d.mts",
+  "types": "dist/index.d.ts",
   "author": "zuohuadong",
   "keywords": [
     "refine",
@@ -58,8 +59,11 @@
   ],
   "scripts": {
     "start": "wrangler dev",
-    "build": "tsup --minify",
-    "build:esm": "tsup --config tsup.esm-only.config.ts",
+    "build": "rslib build",
+    "build:esm": "rslib build --format esm",
+    "build:cjs": "rslib build --format cjs",
+    "build:dual": "rslib build",
+    "build:watch": "rslib build --watch",
     "analyze": "node bundle-size-analysis.js",
     "test": "node --experimental-sqlite node_modules/vitest/vitest.mjs",
     "test:coverage": "node --experimental-sqlite node_modules/vitest/vitest.mjs run --coverage",
@@ -83,11 +87,11 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250703.0",
+    "@microsoft/api-extractor": "^7.52.8",
     "@refinedev/core": "^4.57.9",
+    "@rslib/core": "^0.10.5",
     "@types/node": "^24.0.10",
-    "terser": "^5.36.0",
     "tslib": "^2.8.1",
-    "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
     "wrangler": "^4.23.0"
