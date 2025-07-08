@@ -18,21 +18,32 @@ describe('Enhanced DataProvider Features', () => {
     testDbPath = `test-enhanced-${Date.now()}-${Math.random().toString(36).substring(7)}.db`;
     provider = dataProvider(testDbPath, config);
     
-    // 创建测试表 - 使用直接的 SQL 执行而不是 customEnhanced
-    const adapter = provider.getEnhancedAdapter();
-    await adapter.execute(`CREATE TABLE IF NOT EXISTS posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      content TEXT,
-      status TEXT DEFAULT 'draft',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
+    // 等待数据库初始化完成
+    // 使用一个简单的查询来确保数据库连接就绪
+    try {
+      await provider.customFlexible({ query: 'SELECT 1' });
+    } catch (error) {
+      // 如果查询失败，继续创建表
+    }
+    
+    // 创建测试表
+    await provider.customFlexible({
+      query: `CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT,
+        status TEXT DEFAULT 'draft',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`
+    });
     
     // 插入测试数据
-    await adapter.execute(`INSERT INTO posts (title, content, status) VALUES 
-      ('Test Post 1', 'Content 1', 'published'),
-      ('Test Post 2', 'Content 2', 'draft'),
-      ('Test Post 3', 'Content 3', 'published')`);
+    await provider.customFlexible({
+      query: `INSERT INTO posts (title, content, status) VALUES 
+        ('Test Post 1', 'Content 1', 'published'),
+        ('Test Post 2', 'Content 2', 'draft'),
+        ('Test Post 3', 'Content 3', 'published')`
+    });
   });
 
   afterAll(async () => {

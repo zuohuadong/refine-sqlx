@@ -23,23 +23,24 @@
 
 ## Getting Started
 
-With **refine-sql** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQL databases across multiple runtimes.
+With **refine-sql** and **refine-orm** you can quickly start creating your app as fast as possible by leveraging the easy-to-use methods powered by [refine](https://refine.dev) to interact with your SQL databases across multiple runtimes.
 
 ## Features
 
-- **Multi-runtime** - Supports Cloudflare D1, Node.js SQLite, and Bun SQLite.
-- **Well tested** - All the methods are tested using [Vitest](https://vitest.dev/).
-- **Fully featured** - All CRUD operations are supported.
-- **Edge ready** - Optimized for Cloudflare Workers and edge computing.
-- **Type safe** - Written in TypeScript with strict mode enabled.
-- **Zero dependencies** - Minimal bundle size with external peer dependencies.
+- **Multi-runtime** - Supports Cloudflare D1, Node.js SQLite, and Bun SQLite
+- **Flexible Queries** - Custom SQL queries and ORM integration with Drizzle
+- **Well tested** - All methods are tested using [Vitest](https://vitest.dev/)
+- **Fully featured** - Complete CRUD operations and advanced querying
+- **Edge ready** - Optimized for Cloudflare Workers and edge computing
+- **Type safe** - Written in TypeScript with strict mode enabled
+- **Auto Migration** - Parameter placeholder conversion across SQL dialects
 
 ## Packages
 
 This repository contains two packages:
 
-- **refine-sql** - Core SQL data provider for Refine
-- **refine-orm** - Drizzle ORM integration for extended database support
+- **refine-sql** - Core SQL data provider with custom query support
+- **refine-orm** - Drizzle ORM integration with multi-runtime support
 
 ## Installation
 
@@ -53,10 +54,9 @@ npm install refine-sql @refinedev/core
 
 ```bash
 npm install refine-orm drizzle-orm @refinedev/core
-# Plus your database driver:
-# npm install pg          # for PostgreSQL
-# npm install mysql2      # for MySQL
-# npm install better-sqlite3  # for SQLite
+# Plus your database driver (if needed):
+# npm install better-sqlite3  # for Node.js SQLite
+# (Bun SQLite is built-in, D1 is provided by Cloudflare)
 ```
 
 ## Quick Start
@@ -66,19 +66,19 @@ npm install refine-orm drizzle-orm @refinedev/core
 #### Cloudflare Worker with D1
 
 ```typescript
-import { dataProvider } from 'refine-sql';
+import { createDataProvider } from 'refine-sql';
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
-    const provider = dataProvider(env.DB);
+    const dataProvider = createDataProvider({
+      database: env.DB,
+      type: 'd1'
+    });
     
-    // Your API logic here
-    const posts = await provider.getList({
+    // Example usage
+    const posts = await dataProvider.getList({
       resource: 'posts',
-      pagination: { current: 1, pageSize: 10 },
-      filters: [],
-      sorters: [],
-      meta: {}
+      pagination: { current: 1, pageSize: 10 }
     });
     
     return new Response(JSON.stringify(posts), {
@@ -88,49 +88,115 @@ export default {
 };
 ```
 
-#### Node.js Application
+#### Node.js SQLite
 
 ```typescript
-import { dataProvider } from 'refine-sql';
+import { createDataProvider } from 'refine-sql';
+import Database from 'better-sqlite3';
 
-// Using a SQLite file path
-const provider = dataProvider('./database.db');
+const db = new Database('database.db');
+const dataProvider = createDataProvider({
+  database: db,
+  type: 'sqlite'
+});
 
-// Your application logic
-const users = await provider.getList({
+// Use with Refine or standalone
+const users = await dataProvider.getList({
   resource: 'users',
   pagination: { current: 1, pageSize: 10 }
 });
 ```
 
-### Using refine-orm (Drizzle Integration)
+#### Bun SQLite
 
 ```typescript
-import { dataProvider } from 'refine-orm';
-import { drizzle } from 'drizzle-orm/pg';
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { Pool } from 'pg';
+import { createDataProvider } from 'refine-sql';
+import { Database } from 'bun:sqlite';
 
-// Define your schema
-const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  content: text('content'),
-  createdAt: timestamp('created_at').defaultNow(),
+const db = new Database('database.db');
+const dataProvider = createDataProvider({
+  database: db,
+  type: 'bun-sqlite'
+});
+```
+
+#### Custom Queries
+
+```typescript
+// String-based custom query
+const result = await dataProvider.customFlexible({
+  query: 'SELECT * FROM users WHERE status = ? AND age > ?',
+  params: ['active', 25],
+  method: 'getList'
 });
 
-// Setup database connection
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool);
+// Function-based custom query (ORM-style)
+const result = await dataProvider.customFlexible({
+  query: (sql, params) => ({
+    sql: `SELECT u.*, p.name as profile_name 
+          FROM users u 
+          LEFT JOIN profiles p ON u.id = p.user_id 
+          WHERE u.status = ${params.placeholder()} 
+          AND u.created_at > ${params.placeholder()}`,
+    params: ['active', '2023-01-01']
+  }),
+  method: 'getList'
+});
+```
 
-// Create data provider
-const provider = dataProvider(db, {
-  resources: {
-    posts: {
-      table: posts,
-      primaryKey: 'id'
-    }
-  }
+### Using refine-orm (Drizzle Integration)
+
+#### Define Schema
+
+```typescript
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  status: text('status').notNull().default('active')
+});
+```
+
+#### Multi-Runtime Setup
+
+```typescript
+import { ormDataProvider } from 'refine-orm';
+import { createDrizzleConnection } from 'refine-orm/runtime';
+import * as schema from './schema';
+
+// Auto-detect runtime and create connection
+const { db, runtime } = await createDrizzleConnection({
+  databasePath: 'database.db', // For SQLite runtimes
+  // d1Database: env.DB        // For D1 runtime
+});
+
+const dataProvider = ormDataProvider({
+  db,
+  schema,
+  runtime // Auto-detected: 'node' | 'bun' | 'd1'
+});
+```
+
+#### Type-Safe Custom Queries
+
+```typescript
+import { eq, and, gte } from 'drizzle-orm';
+
+const result = await dataProvider.customOrm({
+  query: (db, schema) =>
+    db.select({
+      id: schema.users.id,
+      name: schema.users.name,
+      email: schema.users.email
+    })
+    .from(schema.users)
+    .where(and(
+      eq(schema.users.status, 'active'),
+      gte(schema.users.createdAt, '2023-01-01')
+    )),
+  method: 'getList'
 });
 ```
 
@@ -139,12 +205,15 @@ const provider = dataProvider(db, {
 ```tsx
 import React from 'react';
 import { Refine } from '@refinedev/core';
-import { dataProvider } from 'refine-sql'; // or 'refine-orm'
+import { createDataProvider } from 'refine-sql'; // or { ormDataProvider } from 'refine-orm'
 
 const App: React.FC = () => {
   return (
     <Refine
-      dataProvider={dataProvider(yourDatabase)}
+      dataProvider={createDataProvider({
+        database: yourDatabase,
+        type: 'sqlite' // or 'd1', 'bun-sqlite'
+      })}
       resources={[
         {
           name: 'posts',
@@ -170,140 +239,59 @@ const App: React.FC = () => {
   );
 };
 ```
-import { dataProvider } from 'refine-d1';
-
-export default {
-  async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
-    // Use in API routes or SSR
-    const provider = dataProvider(env.DB);
-    
-    // Example API endpoint
-    if (request.url.includes('/api/posts')) {
-      const posts = await provider.getList({ resource: 'posts' });
-      return new Response(JSON.stringify(posts));
-    }
-    
-    // Return your Refine app
-    return new Response(/* Your Refine SSR response */);
-  }
-};
-```
-
-### Standalone Usage (without Refine)
-
-```ts
-import { dataProvider } from 'refine-d1';
-
-const provider = dataProvider('./database.db');
-
-// All methods return promises
-const posts = await provider.getList({ 
-  resource: 'posts',
-  pagination: { current: 1, pageSize: 10 }
-});
-const response = await provider.getList({ resource: "posts" });
-```
-
-### Cloudflare Workers with D1
-
-```ts
-import { dataProvider } from "refine-d1";
-
-export default {
-  async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
-    const provider = dataProvider(env.DB);
-    const response = await provider.getList({ resource: "posts" });
-    return new Response(JSON.stringify(response));
-  }
-};
-```
-
-## Usage
-
-The `refine-d1` package provides a data provider that seamlessly integrates with the [Refine framework](https://refine.dev) to work with Cloudflare D1 databases in Workers/Edge environments.
-
-> **Note:** `resource` corresponds to the table name in your database.
-
-### Basic CRUD Operations
-
-```ts
-import { dataProvider } from "refine-d1";
-
-const provider = dataProvider(env.DB); // D1 in Workers
-
-// List records with filtering and sorting
-const posts = await provider.getList({
-  resource: "posts",
-  pagination: { current: 1, pageSize: 10 },
-  filters: [
-    {
-      field: "category_id",
-      operator: "eq", 
-      value: ["2"]
-    }
-  ],
-  sorters: [
-    {
-      field: "title",
-      order: "asc"
-    }
-  ]
-});
-
-// Create a new record
-const newPost = await provider.create({
-  resource: "posts",
-  variables: {
-    title: "Hello World",
-    content: "My first post",
-    category_id: 1
-  }
-});
-
-// Update a record  
-const updatedPost = await provider.update({
-  resource: "posts",
-  id: "1",
-  variables: {
-    title: "Updated Title"
-  }
-});
-
-// Get a single record
-const post = await provider.getOne({
-  resource: "posts", 
-  id: "1"
-});
-
-// Get multiple records by IDs
-const multiplePosts = await provider.getMany({
-  resource: "posts",
-  ids: ["1", "2", "3"]
-});
-
-// Delete a record
-await provider.deleteOne({
-  resource: "posts",
-  id: "1"
-});
-
-console.log(response)
-
-// {
-//   data: [
-//     { id: 6, title: 'Dolorem unde et officiis.', category_id: 2 },
-//     { id: 1, title: 'Soluta et est est.', category_id: 2 }
-//   ],
-//   total: 2
-// }
-```
 
 ## Documentation
+
+### English Documentation
+
+- [refine-sql Documentation](./docs/en/refine-sql.md) - Complete guide for the core SQL package
+- [refine-orm Documentation](./docs/en/refine-orm.md) - Complete guide for the ORM extension
+
+### 中文文档
+
+- [refine-sql 文档](./docs/zh-cn/refine-sql.md) - 核心 SQL 包完整指南
+- [refine-orm 文档](./docs/zh-cn/refine-orm.md) - ORM 扩展完整指南
+
+### Additional Resources
 
 - [Methods](https://github.com/zuohuadong/refine-sql/wiki/Methods)
 - [Filters](https://github.com/zuohuadong/refine-sql/wiki/Filters)
 - [Sorters](https://github.com/zuohuadong/refine-sql/wiki/Sorters)
 - [Cloudflare D1 Support](./CLOUDFLARE.md)
+- [Usage Guide](./USAGE-GUIDE.md)
+- [Deployment Guide](./DEPLOYMENT.md)
+
+## Examples
+
+Check the `/examples` directory for complete working examples:
+
+- `cloudflare-worker.ts` - Cloudflare Worker with D1
+- `nodejs-app.js` - Node.js application with SQLite
+- `bun-app.ts` - Bun application with SQLite
+- `universal.js` - Universal/isomorphic usage
+
+## API Overview
+
+### Core CRUD Operations
+
+Both packages support all standard Refine data provider methods:
+
+- `getList()` - Retrieve paginated records with filtering and sorting
+- `getOne()` - Get a single record by ID
+- `getMany()` - Get multiple records by IDs
+- `create()` - Create a new record
+- `createMany()` - Create multiple records
+- `update()` - Update an existing record
+- `updateMany()` - Update multiple records
+- `deleteOne()` - Delete a single record
+- `deleteMany()` - Delete multiple records
+
+### Advanced Features
+
+- **customFlexible()** (refine-sql) - Execute custom SQL queries with flexible parameter binding
+- **customOrm()** (refine-orm) - Execute type-safe Drizzle ORM queries
+- **Multi-runtime support** - Automatic detection and adaptation
+- **Parameter conversion** - Automatic conversion between different SQL dialects
  
 ## Development
 
