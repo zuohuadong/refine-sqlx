@@ -3,6 +3,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 // Get Node.js version
 const nodeVersion = process.version;
@@ -16,28 +17,31 @@ const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 if (isCI) {
   console.log('Running in CI environment');
   
-  // Set up temp directory for CI
-  const tempDir = path.join(process.cwd(), 'temp-test-data');
+  // Set up temp directory for CI in /tmp for better permissions
+  const tempDir = path.join(os.tmpdir(), `refine-sql-test-${Date.now()}`);
   try {
     if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+      fs.mkdirSync(tempDir, { recursive: true, mode: 0o755 });
     }
-    // Set permissions
-    fs.chmodSync(tempDir, 0o755);
     console.log(`Created temp directory: ${tempDir}`);
-  } catch (err) {
-    console.log('Warning: Could not create temp directory:', err.message);
-  }
-  
-  // Test write permissions
-  try {
+    
+    // Set environment variable for tests to use this directory
+    process.env.TEST_DB_DIR = tempDir;
+    
+    // Test write permissions
     const testFile = path.join(tempDir, 'write-test.txt');
     fs.writeFileSync(testFile, 'test');
     fs.unlinkSync(testFile);
     console.log('Write permissions confirmed');
   } catch (err) {
-    console.log('Warning: Write test failed:', err.message);
+    console.log('Warning: Could not create temp directory:', err.message);
+    // Fallback to current directory
+    process.env.TEST_DB_DIR = process.cwd();
   }
+  
+  // Set CI-specific environment variables
+  process.env.CI_TESTING = 'true';
+  process.env.FORCE_MEMORY_DB = 'true';
 }
 
 // Clean up old test databases
