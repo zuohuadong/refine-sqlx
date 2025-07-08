@@ -137,3 +137,4 @@ test-nodejs.db
 test-enhanced-*.db
 test-*.db
 *.test.db
+test.db

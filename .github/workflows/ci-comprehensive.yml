@@ -1,4 +1,4 @@
-name: CI/CD
+name: Comprehensive CI/CD
 
 on:
   push:
@@ -8,13 +8,17 @@ on:
   release:
     types: [ published ]
 
+env:
+  NODE_OPTIONS: --experimental-sqlite
+
 jobs:
   test:
-    name: Test
+    name: Test on Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [22, 24]
+      fail-fast: false
     
     steps:
       - uses: actions/checkout@v4
@@ -34,14 +38,19 @@ jobs:
       - name: Check Node.js version and SQLite support
         run: |
           node --version
+          echo "Node.js version: $(node --version)"
+          echo "NPM version: $(npm --version)"
           echo "Testing Node.js SQLite support..."
           node --experimental-sqlite -e "console.log('SQLite experimental flag is working')" || echo "SQLite experimental flag not available"
+          echo "Testing node:sqlite import..."
+          node --experimental-sqlite -e "import('node:sqlite').then(() => console.log('node:sqlite import successful')).catch(e => console.log('node:sqlite import failed:', e.message))" || echo "node:sqlite test failed"
           
       - name: Clean up previous test databases
         run: |
           rm -f test-*.db
           rm -f *.test.db
           rm -f test-nodejs.db
+          echo "Cleaned up test databases"
       
       - name: Run tests (refine-sql)
         run: npm run test:run
@@ -58,6 +67,11 @@ jobs:
         
       - name: Build all packages
         run: npm run build:all
+        
+      - name: Test build output
+        run: |
+          ls -la dist/
+          echo "Build artifacts created successfully"
 
   test-with-coverage:
     name: Test with Coverage
