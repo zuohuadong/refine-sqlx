@@ -237,8 +237,19 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
             const adapter = createAdapter();
             
             if (typeof params.query === "string") {
-                const data = await adapter.query(params.query, params.params);
-                return { data };
+                // 对于 INSERT, UPDATE, DELETE 等操作，使用 execute
+                if (params.query.trim().toUpperCase().startsWith('INSERT') || 
+                    params.query.trim().toUpperCase().startsWith('UPDATE') || 
+                    params.query.trim().toUpperCase().startsWith('DELETE') ||
+                    params.query.trim().toUpperCase().startsWith('CREATE') ||
+                    params.query.trim().toUpperCase().startsWith('DROP')) {
+                    const result = await adapter.execute(params.query, params.params);
+                    return { data: result };
+                } else {
+                    // 对于 SELECT 等查询操作，使用 query
+                    const data = await adapter.query(params.query, params.params);
+                    return { data };
+                }
             } else {
                 const enhancedAdapter: EnhancedAdapter = {
                     query: adapter.query.bind(adapter),
@@ -256,8 +267,19 @@ export const dataProvider = (dbInput: D1Database | string, config?: EnhancedConf
             const adapter = createAdapter();
             
             if (typeof query === "string") {
-                const data = await adapter.query(query, params);
-                return { data };
+                // 对于 INSERT, UPDATE, DELETE 等操作，使用 execute
+                if (query.trim().toUpperCase().startsWith('INSERT') || 
+                    query.trim().toUpperCase().startsWith('UPDATE') || 
+                    query.trim().toUpperCase().startsWith('DELETE') ||
+                    query.trim().toUpperCase().startsWith('CREATE') ||
+                    query.trim().toUpperCase().startsWith('DROP')) {
+                    const result = await adapter.execute(query, params);
+                    return { data: result };
+                } else {
+                    // 对于 SELECT 等查询操作，使用 query
+                    const data = await adapter.query(query, params);
+                    return { data };
+                }
             } else {
                 const enhancedAdapter: EnhancedAdapter = {
                     query: adapter.query.bind(adapter),

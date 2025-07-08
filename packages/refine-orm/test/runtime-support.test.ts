@@ -17,7 +17,7 @@ describe('refine-orm Multi-Runtime Support', () => {
     
     let config: OrmConfig;
     
-    if (isBun) {
+    if (isBun && (globalThis as any).Bun?.sqlite) {
       config = {
         database: 'bun-sqlite',
         databasePath: testDbPath,
@@ -30,7 +30,8 @@ describe('refine-orm Multi-Runtime Support', () => {
         logger: false
       };
     } else {
-      // 跳过测试，如果不是支持的运行时
+      // 如果没有合适的运行时，跳过所有测试
+      console.log('Skipping refine-orm tests: No supported runtime environment');
       return;
     }
 
@@ -74,7 +75,8 @@ describe('refine-orm Multi-Runtime Support', () => {
     const { detectRuntime } = await import('../src/runtime-adapter');
     const runtime = detectRuntime();
     
-    if (typeof globalThis !== 'undefined' && 'Bun' in globalThis) {
+    // 检查实际的运行时环境
+    if (typeof globalThis !== 'undefined' && 'Bun' in globalThis && (globalThis as any).Bun?.sqlite) {
       expect(runtime).toBe('bun-sqlite');
     } else if (typeof globalThis !== 'undefined' && 'process' in globalThis) {
       expect(runtime).toBe('node-sqlite');
@@ -84,7 +86,10 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should perform basic CRUD operations', async () => {
-    if (!provider) return; // 跳过如果运行时不支持
+    if (!provider) {
+      console.log('Skipping CRUD test: Provider not initialized');
+      return; // 跳过如果运行时不支持
+    }
 
     // 创建
     const created = await provider.create({
@@ -130,6 +135,10 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should handle list operations with filtering', async () => {
+    if (!provider) {
+      console.log('Skipping list operations test: Provider not initialized');
+      return;
+    }
     if (!provider) return;
 
     const result = await provider.getList({
@@ -154,6 +163,10 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should support custom ORM queries', async () => {
+    if (!provider) {
+      console.log('Skipping custom ORM queries test: Provider not initialized');
+      return;
+    }
     if (!provider) return;
 
     // 字符串查询
@@ -184,6 +197,10 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should support transactions', async () => {
+    if (!provider) {
+      console.log('Skipping transactions test: Provider not initialized');
+      return;
+    }
     if (!provider) return;
 
     const result = await provider.transaction(async (tx) => {
@@ -217,6 +234,10 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should handle runtime-specific error cases', async () => {
+    if (!provider) {
+      console.log('Skipping error cases test: Provider not initialized');
+      return;
+    }
     if (!provider) return;
 
     // 测试无效 SQL

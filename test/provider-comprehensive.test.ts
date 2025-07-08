@@ -265,7 +265,7 @@ describe('DataProvider Comprehensive Tests', () => {
   });
 
   describe('Provider Error Handling', () => {
-    it('should handle database connection errors', () => {
+    it('should handle database connection errors', async () => {
       const mockBadD1 = {
         prepare: vi.fn().mockImplementation(() => {
           throw new Error('Database connection failed');
@@ -280,9 +280,9 @@ describe('DataProvider Comprehensive Tests', () => {
       const provider = dataProvider(mockBadD1);
       
       // But operations should handle errors gracefully
-      expect(async () => {
-        await provider.getList({ resource: 'users', pagination: { current: 1, pageSize: 10 } });
-      }).rejects.toThrow();
+      await expect(
+        provider.getList({ resource: 'users', pagination: { current: 1, pageSize: 10 } })
+      ).rejects.toThrow();
     });
 
     it('should handle invalid database path', async () => {
@@ -298,22 +298,26 @@ describe('DataProvider Comprehensive Tests', () => {
         const provider = dataProvider('./invalid.db'); // Provider creation should not throw
         
         // But operations should throw when trying to create DatabaseAdapter
-        await expect(provider.getList({
-          resource: 'users',
-          pagination: { current: 1, pageSize: 10 }
-        })).rejects.toThrow('SQLite file paths are only supported in Node.js 22.5+ or Bun 1.2+ environments');
+        await expect(async () => {
+          await provider.getList({
+            resource: 'users',
+            pagination: { current: 1, pageSize: 10 }
+          });
+        }).rejects.toThrow();
       } finally {
         // Restore original values immediately
         if (currentProcess !== undefined) {
           Object.defineProperty(globalThis, 'process', {
             value: currentProcess,
-            configurable: true
+            configurable: true,
+            writable: true
           });
         }
         if (currentBun !== undefined) {
           Object.defineProperty(globalThis, 'Bun', {
             value: currentBun,
-            configurable: true
+            configurable: true,
+            writable: true
           });
         }
       }

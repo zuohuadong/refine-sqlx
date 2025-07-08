@@ -262,8 +262,19 @@ export const ormDataProvider = (config: OrmConfig) => {
     // 自定义查询，支持原始 SQL 和 ORM
     customOrm: async ({ query, params }: { query: string | ((adapter: OrmAdapter) => Promise<any>); params?: any[] }) => {
       if (typeof query === "string") {
-        const data = await ormAdapter.query(query, params);
-        return { data };
+        // 对于 INSERT, UPDATE, DELETE 等操作，使用 execute
+        if (query.trim().toUpperCase().startsWith('INSERT') || 
+            query.trim().toUpperCase().startsWith('UPDATE') || 
+            query.trim().toUpperCase().startsWith('DELETE') ||
+            query.trim().toUpperCase().startsWith('CREATE') ||
+            query.trim().toUpperCase().startsWith('DROP')) {
+          const result = await ormAdapter.execute(query, params);
+          return { data: result };
+        } else {
+          // 对于 SELECT 等查询操作，使用 query
+          const data = await ormAdapter.query(query, params);
+          return { data };
+        }
       } else {
         const data = await query(ormAdapter);
         return { data };

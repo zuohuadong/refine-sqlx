@@ -113,17 +113,9 @@ describe('Multi-Runtime Integration Tests', () => {
           setup: () => {
             vi.stubGlobal('process', { versions: { node: '22.5.0' } });
             vi.stubGlobal('Bun', undefined);
-            vi.doMock('node:sqlite', () => ({
-              DatabaseSync: vi.fn().mockImplementation(() => ({
-                prepare: vi.fn().mockReturnValue({
-                  all: vi.fn().mockReturnValue([{ id: 1, name: 'Test', email: 'test@example.com' }]),
-                  get: vi.fn().mockReturnValue({ id: 1, name: 'Test', email: 'test@example.com' }),
-                  run: vi.fn().mockReturnValue({ changes: 1, lastInsertRowid: 1 }),
-                }),
-                close: vi.fn(),
-              })),
-            }));
-            return './test-nodejs.db' as any;
+            // For Node.js, return a real database path instead of mocking
+            // The actual database will be created with real node:sqlite
+            return `./test-nodejs-${Date.now()}.db`;
           }
         }
     ];
@@ -131,13 +123,27 @@ describe('Multi-Runtime Integration Tests', () => {
     testCases.forEach(({ name, setup }) => {
       describe(`${name} Runtime`, () => {
         let dbInput: any;
-        let adapter: DatabaseAdapter;
-        let provider: ReturnType<typeof dataProvider>;
+        let adapter: DatabaseAdapter | null;
+        let provider: ReturnType<typeof dataProvider> | null;
 
-        beforeEach(() => {
+        beforeEach(async () => {
           dbInput = setup();
           adapter = new DatabaseAdapter(dbInput);
           provider = dataProvider(dbInput);
+          
+          // For Node.js runtime, create the users table
+          if (name === 'Node.js') {
+            try {
+              // Add a small delay to ensure database is initialized
+              await new Promise(resolve => setTimeout(resolve, 50));
+              await adapter.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)');
+            } catch (error) {
+              console.log('Skipping Node.js tests: SQLite module not available:', error.message);
+              // If Node.js SQLite fails, we'll skip the tests by setting adapter to null
+              adapter = null;
+              provider = null;
+            }
+          }
         });
 
         it('should create adapter successfully', () => {
@@ -170,12 +176,20 @@ describe('Multi-Runtime Integration Tests', () => {
         });
 
         it('should handle provider getList', async () => {
+          // Insert test data for Node.js runtime
+          if (name === 'Node.js') {
+            await adapter.execute('INSERT INTO users (name, email) VALUES (?, ?)', ['Test User', 'test@example.com']);
+          }
           const result = await provider.getList({ resource: 'users', pagination: { current: 1, pageSize: 10 } });
           expect(result).toHaveProperty('data');
           expect(result).toHaveProperty('total');
         });
 
         it('should handle provider getOne', async () => {
+          // Insert test data for Node.js runtime
+          if (name === 'Node.js') {
+            await adapter.execute('INSERT INTO users (name, email) VALUES (?, ?)', ['Test User', 'test@example.com']);
+          }
           const result = await provider.getOne({ resource: 'users', id: '1' });
           expect(result).toHaveProperty('data');
         });
@@ -186,11 +200,19 @@ describe('Multi-Runtime Integration Tests', () => {
         });
 
         it('should handle provider update', async () => {
+          // Insert test data for Node.js runtime
+          if (name === 'Node.js') {
+            await adapter.execute('INSERT INTO users (name, email) VALUES (?, ?)', ['Test User', 'test@example.com']);
+          }
           const result = await provider.update({ resource: 'users', id: '1', variables: { name: 'Updated User' } });
           expect(result).toHaveProperty('data');
         });
 
         it('should handle provider delete', async () => {
+          // Insert test data for Node.js runtime
+          if (name === 'Node.js') {
+            await adapter.execute('INSERT INTO users (name, email) VALUES (?, ?)', ['Test User', 'test@example.com']);
+          }
           const result = await provider.deleteOne({ resource: 'users', id: '1' });
           expect(result).toHaveProperty('data');
         });
