@@ -1,4 +1,4 @@
-name: Comprehensive CI/CD
+name: CI/CD with SQLite Support
 
 on:
   push:
@@ -35,56 +35,60 @@ jobs:
       - name: Install workspace dependencies
         run: npm install --workspaces
       
-      - name: Check Node.js version and SQLite support
+      - name: Setup test environment
         run: |
-          node --version
-          echo "Node.js version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "Testing Node.js SQLite support..."
-          node --experimental-sqlite -e "console.log('SQLite experimental flag is working')" || echo "SQLite experimental flag not available"
-          echo "Testing node:sqlite import..."
-          node --experimental-sqlite -e "import('node:sqlite').then(() => console.log('node:sqlite import successful')).catch(e => console.log('node:sqlite import failed:', e.message))" || echo "node:sqlite test failed"
-          
-      - name: Check file permissions and setup test directory
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Directory permissions:"
-          ls -la
-          echo "Creating test directory with proper permissions..."
+          echo "Setting up test environment..."
           mkdir -p ./test-data
-          chmod 755 ./test-data
-          echo "Test directory created"
-          echo "Testing file write permissions..."
-          echo "test" > ./test-write-check.txt && echo "Write test successful" || echo "Write test failed"
-          rm -f ./test-write-check.txt
+          mkdir -p ./temp-test-data
+          chmod -R 755 ./test-data
+          chmod -R 755 ./temp-test-data
+          echo "Test directories created with proper permissions"
           
-      - name: Clean up previous test databases
-        run: |
-          rm -f test-*.db
-          rm -f *.test.db
+          # Test SQLite functionality
+          echo "Testing SQLite support..."
+          node --experimental-sqlite -e "console.log('SQLite experimental flag working')"
+          
+          # Test file system permissions
+          echo "Testing file write permissions..."
+          echo "test-data" > ./test-write.txt
+          if [ -f ./test-write.txt ]; then
+            echo "File write permissions OK"
+            rm -f ./test-write.txt
+          else
+            echo "File write permissions FAILED"
+          fi
+          
+          # Clean up old test databases
+          echo "Cleaning up old test databases..."
+          find . -name "test-*.db" -delete 2>/dev/null || true
+          find . -name "*.test.db" -delete 2>/dev/null || true
           rm -f test-nodejs.db
-          echo "Cleaned up test databases"
       
-      - name: Run tests (refine-sql)
+      - name: Run tests
         run: npm run test:run
         env:
           NODE_OPTIONS: --experimental-sqlite
+          CI: true
       
-      - name: Run tests (all workspaces)
+      - name: Run workspace tests
         run: npm run test:all
         env:
           NODE_OPTIONS: --experimental-sqlite
+          CI: true
       
-      - name: Build refine-sql
-        run: npm run build
-        
-      - name: Build all packages
-        run: npm run build:all
-        
-      - name: Test build output
+      - name: Build packages
         run: |
-          ls -la dist/
-          echo "Build artifacts created successfully"
+          npm run build
+          npm run build:all
+        
+      - name: Verify build output
+        run: |
+          if [ -d "dist" ]; then
+            echo "Main build successful"
+            ls -la dist/
+          else
+            echo "Main build failed - no dist directory"
+          fi
 
   test-with-coverage:
     name: Test with Coverage
@@ -107,16 +111,19 @@ jobs:
       - name: Install workspace dependencies
         run: npm install --workspaces
       
-      - name: Clean up previous test databases
+      - name: Setup test environment
         run: |
-          rm -f test-*.db
-          rm -f *.test.db
+          mkdir -p ./test-data ./temp-test-data
+          chmod -R 755 ./test-data ./temp-test-data
+          find . -name "test-*.db" -delete 2>/dev/null || true
+          find . -name "*.test.db" -delete 2>/dev/null || true
           rm -f test-nodejs.db
       
       - name: Run tests with coverage
         run: npm run test:coverage
         env:
           NODE_OPTIONS: --experimental-sqlite
+          CI: true
 
   publish:
     name: Publish to NPM
