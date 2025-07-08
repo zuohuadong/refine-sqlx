@@ -1,7 +1,7 @@
 {
   "name": "refine-sql",
   "description": "Multi-runtime SQL data provider for Refine - Supports Cloudflare D1, Node.js 22.5+ native SQLite, and Bun 1.2+ native SQLite with zero bundle overhead",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "workspaces": [
     "packages/*"
