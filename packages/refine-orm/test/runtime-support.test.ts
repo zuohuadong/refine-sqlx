@@ -54,7 +54,7 @@ describe('refine-orm Multi-Runtime Support', () => {
     }
     
     // 创建测试表
-    await provider.customOrm({
+    const tableResult = await provider.customOrm({
       query: `CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -63,14 +63,31 @@ describe('refine-orm Multi-Runtime Support', () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`
     });
+    console.log('Table creation result:', tableResult);
     
-    // 插入测试数据
-    await provider.customOrm({
-      query: `INSERT INTO posts (title, content, status) VALUES 
-        ('Runtime Test 1', 'Content 1', 'published'),
-        ('Runtime Test 2', 'Content 2', 'draft'),
-        ('Runtime Test 3', 'Content 3', 'published')`
+    // 插入测试数据 - 使用逐个插入
+    const insertResult1 = await provider.customOrm({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Runtime Test 1', 'Content 1', 'published']
     });
+    
+    const insertResult2 = await provider.customOrm({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Runtime Test 2', 'Content 2', 'draft']
+    });
+    
+    const insertResult3 = await provider.customOrm({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Runtime Test 3', 'Content 3', 'published']
+    });
+    
+    console.log('Insert results:', { insertResult1, insertResult2, insertResult3 });
+    
+    // 验证数据插入成功
+    const verifyResult = await provider.customOrm({
+      query: 'SELECT COUNT(*) as count FROM posts'
+    });
+    console.log('Data verification:', verifyResult);
   });
 
   afterAll(async () => {

@@ -28,7 +28,7 @@ describe('customFlexible Method Tests', () => {
     }
     
     // 使用 customEnhanced 来创建表，确保数据库正确初始化
-    await provider.customEnhanced({
+    const tableResult = await provider.customEnhanced({
       query: `CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -36,14 +36,31 @@ describe('customFlexible Method Tests', () => {
         status TEXT DEFAULT 'draft'
       )`
     });
+    console.log('Table creation result:', tableResult);
     
-    // 插入测试数据
-    await provider.customEnhanced({
-      query: `INSERT INTO posts (title, content, status) VALUES 
-        ('Post 1', 'Content 1', 'published'),
-        ('Post 2', 'Content 2', 'draft'),
-        ('Post 3', 'Content 3', 'published')`
+    // 插入测试数据 - 使用逐个插入
+    const insertResult1 = await provider.customEnhanced({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Post 1', 'Content 1', 'published']
     });
+    
+    const insertResult2 = await provider.customEnhanced({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Post 2', 'Content 2', 'draft']
+    });
+    
+    const insertResult3 = await provider.customEnhanced({
+      query: `INSERT INTO posts (title, content, status) VALUES (?, ?, ?)`,
+      params: ['Post 3', 'Content 3', 'published']
+    });
+    
+    console.log('Insert results:', { insertResult1, insertResult2, insertResult3 });
+    
+    // 验证数据插入成功
+    const verifyResult = await provider.customEnhanced({
+      query: 'SELECT COUNT(*) as count FROM posts'
+    });
+    console.log('Data verification:', verifyResult);
   });
 
   afterAll(async () => {
