@@ -12,7 +12,20 @@ describe('customFlexible Method Tests', () => {
     provider = dataProvider(testDbPath);
     
     // 确保数据库正确初始化，等待一下
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // 尝试初始化数据库连接
+    try {
+      await provider.customEnhanced({
+        query: 'SELECT 1'
+      });
+    } catch (error) {
+      // 再等待一下重试
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await provider.customEnhanced({
+        query: 'SELECT 1'
+      });
+    }
     
     // 使用 customEnhanced 来创建表，确保数据库正确初始化
     await provider.customEnhanced({

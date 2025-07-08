@@ -37,6 +37,22 @@ describe('refine-orm Multi-Runtime Support', () => {
 
     provider = ormDataProvider(config);
     
+    // 添加延迟以确保数据库正确初始化
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // 尝试初始化数据库连接
+    try {
+      await provider.customOrm({
+        query: 'SELECT 1'
+      });
+    } catch (error) {
+      // 再等待一下重试
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await provider.customOrm({
+        query: 'SELECT 1'
+      });
+    }
+    
     // 创建测试表
     await provider.customOrm({
       query: `CREATE TABLE IF NOT EXISTS posts (

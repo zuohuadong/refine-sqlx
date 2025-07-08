@@ -19,11 +19,21 @@ describe('Enhanced DataProvider Features', () => {
     provider = dataProvider(testDbPath, config);
     
     // 等待数据库初始化完成
+    // 添加延迟以确保数据库正确初始化
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     // 使用一个简单的查询来确保数据库连接就绪
     try {
       await provider.customFlexible({ query: 'SELECT 1' });
     } catch (error) {
-      // 如果查询失败，继续创建表
+      // 如果查询失败，再等待一下并重试
+      await new Promise(resolve => setTimeout(resolve, 300));
+      try {
+        await provider.customFlexible({ query: 'SELECT 1' });
+      } catch (retryError) {
+        console.error('Database initialization failed:', retryError);
+        throw retryError;
+      }
     }
     
     // 创建测试表
@@ -38,12 +48,21 @@ describe('Enhanced DataProvider Features', () => {
     });
     
     // 插入测试数据
-    await provider.customFlexible({
+    const insertResult = await provider.customFlexible({
       query: `INSERT INTO posts (title, content, status) VALUES 
         ('Test Post 1', 'Content 1', 'published'),
         ('Test Post 2', 'Content 2', 'draft'),
         ('Test Post 3', 'Content 3', 'published')`
     });
+    
+    // 验证数据插入成功
+    console.log('Insert result:', insertResult);
+    
+    // 验证数据是否插入成功
+    const verifyResult = await provider.customFlexible({
+      query: 'SELECT COUNT(*) as count FROM posts'
+    });
+    console.log('Data verification:', verifyResult);
   });
 
   afterAll(async () => {
@@ -133,7 +152,11 @@ describe('Enhanced DataProvider Features', () => {
       query: 'SELECT COUNT(*) as count FROM posts'
     });
     
-    expect(finalCount.data[0].count).toBe(initialCount.data[0].count);
+    // 由于是 SELECT 查询，应该返回数组
+    expect(Array.isArray(finalCount.data)).toBe(true);
+    const finalCountData = finalCount.data as any[];
+    const initialCountData = initialCount.data as any[];
+    expect(finalCountData[0].count).toBe(initialCountData[0].count);
   });
 
   test('customEnhanced - 字符串查询', async () => {
@@ -144,8 +167,9 @@ describe('Enhanced DataProvider Features', () => {
 
     expect(result.data).toBeDefined();
     expect(Array.isArray(result.data)).toBe(true);
-    expect(result.data[0]).toHaveProperty('total');
-    expect(typeof result.data[0].total).toBe('number');
+    const resultData = result.data as any[];
+    expect(resultData[0]).toHaveProperty('total');
+    expect(typeof resultData[0].total).toBe('number');
   });
 
   test('customEnhanced - 回调函数查询', async () => {
@@ -167,10 +191,11 @@ describe('Enhanced DataProvider Features', () => {
 
     expect(result.data).toBeDefined();
     expect(Array.isArray(result.data)).toBe(true);
-    expect(result.data.length).toBeGreaterThan(0);
-    expect(result.data[0]).toHaveProperty('processed', true);
-    expect(result.data[0]).toHaveProperty('titleUpperCase');
-    expect(result.data[0].titleUpperCase).toBe(result.data[0].title.toUpperCase());
+    const resultData = result.data as any[];
+    expect(resultData.length).toBeGreaterThan(0);
+    expect(resultData[0]).toHaveProperty('processed', true);
+    expect(resultData[0]).toHaveProperty('titleUpperCase');
+    expect(resultData[0].titleUpperCase).toBe(resultData[0].title.toUpperCase());
   });
 
   test('batch - 批量操作', async () => {

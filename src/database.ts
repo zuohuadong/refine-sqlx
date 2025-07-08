@@ -7,6 +7,7 @@ export class DatabaseAdapter {
   private db: any;
   private runtime: RuntimeType;
   private initPromise?: Promise<void>;
+  private isInitialized: boolean = false;
 
   constructor(dbInput: DatabaseInput) {
     if (!dbInput) throw new Error('Database instance or path is required');
@@ -16,6 +17,7 @@ export class DatabaseAdapter {
       if (this.runtime === 'bun-sqlite') {
         try {
           this.db = new ((globalThis as any).Bun.sqlite)(dbInput);
+          this.isInitialized = true;
         } catch (error) {
           throw new Error(`Failed to initialize Bun SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
         }
@@ -25,13 +27,21 @@ export class DatabaseAdapter {
     } else {
       this.runtime = 'd1';
       this.db = dbInput;
+      this.isInitialized = true;
     }
   }
 
   private async _ensureInit(): Promise<void> {
+    if (this.isInitialized) return;
+    
     if (this.initPromise) {
       await this.initPromise;
       this.initPromise = undefined;
+      this.isInitialized = true;
+    }
+    
+    if (!this.db) {
+      throw new Error('Database not properly initialized');
     }
   }
 
@@ -45,6 +55,7 @@ export class DatabaseAdapter {
     try {
       const sqlite = await import('node:sqlite' as any);
       this.db = new (sqlite as any).DatabaseSync(path);
+      this.isInitialized = true;
     } catch (error) {
       throw new Error(`Failed to initialize Node.js SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
     }
