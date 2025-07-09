@@ -1,5 +1,20 @@
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
-import type { SqlResult } from './client';
+import type { SqlQuery, SqlResult } from './client';
+
+export function createInsertQuery<T extends Record<string, any>>(
+  table: string,
+  data: T,
+): SqlQuery {
+  const columns = Object.keys(data).join(', ');
+  const placeholders = Object.keys(data)
+    .map(() => '?')
+    .join(', ');
+
+  return {
+    sql: `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`,
+    args: Object.values(data),
+  };
+}
 
 export function deserializeSqlResult({ columnNames, rows }: SqlResult) {
   return rows.map((row) =>
@@ -9,31 +24,34 @@ export function deserializeSqlResult({ columnNames, rows }: SqlResult) {
   );
 }
 
-export function createPagination(pagination?: Pagination) {
+export function createPagination(
+  pagination?: Pagination,
+): SqlQuery | undefined {
   if (!pagination) return void 0;
   const { pageSize = 10, current = 1 } = pagination;
 
   return {
     sql: `LIMIT ? OFFSET ?`,
-    values: [pageSize, (current - 1) * pageSize],
+    args: [pageSize, (current - 1) * pageSize],
   };
 }
 
-export function createCrudSorting(sort?: CrudSorting) {
+export function createCrudSorting(sort?: CrudSorting): SqlQuery | undefined {
   if (!sort?.length) return void 0;
 
-  return sort
+  const sql = sort
     .map(({ field, order }) => `${field} ${order.toUpperCase()}`)
     .join(', ');
+  return { sql, args: [] };
 }
 
-export function createCrudFilters(filters?: CrudFilters) {
+export function createCrudFilters(filters?: CrudFilters): SqlQuery | undefined {
   if (!filters?.length) return void 0;
 
   const result = processFilters(filters);
   if (!result?.parts) return void 0;
 
-  return { sql: result.parts.join(' AND '), values: result.values };
+  return { sql: result.parts.join(' AND '), args: result.values };
 }
 
 function processFilters(filters: CrudFilters) {

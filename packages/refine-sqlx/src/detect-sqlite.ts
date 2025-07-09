@@ -83,6 +83,7 @@ function deleteSqlitePkgIdentifer() {
   return SqlitePkg.generic;
 }
 
+// TODO: batch
 function createD1Client(d1: D1Database): SqlClient {
   return { query, execute };
 
@@ -103,6 +104,7 @@ function createD1Client(d1: D1Database): SqlClient {
   }
 }
 
+// TODO: transaction
 function createBunClient(db: BunDatabase): SqlClient {
   return { query, execute };
 
@@ -123,6 +125,7 @@ function createBunClient(db: BunDatabase): SqlClient {
   }
 }
 
+// TODO: transaction
 function createNodeClient(db: NodeDatabase): SqlClient {
   return { query, execute };
 
@@ -153,6 +156,7 @@ function createNodeClient(db: NodeDatabase): SqlClient {
   }
 }
 
+// TODO: transaction
 function createGenericClient(db: BetterSqlite3.Database): SqlClient {
   return { query, execute };
 

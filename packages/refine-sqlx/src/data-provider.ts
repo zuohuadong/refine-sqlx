@@ -1,4 +1,5 @@
 import type {
+  BaseKey,
   BaseRecord,
   CreateManyParams,
   CreateManyResponse,
@@ -20,10 +21,11 @@ import type {
   UpdateParams,
   UpdateResponse,
 } from '@refinedev/core';
-import type { SqlClient, SqlClientFactory } from './client';
+import type { SqlClient, SqlClientFactory, SqlResult } from './client';
 import {
   createCrudFilters,
   createCrudSorting,
+  createInsertQuery,
   createPagination,
   deserializeSqlResult,
 } from './utils';
@@ -64,16 +66,16 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     const where = createCrudFilters(params.filters);
     if (where?.sql) {
       sqlParts.push('WHERE', where.sql);
-      sqlValues.push(...where.values);
+      sqlValues.push(...where.args);
     }
 
     const sort = createCrudSorting(params.sorters);
-    if (sort) sqlParts.push('ORDER BY', sort);
+    if (sort) sqlParts.push('ORDER BY', sort.sql);
 
     const pagination = createPagination(params.pagination);
     if (pagination?.sql) {
       sqlParts.push(pagination.sql);
-      sqlValues.push(...pagination.values);
+      sqlValues.push(...pagination.args);
     }
 
     const result = await client.query({
@@ -98,9 +100,12 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     if (!params.ids.length) return { data: [] };
 
     const client = await resolveClient();
-    const placeholder = params.ids.map(() => '?').join(', ');
-    const sql = `SELECT * FROM ${params.resource} WHERE id IN (${placeholder})`;
-    const result = await client.query({ sql, args: params.ids });
+    const where = createCrudFilters([
+      { field: 'id', operator: 'in', value: params.ids },
+    ])!;
+
+    const sql = `SELECT * FROM ${params.resource} WHERE ${where.sql}`;
+    const result = await client.query({ sql, args: where.args });
 
     return { data: deserializeSqlResult(result) as T[] };
   }
@@ -120,11 +125,8 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     params: CreateParams<Variables>,
   ): Promise<CreateResponse<T>> {
     const client = await resolveClient();
-    const columns = Object.keys(params.variables as any);
-    const placeholder = '?, '.repeat(columns.length).slice(0, -2);
-    const values = Object.values(params.variables as any);
-    const sql = `INSERT INTO ${params.resource} (${columns.join(', ')}) VALUES (${placeholder})`;
-    const { lastInsertId } = await client.execute({ sql, args: values });
+    const query = createInsertQuery(params.resource, params.variables as any);
+    const { lastInsertId } = await client.execute(query);
     if (!lastInsertId) {
       throw new Error('Create operation failed');
     }
@@ -136,10 +138,47 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     params: CreateManyParams<Variables>,
   ): Promise<CreateManyResponse<T>> {
     if (!params.variables.length) return { data: [] };
-
     const client = await resolveClient();
 
-    throw new Error('Unimplemented');
+    if (!('batch' in client || 'transaction' in client)) {
+      const response = await Promise.all(
+        params.variables.map((e) =>
+          create({ resource: params.resource, variables: e }),
+        ),
+      );
+      return { data: response.map((e) => e.data as T) };
+    } else if ('batch' in client) {
+      const query = params.variables.map((e) =>
+        createInsertQuery(params.resource, e as any),
+      );
+      const result = await client.batch!(query);
+      const data = result
+        .map((e) => {
+          if ('changes' in e || 'lastInsertId' in e) return void 0;
+          return deserializeSqlResult(e as SqlResult);
+        })
+        .filter(Boolean);
+      return { data: data as unknown as T[] };
+    }
+
+    const ids = await client.transaction!(async (tx) => {
+      return Promise.all(
+        params.variables.map(async (e) => {
+          const query = createInsertQuery(
+            params.resource,
+            params.variables as any,
+          );
+          const { lastInsertId } = await client.execute(query);
+          if (!lastInsertId) {
+            throw new Error('Failed to create record');
+          }
+
+          return lastInsertId;
+        }),
+      );
+    });
+
+    return getMany({ resource: params.resource, ids });
   }
 
   function update<T extends BaseRecord = BaseRecord, Variables = {}>(
