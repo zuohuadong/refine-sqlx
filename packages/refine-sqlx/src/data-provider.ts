@@ -29,7 +29,6 @@ import {
   createPagination,
   deserializeSqlResult,
 } from './utils';
-import { resolve } from 'dns';
 
 export default (client: SqlClient | SqlClientFactory): DataProvider => {
   return {
@@ -141,12 +140,12 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     const client = await resolveClient();
 
     if (!('batch' in client || 'transaction' in client)) {
-      const response = await Promise.all(
+      const result = await Promise.all(
         params.variables.map((e) =>
           create({ resource: params.resource, variables: e }),
         ),
       );
-      return { data: response.map((e) => e.data as T) };
+      return { data: result.map((e) => e.data as T) };
     } else if ('batch' in client) {
       const query = params.variables.map((e) =>
         createInsertQuery(params.resource, e as any),
