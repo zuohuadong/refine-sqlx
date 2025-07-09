@@ -1,7 +1,8 @@
 {
   "name": "refine-sqlx",
-  "version": "0.0.1-wip",
+  "version": "0.0.1-dev.0",
   "description": "A Refine corss database data provider.",
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": {
