@@ -1,7 +1,6 @@
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 
 export function createPagination(pagination: Pagination) {
-  if (pagination.mode !== 'server') return void 0;
   const { pageSize = 10, current = 1 } = pagination;
 
   return {
