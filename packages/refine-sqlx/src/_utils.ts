@@ -1,4 +1,4 @@
-import type { CrudSorting } from '@refinedev/core';
+import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 export function createCrudSorting(sort: CrudSorting) {
   if (!sort.length) return void 0;
@@ -7,3 +7,5 @@ export function createCrudSorting(sort: CrudSorting) {
     .map(({ field, order }) => `${field} ${order.toUpperCase()}`)
     .join(' ');
 }
+
+export function createCrudFilters(filters: CrudFilters) {}
