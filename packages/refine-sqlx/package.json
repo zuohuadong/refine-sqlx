@@ -2,11 +2,14 @@
   "name": "refine-sqlx",
   "description": "Refine corss SQLite adapter.",
   "scripts": {},
+  "dependencies": {
+    "sql-template-tag": "^5.2.1"
+  },
   "peerDependencies": {
     "@refinedev/core": "^4.57.10"
   },
-  "optionalDependencies": {},
-  "devDependencies": {
-    "sql-template-tag": "^5.2.1"
-  }
+  "optionalDependencies": {
+    "better-sqlite3": "^12.2.0"
+  },
+  "devDependencies": {}
 }
