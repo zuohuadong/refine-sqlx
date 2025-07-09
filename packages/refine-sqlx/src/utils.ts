@@ -1,4 +1,9 @@
-import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
+import type {
+  CrudFilters,
+  CrudSorting,
+  LogicalFilter,
+  Pagination,
+} from '@refinedev/core';
 import type { SqlQuery, SqlResult } from './client';
 
 export function createInsertQuery<T extends Record<string, any>>(
@@ -14,6 +19,42 @@ export function createInsertQuery<T extends Record<string, any>>(
     sql: `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`,
     args: Object.values(data),
   };
+}
+
+export function createUpdateQuery<T extends Record<string, any>>(
+  table: string,
+  filter: LogicalFilter,
+  data: T,
+): SqlQuery {
+  const columns = Object.keys(data);
+  const placeholders = columns.map((key) => `${key} = ?`).join(', ');
+  const where = createCrudFilters([filter])!;
+  const sql = `UPDATE ${table} SET ${placeholders} ${where.sql}`;
+  const args = [...Object.values(data), ...where.args];
+
+  return { sql, args };
+}
+
+export function createDeleteQuery(
+  table: string,
+  filter: LogicalFilter,
+): SqlQuery {
+  const where = createCrudFilters([filter])!;
+  const sql = `DELETE FROM ${table} ${where.sql}`;
+  const args = where.args;
+
+  return { sql, args };
+}
+
+export function createSelectQuery(
+  table: string,
+  filter: LogicalFilter,
+): SqlQuery {
+  const where = createCrudFilters([filter])!;
+  const sql = `SELECT * FROM ${table} ${where.sql}`;
+  const args = where.args;
+
+  return { sql, args };
 }
 
 export function deserializeSqlResult({ columnNames, rows }: SqlResult) {

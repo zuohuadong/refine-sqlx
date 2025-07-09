@@ -25,8 +25,11 @@ import type { SqlClient, SqlClientFactory, SqlResult } from './client';
 import {
   createCrudFilters,
   createCrudSorting,
+  createDeleteQuery,
   createInsertQuery,
   createPagination,
+  createSelectQuery,
+  createUpdateQuery,
   deserializeSqlResult,
 } from './utils';
 
@@ -99,12 +102,12 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     if (!params.ids.length) return { data: [] };
 
     const client = await resolveClient();
-    const where = createCrudFilters([
-      { field: 'id', operator: 'in', value: params.ids },
-    ])!;
-
-    const sql = `SELECT * FROM ${params.resource} WHERE ${where.sql}`;
-    const result = await client.query({ sql, args: where.args });
+    const query = createSelectQuery(params.resource, {
+      field: 'id',
+      operator: 'in',
+      value: params.ids,
+    });
+    const result = await client.query(query);
 
     return { data: deserializeSqlResult(result) as T[] };
   }
@@ -113,8 +116,12 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     params: GetOneParams,
   ): Promise<GetOneResponse<T>> {
     const client = await resolveClient();
-    const sql = `SELECT * FROM ${params.resource} WHERE id = ?`;
-    const result = await client.query({ sql, args: [params.id] });
+    const query = createSelectQuery(params.resource, {
+      field: 'id',
+      operator: 'eq',
+      value: params.id,
+    });
+    const result = await client.query(query);
     const [data] = deserializeSqlResult(result);
 
     return { data: data as T };
@@ -139,14 +146,26 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     if (!params.variables.length) return { data: [] };
     const client = await resolveClient();
 
-    if (!('batch' in client || 'transaction' in client)) {
-      const result = await Promise.all(
-        params.variables.map((e) =>
-          create({ resource: params.resource, variables: e }),
-        ),
-      );
-      return { data: result.map((e) => e.data as T) };
-    } else if ('batch' in client) {
+    if (client.transaction) {
+      const ids = await client.transaction!(async (tx) => {
+        return Promise.all(
+          params.variables.map(async (e) => {
+            const query = createInsertQuery(
+              params.resource,
+              params.variables as any,
+            );
+            const { lastInsertId } = await tx.execute(query);
+            if (!lastInsertId) {
+              throw new Error('Failed to create record');
+            }
+
+            return lastInsertId;
+          }),
+        );
+      });
+
+      return getMany({ resource: params.resource, ids });
+    } else if (client.batch) {
       const query = params.variables.map((e) =>
         createInsertQuery(params.resource, e as any),
       );
@@ -160,47 +179,69 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
       return { data: data as unknown as T[] };
     }
 
-    const ids = await client.transaction!(async (tx) => {
-      return Promise.all(
-        params.variables.map(async (e) => {
-          const query = createInsertQuery(
-            params.resource,
-            params.variables as any,
-          );
-          const { lastInsertId } = await client.execute(query);
-          if (!lastInsertId) {
-            throw new Error('Failed to create record');
-          }
-
-          return lastInsertId;
-        }),
-      );
-    });
-
-    return getMany({ resource: params.resource, ids });
+    const result = await Promise.all(
+      params.variables.map((e) =>
+        create({ resource: params.resource, variables: e }),
+      ),
+    );
+    return { data: result.map((e) => e.data as T) };
   }
 
-  function update<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function update<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: UpdateParams<Variables>,
   ): Promise<UpdateResponse<T>> {
-    throw new Error('Unimplemented');
+    const client = await resolveClient();
+    const query = createUpdateQuery(
+      params.resource,
+      { field: 'id', operator: 'eq', value: params.id },
+      params.variables as any,
+    );
+    await client.execute(query);
+    return getOne(params);
   }
 
-  function updateMany<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function updateMany<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: UpdateManyParams<Variables>,
   ): Promise<UpdateManyResponse<T>> {
-    throw new Error('Unimplemented');
+    if (!params.ids.length) return { data: [] };
+
+    const client = await resolveClient();
+    const query = createUpdateQuery(
+      params.resource,
+      { field: 'id', operator: 'in', value: params.ids },
+      params.variables as any,
+    );
+    await client.execute(query);
+    return getMany(params);
   }
 
-  function deleteOne<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function deleteOne<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: DeleteOneParams<Variables>,
   ): Promise<DeleteOneResponse<T>> {
-    throw new Error('Unimplemented');
+    const client = await resolveClient();
+    const result = await getOne<T>(params);
+    const query = createDeleteQuery(params.resource, {
+      field: 'id',
+      operator: 'eq',
+      value: params.id,
+    });
+    await client.execute(query);
+    return result;
   }
 
-  function deleteMany<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function deleteMany<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: DeleteManyParams<Variables>,
   ): Promise<DeleteManyResponse<T>> {
-    throw new Error('Unimplemented');
+    if (!params.ids.length) return Promise.resolve({ data: [] });
+
+    const result = getMany<T>(params);
+    const client = await resolveClient();
+    const query = createDeleteQuery(params.resource, {
+      field: 'id',
+      operator: 'in',
+      value: params.ids,
+    });
+    await client.execute(query);
+    return result;
   }
 };
