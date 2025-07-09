@@ -53,11 +53,24 @@ export class DatabaseAdapter {
 
   private async _initNativeDb(path: string): Promise<void> {
     try {
+      // 在CI环境中，如果强制使用模拟，则抛出错误让调用者处理
+      if (typeof process !== 'undefined' && process.env && process.env.FORCE_MOCK_SQLITE === 'true') {
+        throw new Error('Using mock SQLite in CI environment');
+      }
+      
       const sqlite = await import('node:sqlite' as any);
       this.db = new (sqlite as any).DatabaseSync(path);
       this.isInitialized = true;
     } catch (error) {
-      throw new Error(`Failed to initialize Node.js SQLite: ${error instanceof Error ? error.message : 'Unknown'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown';
+      
+      // 在CI环境中，如果SQLite初始化失败，提供更友好的错误信息
+      if (typeof process !== 'undefined' && process.env && 
+          (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true')) {
+        throw new Error(`Failed to initialize Node.js SQLite in CI environment: ${errorMessage}. Consider using mock SQLite for testing.`);
+      }
+      
+      throw new Error(`Failed to initialize Node.js SQLite: ${errorMessage}`);
     }
   }
 

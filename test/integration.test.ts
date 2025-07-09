@@ -54,7 +54,10 @@ describe('Cross-Runtime Integration Tests', () => {
         configurable: true
       });
       Object.defineProperty(globalThis, 'process', {
-        value: { versions: { node: '22.5.0' } },
+        value: { 
+          versions: { node: '22.5.0' },
+          env: { ...process.env }
+        },
         configurable: true
       });
 
@@ -68,7 +71,10 @@ describe('Cross-Runtime Integration Tests', () => {
         configurable: true
       });
       Object.defineProperty(globalThis, 'process', {
-        value: { versions: { node: '22.5.0' } },
+        value: { 
+          versions: { node: '22.5.0' },
+          env: { ...process.env }
+        },
         configurable: true
       });
 
@@ -121,7 +127,10 @@ describe('Cross-Runtime Integration Tests', () => {
         name: 'Node.js',
         setup: () => {
           Object.defineProperty(globalThis, 'process', {
-            value: { versions: { node: '22.5.0' } },
+            value: { 
+              versions: { node: '22.5.0' },
+              env: { ...process.env }  // 包含完整的环境变量
+            },
             configurable: true
           });
           Object.defineProperty(globalThis, 'Bun', {
@@ -262,7 +271,10 @@ describe('Cross-Runtime Integration Tests', () => {
         name: 'Node.js Provider',
         createProvider: () => {
           Object.defineProperty(globalThis, 'process', {
-            value: { versions: { node: '22.5.0' } },
+            value: { 
+              versions: { node: '22.5.0' },
+              env: { ...process.env }
+            },
             configurable: true
           });
           Object.defineProperty(globalThis, 'Bun', {
@@ -409,7 +421,10 @@ describe('Cross-Runtime Integration Tests', () => {
 
       versions.forEach(version => {
         Object.defineProperty(globalThis, 'process', {
-          value: { versions: { node: version } },
+          value: { 
+            versions: { node: version },
+            env: { ...process.env }
+          },
           configurable: true
         });
         Object.defineProperty(globalThis, 'Bun', {
@@ -460,7 +475,10 @@ describe('Cross-Runtime Integration Tests', () => {
 
       // Test Node.js initialization error
       Object.defineProperty(globalThis, 'process', {
-        value: { versions: { node: '22.5.0' } },
+        value: { 
+          versions: { node: '22.5.0' },
+          env: { ...process.env }
+        },
         configurable: true
       });
       Object.defineProperty(globalThis, 'Bun', {

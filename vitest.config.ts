@@ -7,10 +7,13 @@ export default defineConfig({
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true
+        singleFork: true,
+        execArgv: ['--experimental-sqlite']
       }
     },
     maxConcurrency: 1,
-    fileParallelism: false
+    fileParallelism: false,
+    // 确保在CI环境中Node.js可以访问实验性SQLite功能
+    setupFiles: ['./test/setup.ts']
   }
 });

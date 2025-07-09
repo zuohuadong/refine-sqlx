@@ -41,7 +41,6 @@ if (isCI) {
   
   // Set CI-specific environment variables
   process.env.CI_TESTING = 'true';
-  process.env.FORCE_MEMORY_DB = 'true';
 }
 
 // Clean up old test databases
@@ -65,22 +64,28 @@ try {
   console.log('Note: Could not clean up old test databases');
 }
 
-// Determine the correct command based on Node.js version
+// Determine the correct command based on Node.js version and environment
 let testCommand;
-const baseCommand = 'node --experimental-sqlite node_modules/vitest/vitest.mjs run';
 
 if (majorVersion >= 22) {
   // Node.js 22+ has experimental SQLite support
-  testCommand = baseCommand;
+  if (isCI) {
+    // 在CI环境中，使用vitest配置的execArgv来传递--experimental-sqlite
+    testCommand = 'npx vitest run';
+  } else {
+    // 本地开发环境，直接使用node参数
+    testCommand = 'node --experimental-sqlite node_modules/vitest/vitest.mjs run';
+  }
 } else {
-  // For older versions, we might need to skip SQLite tests or use a different approach
+  // For older versions, we need to use mock SQLite
   console.log('Warning: Node.js version < 22 may not support experimental SQLite');
-  testCommand = 'node_modules/.bin/vitest run';
+  process.env.FORCE_MOCK_SQLITE = 'true';
+  testCommand = 'npx vitest run';
 }
 
 console.log(`Executing: ${testCommand}`);
 
-// Set up environment variables (without NODE_OPTIONS for CI compatibility)
+// Set up environment variables
 const testEnv = {
   ...process.env
 };
@@ -88,11 +93,7 @@ const testEnv = {
 // Add CI-specific environment variables
 if (isCI) {
   testEnv.CI = 'true';
-  testEnv.VITEST_POOL_OPTIONS = JSON.stringify({
-    forks: {
-      singleFork: true
-    }
-  });
+  testEnv.NODE_OPTIONS = '--experimental-sqlite';
 }
 
 try {
