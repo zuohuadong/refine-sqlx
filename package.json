@@ -1,11 +1,11 @@
 {
   "name": "refine-sqlx",
-  "version": "0.0.1-dev.1",
+  "version": "0.0.1-dev.2",
   "description": "A Refine corss database data provider.",
   "license": "MIT",
   "repository": {
-    "type": "github",
-    "url": "medz/refine-sql"
+    "type": "git",
+    "url": "git+https://github.com/medz/refine-sqlx.git"
   },
   "type": "module",
   "exports": {
