@@ -1,5 +1,4 @@
 import type {
-  BaseKey,
   BaseRecord,
   CreateManyParams,
   CreateManyResponse,
