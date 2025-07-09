@@ -4,37 +4,13 @@
     "": {
       "name": "@zuohuadong/refine-workspace",
       "devDependencies": {
+        "@cloudflare/workers-types": "^4",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
         "@prettier/plugin-oxc": "^0.0.4",
-        "prettier": "^3.6.2",
-      },
-    },
-    "packages/refine-orm": {
-      "name": "refine-orm",
-      "version": "0.2.1",
-      "dependencies": {
-        "refine-sql": "^0.2.0",
-      },
-      "devDependencies": {
-        "@refinedev/core": "^4.57.9",
-        "drizzle-orm": "^0.30.10",
-      },
-      "peerDependencies": {
-        "@refinedev/core": "^4.0.0",
-        "drizzle-orm": "^0.30.0",
-      },
-      "optionalPeers": [
-        "@refinedev/core",
-      ],
-    },
-    "packages/refine-sqlx": {
-      "name": "refine-sqlx",
-      "version": "0.0.1-wip",
-      "devDependencies": {
-        "@cloudflare/workers-types": "^4",
         "@types/better-sqlite3": "^7.6.13",
         "@types/bun": "^1.2.18",
         "@types/node": "^24.0.12",
+        "prettier": "^3.6.2",
         "unbuild": "^3.5.0",
         "vitest": "^3.2.4",
       },
@@ -363,8 +339,6 @@
 
     "domutils": ["domutils@3.2.2", "", { "dependencies": { "dom-serializer": "^2.0.0", "domelementtype": "^2.3.0", "domhandler": "^5.0.3" } }, "sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw=="],
 
-    "drizzle-orm": ["drizzle-orm@0.30.10", "", { "peerDependencies": { "@aws-sdk/client-rds-data": ">=3", "@cloudflare/workers-types": ">=3", "@electric-sql/pglite": ">=0.1.1", "@libsql/client": "*", "@neondatabase/serverless": ">=0.1", "@op-engineering/op-sqlite": ">=2", "@opentelemetry/api": "^1.4.1", "@planetscale/database": ">=1", "@types/better-sqlite3": "*", "@types/pg": "*", "@types/react": ">=18", "@types/sql.js": "*", "@vercel/postgres": ">=0.8.0", "@xata.io/client": "*", "better-sqlite3": ">=7", "bun-types": "*", "expo-sqlite": ">=13.2.0", "knex": "*", "kysely": "*", "mysql2": ">=2", "pg": ">=8", "postgres": ">=3", "react": ">=18", "sql.js": ">=1", "sqlite3": ">=5" }, "optionalPeers": ["@aws-sdk/client-rds-data", "@cloudflare/workers-types", "@electric-sql/pglite", "@libsql/client", "@neondatabase/serverless", "@op-engineering/op-sqlite", "@opentelemetry/api", "@planetscale/database", "@types/better-sqlite3", "@types/pg", "@types/react", "@types/sql.js", "@vercel/postgres", "@xata.io/client", "better-sqlite3", "bun-types", "expo-sqlite", "knex", "kysely", "mysql2", "pg", "postgres", "react", "sql.js", "sqlite3"] }, "sha512-IRy/QmMWw9lAQHpwbUh1b8fcn27S/a9zMIzqea1WNOxK9/4EB8gIo+FZWLiPXzl2n9ixGSv8BhsLZiOppWEwBw=="],
-
     "dunder-proto": ["dunder-proto@1.0.1", "", { "dependencies": { "call-bind-apply-helpers": "^1.0.1", "es-errors": "^1.3.0", "gopd": "^1.2.0" } }, "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A=="],
 
     "electron-to-chromium": ["electron-to-chromium@1.5.180", "", {}, "sha512-ED+GEyEh3kYMwt2faNmgMB0b8O5qtATGgR4RmRsIp4T6p7B8vdMbIedYndnvZfsaXvSzegtpfqRMDNCjjiSduA=="],
@@ -588,12 +562,6 @@
     "react-dom": ["react-dom@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0", "scheduler": "^0.23.2" }, "peerDependencies": { "react": "^18.3.1" } }, "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw=="],
 
     "readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
-
-    "refine-orm": ["refine-orm@workspace:packages/refine-orm"],
-
-    "refine-sql": ["refine-sql@0.2.0", "", { "peerDependencies": { "@refinedev/core": "^4.0.0" }, "optionalPeers": ["@refinedev/core"] }, "sha512-HXtMc4lYcnMlKBrtSwOJKWNXc/EYnsb1gU5UvQHk2EdBrxxick2apAK1aJ9vpcAHLvCYykXMTqIRnRDi8RoZ3w=="],
-
-    "refine-sqlx": ["refine-sqlx@workspace:packages/refine-sqlx"],
 
     "resolve": ["resolve@1.22.10", "", { "dependencies": { "is-core-module": "^2.16.0", "path-parse": "^1.0.7", "supports-preserve-symlinks-flag": "^1.0.0" }, "bin": { "resolve": "bin/resolve" } }, "sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w=="],
 
