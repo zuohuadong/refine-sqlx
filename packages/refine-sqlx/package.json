@@ -1,0 +1,12 @@
+{
+  "name": "refine-sqlx",
+  "description": "Refine corss SQLite adapter.",
+  "scripts": {},
+  "peerDependencies": {
+    "@refinedev/core": "^4.57.10"
+  },
+  "optionalDependencies": {},
+  "devDependencies": {
+    "sql-template-tag": "^5.2.1"
+  }
+}
