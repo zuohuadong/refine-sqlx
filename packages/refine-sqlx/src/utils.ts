@@ -1,6 +1,16 @@
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
+import type { SqlResult } from './client';
 
-export function createPagination(pagination: Pagination) {
+export function deserializeSqlResult({ columnNames, rows }: SqlResult) {
+  return rows.map((row) =>
+    Object.fromEntries(
+      columnNames.map((name, index) => [name, row[index]] as const),
+    ),
+  );
+}
+
+export function createPagination(pagination?: Pagination) {
+  if (!pagination) return void 0;
   const { pageSize = 10, current = 1 } = pagination;
 
   return {
@@ -9,16 +19,16 @@ export function createPagination(pagination: Pagination) {
   };
 }
 
-export function createCrudSorting(sort: CrudSorting) {
-  if (!sort.length) return void 0;
+export function createCrudSorting(sort?: CrudSorting) {
+  if (!sort?.length) return void 0;
 
   return sort
     .map(({ field, order }) => `${field} ${order.toUpperCase()}`)
     .join(', ');
 }
 
-export function createCrudFilters(filters: CrudFilters) {
-  if (!filters.length) return void 0;
+export function createCrudFilters(filters?: CrudFilters) {
+  if (!filters?.length) return void 0;
 
   const result = processFilters(filters);
   if (!result?.parts) return void 0;
