@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "rootDir": "src",
+    "noEmit": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "lib": ["ESNext", "DOM", ],
+    "verbatimModuleSyntax": true,
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

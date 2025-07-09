@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "plugins": ["@prettier/plugin-oxc", "@ianvs/prettier-plugin-sort-imports"],
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "experimentalTernaries": true,
+  "printWidth": 80,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "objectWrap": "collapse",
+  "bracketSameLine": true,
+  "endOfLine": "lf"
+}
