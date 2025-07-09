@@ -1,4 +1,14 @@
-import type { CrudFilters, CrudSorting } from '@refinedev/core';
+import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
+
+export function createPagination(pagination: Pagination) {
+  if (pagination.mode !== 'server') return void 0;
+  const { pageSize = 10, current = 1 } = pagination;
+
+  return {
+    sql: `LIMIT ? OFFSET ?`,
+    values: [pageSize, (current - 1) * pageSize],
+  };
+}
 
 export function createCrudSorting(sort: CrudSorting) {
   if (!sort.length) return void 0;
@@ -14,7 +24,7 @@ export function createCrudFilters(filters: CrudFilters) {
   const result = processFilters(filters);
   if (!result?.parts) return void 0;
 
-  return { where: result.parts.join(' AND '), values: result.values };
+  return { sql: result.parts.join(' AND '), values: result.values };
 }
 
 function processFilters(filters: CrudFilters) {
