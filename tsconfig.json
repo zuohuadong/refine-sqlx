@@ -21,6 +21,6 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "allowSyntheticDefaultImports": true,
-      "types": ["@cloudflare/workers-types"]
+      "types": ["@cloudflare/workers-types", "node"]
   }
 }

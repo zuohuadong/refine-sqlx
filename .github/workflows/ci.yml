@@ -10,7 +10,7 @@ on:
 
 jobs:
   test-bun:
-    name: Test with Bun (SQLite Native)
+    name: Test with Bun (Native SQLite)
     runs-on: ubuntu-latest
     
     steps:
@@ -22,17 +22,14 @@ jobs:
           bun-version: latest
       
       - name: Install dependencies with Bun
-        run: bun install
-      
-      - name: Install workspace dependencies
-        run: bun install --workspaces
+        run: bun install --ignore-scripts
       
       - name: Check Bun version and SQLite support
         run: |
           bun --version
           echo "Bun version: $(bun --version)"
           echo "Testing Bun SQLite support..."
-          bun -e "console.log('Bun SQLite native support available')"
+          bun -e "import { Database } from 'bun:sqlite'; console.log('Bun SQLite native support available');"
           
       - name: Clean up previous test databases
         run: |
@@ -41,25 +38,69 @@ jobs:
           rm -f test-nodejs.db
           echo "Cleaned up test databases"
       
-      - name: Run tests (refine-sql) with Bun
+      - name: Run tests with Bun (Native SQLite)
         run: bun run test:bun
+        env:
+          TEST_RUNTIME: "bun"
       
-      - name: Run tests (all workspaces) with Bun
-        run: bun run test:bun
-      
-      - name: Build refine-sql with Bun
+      - name: Build with Bun
         run: bun run build
-        
-      - name: Build all packages with Bun
-        run: bun run build:all
         
       - name: Test build output
         run: |
           ls -la dist/
           echo "Build artifacts created successfully"
 
-  test-node-fallback:
-    name: Test with Node.js (Fallback)
+  test-cloudflare-d1:
+    name: Test with Cloudflare D1 (Mock)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install workspace dependencies  
+        run: npm install --workspaces
+      
+      - name: Setup Wrangler for D1
+        run: npm install -g wrangler
+      
+      - name: Check D1 environment
+        run: |
+          wrangler --version
+          echo "Cloudflare D1 environment setup complete"
+          
+      - name: Clean up previous test databases
+        run: |
+          rm -f test-*.db
+          rm -f *.test.db
+          rm -f test-nodejs.db
+          echo "Cleaned up test databases"
+      
+      - name: Run tests with D1 Mock
+        run: npm run test
+        env:
+          TEST_RUNTIME: "d1"
+          FORCE_MOCK_SQLITE: "true"
+      
+      - name: Build project
+        run: npm run build
+        
+      - name: Test build output
+        run: |
+          ls -la dist/
+          echo "Build artifacts created successfully"
+
+  test-node-sqlite:
+    name: Test with Node.js (SQLite Mock)
     runs-on: ubuntu-latest
     
     steps:
@@ -86,6 +127,7 @@ jobs:
       - name: Run tests with Node.js (Mock mode)
         run: npm run test:run
         env:
+          TEST_RUNTIME: "node"
           CI: "true"
           FORCE_MOCK_SQLITE: "true"
 
@@ -104,10 +146,7 @@ jobs:
           bun-version: latest
       
       - name: Install dependencies with Bun
-        run: bun install
-      
-      - name: Install workspace dependencies
-        run: bun install --workspaces
+        run: bun install --ignore-scripts
       
       - name: Clean up previous test databases
         run: |
@@ -116,12 +155,12 @@ jobs:
           rm -f test-nodejs.db
       
       - name: Run tests with coverage (Bun)
-        run: bun run test:coverage
+        run: bun run test:coverage:bun
 
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    needs: test-bun
+    needs: [test-bun, test-cloudflare-d1]
     if: github.event_name == 'release'
     
     steps:

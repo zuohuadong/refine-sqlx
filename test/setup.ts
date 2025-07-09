@@ -3,6 +3,15 @@
 
 import { beforeAll, vi } from 'vitest';
 
+// 检测运行时环境
+const TEST_RUNTIME = (globalThis as any).process?.env?.TEST_RUNTIME || 'auto';
+const FORCE_MOCK_SQLITE = (globalThis as any).process?.env?.FORCE_MOCK_SQLITE === 'true';
+
+console.log(`测试运行时环境: ${TEST_RUNTIME}`);
+if (FORCE_MOCK_SQLITE) {
+  console.log('强制使用 SQLite 模拟模式');
+}
+
 // 增强的SQLite模拟类，支持更复杂的SQL操作
 class MockSQLiteStatement {
   constructor(private sql: string, private db: MockSQLiteDatabase) {}
@@ -378,12 +387,26 @@ class MockSQLiteDatabase {
 }
 
 beforeAll(async () => {
+  // 运行时特定的设置
+  if (TEST_RUNTIME === 'd1') {
+    console.log('设置 Cloudflare D1 测试环境');
+    // 确保使用 Mock SQLite，因为在 CI 中无法直接使用 D1
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.FORCE_MOCK_SQLITE = 'true';
+    }
+  } else if (TEST_RUNTIME === 'bun') {
+    console.log('设置 Bun 测试环境 (原生 SQLite)');
+    // Bun 有原生 SQLite 支持，但在测试中仍使用 mock 以保持一致性
+  } else if (TEST_RUNTIME === 'node') {
+    console.log('设置 Node.js 测试环境');
+  }
+
   // 检测是否在CI环境中
   const isCI = (typeof process !== 'undefined' && process.env && 
                (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true'));
   
-  if (isCI) {
-    console.log('设置CI测试环境...');
+  if (isCI || FORCE_MOCK_SQLITE) {
+    console.log('设置CI测试环境或强制模拟模式...');
     
     // 检查Node.js版本
     const nodeVersion = typeof process !== 'undefined' && process.version ? process.version : 'v0.0.0';
@@ -391,21 +414,36 @@ beforeAll(async () => {
     
     console.log(`Node.js版本: ${nodeVersion}`);
     
-    // 确保Node.js 22+才尝试使用原生SQLite
-    if (majorVersion >= 22) {
+    // D1 环境总是使用模拟
+    if (TEST_RUNTIME === 'd1' || FORCE_MOCK_SQLITE) {
+      console.log('使用增强SQLite模拟 (D1 或强制模拟模式)');
+      
+      if (typeof process !== 'undefined' && process.env) {
+        process.env.FORCE_MOCK_SQLITE = 'true';
+      }
+      
+      // 全局模拟node:sqlite模块
+      vi.mock('node:sqlite', () => ({
+        DatabaseSync: vi.fn().mockImplementation(() => new MockSQLiteDatabase())
+      }));
+    } else if (majorVersion >= 22 && TEST_RUNTIME !== 'd1') {
       try {
         // 尝试导入node:sqlite来验证实验性功能是否可用
         await import('node:sqlite');
         console.log('Node.js SQLite实验性功能可用');
         
         // 设置环境变量确保测试使用正确的runtime
-        process.env.FORCE_NODE_SQLITE = 'true';
+        if (typeof process !== 'undefined' && process.env) {
+          process.env.FORCE_NODE_SQLITE = 'true';
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.warn('Node.js SQLite实验性功能不可用，将使用增强模拟:', errorMessage);
         
         // 如果Node.js SQLite不可用，使用增强模拟
-        process.env.FORCE_MOCK_SQLITE = 'true';
+        if (typeof process !== 'undefined' && process.env) {
+          process.env.FORCE_MOCK_SQLITE = 'true';
+        }
         
         // 全局模拟node:sqlite模块
         vi.mock('node:sqlite', () => ({
@@ -414,7 +452,9 @@ beforeAll(async () => {
       }
     } else {
       console.log(`Node.js版本${majorVersion} < 22，使用增强模拟SQLite`);
-      process.env.FORCE_MOCK_SQLITE = 'true';
+      if (typeof process !== 'undefined' && process.env) {
+        process.env.FORCE_MOCK_SQLITE = 'true';
+      }
       
       // 全局模拟node:sqlite模块
       vi.mock('node:sqlite', () => ({
