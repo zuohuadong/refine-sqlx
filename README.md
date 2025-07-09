@@ -1,4 +1,4 @@
-# Refine SQLite X
+# Refine SQL X
 
 `refine-sqlx` is a refine data provider that provides a standard SQL query interface allowing you to customize query clients for any database. It has built-in support for SQLite databases, you can directly pass `bun:sqlite`/`node:sqlite`/`cloudflare d1`/`better-sqlite3` instances to `refine-sqlx`; you can also directly pass a `:memory:` string to use memory or pass a local file path, and it will automatically select the best SQLite driver for your runtime.
 
