@@ -24,7 +24,6 @@ type CreateDataProviderOptions = { url: string | URL };
 
 export default ({ url }: CreateDataProviderOptions): DataProvider => {
   return {
-    getApiUrl: undefined as any as () => string,
     getList,
     getMany,
     getOne,
@@ -34,7 +33,7 @@ export default ({ url }: CreateDataProviderOptions): DataProvider => {
     updateMany,
     deleteOne,
     deleteMany,
-  };
+  } as DataProvider;
 
   function getList<T extends BaseRecord = BaseRecord>(
     params: GetListParams,

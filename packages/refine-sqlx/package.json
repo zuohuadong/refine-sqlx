@@ -1,8 +1,26 @@
 {
   "name": "refine-sqlx",
+  "version": "0.0.1-wip",
   "description": "Refine corss SQLite adapter.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build": "unbuild"
   },
   "optionalDependencies": {
     "better-sqlite3": "^12.2.0"
@@ -11,6 +29,7 @@
     "@refinedev/core": "^4.57.10"
   },
   "devDependencies": {
+    "unbuild": "^3.5.0",
     "vitest": "^3.2.4"
   }
 }
