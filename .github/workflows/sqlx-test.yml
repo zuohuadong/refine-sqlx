@@ -1,0 +1,11 @@
+name: SQLx testing
+on: [push, pull_request]
+jobs:
+  generic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --lockfile-only
+      - run: bun run test
+        working-directory: packages/refine-sqlx
