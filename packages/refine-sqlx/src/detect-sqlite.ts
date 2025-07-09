@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type {
+  SqlAffected,
   SqlClient,
   SqlClientFactory,
   SqlQuery,
@@ -91,10 +92,14 @@ function createD1Client(d1: D1Database): SqlClient {
     return { columnNames, rows };
   }
 
-  async function execute(query: SqlQuery): Promise<number> {
+  async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = d1.prepare(query.sql).bind(query.args);
     const result = await stmt.run();
-    return result.meta.changes;
+
+    return {
+      changes: result.meta.changes,
+      lastInsertId: result.meta.last_row_id,
+    };
   }
 }
 
@@ -108,10 +113,13 @@ function createBunClient(db: BunDatabase): SqlClient {
     return { columnNames: stmt.columnNames, rows };
   }
 
-  async function execute(query: SqlQuery): Promise<number> {
+  async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = db.prepare(query.sql);
     const result = stmt.run(...(query.args as BunSQLQueryBindings[]));
-    return result.changes;
+    return {
+      changes: result.changes,
+      lastInsertId: result.lastInsertRowid as number | undefined,
+    };
   }
 }
 
@@ -135,10 +143,13 @@ function createNodeClient(db: NodeDatabase): SqlClient {
     return { columnNames, rows };
   }
 
-  async function execute(query: SqlQuery): Promise<number> {
+  async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = db.prepare(query.sql);
     const result = stmt.run(...(query.args as any[]));
-    return result.changes as number;
+    return {
+      changes: result.changes as any,
+      lastInsertId: result.lastInsertRowid as any,
+    };
   }
 }
 
@@ -155,9 +166,12 @@ function createGenericClient(db: BetterSqlite3.Database): SqlClient {
     };
   }
 
-  async function execute(query: SqlQuery): Promise<number> {
+  async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = db.prepare(query.sql).bind(...query.args);
     const result = stmt.run();
-    return result.changes;
+    return {
+      changes: result.changes,
+      lastInsertId: result.lastInsertRowid as any,
+    };
   }
 }

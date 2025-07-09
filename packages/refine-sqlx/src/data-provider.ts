@@ -95,6 +95,8 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
   async function getMany<T extends BaseRecord = BaseRecord>(
     params: GetManyParams,
   ): Promise<GetManyResponse<T>> {
+    if (!params.ids.length) return { data: [] };
+
     const client = await resolveClient();
     const placeholder = params.ids.map(() => '?').join(', ');
     const sql = `SELECT * FROM ${params.resource} WHERE id IN (${placeholder})`;
@@ -103,21 +105,40 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     return { data: deserializeSqlResult(result) as T[] };
   }
 
-  function getOne<T extends BaseRecord = BaseRecord>(
+  async function getOne<T extends BaseRecord = BaseRecord>(
     params: GetOneParams,
   ): Promise<GetOneResponse<T>> {
-    throw new Error('Unimplemented');
+    const client = await resolveClient();
+    const sql = `SELECT * FROM ${params.resource} WHERE id = ?`;
+    const result = await client.query({ sql, args: [params.id] });
+    const [data] = deserializeSqlResult(result);
+
+    return { data: data as T };
   }
 
-  function create<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function create<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: CreateParams<Variables>,
   ): Promise<CreateResponse<T>> {
-    throw new Error('Unimplemented');
+    const client = await resolveClient();
+    const columns = Object.keys(params.variables as any);
+    const placeholder = '?, '.repeat(columns.length).slice(0, -2);
+    const values = Object.values(params.variables as any);
+    const sql = `INSERT INTO ${params.resource} (${columns.join(', ')}) VALUES (${placeholder})`;
+    const { lastInsertId } = await client.execute({ sql, args: values });
+    if (!lastInsertId) {
+      throw new Error('Create operation failed');
+    }
+
+    return getOne({ resource: params.resource, id: lastInsertId });
   }
 
-  function createMany<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function createMany<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: CreateManyParams<Variables>,
   ): Promise<CreateManyResponse<T>> {
+    if (!params.variables.length) return { data: [] };
+
+    const client = await resolveClient();
+
     throw new Error('Unimplemented');
   }
 

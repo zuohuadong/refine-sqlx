@@ -8,9 +8,14 @@ export interface SqlResult {
   rows: unknown[][];
 }
 
+export interface SqlAffected {
+  changes?: number;
+  lastInsertId?: number | string;
+}
+
 export interface SqlClient {
   query(query: SqlQuery): Promise<SqlResult>;
-  execute(query: SqlQuery): Promise<number>;
+  execute(query: SqlQuery): Promise<SqlAffected>;
 }
 
 export interface SqlClientFactory {
