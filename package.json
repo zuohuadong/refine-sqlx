@@ -66,7 +66,9 @@
     "build:watch": "rslib build --watch",
     "analyze": "node bundle-size-analysis.js",
     "test": "node --experimental-sqlite node_modules/vitest/vitest.mjs run",
+    "test:bun": "bun x vitest run --config=vitest.config.bun.ts",
     "test:coverage": "node --experimental-sqlite node_modules/vitest/vitest.mjs run --coverage",
+    "test:coverage:bun": "bun x vitest run --config=vitest.config.bun.ts --coverage",
     "test:ui": "node --experimental-sqlite node_modules/vitest/vitest.mjs --ui",
     "test:run": "node scripts/test.js",
     "test:run:legacy": "vitest run",
@@ -76,6 +78,7 @@
     "prepublishOnly": "npm run test:run && npm run build",
     "build:all": "npm run build --workspaces --if-present",
     "test:all": "npm run test --workspaces --if-present",
+    "test:all:bun": "npm run test:bun --workspaces --if-present",
     "publish:all": "npm run build:all && npm publish --workspaces --access public"
   },
   "peerDependencies": {

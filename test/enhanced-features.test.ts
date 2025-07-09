@@ -75,8 +75,9 @@ describe('Enhanced DataProvider Features', () => {
   });
 
   afterAll(async () => {
-    if (provider.close) {
-      provider.close();
+    const adapter = provider.getEnhancedAdapter();
+    if (adapter && adapter.close) {
+      adapter.close();
     }
     
     // 清理测试数据库文件
@@ -288,6 +289,11 @@ describe('Enhanced DataProvider Features', () => {
   });
 
   test('兼容性 - 原有基础功能仍然工作', async () => {
+    // 清理之前测试的数据，确保测试隔离
+    await provider.customFlexible({
+      query: `DELETE FROM posts WHERE title LIKE '%Batch Post%'`
+    });
+    
     // 测试原有的 CRUD 功能
     const createResult = await provider.create({
       resource: 'posts',

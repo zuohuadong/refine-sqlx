@@ -47,6 +47,7 @@
   "scripts": {
     "build": "tsup --minify",
     "test": "node --experimental-sqlite ../../node_modules/vitest/vitest.mjs",
+    "test:bun": "bun x vitest run --config=./vitest.config.bun.ts",
     "test:run": "node --experimental-sqlite ../../node_modules/vitest/vitest.mjs run",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run test:run && npm run build"

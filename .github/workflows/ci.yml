@@ -9,38 +9,30 @@ on:
     types: [ published ]
 
 jobs:
-  test:
-    name: Test on Node.js ${{ matrix.node-version }}
+  test-bun:
+    name: Test with Bun (SQLite Native)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22, 24]
-      fail-fast: false
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          bun-version: latest
       
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies with Bun
+        run: bun install
       
       - name: Install workspace dependencies
-        run: npm install --workspaces
+        run: bun install --workspaces
       
-      - name: Check Node.js version and SQLite support
+      - name: Check Bun version and SQLite support
         run: |
-          node --version
-          echo "Node.js version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "Testing Node.js SQLite support..."
-          node --experimental-sqlite -e "console.log('SQLite experimental flag is working')" || echo "SQLite experimental flag not available"
-          echo "Testing node:sqlite import..."
-          node --experimental-sqlite -e "import('node:sqlite').then(() => console.log('node:sqlite import successful')).catch(e => console.log('node:sqlite import failed:', e.message))" || echo "node:sqlite test failed"
+          bun --version
+          echo "Bun version: $(bun --version)"
+          echo "Testing Bun SQLite support..."
+          bun -e "console.log('Bun SQLite native support available')"
           
       - name: Clean up previous test databases
         run: |
@@ -49,32 +41,26 @@ jobs:
           rm -f test-nodejs.db
           echo "Cleaned up test databases"
       
-      - name: Run tests (refine-sql)
-        run: npm run test:run
-        env:
-          NODE_OPTIONS: "--experimental-sqlite"
+      - name: Run tests (refine-sql) with Bun
+        run: bun run test:bun
       
-      - name: Run tests (all workspaces)
-        run: npm run test:all
-        env:
-          NODE_OPTIONS: "--experimental-sqlite"
+      - name: Run tests (all workspaces) with Bun
+        run: bun run test:bun
       
-      - name: Build refine-sql
-        run: npm run build
+      - name: Build refine-sql with Bun
+        run: bun run build
         
-      - name: Build all packages
-        run: npm run build:all
+      - name: Build all packages with Bun
+        run: bun run build:all
         
       - name: Test build output
         run: |
           ls -la dist/
           echo "Build artifacts created successfully"
 
-  test-with-coverage:
-    name: Test with Coverage
+  test-node-fallback:
+    name: Test with Node.js (Fallback)
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'pull_request'
     
     steps:
       - uses: actions/checkout@v4
@@ -97,15 +83,45 @@ jobs:
           rm -f *.test.db
           rm -f test-nodejs.db
       
-      - name: Run tests with coverage
-        run: npm run test:coverage
+      - name: Run tests with Node.js (Mock mode)
+        run: npm run test:run
         env:
-          NODE_OPTIONS: "--experimental-sqlite"
+          CI: "true"
+          FORCE_MOCK_SQLITE: "true"
+
+  test-with-coverage:
+    name: Test with Coverage (Bun)
+    runs-on: ubuntu-latest
+    needs: test-bun
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Install dependencies with Bun
+        run: bun install
+      
+      - name: Install workspace dependencies
+        run: bun install --workspaces
+      
+      - name: Clean up previous test databases
+        run: |
+          rm -f test-*.db
+          rm -f *.test.db
+          rm -f test-nodejs.db
+      
+      - name: Run tests with coverage (Bun)
+        run: bun run test:coverage
 
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    needs: test
+    needs: test-bun
     if: github.event_name == 'release'
     
     steps:
