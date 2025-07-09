@@ -12,7 +12,7 @@ export default defineConfig({
     },
     maxConcurrency: 1,
     fileParallelism: false,
-    // 确保在CI环境中Node.js可以访问实验性SQLite功能
-    setupFiles: ['./test/setup.ts']
+    // 使用根目录的测试设置文件
+    setupFiles: ['../../test/setup.ts']
   }
 });

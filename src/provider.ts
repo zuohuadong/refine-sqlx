@@ -194,8 +194,21 @@ export const dataProvider = (dbInput: D1Database | string | DatabaseAdapter, con
 
         customFlexible: async (params: FlexibleQueryParams): Promise<any> => {
             if (typeof params.query === 'string') {
-                const result = await db.query(params.query, params.params);
-                return { data: result };
+                // 智能判断SQL类型：SELECT用query，其他用execute
+                const sqlUpper = params.query.trim().toUpperCase();
+                const isSelectQuery = sqlUpper.startsWith('SELECT') || 
+                                     sqlUpper.startsWith('WITH') || 
+                                     sqlUpper.startsWith('EXPLAIN') ||
+                                     sqlUpper.startsWith('PRAGMA');
+                
+                if (isSelectQuery) {
+                    const result = await db.query(params.query, params.params);
+                    return { data: result };
+                } else {
+                    // INSERT, UPDATE, DELETE, CREATE, DROP等操作
+                    const result = await db.execute(params.query, params.params);
+                    return { data: result };
+                }
             }
             if (typeof params.query === 'function') {
                 const result = await params.query(db as EnhancedAdapter);
@@ -207,8 +220,21 @@ export const dataProvider = (dbInput: D1Database | string | DatabaseAdapter, con
         // customEnhanced - 兼容别名，指向 customFlexible
         customEnhanced: async (params: FlexibleQueryParams): Promise<any> => {
             if (typeof params.query === 'string') {
-                const result = await db.query(params.query, params.params);
-                return { data: result };
+                // 智能判断SQL类型：SELECT用query，其他用execute
+                const sqlUpper = params.query.trim().toUpperCase();
+                const isSelectQuery = sqlUpper.startsWith('SELECT') || 
+                                     sqlUpper.startsWith('WITH') || 
+                                     sqlUpper.startsWith('EXPLAIN') ||
+                                     sqlUpper.startsWith('PRAGMA');
+                
+                if (isSelectQuery) {
+                    const result = await db.query(params.query, params.params);
+                    return { data: result };
+                } else {
+                    // INSERT, UPDATE, DELETE, CREATE, DROP等操作
+                    const result = await db.execute(params.query, params.params);
+                    return { data: result };
+                }
             }
             if (typeof params.query === 'function') {
                 const result = await params.query(db as EnhancedAdapter);
