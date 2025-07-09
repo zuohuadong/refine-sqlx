@@ -29,7 +29,7 @@ With **refine-sql** and **refine-orm** you can quickly start creating your app a
 
 - **Multi-runtime** - Supports Cloudflare D1, Node.js SQLite, and Bun SQLite
 - **Flexible Queries** - Custom SQL queries and ORM integration with Drizzle
-- **Well tested** - All methods are tested using [Vitest](https://vitest.dev/)
+- **Well tested** - All methods are tested in CI environments with actual runtime dependencies
 - **Fully featured** - Complete CRUD operations and advanced querying
 - **Edge ready** - Optimized for Cloudflare Workers and edge computing
 - **Type safe** - Written in TypeScript with strict mode enabled
@@ -312,11 +312,19 @@ Build and test
 
 ```bash
 pnpm run build
-pnpm run test
 ```
 
-> **Important**
-> Before the tests run, the database file `test.db` is deleted and recreated.
+## Testing
+
+This project uses CI-based testing with actual runtime environments rather than local mocks. Tests are run automatically on:
+
+- **Bun** with native SQLite support
+- **Node.js 22+** with experimental SQLite
+- **Cloudflare D1** with Wrangler
+
+For detailed testing information, see [TESTING.md](./TESTING.md).
+
+> **Note**: Local environment simulation code has been removed in favor of CI-based testing with real runtime dependencies.
 
 ## Contributing
 

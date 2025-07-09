@@ -95,6 +95,7 @@
     "@refinedev/core": "^4.57.9",
     "@rslib/core": "^0.10.5",
     "@types/node": "^24.0.10",
+    "@vitest/coverage-v8": "3.2.4",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",

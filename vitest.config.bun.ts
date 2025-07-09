@@ -5,8 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./test/setup.ts'],
-    // Bun 自带原生 SQLite 支持，不需要特殊配置
+    // 环境模拟代码已删除，使用 CI 环境进行实际测试
     testTimeout: 60000,
     hookTimeout: 30000,
     teardownTimeout: 10000,

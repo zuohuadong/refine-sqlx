@@ -12,7 +12,15 @@ export default defineConfig({
     },
     maxConcurrency: 1,
     fileParallelism: false,
-    // 确保在CI环境中Node.js可以访问实验性SQLite功能
-    setupFiles: ['./test/setup.ts']
+    include: [
+      'test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'packages/**/test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+    ],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**'
+    ]
+    // 环境模拟代码已删除，使用 CI 环境进行实际测试
   }
 });
