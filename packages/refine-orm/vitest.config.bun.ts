@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['../../test/setup.ts'], // 指向根目录的 setup 文件
+    setupFiles: ['../../test/setup.ts'],
     testTimeout: 60000,
     hookTimeout: 30000,
     teardownTimeout: 10000,
@@ -15,6 +15,9 @@ export default defineConfig({
         singleFork: true
       }
     },
+    maxConcurrency: 2, // Bun 可以支持稍微高一点的并发
+    fileParallelism: false,
+    isolate: true,
     include: [
       'test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
     ],
@@ -22,7 +25,15 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/.{idea,git,cache,output,temp}/**'
-    ]
+    ],
+    env: {
+      TEST_RUNTIME: 'bun'
+    }
+  },
+  resolve: {
+    alias: {
+      '@': '../..'
+    }
   },
   esbuild: {
     target: 'node18'

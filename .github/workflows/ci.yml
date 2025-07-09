@@ -1,4 +1,4 @@
-name: Comprehensive CI/CD
+name: Multi-Runtime CI/CD
 
 on:
   push:
@@ -9,205 +9,366 @@ on:
     types: [ published ]
 
 jobs:
+  test-node:
+    name: Test on Node.js
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install workspace dependencies
+      run: npm install --workspaces
+    
+    - name: Clean up previous test databases
+      run: |
+        rm -f test-*.db
+        rm -f *.test.db
+        rm -f test-nodejs.db
+        echo "Cleaned up test databases"
+    
+    - name: Run Node.js tests
+      run: npm run test:node
+      env:
+        TEST_RUNTIME: node
+    
+    - name: Build project
+      run: npm run build
+        
+    - name: Test build output
+      run: |
+        ls -la dist/
+        echo "Build artifacts created successfully"
+
+    - name: Upload build artifacts (Node 20 only)
+      if: matrix.node-version == 20
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: dist/
+
   test-bun:
-    name: Test with Bun (Native SQLite)
+    name: Test on Bun
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bun-version: [1.2.x, latest]
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      
-      - name: Clean install environment
-        run: |
-          rm -f bun.lockb
-          rm -rf node_modules
-      
-      - name: Install dependencies with Bun
-        run: bun install
-      
-      - name: Check Bun version and SQLite support
-        run: |
-          bun --version
-          echo "Bun version: $(bun --version)"
-          echo "Testing Bun SQLite support..."
-          bun -e "import { Database } from 'bun:sqlite'; console.log('Bun SQLite native support available');"
+    - uses: actions/checkout@v4
+    
+    - name: Setup Bun ${{ matrix.bun-version }}
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: ${{ matrix.bun-version }}
+    
+    - name: Clean install environment
+      run: |
+        rm -f bun.lockb
+        rm -rf node_modules
+    
+    - name: Install dependencies with Bun
+      run: bun install
+    
+    - name: Check Bun version and SQLite support
+      run: |
+        bun --version
+        echo "Bun version: $(bun --version)"
+        echo "Testing Bun SQLite support..."
+        bun -e "import { Database } from 'bun:sqlite'; console.log('Bun SQLite native support available');"
           
-      - name: Clean up previous test databases
-        run: |
-          rm -f test-*.db
-          rm -f *.test.db
-          rm -f test-nodejs.db
-          echo "Cleaned up test databases"
-      
-      - name: Run tests with Bun (Native SQLite)
-        run: bun run test:bun
-        env:
-          TEST_RUNTIME: "bun"
-      
-      - name: Build with Bun
-        run: bun run build
+    - name: Clean up previous test databases
+      run: |
+        rm -f test-*.db
+        rm -f *.test.db
+        rm -f test-nodejs.db
+        echo "Cleaned up test databases"
+    
+    - name: Run Bun tests
+      run: bun run test:bun
+      env:
+        TEST_RUNTIME: bun
+    
+    - name: Build with Bun
+      run: bun run build
         
-      - name: Test build output
-        run: |
-          ls -la dist/
-          echo "Build artifacts created successfully"
+    - name: Test build output
+      run: |
+        ls -la dist/
+        echo "Build artifacts created successfully"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: dist/
-
-  test-cloudflare-d1:
-    name: Test with Cloudflare D1 (Mock)
+  test-cloudflare:
+    name: Test Cloudflare Workers compatibility
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install workspace dependencies  
-        run: npm install --workspaces
-      
-      - name: Setup Wrangler for D1
-        run: npm install -g wrangler
-      
-      - name: Check D1 environment
-        run: |
-          wrangler --version
-          echo "Cloudflare D1 environment setup complete"
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install workspace dependencies  
+      run: npm install --workspaces
+    
+    - name: Install Wrangler
+      run: npm install -g wrangler
+    
+    - name: Check D1 environment
+      run: |
+        wrangler --version
+        echo "Cloudflare D1 environment setup complete"
           
-      - name: Clean up previous test databases
-        run: |
-          rm -f test-*.db
-          rm -f *.test.db
-          rm -f test-nodejs.db
-          echo "Cleaned up test databases"
-      
-      - name: Run tests with D1 Mock
-        run: npm run test
-        env:
-          TEST_RUNTIME: "d1"
-          FORCE_MOCK_SQLITE: "true"
-      
-      - name: Build project
-        run: npm run build
+    - name: Clean up previous test databases
+      run: |
+        rm -f test-*.db
+        rm -f *.test.db
+        rm -f test-nodejs.db
+        echo "Cleaned up test databases"
+    
+    - name: Run Cloudflare Workers tests
+      run: npm run test:cloudflare
+      env:
+        TEST_RUNTIME: workerd
+    
+    - name: Build project
+      run: npm run build
         
-      - name: Test build output
-        run: |
-          ls -la dist/
-          echo "Build artifacts created successfully"
-
-  test-node-sqlite:
-    name: Test with Node.js (SQLite Mock)
+  test-deno:
+    name: Test Deno compatibility
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install workspace dependencies
-        run: npm install --workspaces
-      
-      - name: Clean up previous test databases
-        run: |
-          rm -f test-*.db
-          rm -f *.test.db
-          rm -f test-nodejs.db
-      
-      - name: Build project
-        run: npm run build
+    - uses: actions/checkout@v4
+    
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
+    
+    - name: Setup Node.js (for npm dependencies)
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run Deno tests
+      run: npm run test:deno
+      env:
+        TEST_RUNTIME: deno
 
-      - name: Run tests with Node.js (Mock mode)
-        run: npm run test
-        env:
-          TEST_RUNTIME: "node"
-          CI: "true"
-          FORCE_MOCK_SQLITE: "true"
-
-  test-with-coverage:
-    name: Test with Coverage (Bun)
+  test-edge:
+    name: Test Edge Runtime compatibility
     runs-on: ubuntu-latest
-    needs: test-bun
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run Edge Runtime tests
+      run: npm run test:edge
+      env:
+        TEST_RUNTIME: edge-light
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test-node, test-bun, test-cloudflare]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run all runtime tests
+      run: npm run test:all
+    
+    - name: Run integration tests
+      run: npm run test:integration
+    
+    - name: Test package build
+      run: npm run build
+    
+    - name: Test package exports
+      run: |
+        node -e "const pkg = require('./dist/index.js'); console.log('CJS export:', typeof pkg.dataProvider);"
+        node -e "import('./dist/index.mjs').then(pkg => console.log('ESM export:', typeof pkg.dataProvider));"
+
+  test-coverage:
+    name: Coverage Tests
+    runs-on: ubuntu-latest
+    needs: [test-node, test-bun]
     if: github.event_name == 'pull_request'
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
-      - name: Install dependencies with Bun
-        run: bun install --ignore-scripts
-      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: dist
-      
-      - name: Clean up previous test databases
-        run: |
-          rm -f test-*.db
-          rm -f *.test.db
-          rm -f test-nodejs.db
-      
-      - name: Run tests with coverage (Bun)
-        run: bun run test:coverage:bun
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Clean up previous test databases
+      run: |
+        rm -f test-*.db
+        rm -f *.test.db
+        rm -f test-nodejs.db
+    
+    - name: Run Node.js tests with coverage
+      run: npm run test:coverage
+      env:
+        TEST_RUNTIME: node
+    
+    - name: Run Bun tests with coverage
+      run: bun run test:coverage:bun
+      env:
+        TEST_RUNTIME: bun
+    
+    - name: Upload Node.js coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        flags: nodejs
+        name: nodejs
+    
+    - name: Upload Bun coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        flags: bun
+        name: bun
+
+  test-workspaces:
+    name: Test Workspaces
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build all workspaces
+      run: npm run build:all
+    
+    - name: Test all workspaces
+      run: npm run test:all:workspaces
+
+  benchmarks:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run Node.js benchmark
+      run: |
+        echo "Node.js performance benchmark:"
+        time npm run test:node -- --reporter=verbose
+    
+    - name: Run Bun benchmark
+      run: |
+        echo "Bun performance benchmark:"
+        time bun run test:bun -- --reporter=verbose
 
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    needs: [test-bun, test-cloudflare-d1]
+    needs: [test-node, test-bun, test-cloudflare, test-integration]
     if: github.event_name == 'release'
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
-      
-      - name: Install dependencies
-        run: npm ci
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install dependencies
+      run: npm ci
         
-      - name: Install workspace dependencies
-        run: npm install --workspaces
-      
-      - name: Build all packages
-        run: npm run build:all
-      
-      - name: Publish refine-sql
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Install workspace dependencies
+      run: npm install --workspaces
+    
+    - name: Build all packages
+      run: npm run build:all
+    
+    - name: Publish refine-sql
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
-      - name: Publish refine-orm
-        run: npm publish --workspace=packages/refine-orm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Publish refine-orm
+      run: npm publish --workspace=packages/refine-orm
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

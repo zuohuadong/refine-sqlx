@@ -1,21 +1,21 @@
-// Vitest configuration for Bun runtime
+// Vitest configuration for Cloudflare Workers runtime
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node',
+    environment: 'edge-runtime', // 使用 edge-runtime 环境模拟 Workers
     setupFiles: ['./test/setup.ts'],
-    testTimeout: 60000,
-    hookTimeout: 30000,
-    teardownTimeout: 10000,
+    testTimeout: 90000, // Workers 环境可能需要更长时间
+    hookTimeout: 45000,
+    teardownTimeout: 15000,
     pool: 'forks',
     poolOptions: {
       forks: {
         singleFork: true
       }
     },
-    maxConcurrency: 2, // Bun 可以支持稍微高一点的并发
+    maxConcurrency: 1, // Workers 环境保持单线程
     fileParallelism: false,
     isolate: true,
     include: [
@@ -29,7 +29,7 @@ export default defineConfig({
       'test/setup.ts'
     ],
     env: {
-      TEST_RUNTIME: 'bun'
+      TEST_RUNTIME: 'cloudflare-workers'
     }
   },
   resolve: {
@@ -38,6 +38,11 @@ export default defineConfig({
     }
   },
   esbuild: {
-    target: 'node18'
+    target: 'es2022' // Cloudflare Workers 支持现代 JS
+  },
+  define: {
+    // 定义 Cloudflare Workers 环境变量
+    'globalThis.EdgeRuntime': '"cloudflare-workers"',
+    'globalThis.WorkerGlobalScope': 'function WorkerGlobalScope() {}'
   }
 });
