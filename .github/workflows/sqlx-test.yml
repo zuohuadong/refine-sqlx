@@ -6,6 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --lockfile-only
-      - run: bun run test
+      - run: bun install --frozen-lockfile
+      - run: bun run vitest --run
         working-directory: packages/refine-sqlx
