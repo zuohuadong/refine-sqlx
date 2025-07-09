@@ -19,10 +19,9 @@ import type {
   UpdateParams,
   UpdateResponse,
 } from '@refinedev/core';
+import type { SqlClient, SqlClientFactory } from './client';
 
-type CreateDataProviderOptions = { url: string | URL };
-
-export default ({ url }: CreateDataProviderOptions): DataProvider => {
+export default (client: SqlClient | SqlClientFactory): DataProvider => {
   return {
     getList,
     getMany,
