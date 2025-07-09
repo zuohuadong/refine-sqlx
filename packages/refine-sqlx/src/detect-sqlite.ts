@@ -1,20 +1,15 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import type {
-  SqlAffected,
-  SqlClient,
-  SqlClientFactory,
-  SqlQuery,
-  SqlResult,
-} from './client';
-import type {
-  Database as BunDatabase,
-  SQLQueryBindings as BunSQLQueryBindings,
-} from 'bun:sqlite';
+import type { Database as BunDatabase } from 'bun:sqlite';
 import type {
   DatabaseSync as NodeDatabase,
   DatabaseSyncOptions as NodeDatabaseOptions,
 } from 'node:sqlite';
 import type BetterSqlite3 from 'better-sqlite3';
+import type { SqlClient, SqlClientFactory } from './client';
+import createBetterSQLite3 from './better-sqlite3';
+import createBunSQLite from './bun-sqlite';
+import createCloudflareD1 from './cloudflare-d1';
+import createNodeSQLite from './node-sqlite';
 
 const enum SqlitePkg {
   node = 'node:sqlite',
@@ -57,27 +52,27 @@ export default function detectSQLite(
       typeof navigator != 'undefined' &&
       navigator.userAgent.toLowerCase().includes('cloudflare')
     ) {
-      return (client = createD1Client(db as D1Database));
+      return (client = createCloudflareD1(db as D1Database));
     }
 
     const pkgIdentifer = deleteSqlitePkgIdentifer();
     if (pkgIdentifer === SqlitePkg.bun) {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createBunClient(db as BunDatabase));
+        return (client = createBunSQLite(db as BunDatabase));
       }
 
       const { Database } = await import('bun:sqlite');
       const instance = new Database(db, options?.bun);
-      return (client = createBunClient(instance));
+      return (client = createBunSQLite(instance));
     } else if (pkgIdentifer === SqlitePkg.node) {
       try {
         if (typeof db === 'object' && 'prepare' in db) {
-          return (client = createNodeClient(db as NodeDatabase));
+          return (client = createNodeSQLite(db as NodeDatabase));
         }
 
         const { DatabaseSync } = await import('node:sqlite');
         const instance = new DatabaseSync(db, options?.node);
-        return (client = createNodeClient(instance));
+        return (client = createNodeSQLite(instance));
       } catch {
         // Fallback to generic SQLite client
       }
@@ -85,12 +80,12 @@ export default function detectSQLite(
 
     try {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createGenericClient(db as BetterSqlite3.Database));
+        return (client = createBetterSQLite3(db as BetterSqlite3.Database));
       }
 
       const { default: Database } = await import('better-sqlite3');
       const instance = new Database(db, options?.['better-sqlite3']);
-      return (client = createGenericClient(instance));
+      return (client = createBetterSQLite3(instance));
     } catch {
       throw new Error(
         'Current runtime not supported SQLite, Please use [bun](https://bun.sh)/Node.JS >= 24 or install better-sqlite3',
@@ -106,101 +101,4 @@ function deleteSqlitePkgIdentifer() {
     return SqlitePkg.node;
   }
   return SqlitePkg.generic;
-}
-
-// TODO: batch
-function createD1Client(d1: D1Database): SqlClient {
-  return { query, execute };
-
-  async function query(query: SqlQuery): Promise<SqlResult> {
-    const stmt = d1.prepare(query.sql).bind(query.args);
-    const [columnNames, ...rows] = await stmt.raw({ columnNames: true });
-    return { columnNames, rows };
-  }
-
-  async function execute(query: SqlQuery): Promise<SqlAffected> {
-    const stmt = d1.prepare(query.sql).bind(query.args);
-    const result = await stmt.run();
-
-    return {
-      changes: result.meta.changes,
-      lastInsertId: result.meta.last_row_id,
-    };
-  }
-}
-
-// TODO: transaction
-function createBunClient(db: BunDatabase): SqlClient {
-  return { query, execute };
-
-  async function query(query: SqlQuery): Promise<SqlResult> {
-    const stmt = db.prepare(query.sql);
-    const rows = stmt.values(...(query.args as BunSQLQueryBindings[]));
-
-    return { columnNames: stmt.columnNames, rows };
-  }
-
-  async function execute(query: SqlQuery): Promise<SqlAffected> {
-    const stmt = db.prepare(query.sql);
-    const result = stmt.run(...(query.args as BunSQLQueryBindings[]));
-    return {
-      changes: result.changes,
-      lastInsertId: result.lastInsertRowid as number | undefined,
-    };
-  }
-}
-
-// TODO: transaction
-function createNodeClient(db: NodeDatabase): SqlClient {
-  return { query, execute };
-
-  async function query(query: SqlQuery): Promise<SqlResult> {
-    const stmt = db.prepare(query.sql);
-    const result = stmt.all(...(query.args as any[]));
-    const columnNames = stmt
-      .columns()
-      .map((e) => e.column)
-      .filter(Boolean) as string[];
-    const rows: unknown[][] = [];
-    for (const item of result) {
-      const row: unknown[] = [];
-      for (const key in item) row.push(item[key]);
-      rows.push(row);
-    }
-
-    return { columnNames, rows };
-  }
-
-  async function execute(query: SqlQuery): Promise<SqlAffected> {
-    const stmt = db.prepare(query.sql);
-    const result = stmt.run(...(query.args as any[]));
-    return {
-      changes: result.changes as any,
-      lastInsertId: result.lastInsertRowid as any,
-    };
-  }
-}
-
-// TODO: transaction
-function createGenericClient(db: BetterSqlite3.Database): SqlClient {
-  return { query, execute };
-
-  async function query(query: SqlQuery): Promise<SqlResult> {
-    const stmt = db.prepare(query.sql).bind(...query.args);
-    const columns = stmt.columns();
-
-    return {
-      columnNames: columns.map((column) => column.name),
-      rows: stmt.raw().all() as unknown[][],
-    };
-  }
-
-  async function execute(query: SqlQuery): Promise<SqlAffected> {
-    const stmt = db.prepare(query.sql).bind(...query.args);
-    const result = stmt.run();
-    return {
-      changes: result.changes,
-      lastInsertId: result.lastInsertRowid as any,
-    };
-  }
 }
