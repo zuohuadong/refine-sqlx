@@ -23,38 +23,60 @@ const enum SqlitePkg {
 }
 
 export type DetectSQLiteOptions = {
-  db: string | D1Database;
   bun?: ConstructorParameters<typeof BunDatabase>['1'];
   node?: NodeDatabaseOptions;
   'better-sqlite3'?: BetterSqlite3.Options;
 };
 
-export default function detectSQLite({
-  db,
-  ...options
-}: DetectSQLiteOptions): SqlClientFactory {
-  let client: SqlQuery;
+export default function detectSQLite(
+  db: ':memory:',
+  options?: DetectSQLiteOptions,
+): SqlClientFactory;
+export default function detectSQLite(
+  db: string,
+  options?: DetectSQLiteOptions,
+): SqlClientFactory;
+export default function detectSQLite(db: D1Database): SqlClientFactory;
+export default function detectSQLite(db: BunDatabase): SqlClientFactory;
+export default function detectSQLite(db: NodeDatabase): SqlClientFactory;
+export default function detectSQLite(
+  db: BetterSqlite3.Database,
+): SqlClientFactory;
+export default function detectSQLite(
+  db: string | D1Database | BunDatabase | NodeDatabase | BetterSqlite3.Database,
+  options?: DetectSQLiteOptions | undefined,
+): SqlClientFactory {
+  let client: SqlClient;
   return { connect };
 
   async function connect(): Promise<SqlClient> {
-    // @ts-expect-error
     if (client != null) return client;
-    if (typeof db === 'object' && 'prepare' in db) {
-      // @ts-expect-error
-      return (client = createD1Client(db));
+    if (
+      typeof db === 'object' &&
+      'prepare' in db &&
+      typeof navigator != 'undefined' &&
+      navigator.userAgent.toLowerCase().includes('cloudflare')
+    ) {
+      return (client = createD1Client(db as D1Database));
     }
 
     const pkgIdentifer = deleteSqlitePkgIdentifer();
     if (pkgIdentifer === SqlitePkg.bun) {
+      if (typeof db === 'object' && 'prepare' in db) {
+        return (client = createBunClient(db as BunDatabase));
+      }
+
       const { Database } = await import('bun:sqlite');
-      const instance = new Database(db, options.bun);
-      // @ts-expect-error
+      const instance = new Database(db, options?.bun);
       return (client = createBunClient(instance));
     } else if (pkgIdentifer === SqlitePkg.node) {
       try {
+        if (typeof db === 'object' && 'prepare' in db) {
+          return (client = createNodeClient(db as NodeDatabase));
+        }
+
         const { DatabaseSync } = await import('node:sqlite');
-        const instance = new DatabaseSync(db, options.node);
-        // @ts-expect-error
+        const instance = new DatabaseSync(db, options?.node);
         return (client = createNodeClient(instance));
       } catch {
         // Fallback to generic SQLite client
@@ -62,9 +84,12 @@ export default function detectSQLite({
     }
 
     try {
+      if (typeof db === 'object' && 'prepare' in db) {
+        return (client = createGenericClient(db as BetterSqlite3.Database));
+      }
+
       const { default: Database } = await import('better-sqlite3');
-      const instance = new Database(db, options['better-sqlite3']);
-      // @ts-expect-error
+      const instance = new Database(db, options?.['better-sqlite3']);
       return (client = createGenericClient(instance));
     } catch {
       throw new Error(
