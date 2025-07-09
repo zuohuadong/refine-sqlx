@@ -38,6 +38,8 @@ jobs:
           rm -f test-nodejs.db
           echo "Cleaned up test databases"
       
+      - name: Detect runtime environment (Bun)
+        run: bun run scripts/env-detect.js
       - name: Run tests with Bun (Native SQLite)
         run: bun run test:bun
         env:
@@ -85,6 +87,8 @@ jobs:
           rm -f test-nodejs.db
           echo "Cleaned up test databases"
       
+      - name: Detect runtime environment (D1)
+        run: node scripts/env-detect.js
       - name: Run tests with D1 Mock
         run: npm run test
         env:
@@ -124,6 +128,8 @@ jobs:
           rm -f *.test.db
           rm -f test-nodejs.db
       
+      - name: Detect runtime environment (Node.js)
+        run: node scripts/env-detect.js
       - name: Run tests with Node.js (Mock mode)
         run: npm run test:run
         env:
