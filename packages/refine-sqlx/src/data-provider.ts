@@ -31,8 +31,38 @@ import {
   createUpdateQuery,
   deserializeSqlResult,
 } from './utils';
+import type { SQLiteOptions } from './detect-sqlite';
+import type { D1Database } from '@cloudflare/workers-types';
+import type { Database as BunDatabase } from 'bun:sqlite';
+import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
+import type BetterSqlite3 from 'better-sqlite3';
+import detectSqlite from './detect-sqlite';
 
-export default (client: SqlClient | SqlClientFactory): DataProvider => {
+export default function (client: SqlClient): DataProvider;
+export default function (factory: SqlClientFactory): DataProvider;
+export default function (
+  path: ':memory:',
+  options?: SQLiteOptions,
+): DataProvider;
+export default function (path: string, options?: SQLiteOptions): DataProvider;
+export default function (db: D1Database): DataProvider;
+export default function (db: BunDatabase): DataProvider;
+export default function (db: NodeDatabase): DataProvider;
+export default function (db: BetterSqlite3.Database): DataProvider;
+export default function (
+  db:
+    | SqlClient
+    | SqlClientFactory
+    | string
+    | ':memory:'
+    | D1Database
+    | BunDatabase
+    | NodeDatabase
+    | BetterSqlite3.Database,
+  options?: SQLiteOptions,
+): DataProvider {
+  let client: SqlClient;
+
   return {
     getList,
     getMany,
@@ -46,15 +76,14 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
   } as DataProvider;
 
   async function resolveClient() {
-    if ('query' in client && 'execute') {
-      return client;
-    } else if ('connect' in client) {
-      return (client = await client.connect());
-    }
+    if (client) return client;
+    const factory =
+      typeof db === 'object' && 'connect' in db ?
+        db
+      : detectSqlite(db as any, options);
+    client = await factory.connect();
 
-    throw new Error(
-      'Invalid client, Please provide SqlClient or SqlClientFactory',
-    );
+    return client;
   }
 
   async function getList<T extends BaseRecord = BaseRecord>(
@@ -243,4 +272,4 @@ export default (client: SqlClient | SqlClientFactory): DataProvider => {
     await client.execute(query);
     return result;
   }
-};
+}

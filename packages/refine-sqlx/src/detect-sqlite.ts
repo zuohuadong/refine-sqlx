@@ -11,52 +11,39 @@ import createBunSQLite from './bun-sqlite';
 import createCloudflareD1 from './cloudflare-d1';
 import createNodeSQLite from './node-sqlite';
 
-const enum SqlitePkg {
-  node = 'node:sqlite',
-  bun = 'bun:sqlite',
-  generic = 'better-sqlite3',
-}
-
-export type DetectSQLiteOptions = {
+export type SQLiteOptions = {
   bun?: ConstructorParameters<typeof BunDatabase>['1'];
   node?: NodeDatabaseOptions;
   'better-sqlite3'?: BetterSqlite3.Options;
 };
 
-export default function detectSQLite(
+export default function (
   db: ':memory:',
-  options?: DetectSQLiteOptions,
+  options?: SQLiteOptions,
 ): SqlClientFactory;
-export default function detectSQLite(
-  db: string,
-  options?: DetectSQLiteOptions,
-): SqlClientFactory;
-export default function detectSQLite(db: D1Database): SqlClientFactory;
-export default function detectSQLite(db: BunDatabase): SqlClientFactory;
-export default function detectSQLite(db: NodeDatabase): SqlClientFactory;
-export default function detectSQLite(
-  db: BetterSqlite3.Database,
-): SqlClientFactory;
-export default function detectSQLite(
+export default function (db: string, options?: SQLiteOptions): SqlClientFactory;
+export default function (db: D1Database): SqlClientFactory;
+export default function (db: BunDatabase): SqlClientFactory;
+export default function (db: NodeDatabase): SqlClientFactory;
+export default function (db: BetterSqlite3.Database): SqlClientFactory;
+export default function (
   db: string | D1Database | BunDatabase | NodeDatabase | BetterSqlite3.Database,
-  options?: DetectSQLiteOptions | undefined,
+  options?: SQLiteOptions | undefined,
 ): SqlClientFactory {
   let client: SqlClient;
   return { connect };
 
   async function connect(): Promise<SqlClient> {
     if (client != null) return client;
-    if (
-      typeof db === 'object' &&
-      'prepare' in db &&
-      typeof navigator != 'undefined' &&
-      navigator.userAgent.toLowerCase().includes('cloudflare')
-    ) {
-      return (client = createCloudflareD1(db as D1Database));
-    }
 
-    const pkgIdentifer = deleteSqlitePkgIdentifer();
-    if (pkgIdentifer === SqlitePkg.bun) {
+    const supportedRuntime = detectSupportRuntime();
+    if (supportedRuntime === 'cloudflare-worker') {
+      if (typeof db === 'object' && 'prepare' in db) {
+        return (client = createCloudflareD1(db as D1Database));
+      }
+
+      throw new Error('Cloudflare D1 must provide a D1Database instance');
+    } else if (supportedRuntime === 'bun') {
       if (typeof db === 'object' && 'prepare' in db) {
         return (client = createBunSQLite(db as BunDatabase));
       }
@@ -64,7 +51,7 @@ export default function detectSQLite(
       const { Database } = await import('bun:sqlite');
       const instance = new Database(db, options?.bun);
       return (client = createBunSQLite(instance));
-    } else if (pkgIdentifer === SqlitePkg.node) {
+    } else if (supportedRuntime === 'node') {
       try {
         if (typeof db === 'object' && 'prepare' in db) {
           return (client = createNodeSQLite(db as NodeDatabase));
@@ -88,17 +75,28 @@ export default function detectSQLite(
       return (client = createBetterSQLite3(instance));
     } catch {
       throw new Error(
-        'Current runtime not supported SQLite, Please use [bun](https://bun.sh)/Node.JS >= 24 or install better-sqlite3',
+        'Current runtime not supported SQLite, Please use [bun](https://bun.sh)/[Node.JS](https://nodejs.org/) >= 24 or install [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)',
       );
     }
   }
 }
 
-function deleteSqlitePkgIdentifer() {
-  if ('Bun' in globalThis && typeof globalThis.Bun?.sql === 'function') {
-    return SqlitePkg.bun;
-  } else if ('process' in globalThis && process.versions.node) {
-    return SqlitePkg.node;
+export function detectSupportRuntime() {
+  if (
+    typeof navigator != 'undefined' &&
+    navigator?.userAgent.toLowerCase().includes('cloudflare')
+  ) {
+    return 'cloudflare-worker';
+  } else if (
+    'Bun' in globalThis &&
+    typeof globalThis?.Bun?.sql === 'function'
+  ) {
+    return 'bun';
+  } else if (
+    'process' in globalThis &&
+    process?.versions?.node &&
+    process?.version?.toLowerCase()?.startsWith('v24')
+  ) {
+    return 'node';
   }
-  return SqlitePkg.generic;
 }
