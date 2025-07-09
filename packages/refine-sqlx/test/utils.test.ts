@@ -11,7 +11,7 @@ describe('createCrudSorting', () => {
   it('should handle single sort field', () => {
     const sort: CrudSorting = [{ field: 'name', order: 'asc' }];
     const result = createCrudSorting(sort);
-    expect(result).toBe('name ASC');
+    expect(result).toEqual({ sql: 'name ASC', args: [] });
   });
 
   it('should handle multiple sort fields', () => {
@@ -20,7 +20,7 @@ describe('createCrudSorting', () => {
       { field: 'created_at', order: 'desc' },
     ];
     const result = createCrudSorting(sort);
-    expect(result).toBe('name ASC, created_at DESC');
+    expect(result).toEqual({ sql: 'name ASC, created_at DESC', args: [] });
   });
 
   it('should convert order to uppercase', () => {
@@ -29,7 +29,7 @@ describe('createCrudSorting', () => {
       { field: 'age', order: 'desc' },
     ];
     const result = createCrudSorting(sort);
-    expect(result).toBe('name ASC, age DESC');
+    expect(result).toEqual({ sql: 'name ASC, age DESC', args: [] });
   });
 });
 
@@ -45,7 +45,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'eq', value: 'John' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" = ?', values: ['John'] });
+      expect(result).toEqual({ sql: '"name" = ?', args: ['John'] });
     });
 
     it('should handle ne operator', () => {
@@ -53,7 +53,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'ne', value: 'John' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" != ?', values: ['John'] });
+      expect(result).toEqual({ sql: '"name" != ?', args: ['John'] });
     });
 
     it('should handle lt operator', () => {
@@ -61,7 +61,7 @@ describe('createCrudFilters', () => {
         { field: 'age', operator: 'lt', value: 30 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"age" < ?', values: [30] });
+      expect(result).toEqual({ sql: '"age" < ?', args: [30] });
     });
 
     it('should handle gt operator', () => {
@@ -69,7 +69,7 @@ describe('createCrudFilters', () => {
         { field: 'age', operator: 'gt', value: 18 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"age" > ?', values: [18] });
+      expect(result).toEqual({ sql: '"age" > ?', args: [18] });
     });
 
     it('should handle lte operator', () => {
@@ -77,7 +77,7 @@ describe('createCrudFilters', () => {
         { field: 'age', operator: 'lte', value: 65 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"age" <= ?', values: [65] });
+      expect(result).toEqual({ sql: '"age" <= ?', args: [65] });
     });
 
     it('should handle gte operator', () => {
@@ -85,7 +85,7 @@ describe('createCrudFilters', () => {
         { field: 'age', operator: 'gte', value: 18 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"age" >= ?', values: [18] });
+      expect(result).toEqual({ sql: '"age" >= ?', args: [18] });
     });
 
     it('should handle in operator', () => {
@@ -94,8 +94,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"status" IN (?, ?)',
-        values: ['active', 'pending'],
+        sql: '"status" IN (?, ?)',
+        args: ['active', 'pending'],
       });
     });
 
@@ -104,7 +104,7 @@ describe('createCrudFilters', () => {
         { field: 'id', operator: 'ina', value: [1, 2, 3] },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"id" IN (?, ?, ?)', values: [1, 2, 3] });
+      expect(result).toEqual({ sql: '"id" IN (?, ?, ?)', args: [1, 2, 3] });
     });
 
     it('should handle nin operator', () => {
@@ -113,8 +113,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"status" NOT IN (?, ?)',
-        values: ['deleted', 'archived'],
+        sql: '"status" NOT IN (?, ?)',
+        args: ['deleted', 'archived'],
       });
     });
 
@@ -123,7 +123,7 @@ describe('createCrudFilters', () => {
         { field: 'id', operator: 'nina', value: [1, 2] },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"id" NOT IN (?, ?)', values: [1, 2] });
+      expect(result).toEqual({ sql: '"id" NOT IN (?, ?)', args: [1, 2] });
     });
 
     it('should handle contains operator', () => {
@@ -131,7 +131,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'contains', value: 'John' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" LIKE ?', values: ['%John%'] });
+      expect(result).toEqual({ sql: '"name" LIKE ?', args: ['%John%'] });
     });
 
     it('should handle ncontains operator', () => {
@@ -139,10 +139,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'ncontains', value: 'spam' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({
-        where: '"name" NOT LIKE ?',
-        values: ['%spam%'],
-      });
+      expect(result).toEqual({ sql: '"name" NOT LIKE ?', args: ['%spam%'] });
     });
 
     it('should handle containss operator', () => {
@@ -151,8 +148,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"name" LIKE ? COLLATE BINARY',
-        values: ['%John%'],
+        sql: '"name" LIKE ? COLLATE BINARY',
+        args: ['%John%'],
       });
     });
 
@@ -162,8 +159,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"name" NOT LIKE ? COLLATE BINARY',
-        values: ['%spam%'],
+        sql: '"name" NOT LIKE ? COLLATE BINARY',
+        args: ['%spam%'],
       });
     });
 
@@ -172,7 +169,7 @@ describe('createCrudFilters', () => {
         { field: 'deleted_at', operator: 'null', value: void 0 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"deleted_at" IS NULL', values: [] });
+      expect(result).toEqual({ sql: '"deleted_at" IS NULL', args: [] });
     });
 
     it('should handle nnull operator', () => {
@@ -180,7 +177,7 @@ describe('createCrudFilters', () => {
         { field: 'email', operator: 'nnull', value: void 0 },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"email" IS NOT NULL', values: [] });
+      expect(result).toEqual({ sql: '"email" IS NOT NULL', args: [] });
     });
 
     it('should handle startswith operator', () => {
@@ -188,7 +185,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'startswith', value: 'John' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" LIKE ?', values: ['John%'] });
+      expect(result).toEqual({ sql: '"name" LIKE ?', args: ['John%'] });
     });
 
     it('should handle nstartswith operator', () => {
@@ -196,7 +193,7 @@ describe('createCrudFilters', () => {
         { field: 'name', operator: 'nstartswith', value: 'spam' },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" NOT LIKE ?', values: ['spam%'] });
+      expect(result).toEqual({ sql: '"name" NOT LIKE ?', args: ['spam%'] });
     });
 
     it('should handle startswiths operator', () => {
@@ -205,8 +202,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"name" LIKE ? COLLATE BINARY',
-        values: ['John%'],
+        sql: '"name" LIKE ? COLLATE BINARY',
+        args: ['John%'],
       });
     });
 
@@ -216,8 +213,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"name" NOT LIKE ? COLLATE BINARY',
-        values: ['spam%'],
+        sql: '"name" NOT LIKE ? COLLATE BINARY',
+        args: ['spam%'],
       });
     });
 
@@ -227,8 +224,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"email" LIKE ?',
-        values: ['%@example.com'],
+        sql: '"email" LIKE ?',
+        args: ['%@example.com'],
       });
     });
 
@@ -238,8 +235,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"email" NOT LIKE ?',
-        values: ['%@spam.com'],
+        sql: '"email" NOT LIKE ?',
+        args: ['%@spam.com'],
       });
     });
 
@@ -249,8 +246,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"email" LIKE ? COLLATE BINARY',
-        values: ['%@Example.com'],
+        sql: '"email" LIKE ? COLLATE BINARY',
+        args: ['%@Example.com'],
       });
     });
 
@@ -260,8 +257,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"email" NOT LIKE ? COLLATE BINARY',
-        values: ['%@Spam.com'],
+        sql: '"email" NOT LIKE ? COLLATE BINARY',
+        args: ['%@Spam.com'],
       });
     });
 
@@ -270,10 +267,7 @@ describe('createCrudFilters', () => {
         { field: 'age', operator: 'between', value: [18, 65] },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({
-        where: '"age" BETWEEN ? AND ?',
-        values: [18, 65],
-      });
+      expect(result).toEqual({ sql: '"age" BETWEEN ? AND ?', args: [18, 65] });
     });
 
     it('should handle nbetween operator', () => {
@@ -282,8 +276,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"age" NOT BETWEEN ? AND ?',
-        values: [0, 17],
+        sql: '"age" NOT BETWEEN ? AND ?',
+        args: [0, 17],
       });
     });
 
@@ -310,8 +304,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '("name" = ? AND "age" >= ?)',
-        values: ['John', 18],
+        sql: '("name" = ? AND "age" >= ?)',
+        args: ['John', 18],
       });
     });
 
@@ -327,8 +321,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '("status" = ? OR "status" = ?)',
-        values: ['active', 'pending'],
+        sql: '("status" = ? OR "status" = ?)',
+        args: ['active', 'pending'],
       });
     });
 
@@ -340,7 +334,7 @@ describe('createCrudFilters', () => {
         },
       ];
       const result = createCrudFilters(filters);
-      expect(result).toEqual({ where: '"name" = ?', values: ['John'] });
+      expect(result).toEqual({ sql: '"name" = ?', args: ['John'] });
     });
 
     it('should handle nested conditional filters', () => {
@@ -361,8 +355,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '("name" = ? AND ("age" < ? OR "age" > ?))',
-        values: ['John', 30, 60],
+        sql: '("name" = ? AND ("age" < ? OR "age" > ?))',
+        args: ['John', 30, 60],
       });
     });
   });
@@ -381,8 +375,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"active" = ? AND ("role" = ? OR "role" = ?)',
-        values: [true, 'admin', 'moderator'],
+        sql: '"active" = ? AND ("role" = ? OR "role" = ?)',
+        args: [true, 'admin', 'moderator'],
       });
     });
 
@@ -394,8 +388,8 @@ describe('createCrudFilters', () => {
       ];
       const result = createCrudFilters(filters);
       expect(result).toEqual({
-        where: '"name" = ? AND "age" >= ? AND "status" IN (?, ?)',
-        values: ['John', 18, 'active', 'pending'],
+        sql: '"name" = ? AND "age" >= ? AND "status" IN (?, ?)',
+        args: ['John', 18, 'active', 'pending'],
       });
     });
   });
