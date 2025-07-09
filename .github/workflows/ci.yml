@@ -17,12 +17,17 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       
+      - name: Clean install environment
+        run: |
+          rm -f bun.lockb
+          rm -rf node_modules
+      
       - name: Install dependencies with Bun
-        run: bun install --ignore-scripts
+        run: bun install
       
       - name: Check Bun version and SQLite support
         run: |
@@ -50,6 +55,12 @@ jobs:
         run: |
           ls -la dist/
           echo "Build artifacts created successfully"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
 
   test-cloudflare-d1:
     name: Test with Cloudflare D1 (Mock)
@@ -124,6 +135,9 @@ jobs:
           rm -f *.test.db
           rm -f test-nodejs.db
       
+      - name: Build project
+        run: npm run build
+
       - name: Run tests with Node.js (Mock mode)
         run: npm run test
         env:
@@ -141,12 +155,18 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       
       - name: Install dependencies with Bun
         run: bun install --ignore-scripts
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts
+          path: dist
       
       - name: Clean up previous test databases
         run: |
