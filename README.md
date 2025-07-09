@@ -20,7 +20,7 @@ pnpm add refine-sqlx
 yarn add refine-sqlx
 
 # Deno
-deno install -A https://github.com/zuohuadong/refine-sql/sqlx.ts # TODO
+deno install -A https://github.com/zuohuadong/refine-sqlx/mod.ts # TODO
 ```
 
 ## Basic Usage
