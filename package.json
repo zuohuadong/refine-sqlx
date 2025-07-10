@@ -24,7 +24,10 @@
     "dist"
   ],
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --exclude=\"test/integration/**\"",
+    "test:integration": "vitest test/integration",
+    "test:bun": "bun test test/integration/bun.test.ts",
+    "test:node": "vitest test/integration/node.test.ts",
     "build": "unbuild"
   },
   "optionalDependencies": {

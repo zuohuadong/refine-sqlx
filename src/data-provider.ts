@@ -188,7 +188,7 @@ export default function (
           params.variables.map(async (e) => {
             const query = createInsertQuery(
               params.resource,
-              params.variables as any,
+              e as any,
             );
             const { lastInsertId } = await tx.execute(query);
             if (!lastInsertId) {
