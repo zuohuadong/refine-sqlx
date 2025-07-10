@@ -77,10 +77,11 @@ export default function (
 
   async function resolveClient() {
     if (client) return client;
+
     const factory =
       typeof db === 'object' && 'connect' in db ?
         db
-      : detectSqlite(db as any, options);
+      : detectSqlite(db as any, options as any);
     client = await factory.connect();
 
     return client;
@@ -131,7 +132,7 @@ export default function (
 
     const client = await resolveClient();
     const query = createSelectQuery(params.resource, {
-      field: 'id',
+      field: params.meta?.idColumnName ?? 'id',
       operator: 'in',
       value: params.ids,
     });
@@ -145,7 +146,7 @@ export default function (
   ): Promise<GetOneResponse<T>> {
     const client = await resolveClient();
     const query = createSelectQuery(params.resource, {
-      field: 'id',
+      field: params.meta?.idColumnName ?? 'id',
       operator: 'eq',
       value: params.id,
     });
@@ -221,7 +222,11 @@ export default function (
     const client = await resolveClient();
     const query = createUpdateQuery(
       params.resource,
-      { field: 'id', operator: 'eq', value: params.id },
+      {
+        field: params.meta?.idColumnName ?? 'id',
+        operator: 'eq',
+        value: params.id,
+      },
       params.variables as any,
     );
     await client.execute(query);
@@ -236,7 +241,11 @@ export default function (
     const client = await resolveClient();
     const query = createUpdateQuery(
       params.resource,
-      { field: 'id', operator: 'in', value: params.ids },
+      {
+        field: params.meta?.idColumnName ?? 'id',
+        operator: 'in',
+        value: params.ids,
+      },
       params.variables as any,
     );
     await client.execute(query);
@@ -249,7 +258,7 @@ export default function (
     const client = await resolveClient();
     const result = await getOne<T>(params);
     const query = createDeleteQuery(params.resource, {
-      field: 'id',
+      field: params.meta?.idColumnName ?? 'id',
       operator: 'eq',
       value: params.id,
     });
@@ -265,7 +274,7 @@ export default function (
     const result = getMany<T>(params);
     const client = await resolveClient();
     const query = createDeleteQuery(params.resource, {
-      field: 'id',
+      field: params.meta?.idColumnName ?? 'id',
       operator: 'in',
       value: params.ids,
     });

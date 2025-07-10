@@ -40,7 +40,7 @@ export function createDeleteQuery(
   filter: LogicalFilter,
 ): SqlQuery {
   const where = createCrudFilters([filter])!;
-  const sql = `DELETE FROM ${table} ${where.sql}`;
+  const sql = `DELETE FROM ${table} WHERE ${where.sql}`;
   const args = where.args;
 
   return { sql, args };
@@ -51,7 +51,7 @@ export function createSelectQuery(
   filter: LogicalFilter,
 ): SqlQuery {
   const where = createCrudFilters([filter])!;
-  const sql = `SELECT * FROM ${table} ${where.sql}`;
+  const sql = `SELECT * FROM ${table} WHERE ${where.sql}`;
   const args = where.args;
 
   return { sql, args };

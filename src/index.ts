@@ -1,2 +1,2 @@
 export type * from './client';
-export { default as createRefineSQLite } from './data-provider';
+export { default as createRefineSQL } from './data-provider';
