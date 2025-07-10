@@ -78,6 +78,13 @@ export default function (
   async function resolveClient() {
     if (client) return client;
 
+    // Check if db is already a SqlClient (has query and execute methods)
+    if (typeof db === 'object' && db && 'query' in db && 'execute' in db) {
+      client = db as SqlClient;
+      return client;
+    }
+
+    // Check if db is a SqlClientFactory (has connect method)
     const factory =
       typeof db === 'object' && 'connect' in db ?
         db

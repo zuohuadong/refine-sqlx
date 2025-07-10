@@ -6,10 +6,12 @@ import type {
 } from 'node:sqlite';
 import type BetterSqlite3 from 'better-sqlite3';
 import type { SqlClient, SqlClientFactory } from './client';
-import createBetterSQLite3 from './better-sqlite3';
-import createBunSQLite from './bun-sqlite';
-import createCloudflareD1 from './cloudflare-d1';
-import createNodeSQLite from './node-sqlite';
+import {
+  createBetterSQLite3Adapter,
+  createBunSQLiteAdapter,
+  createCloudflareD1Adapter,
+  createNodeSQLiteAdapter,
+} from './adapters';
 
 export type SQLiteOptions = {
   bun?: ConstructorParameters<typeof BunDatabase>['1'];
@@ -39,27 +41,27 @@ export default function (
     const supportedRuntime = detectSupportRuntime();
     if (supportedRuntime === 'cloudflare-worker') {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createCloudflareD1(db as D1Database));
+        return (client = createCloudflareD1Adapter(db as D1Database));
       }
 
       throw new Error('Cloudflare D1 must provide a D1Database instance');
     } else if (supportedRuntime === 'bun') {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createBunSQLite(db as BunDatabase));
+        return (client = createBunSQLiteAdapter(db as BunDatabase));
       }
 
       const { Database } = await import('bun:sqlite');
       const instance = new Database(db, options?.bun);
-      return (client = createBunSQLite(instance));
+      return (client = createBunSQLiteAdapter(instance));
     } else if (supportedRuntime === 'node') {
       try {
         if (typeof db === 'object' && 'prepare' in db) {
-          return (client = createNodeSQLite(db as NodeDatabase));
+          return (client = createNodeSQLiteAdapter(db as NodeDatabase));
         }
 
         const { DatabaseSync } = await import('node:sqlite');
         const instance = new DatabaseSync(db, options?.node);
-        return (client = createNodeSQLite(instance));
+        return (client = createNodeSQLiteAdapter(instance));
       } catch {
         // Fallback to generic SQLite client
       }
@@ -67,12 +69,12 @@ export default function (
 
     try {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createBetterSQLite3(db as BetterSqlite3.Database));
+        return (client = createBetterSQLite3Adapter(db as BetterSqlite3.Database));
       }
 
       const { default: Database } = await import('better-sqlite3');
       const instance = new Database(db, options?.['better-sqlite3']);
-      return (client = createBetterSQLite3(instance));
+      return (client = createBetterSQLite3Adapter(instance));
     } catch {
       throw new Error(
         'Current runtime not supported SQLite, Please use [bun](https://bun.sh)/[Node.JS](https://nodejs.org/) >= 24 or install [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)',

@@ -1,7 +1,8 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from './client';
+import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from '../client';
+import { createSqlAffected, isSelectQuery } from './utils';
 
-export default function (d1: D1Database): SqlClient {
+export default function createCloudflareD1Adapter(d1: D1Database): SqlClient {
   return { query, execute, batch };
 
   async function query(query: SqlQuery): Promise<SqlResult> {
@@ -14,10 +15,10 @@ export default function (d1: D1Database): SqlClient {
     const stmt = d1.prepare(query.sql).bind(query.args);
     const result = await stmt.run();
 
-    return {
+    return createSqlAffected({
       changes: result.meta.changes,
-      lastInsertId: result.meta.last_row_id,
-    };
+      last_row_id: result.meta.last_row_id,
+    });
   }
 
   async function batch(queries: SqlQuery[]): Promise<(SqlResult | SqlAffected)[]> {
@@ -27,17 +28,17 @@ export default function (d1: D1Database): SqlClient {
     return results.map((result, index) => {
       if (result.success) {
         // For SELECT queries, return SqlResult
-        if (queries[index].sql.trim().toLowerCase().startsWith('select')) {
+        if (isSelectQuery(queries[index].sql)) {
           return {
             columnNames: result.meta.columns || [],
             rows: result.results || []
           } as SqlResult;
         }
         // For INSERT/UPDATE/DELETE queries, return SqlAffected
-        return {
+        return createSqlAffected({
           changes: result.meta.changes,
-          lastInsertId: result.meta.last_row_id,
-        } as SqlAffected;
+          last_row_id: result.meta.last_row_id,
+        });
       }
       throw new Error(`Batch query failed: ${result.error}`);
     });

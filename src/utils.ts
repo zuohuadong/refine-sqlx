@@ -29,7 +29,7 @@ export function createUpdateQuery<T extends Record<string, any>>(
   const columns = Object.keys(data);
   const placeholders = columns.map((key) => `${key} = ?`).join(', ');
   const where = createCrudFilters([filter])!;
-  const sql = `UPDATE ${table} SET ${placeholders} ${where.sql}`;
+  const sql = `UPDATE ${table} SET ${placeholders} WHERE ${where.sql}`;
   const args = [...Object.values(data), ...where.args];
 
   return { sql, args };
