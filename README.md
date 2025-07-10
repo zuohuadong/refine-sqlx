@@ -73,7 +73,7 @@ const db = new Database(':memory:');
 const dataProvider = createRefineSQL(db);
 ```
 
-### Node.js (v22.5.0+)
+### Node.js (v24+)
 
 ```typescript
 import { DatabaseSync } from 'node:sqlite';
@@ -83,7 +83,7 @@ const db = new DatabaseSync(':memory:');
 const dataProvider = createRefineSQL(db);
 ```
 
-### Cloudflare Workers (D1)
+### Cloudflare D1
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
@@ -114,10 +114,8 @@ const dataProvider = createRefineSQL(db);
 import { createRefineSQL } from 'refine-sqlx';
 
 const dataProvider = createRefineSQL({
-  async create() {
-    // Lazy connection initialization
-    const { Database } = await import('bun:sqlite');
-    return new Database('./production.db');
+  async connect() {
+    // Returns your client.
   }
 });
 ```
@@ -133,10 +131,13 @@ const customClient: SqlClient = {
     // Your custom query implementation
     return { columnNames: [], rows: [] };
   },
+
   async execute(query) {
     // Your custom execute implementation
     return { changes: 0, lastInsertId: undefined };
   },
+
+  // Optional
   async transaction(fn) {
     // Your custom transaction implementation
     return await fn(this);
@@ -144,6 +145,8 @@ const customClient: SqlClient = {
 };
 
 const dataProvider = createRefineSQL(customClient);
+// OR
+// createRefineSQL({ connect: () => customClient })
 ```
 
 ## 📊 Usage Examples
@@ -266,17 +269,8 @@ Refine SQL X automatically detects your runtime environment and selects the opti
 
 1. **Cloudflare Workers** - Uses D1 database bindings
 2. **Bun** - Uses `bun:sqlite` (native)
-3. **Node.js ≥22.5.0** - Uses `node:sqlite` (native)
+3. **Node.js ≥24** - Uses `node:sqlite` (native)
 4. **Fallback** - Uses `better-sqlite3` package
-
-### Database Adapters
-
-Each runtime has its own optimized adapter:
-
-- `BunSQLiteAdapter` - For Bun's native SQLite
-- `NodeSQLiteAdapter` - For Node.js native SQLite
-- `CloudflareD1Adapter` - For Cloudflare D1
-- `BetterSQLite3Adapter` - Universal fallback
 
 ### Transaction Support
 
@@ -289,6 +283,9 @@ const result = await dataProvider.createMany({
   variables: [...] // All records created in a single transaction
 });
 ```
+
+> [!TIP]
+> D1 not supported transaction, fallback using `batch`.
 
 ## 🧪 Testing
 
@@ -312,9 +309,9 @@ bun run format
 
 - **Peer Dependencies**: `@refinedev/core ^4.57.10`
 - **Optional Dependencies**: `better-sqlite3 ^12.2.0` (for fallback support)
-- **Runtime Support**:
+- **Runtime SQLite Support**:
   - Bun 1.0+
-  - Node.js 22.5.0+ (for native SQLite)
+  - Node.js 24+ (for native SQLite, `<=24` using `better-sqlite3`)
   - Node.js 16+ (with better-sqlite3)
   - Cloudflare Workers
 
