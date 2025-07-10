@@ -2,7 +2,9 @@ import type BetterSqlite3 from 'better-sqlite3';
 import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from '../client';
 import { createSqlAffected, createTransactionWrapper } from './utils';
 
-export default function createBetterSQLite3Adapter(db: BetterSqlite3.Database): SqlClient {
+export default function createBetterSQLite3Adapter(
+  db: BetterSqlite3.Database,
+): SqlClient {
   async function query(query: SqlQuery): Promise<SqlResult> {
     const stmt = db.prepare(query.sql).bind(...query.args);
     const columns = stmt.columns();
@@ -16,7 +18,7 @@ export default function createBetterSQLite3Adapter(db: BetterSqlite3.Database): 
   async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = db.prepare(query.sql).bind(...query.args);
     const result = stmt.run();
-    
+
     return createSqlAffected(result);
   }
 

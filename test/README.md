@@ -5,6 +5,7 @@ This project uses a structured testing approach with separate unit and integrati
 ## Test Organization
 
 ### Unit Tests
+
 - **Location**: `test/*.test.ts`
 - **Purpose**: Test individual components in isolation with mocks
 - **Command**: `npm test` or `bun test --exclude="test/integration/**"`
@@ -15,6 +16,7 @@ This project uses a structured testing approach with separate unit and integrati
   - `detect-sqlite.test.ts` - Runtime detection tests
 
 ### Integration Tests
+
 - **Location**: `test/integration/*.test.ts`
 - **Purpose**: Test end-to-end functionality with real databases
 - **Base Suite**: `test/integration.ts` - Generic test suite
@@ -53,16 +55,19 @@ The GitHub workflow (`.github/workflows/sqlx-test.yml`) runs:
 ## Platform-Specific Notes
 
 ### Bun Runtime
+
 - Primary development and testing runtime
 - Native SQLite support via `bun:sqlite`
 - All tests run in Bun environment
 
 ### Node.js Runtime
+
 - Integration tests require Node.js v24+ for `node:sqlite` support
 - Tests automatically skip on older versions or when running in Bun
 - Unit tests work on Node.js 18+
 
 ### Test Database
+
 - All integration tests use in-memory SQLite (`:memory:`)
 - Fresh database instance for each test
 - No persistent data between tests

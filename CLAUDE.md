@@ -21,8 +21,9 @@ This is a TypeScript library that provides a Refine data provider for SQL databa
 ### Database Adapters
 
 The library supports multiple SQLite runtimes through dedicated adapters:
+
 - `src/bun-sqlite.ts` - Bun's native SQLite (`bun:sqlite`)
-- `src/node-sqlite.ts` - Node.js native SQLite (`node:sqlite`) 
+- `src/node-sqlite.ts` - Node.js native SQLite (`node:sqlite`)
 - `src/cloudflare-d1.ts` - Cloudflare D1 database
 - `src/better-sqlite3.ts` - better-sqlite3 package (fallback)
 

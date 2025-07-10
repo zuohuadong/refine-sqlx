@@ -186,10 +186,7 @@ export default function (
       const ids = await client.transaction!(async (tx) => {
         return Promise.all(
           params.variables.map(async (e) => {
-            const query = createInsertQuery(
-              params.resource,
-              e as any,
-            );
+            const query = createInsertQuery(params.resource, e as any);
             const { lastInsertId } = await tx.execute(query);
             if (!lastInsertId) {
               throw new Error('Failed to create record');

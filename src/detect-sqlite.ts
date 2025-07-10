@@ -69,7 +69,9 @@ export default function (
 
     try {
       if (typeof db === 'object' && 'prepare' in db) {
-        return (client = createBetterSQLite3Adapter(db as BetterSqlite3.Database));
+        return (client = createBetterSQLite3Adapter(
+          db as BetterSqlite3.Database,
+        ));
       }
 
       const { default: Database } = await import('better-sqlite3');

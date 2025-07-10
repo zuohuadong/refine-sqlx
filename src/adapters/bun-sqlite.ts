@@ -13,7 +13,7 @@ export default function createBunSQLiteAdapter(db: Database): SqlClient {
   async function execute(query: SqlQuery): Promise<SqlAffected> {
     const stmt = db.prepare(query.sql);
     const result = stmt.run(...(query.args as SQLQueryBindings[]));
-    
+
     return createSqlAffected(result);
   }
 

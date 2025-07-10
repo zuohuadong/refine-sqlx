@@ -21,17 +21,21 @@ export default function createCloudflareD1Adapter(d1: D1Database): SqlClient {
     });
   }
 
-  async function batch(queries: SqlQuery[]): Promise<(SqlResult | SqlAffected)[]> {
-    const statements = queries.map(query => d1.prepare(query.sql).bind(query.args));
+  async function batch(
+    queries: SqlQuery[],
+  ): Promise<(SqlResult | SqlAffected)[]> {
+    const statements = queries.map((query) =>
+      d1.prepare(query.sql).bind(query.args),
+    );
     const results = await d1.batch(statements);
-    
+
     return results.map((result, index) => {
       if (result.success) {
         // For SELECT queries, return SqlResult
         if (isSelectQuery(queries[index].sql)) {
           return {
             columnNames: result.meta.columns || [],
-            rows: result.results || []
+            rows: result.results || [],
           } as SqlResult;
         }
         // For INSERT/UPDATE/DELETE queries, return SqlAffected

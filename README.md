@@ -26,12 +26,12 @@ deno install -A https://github.com/zuohuadong/refine-sqlx/mod.ts # TODO
 ## Basic Usage
 
 ```typescript
-import { Refine } from "@refinedev/core";
-import { createRefineSQLite } from "refine-sqlx";
+import { Refine } from '@refinedev/core';
+import { createRefineSQLite } from 'refine-sqlx';
 
-const sqlite = createRefineSQLite(":memory:");
+const sqlite = createRefineSQLite(':memory:');
 const App = () => {
-  <Refine dataProvider={sqlite} />
+  <Refine dataProvider={sqlite} />;
 };
 ```
 

@@ -1,4 +1,4 @@
-import { describe, beforeEach, afterEach, it } from 'vitest';
+import { describe, it } from 'vitest';
 import { createNodeSQLiteAdapter } from '../../src/adapters';
 import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';
@@ -9,8 +9,9 @@ const majorVersion = parseInt(nodeVersion.replace('v', '').split('.')[0]);
 const isNodeV24Plus = majorVersion >= 24;
 const isBunRuntime = typeof Bun !== 'undefined';
 
-const testSuite = (isNodeV24Plus && !isBunRuntime)
-  ? createIntegrationTestSuite(
+const testSuite =
+  isNodeV24Plus && !isBunRuntime ?
+    createIntegrationTestSuite(
       'Node.js SQLite',
       async (): Promise<SqlClient> => {
         try {
@@ -32,7 +33,7 @@ const testSuite = (isNodeV24Plus && !isBunRuntime)
             // Ignore cleanup errors in tests
           }
         }
-      }
+      },
     )
   : () => {
       it.skip(`Node.js SQLite integration tests skipped (requires Node.js v24+, current: ${nodeVersion || 'unknown'}, runtime: ${isBunRuntime ? 'Bun' : 'Node.js'})`, () => {

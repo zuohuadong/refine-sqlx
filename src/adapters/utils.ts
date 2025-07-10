@@ -6,16 +6,15 @@ import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from '../client';
  */
 export function createTransactionWrapper(
   execute: (query: SqlQuery) => Promise<SqlAffected>,
-  query: (query: SqlQuery) => Promise<SqlResult>
+  query: (query: SqlQuery) => Promise<SqlResult>,
 ) {
-  return async function transaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+  return async function transaction<T>(
+    fn: (tx: SqlClient) => Promise<T>,
+  ): Promise<T> {
     await execute({ sql: 'BEGIN', args: [] });
-    
+
     try {
-      const txClient: SqlClient = {
-        query,
-        execute
-      };
+      const txClient: SqlClient = { query, execute };
       const result = await fn(txClient);
       await execute({ sql: 'COMMIT', args: [] });
       return result;
@@ -32,7 +31,7 @@ export function createTransactionWrapper(
  */
 export function convertObjectRowsToArrayRows(
   objectRows: Record<string, any>[],
-  columnNames: string[]
+  columnNames: string[],
 ): unknown[][] {
   const rows: unknown[][] = [];
   for (const item of objectRows) {

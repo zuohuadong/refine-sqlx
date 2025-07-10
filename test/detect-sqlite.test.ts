@@ -5,7 +5,7 @@ describe('Runtime Detection', () => {
   // These tests are environment-dependent and challenging to mock reliably
   // in all test environments. The runtime detection is tested implicitly
   // through integration tests and actual usage.
-  
+
   it.skip('should detect Cloudflare Worker environment', () => {
     // Skipped: Environment detection is complex to mock across different runtimes
   });

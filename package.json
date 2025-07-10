@@ -2,12 +2,20 @@
   "name": "refine-sqlx",
   "version": "0.0.1-dev.3",
   "description": "A Refine corss database data provider.",
+  "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/medz/refine-sqlx.git"
   },
-  "type": "module",
+  "scripts": {
+    "test": "vitest --exclude=\"test/integration/**\"",
+    "test:integration-bun": "bun test test/integration/bun.test.ts",
+    "test:integration-node": "vitest test/integration/node.test.ts",
+    "test:integration-better-sqlite3": "vitest test/integration/better-sqlite3.test.ts",
+    "build": "unbuild",
+    "format": "prettier --write ."
+  },
   "exports": {
     ".": {
       "import": {
@@ -23,16 +31,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "test": "vitest --exclude=\"test/integration/**\"",
-    "build": "unbuild"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^12.2.0"
-  },
-  "peerDependencies": {
-    "@refinedev/core": "^4.57.10"
-  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
@@ -40,8 +38,15 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "^1.2.18",
     "@types/node": "^24.0.12",
+    "better-sqlite3": "^12.2.0",
     "prettier": "^3.6.2",
     "unbuild": "^3.5.0",
     "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "@refinedev/core": "^4.57.10"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.2.0"
   }
 }
