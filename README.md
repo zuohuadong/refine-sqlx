@@ -307,13 +307,13 @@ bun run format
 
 ## 📋 Requirements
 
-- **Peer Dependencies**: `@refinedev/core ^4.57.10`
-- **Optional Dependencies**: `better-sqlite3 ^12.2.0` (for fallback support)
+- **Peer Dependencies**: `@refinedev/core ^4`
+- **Optional Dependencies**: `better-sqlite3 ^12` (for fallback support)
 - **Runtime SQLite Support**:
-  - Bun 1.0+
-  - Node.js 24+ (for native SQLite, `<=24` using `better-sqlite3`)
-  - Node.js 16+ (with better-sqlite3)
-  - Cloudflare Workers
+  - Bun 1.0+ (for `bun:sqlite`)
+  - Node.js 24+ (for `node:sqlite`)
+  - Node.js 20+ (with `better-sqlite3`)
+  - Cloudflare Workers (with D1 bindings)
 
 ## 🤝 Contributing
 
