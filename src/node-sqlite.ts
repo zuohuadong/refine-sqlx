@@ -1,9 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from './client';
 
-// TODO: transaction
 export default function (db: DatabaseSync): SqlClient {
-  return { query, execute };
+  return { query, execute, transaction };
 
   async function query(query: SqlQuery): Promise<SqlResult> {
     const stmt = db.prepare(query.sql);
@@ -29,5 +28,22 @@ export default function (db: DatabaseSync): SqlClient {
       changes: result.changes as any,
       lastInsertId: result.lastInsertRowid as any,
     };
+  }
+
+  async function transaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    await execute({ sql: 'BEGIN', args: [] });
+    
+    try {
+      const txClient: SqlClient = {
+        query,
+        execute
+      };
+      const result = await fn(txClient);
+      await execute({ sql: 'COMMIT', args: [] });
+      return result;
+    } catch (error) {
+      await execute({ sql: 'ROLLBACK', args: [] });
+      throw error;
+    }
   }
 }
