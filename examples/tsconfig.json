@@ -1,0 +1,48 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // 只保留与父配置不同或需要覆盖的选项
+    "noEmit": true,
+    
+    // 添加装饰器支持
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    
+    // 明确指定模块解析策略
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    
+    // 添加路径别名配置
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@packages/*": ["../packages/*"]
+    },
+    
+    // 增强类型检查
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "../packages/*/src/**/*.ts",
+    "../packages/*/src/**/*.tsx",
+    "../packages/*/src/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "../packages/*/dist/**",
+    "../packages/*/node_modules/**",
+    "../packages/**/*.test.{ts,tsx}",
+    "../packages/**/*.spec.{ts,tsx}",
+    "../packages/**/__tests__/**"
+  ]
+}

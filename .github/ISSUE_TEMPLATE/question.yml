@@ -1,0 +1,158 @@
+name: Question
+description: Ask a question about usage or implementation
+title: "[Question]: "
+labels: ["question", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? We're here to help! Please check our documentation first, then provide details below.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package is your question about?
+      options:
+        - refine-orm
+        - refine-sqlx
+        - Both
+        - General usage
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What category does your question fall into?
+      options:
+        - Installation & Setup
+        - Database Configuration
+        - Query Building
+        - Type Safety
+        - Performance
+        - Migration
+        - Best Practices
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: "How do I..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context about your use case
+      placeholder: "I'm trying to build an application that..."
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      desbutes:
+      label: Your Question
+      description: Please ask your question clearly and provide context
+      placeholder: |
+        Please provide:
+        - What are you trying to accomplish?
+        - What specific problem are you facing?
+        - What have you tried so far?
+        - What would you like to know?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and Background
+      description: Provide relevant context about your project and use case
+      placeholder: |
+        Please describe:
+        - Your project setup and requirements
+        - Database and runtime environment
+        - Relevant constraints or limitations
+        - Why you need this specific approach
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Current Code
+      description: If applicable, share the relevant code you're working with
+      render: typescript
+      placeholder: |
+        // Share your current code here
+        import { createPostgreSQLProvider } from 'refine-orm';
+        
+        const dataProvider = createPostgreSQLProvider(
+          process.env.DATABASE_URL!,
+          schema
+        );
+        
+        // Your code that you have questions about
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Outcome
+      description: What would you like to achieve or what outcome are you expecting?
+      placeholder: Describe what you're trying to accomplish...
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What You've Tried
+      description: What approaches have you already attempted?
+      placeholder: |
+        Please describe:
+        - Solutions you've already tried
+        - Documentation you've consulted
+        - Similar examples you've looked at
+        - Error messages you've encountered
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this question for you?
+      options:
+        - Low - Just curious
+        - Medium - Would help my project
+        - High - Blocking my current work
+        - Critical - Production issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Please provide relevant environment details
+      render: text
+      placeholder: |
+        - Package version: [e.g., refine-orm@1.0.0]
+        - Database: [e.g., PostgreSQL 15.3]
+        - Runtime: [e.g., Node.js 18.17.0, Bun 1.0.0]
+        - OS: [e.g., macOS 14.0]
+        - TypeScript version: [e.g., 5.1.6]
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other information that might be relevant to your question
+      placeholder: |
+        Any additional context:
+        - Links to relevant documentation
+        - Screenshots or error messages
+        - Related issues or discussions
+        - Specific requirements or constraints

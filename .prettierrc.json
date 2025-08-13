@@ -10,5 +10,21 @@
   "bracketSpacing": true,
   "objectWrap": "collapse",
   "bracketSameLine": true,
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "trailingComma": "es5",
+  "arrowParens": "avoid",
+  "quoteProps": "as-needed",
+  "importOrder": [
+    "^(node:|bun:)",
+    "<THIRD_PARTY_MODULES>",
+    "^@refine-orm/(.*)$",
+    "^@/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderBuiltinModulesToTop": true,
+  "importOrderParserPlugins": ["typescript", "decorators"],
+  "importOrderMergeDuplicateImports": true,
+  "importOrderCombineTypeAndValueImports": true
 }

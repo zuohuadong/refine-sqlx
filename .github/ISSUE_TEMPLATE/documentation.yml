@@ -1,0 +1,166 @@
+name: 📚 Documentation Issue
+description: Report an issue with documentation or request documentation improvements
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve our documentation! Please provide details about the documentation issue or improvement you'd like to see.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your documentation request
+      options:
+        - label: I have searched existing issues to ensure this documentation issue hasn't been reported before
+          required: true
+        - label: I have checked the latest version of the documentation
+          required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - Missing documentation
+        - Incorrect/outdated information
+        - Unclear explanation
+        - Missing examples
+        - Broken links
+        - Typo/grammar error
+        - API reference issue
+        - Tutorial/guide request
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is the documentation issue located?
+      options:
+        - README.md
+        - API documentation
+        - Code examples
+        - TypeScript types/comments
+        - GitHub wiki
+        - Website/blog
+        - Package documentation
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the documentation issue or improvement request
+      placeholder: |
+        Please describe:
+        - What documentation is missing, incorrect, or unclear?
+        - What specific information are you looking for?
+        - How would you improve the current documentation?
+    validations:
+      required: true
+
+  - type: textarea
+    id: location_details
+    attributes:
+      label: Specific Location
+      description: Please provide the specific location of the documentation issue
+      placeholder: |
+        Please provide:
+        - URL or file path
+        - Section/heading name
+        - Line numbers (if applicable)
+        - Package name and version
+
+  - type: textarea
+    id: current_content
+    attributes:
+      label: Current Content
+      description: If applicable, paste the current documentation content that needs to be fixed
+      render: markdown
+      placeholder: Paste the current documentation content here...
+
+  - type: textarea
+    id: suggested_content
+    attributes:
+      label: Suggested Improvement
+      description: If you have suggestions for how to improve the documentation, please share them
+      render: markdown
+      placeholder: |
+        Provide your suggested improvements:
+        - Corrected text
+        - Additional examples
+        - Better explanations
+        - Missing information
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Code Examples Needed
+      description: If you're requesting code examples, please describe what examples would be helpful
+      render: typescript
+      placeholder: |
+        Describe what code examples would be helpful:
+        - Specific use cases
+        - Integration examples
+        - Best practices
+        - Common patterns
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - Beginners/newcomers
+        - Intermediate users
+        - Advanced users
+        - Contributors/developers
+        - All users
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this documentation improvement?
+      options:
+        - Low - Minor improvement
+        - Medium - Would help users
+        - High - Important for user experience
+        - Critical - Blocking user adoption
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Provide any additional context that might be helpful
+      placeholder: |
+        Any additional information:
+        - Why is this documentation important?
+        - What problems does the current documentation cause?
+        - References to similar documentation in other projects
+        - Screenshots or mockups (if applicable)
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to help improve this documentation?
+      options:
+        - label: I would be willing to submit a PR to fix this documentation issue
+        - label: I would be willing to help review documentation improvements
+        - label: I would be willing to help write new documentation
+        - label: I would be willing to help test documentation examples

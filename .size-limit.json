@@ -1,0 +1,58 @@
+[
+  {
+    "name": "refine-core-utils",
+    "path": "packages/refine-core-utils/dist/index.mjs",
+    "limit": "10 KB",
+    "gzip": true,
+    "ignore": ["@refinedev/core"]
+  },
+  {
+    "name": "refine-sql (main)",
+    "path": "packages/refine-sql/dist/index.mjs",
+    "limit": "25 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "better-sqlite3", "bun:sqlite", "@refinedev/core"]
+  },
+  {
+    "name": "refine-sql (chain-query only)",
+    "path": "packages/refine-sql/dist/chain-query.mjs",
+    "limit": "8 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "better-sqlite3", "bun:sqlite"]
+  },
+  {
+    "name": "refine-sql (morph-query only)",
+    "path": "packages/refine-sql/dist/morph-query.mjs",
+    "limit": "5 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "better-sqlite3", "bun:sqlite"]
+  },
+  {
+    "name": "refine-orm (main)",
+    "path": "packages/refine-orm/dist/index.mjs",
+    "limit": "35 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "drizzle-orm", "postgres", "mysql2", "better-sqlite3", "@refinedev/core"]
+  },
+  {
+    "name": "refine-orm (postgresql adapter)",
+    "path": "packages/refine-orm/dist/adapters/postgresql.mjs",
+    "limit": "15 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "drizzle-orm", "postgres"]
+  },
+  {
+    "name": "refine-orm (mysql adapter)",
+    "path": "packages/refine-orm/dist/adapters/mysql.mjs",
+    "limit": "15 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "drizzle-orm", "mysql2"]
+  },
+  {
+    "name": "refine-orm (sqlite adapter)",
+    "path": "packages/refine-orm/dist/adapters/sqlite.mjs",
+    "limit": "15 KB",
+    "gzip": true,
+    "ignore": ["@refine-orm/core-utils", "drizzle-orm", "better-sqlite3"]
+  }
+]

@@ -1,0 +1,227 @@
+import type { Table } from 'drizzle-orm';
+import type { DrizzleClient } from '../types/client.js';
+import type { DatabaseConfig, QueryContext } from '../types/config.js';
+import { ConfigurationError } from '../types/errors.js';
+import { performanceManager, QueryOptimizer } from '../utils/performance.js';
+import type { CrudFilters, CrudSorting } from '@refinedev/core';
+
+/**
+ * Abstract base class for database adapters
+ * Provides common functionality and interface for all database types
+ */
+export abstract class BaseDatabaseAdapter<
+  TSchema extends Record<string, Table> = Record<string, Table>,
+> {
+  protected client: DrizzleClient<TSchema> | null = null;
+  protected isConnected = false;
+
+  constructor(protected config: DatabaseConfig<TSchema>) {}
+
+  /**
+   * Establish database connection
+   */
+  abstract connect(): Promise<void>;
+
+  /**
+   * Close database connection
+   */
+  abstract disconnect(): Promise<void>;
+
+  /**
+   * Check if database connection is healthy
+   */
+  abstract healthCheck(): Promise<boolean>;
+
+  /**
+   * Execute raw SQL query
+   */
+  abstract executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]>;
+
+  /**
+   * Begin database transaction
+   */
+  abstract beginTransaction(): Promise<void>;
+
+  /**
+   * Commit database transaction
+   */
+  abstract commitTransaction(): Promise<void>;
+
+  /**
+   * Rollback database transaction
+   */
+  abstract rollbackTransaction(): Promise<void>;
+
+  /**
+   * Get the drizzle client instance
+   */
+  getClient(): DrizzleClient<TSchema> {
+    if (!this.client) {
+      throw new ConfigurationError(
+        'Database client not initialized. Call connect() first.'
+      );
+    }
+    return this.client;
+  }
+
+  /**
+   * Check if adapter is connected
+   */
+  isConnectionActive(): boolean {
+    return this.isConnected && this.client !== null;
+  }
+
+  /**
+   * Execute a query with error handling, logging, and performance tracking
+   */
+  protected async executeWithLogging<T>(
+    operation: () => Promise<T>,
+    context: QueryContext
+  ): Promise<T> {
+    const startTime = Date.now();
+
+    try {
+      if (this.config.debug) {
+        console.log(
+          `[RefineORM] Executing ${context.operation} on ${context.resource}`
+        );
+      }
+
+      const result = await operation();
+
+      const executionTime = Date.now() - startTime;
+
+      // Track performance metrics with enhanced logging
+      performanceManager.logQuery(
+        context.filters || [],
+        context.sorters || [],
+        executionTime,
+        context.resource,
+        context.sql // If available
+      );
+
+      if (this.config.logger) {
+        if (typeof this.config.logger === 'function') {
+          this.config.logger(`${context.operation} ${context.resource}`, [
+            executionTime,
+          ]);
+        } else {
+          console.log(
+            `[RefineORM] ${context.operation} ${context.resource} (${executionTime}ms)`
+          );
+        }
+      }
+
+      return result;
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      console.error(
+        `[RefineORM] Error in ${context.operation} ${context.resource} (${executionTime}ms):`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Optimize query parameters for better performance
+   */
+  protected optimizeQueryParams(
+    filters?: CrudFilters,
+    sorting?: CrudSorting
+  ): { filters: CrudFilters; sorting: CrudSorting } {
+    return {
+      filters: QueryOptimizer.optimizeFilters(filters || []),
+      sorting: QueryOptimizer.optimizeSorting(sorting || []),
+    };
+  }
+
+  /**
+   * Get performance recommendations for this adapter
+   */
+  getPerformanceRecommendations(): {
+    indexSuggestions: Array<{
+      resource: string;
+      suggestion: string;
+      reason: string;
+    }>;
+    poolOptimization: { min: number; max: number };
+    cacheStats: { size: number; maxSize: number; hitRate: number };
+    queryOptimizations: string[];
+    batchStats: {
+      pendingOperations: number;
+      batchSize: number;
+      batchDelay: number;
+    };
+    overallHealth: 'excellent' | 'good' | 'needs-attention' | 'critical';
+  } {
+    return performanceManager.getRecommendations();
+  }
+
+  /**
+   * Clear performance cache for this adapter
+   */
+  clearPerformanceCache(resource?: string): void {
+    performanceManager.getCache().clear(resource);
+  }
+
+  /**
+   * Validate connection configuration
+   */
+  protected validateConfig(): void {
+    if (!this.config.schema) {
+      throw new ConfigurationError(
+        'Schema is required in database configuration'
+      );
+    }
+
+    if (!this.config.connection) {
+      throw new ConfigurationError('Connection configuration is required');
+    }
+  }
+
+  /**
+   * Get connection string from config
+   */
+  protected getConnectionString(): string {
+    if (typeof this.config.connection === 'string') {
+      return this.config.connection;
+    }
+
+    throw new ConfigurationError(
+      'Connection string format not supported by this adapter'
+    );
+  }
+
+  /**
+   * Get connection options from config
+   */
+  protected getConnectionOptions(): any {
+    if (typeof this.config.connection === 'object') {
+      return this.config.connection;
+    }
+
+    throw new ConfigurationError(
+      'Connection options format not supported by this adapter'
+    );
+  }
+
+  /**
+   * Get adapter information (to be overridden by specific adapters)
+   */
+  getAdapterInfo(): {
+    type: string;
+    runtime: string;
+    driver: string;
+    supportsNativeDriver: boolean;
+    isConnected: boolean;
+  } {
+    return {
+      type: 'unknown',
+      runtime: 'unknown',
+      driver: 'unknown',
+      supportsNativeDriver: false,
+      isConnected: this.isConnected,
+    };
+  }
+}

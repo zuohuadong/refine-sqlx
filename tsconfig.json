@@ -1,16 +1,56 @@
 {
   "compilerOptions": {
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "rootDir": "src",
-    "noEmit": true,
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+
+    // Strict Type Checking
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    // Additional Checks (balanced for quality and practicality)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Module Resolution
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    // Decorators (new standard decorators - TypeScript 5.0+)
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Emit
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "removeComments": false,
+    "preserveConstEnums": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "references": [
+    { "path": "./packages/refine-core-utils" },
+    { "path": "./packages/refine-orm" },
+    { "path": "./packages/refine-sqlx" }
+  ],
+  "exclude": ["node_modules", "**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
 }

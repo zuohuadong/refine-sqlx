@@ -1,0 +1,20 @@
+[install]
+# Enable workspace support
+workspace = true
+
+# Automatically install peer dependencies
+auto = true
+
+# Use exact versions for better reproducibility
+exact = true
+
+[install.scopes]
+# Configure scoped registries if needed
+# "@company" = "https://npm.company.com"
+
+[test]
+# Test configuration
+
+[build]
+# Build configuration
+target = "bun"

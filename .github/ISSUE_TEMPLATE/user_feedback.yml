@@ -1,0 +1,113 @@
+name: 📝 User Feedback
+description: Share your experience, suggestions, or general feedback about refine-orm or refine-sqlx
+title: "[FEEDBACK] "
+labels: ["feedback", "user-experience"]
+assignees:
+  - medz
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to provide feedback! Your input helps us improve the packages.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package is your feedback about?
+      options:
+        - refine-orm
+        - refine-sqlx
+        - refine-core-utils
+        - General/All packages
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feedback-type
+    attributes:
+      label: Feedback Type
+      description: What type of feedback are you providing?
+      options:
+        - User Experience
+        - API Design
+        - Documentation
+        - Performance
+        - Feature Request
+        - General Suggestion
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-experience
+    attributes:
+      label: Current Experience
+      description: Tell us about your current experience using the package
+      placeholder: |
+        - What are you trying to accomplish?
+        - How are you currently using the package?
+        - What works well for you?
+    validations:
+      required: true
+
+  - type: textarea
+    id: feedback-details
+    attributes:
+      label: Feedback Details
+      description: Please provide your detailed feedback, suggestions, or ideas
+      placeholder: |
+        - What could be improved?
+        - What features would you like to see?
+        - Any pain points or frustrations?
+        - Ideas for better developer experience?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority/Impact
+      description: How important is this feedback to your workflow?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my workflow
+        - High - Blocking or significantly impacting my work
+        - Critical - Cannot use the package without this
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case Context
+      description: Help us understand your specific use case
+      placeholder: |
+        - What type of application are you building?
+        - What database(s) are you using?
+        - Team size and experience level?
+        - Production vs development usage?
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or examples that might help us understand your feedback
+      placeholder: |
+        - Code examples
+        - Screenshots
+        - Links to relevant documentation
+        - Comparison with other tools
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Feedback Guidelines
+      description: Please confirm you understand our feedback process
+      options:
+        - label: I understand this is for constructive feedback and suggestions
+          required: true
+        - label: I'm willing to participate in follow-up discussions if needed
+          required: false
+        - label: I'm interested in contributing to the solution if possible
+          required: false

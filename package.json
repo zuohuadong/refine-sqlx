@@ -1,52 +1,62 @@
 {
-  "name": "refine-sqlx",
-  "version": "0.0.1",
-  "description": "A Refine corss database data provider.",
+  "name": "refine-sqlx-monorepo",
+  "version": "0.3.0",
+  "description": "Monorepo for Refine SQL data providers",
+  "private": true,
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/medz/refine-sqlx.git"
   },
-  "scripts": {
-    "test": "vitest --exclude=\"test/integration/**\"",
-    "test:integration-bun": "bun test test/integration/bun.test.ts",
-    "test:integration-node": "vitest test/integration/node.test.ts",
-    "test:integration-better-sqlite3": "vitest test/integration/better-sqlite3.test.ts",
-    "build": "unbuild",
-    "format": "prettier --write ."
-  },
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist"
+  "workspaces": [
+    "packages/*"
   ],
+  "scripts": {
+    "build": "bun run --filter='*' build",
+    "test": "bun run --filter='*' test",
+    "test:integration": "bun run --filter='*' test:integration",
+    "test:integration-bun": "bun run --filter='refine-sql' test:integration-bun",
+    "test:integration-better-sqlite3": "bun run --filter='refine-sql' test:integration-better-sqlite3",
+    "test:integration-mysql": "bun run --filter='refine-orm' test:integration",
+    "test:integration-postgresql": "bun run --filter='refine-orm' test:integration",
+    "typecheck": "bun run --filter='*' typecheck",
+    "typecheck:strict": "tsc --project tsconfig.strict.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "size": "size-limit",
+    "test:compatibility": "node scripts/test-compatibility.js",
+    "test:modules": "node scripts/test-module-formats.js",
+    "quality:check": "npm run typecheck && npm run lint && npm run format:check && npm run size",
+    "quality:fix": "npm run lint:fix && npm run format",
+    "quality:strict": "npm run typecheck:strict && npm run quality:check",
+    "test:tree-shaking": "node scripts/test-tree-shaking.js",
+    "test:node-versions": "node scripts/test-node-versions.js",
+    "test:compatibility-full": "npm run test:compatibility && npm run test:modules",
+    "test:all-quality": "npm run test:node-versions && npm run test:compatibility && npm run test:modules && npm run test:tree-shaking",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run quality:check && bun run build && changeset publish"
+  },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4",
+    "@changesets/cli": "^2.27.9",
+    "@eslint/js": "9.33.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@prettier/plugin-oxc": "^0.0.4",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/bun": "^1.2.18",
-    "@types/node": "^24.0.12",
-    "better-sqlite3": "^12.2.0",
+    "@size-limit/preset-small-lib": "11.2.0",
+    "@typescript-eslint/eslint-plugin": "8.39.1",
+    "@typescript-eslint/parser": "8.39.1",
+    "eslint": "9.33.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.4",
     "prettier": "^3.6.2",
-    "unbuild": "^3.5.0",
-    "vitest": "^3.2.4"
-  },
-  "peerDependencies": {
-    "@refinedev/core": "^4.57.10"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^12.2.0"
+    "size-limit": "11.2.0",
+    "typescript-eslint": "8.39.1"
   }
 }

@@ -1,0 +1,97 @@
+{
+  "name": "refine-orm",
+  "version": "0.3.0",
+  "description": "A Refine ORM data provider with multi-database support using drizzle-orm.",
+  "type": "module",
+  "license": "MIT",
+  "author": "RefineORM Team",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "homepage": "https://github.com/medz/refine-sqlx#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/medz/refine-sqlx.git",
+    "directory": "packages/refine-orm"
+  },
+  "bugs": {
+    "url": "https://github.com/medz/refine-sqlx/issues"
+  },
+  "keywords": [
+    "refine",
+    "data-provider",
+    "orm",
+    "drizzle",
+    "drizzle-orm",
+    "mysql",
+    "postgresql",
+    "sqlite",
+    "database",
+    "typescript",
+    "type-safe",
+    "react",
+    "crud",
+    "sql",
+    "bun",
+    "nodejs",
+    "chain-query",
+    "polymorphic",
+    "relationships",
+    "transactions",
+    "multi-database",
+    "query-builder",
+    "admin-panel",
+    "dashboard",
+    "backend",
+    "frontend",
+    "full-stack",
+    "web-development",
+    "javascript",
+    "tsx",
+    "jsx"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "test:integration": "vitest test/integration",
+    "build": "unbuild",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run test",
+    "pack-test": "npm pack --dry-run"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@refine-orm/core-utils": "workspace:*",
+    "drizzle-orm": "^0.36.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/bun": "^1.2.18",
+    "@types/node": "^24.0.12",
+    "better-sqlite3": "^12.2.0",
+    "mysql2": "^3.11.4",
+    "postgres": "^3.4.5",
+    "prettier": "^3.6.2",
+    "unbuild": "^3.5.0",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "@refinedev/core": "^4.57.10"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.2.0",
+    "mysql2": "^3.11.4",
+    "postgres": "^3.4.5"
+  }
+}
