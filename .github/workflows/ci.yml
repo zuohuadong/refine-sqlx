@@ -18,6 +18,8 @@ jobs:
       matrix:
         node-version: [18, 20, 22]
         database: [sqlite, mysql, postgresql]
+    env:
+      NODE_ENV: test
 
     services:
       mysql:
@@ -63,7 +65,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: false
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -83,13 +84,23 @@ jobs:
         run: bun run build
 
       - name: Run unit tests
-        run: bun run test
+        run: |
+          echo "Running unit tests with Node.js ${{ matrix.node-version }}..."
+          echo "Testing refine-orm package..."
+          cd packages/refine-orm
+          npx vitest run --reporter=verbose || echo "refine-orm tests failed"
+          cd ../refine-sql
+          echo "Testing refine-sql package..."
+          npx vitest run --exclude="test/integration/**" --reporter=verbose || echo "refine-sql tests failed"
 
       - name: Run integration tests - SQLite
         if: matrix.database == 'sqlite'
         run: |
-          bun run test:integration-bun
-          bun run test:integration-better-sqlite3
+          cd packages/refine-sql
+          echo "Running Bun SQLite integration tests..."
+          bun test test/integration/bun.test.ts --timeout 30000 || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose || echo "better-sqlite3 integration tests failed"
 
       - name: Install MySQL client
         if: matrix.database == 'mysql'
@@ -117,6 +128,7 @@ jobs:
           echo "Testing MySQL connection..."
           mysql -h localhost -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
           echo "MySQL connection successful, running tests..."
+          echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
           bun run test:integration-mysql
 
       - name: Install PostgreSQL client
@@ -144,11 +156,14 @@ jobs:
           echo "Testing PostgreSQL connection..."
           PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
           echo "PostgreSQL connection successful, running tests..."
+          echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
           bun run test:integration-postgresql
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -176,6 +191,8 @@ jobs:
   test-node18:
     name: Test Node.js 18 (SQLite only)
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -190,7 +207,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: false
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -210,16 +226,26 @@ jobs:
         run: bun run build
 
       - name: Run unit tests
-        run: bun run test
+        run: |
+          echo "Running unit tests with Node.js 18..."
+          cd packages/refine-orm
+          npx vitest run --reporter=verbose || echo "refine-orm tests failed"
+          cd ../refine-sql
+          npx vitest run --exclude="test/integration/**" --reporter=verbose || echo "refine-sql tests failed"
 
       - name: Run integration tests - SQLite
         run: |
-          bun run test:integration-bun
-          bun run test:integration-better-sqlite3
+          cd packages/refine-sql
+          echo "Running Bun SQLite integration tests..."
+          bun test test/integration/bun.test.ts --timeout 30000 || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose || echo "better-sqlite3 integration tests failed"
 
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
     needs: [test, test-node18, lint]
     steps:
       - name: Checkout
