@@ -141,7 +141,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   config: SQLiteProviderConfig<TSchema>
 ): RefineOrmCompatibleProvider<TSchema> {
   // Create base provider
-  const baseProvider = createDataProvider<TSchema>(config.connection as any, config.options);
+  const baseProvider = createDataProvider(config.connection as any, config.options);
   
   // Add compatibility layer
   const compatibleProvider = addCompatibilityLayer(baseProvider);

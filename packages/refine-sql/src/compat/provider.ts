@@ -19,7 +19,7 @@ import { CompatChainQuery } from './chain-query';
  * 兼容性数据提供器接口
  */
 export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
-  extends Omit<CoreDataProvider<TSchema>, 'from' | 'createMany'> {
+  extends Omit<CoreDataProvider<TSchema>, 'from' | 'createMany' | 'updateMany' | 'deleteMany'> {
   // Schema 访问 (refine-orm 风格)
   schema: TSchema;
   

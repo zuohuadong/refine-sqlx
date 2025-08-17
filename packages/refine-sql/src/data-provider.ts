@@ -74,14 +74,14 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
   ): Promise<GetOneResponse<T>>;
 
   // Advanced methods
-  upsert<T extends BaseRecord = BaseRecord, Variables = {}>(params: {
+  upsert<T extends BaseRecord = BaseRecord, Variables extends Record<string, any> = Record<string, any>>(params: {
     resource: string;
     variables: Variables;
     conflictColumns?: string[];
     updateColumns?: string[];
   }): Promise<CreateResponse<T> | UpdateResponse<T>>;
 
-  firstOrCreate<T extends BaseRecord = BaseRecord, Variables = {}>(params: {
+  firstOrCreate<T extends BaseRecord = BaseRecord, Variables extends Record<string, any> = Record<string, any>>(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Variables;
