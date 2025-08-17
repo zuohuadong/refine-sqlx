@@ -226,9 +226,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
   };
 
   return {
-    get client() { 
-      return resolveClient(); 
-    },
+    client: client as SqlClient,
     
     // 标准 DataProvider 方法
     getList,

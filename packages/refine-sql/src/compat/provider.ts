@@ -19,7 +19,7 @@ import { CompatChainQuery } from './chain-query';
  * 兼容性数据提供器接口
  */
 export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
-  extends CoreDataProvider<TSchema> {
+  extends Omit<CoreDataProvider<TSchema>, 'from'> {
   // Schema 访问 (refine-orm 风格)
   schema: TSchema;
   
@@ -27,9 +27,9 @@ export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
   from<T extends BaseRecord = BaseRecord>(tableName: string): CompatChainQuery<T>;
   
   // 批量操作
-  createMany<TRecord = BaseRecord>(params: {
+  createMany<TRecord = BaseRecord, TVariables extends Record<string, any> = Record<string, any>>(params: {
     resource: string;
-    variables: Record<string, any>[];
+    variables: TVariables[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
   
@@ -261,12 +261,15 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     });
 
     if (existing.data.length > 0) {
-      const updated = await coreProvider.update({
-        resource: params.resource,
-        id: existing.data[0].id,
-        variables: params.values,
-      });
-      return { data: updated.data as TRecord, created: false };
+      const existingRecord = existing.data[0];
+      if (existingRecord.id !== undefined) {
+        const updated = await coreProvider.update({
+          resource: params.resource,
+          id: existingRecord.id,
+          variables: params.values,
+        });
+        return { data: updated.data as TRecord, created: false };
+      }
     }
 
     const createData = { ...params.where, ...params.values };

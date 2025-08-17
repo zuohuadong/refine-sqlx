@@ -22,57 +22,53 @@ export interface SqlQuery {
   args: any[];
 }
 
-// TypeScript 5.0 Decorators for transformers
-function MemoizeTransform(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
+// Simple utility functions instead of decorators to avoid TypeScript 5.0+ issues
+function memoizeTransform<T extends (...args: any[]) => any>(fn: T): T {
   const cache = new Map<string, any>();
   
-  descriptor.value = function (...args: any[]) {
+  return ((...args: any[]) => {
     const key = JSON.stringify(args);
     if (cache.has(key)) {
       return cache.get(key);
     }
     
-    const result = originalMethod.apply(this, args);
+    const result = fn(...args);
     cache.set(key, result);
     
     // Limit cache size
     if (cache.size > 1000) {
       const firstKey = cache.keys().next().value;
-      cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        cache.delete(firstKey);
+      }
     }
     
     return result;
-  };
-  return descriptor;
+  }) as T;
 }
 
-function ValidateInput(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
+function validateInput<T extends (...args: any[]) => any>(fn: T, methodName: string): T {
+  return ((...args: any[]) => {
     // Basic input validation
     if (args.some(arg => arg === null || arg === undefined)) {
-      console.warn(`[${target.constructor.name}] ${propertyKey} received null/undefined arguments`);
+      console.warn(`[SqlTransformer] ${methodName} received null/undefined arguments`);
     }
-    return originalMethod.apply(this, args);
-  };
-  return descriptor;
+    return fn(...args);
+  }) as T;
 }
 
-function TransformationLogger(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
+function logTransformation<T extends (...args: any[]) => any>(fn: T, methodName: string): T {
+  return ((...args: any[]) => {
     const start = performance.now();
-    const result = originalMethod.apply(this, args);
+    const result = fn(...args);
     const end = performance.now();
     
     if (end - start > 10) { // Log slow transformations
-      console.debug(`[Transformer] ${propertyKey} took ${(end - start).toFixed(2)}ms`);
+      console.debug(`[Transformer] ${methodName} took ${(end - start).toFixed(2)}ms`);
     }
     
     return result;
-  };
-  return descriptor;
+  }) as T;
 }
 
 /**
@@ -92,24 +88,27 @@ export class SqlTransformer {
   /**
    * Transform filters to SQL WHERE clause
    */
-  @MemoizeTransform
-  @ValidateInput
-  @TransformationLogger
-  transformFilters(
-    filters?: CrudFilters,
-    context?: TransformationContext
-  ): SqlQuery | undefined {
-    if (!filters || filters.length === 0) {
-      return undefined;
-    }
+  transformFilters = logTransformation(
+    validateInput(
+      memoizeTransform((
+        filters?: CrudFilters,
+        context?: TransformationContext
+      ): SqlQuery | undefined => {
+        if (!filters || filters.length === 0) {
+          return undefined;
+        }
 
-    const result = this.filterTransformer.transformFilters(filters, context);
-    if (result.isEmpty) {
-      return undefined;
-    }
+        const result = this.filterTransformer.transformFilters(filters, context);
+        if (result.isEmpty) {
+          return undefined;
+        }
 
-    return { sql: result.result, args: result.params || [] };
-  }
+        return { sql: result.result, args: result.params || [] };
+      }),
+      'transformFilters'
+    ),
+    'transformFilters'
+  );
 
   /**
    * Transform sorting to SQL ORDER BY clause
