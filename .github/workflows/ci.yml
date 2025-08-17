@@ -65,6 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: false
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -86,21 +87,18 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests with Node.js ${{ matrix.node-version }}..."
-          echo "Testing refine-orm package..."
-          cd packages/refine-orm
-          npx vitest run --reporter=verbose || echo "refine-orm tests failed"
-          cd ../refine-sql
-          echo "Testing refine-sql package..."
-          npx vitest run --exclude="test/integration/**" --reporter=verbose || echo "refine-sql tests failed"
+          npx vitest run --reporter=verbose
 
       - name: Run integration tests - SQLite
         if: matrix.database == 'sqlite'
         run: |
           cd packages/refine-sql
-          echo "Running Bun SQLite integration tests..."
-          bun test test/integration/bun.test.ts --timeout 30000 || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose || echo "better-sqlite3 integration tests failed"
+          echo "Running Bun SQLite integration tests with Bun runtime..."
+          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests with Vitest..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
+          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
+          npx vitest run test/integration/bun.test.ts --reporter=verbose
 
       - name: Install MySQL client
         if: matrix.database == 'mysql'
@@ -129,7 +127,8 @@ jobs:
           mysql -h localhost -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
           echo "MySQL connection successful, running tests..."
           echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
-          bun run test:integration-mysql
+          cd packages/refine-orm
+          npx vitest run test/integration --reporter=verbose
 
       - name: Install PostgreSQL client
         if: matrix.database == 'postgresql'
@@ -157,7 +156,8 @@ jobs:
           PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
           echo "PostgreSQL connection successful, running tests..."
           echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
-          bun run test:integration-postgresql
+          cd packages/refine-orm
+          npx vitest run test/integration --reporter=verbose
 
   lint:
     name: Lint
@@ -207,6 +207,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: false
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -228,18 +229,17 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests with Node.js 18..."
-          cd packages/refine-orm
-          npx vitest run --reporter=verbose || echo "refine-orm tests failed"
-          cd ../refine-sql
-          npx vitest run --exclude="test/integration/**" --reporter=verbose || echo "refine-sql tests failed"
+          npx vitest run --reporter=verbose
 
       - name: Run integration tests - SQLite
         run: |
           cd packages/refine-sql
-          echo "Running Bun SQLite integration tests..."
-          bun test test/integration/bun.test.ts --timeout 30000 || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose || echo "better-sqlite3 integration tests failed"
+          echo "Running Bun SQLite integration tests with Bun runtime..."
+          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests with Vitest..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
+          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
+          npx vitest run test/integration/bun.test.ts --reporter=verbose
 
   build:
     name: Build
