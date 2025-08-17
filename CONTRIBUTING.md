@@ -36,12 +36,12 @@ This project adheres to a code of conduct. By participating, you are expected to
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/refine-sqlx.git
-   cd refine-sqlx
+   git clone https://github.com/YOUR_USERNAME/refine-sql.git
+   cd refine-sql
    ```
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/medz/refine-sqlx.git
+   git remote add upstream https://github.com/medz/refine-sql.git
    ```
 4. **Install dependencies**:
    ```bash
@@ -88,7 +88,7 @@ We recommend using VS Code with these extensions:
 ## Project Structure
 
 ```
-refine-sqlx/
+refine-sql/
 ├── packages/
 │   ├── refine-orm/              # Multi-database ORM provider
 │   │   ├── src/
@@ -418,7 +418,7 @@ Thank you for contributing to making Refine database providers better for everyo
 
 ## 中文
 
-感谢您对 refine-orm 和 refine-sqlx 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-orm`、`refine-sql` 和 `@refine-orm/core-utils`。
+感谢您对 refine-orm 和 refine-sql 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-orm`、`refine-sql` 和 `@refine-orm/core-utils`。
 
 ## 目录
 
@@ -450,12 +450,12 @@ Thank you for contributing to making Refine database providers better for everyo
 1. **在 GitHub 上 Fork 仓库**
 2. **本地克隆您的 fork**：
    ```bash
-   git clone https://github.com/YOUR_USERNAME/refine-sqlx.git
-   cd refine-sqlx
+   git clone https://github.com/YOUR_USERNAME/refine-sql.git
+   cd refine-sql
    ```
 3. **添加上游远程仓库**：
    ```bash
-   git remote add upstream https://github.com/medz/refine-sqlx.git
+   git remote add upstream https://github.com/medz/refine-sql.git
    ```
 4. **安装依赖**：
    ```bash
@@ -502,7 +502,7 @@ Thank you for contributing to making Refine database providers better for everyo
 ## 项目结构
 
 ```
-refine-sqlx/
+refine-sql/
 ├── packages/
 │   ├── refine-orm/              # 多数据库 ORM 提供器
 │   │   ├── src/

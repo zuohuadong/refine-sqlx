@@ -5,6 +5,62 @@ import { ConfigurationError } from '../types/errors.js';
 import { performanceManager, QueryOptimizer } from '../utils/performance.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
+// TypeScript 5.0 Decorators for database adapters
+export function ConnectionRequired(_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    if (!(this as any).isConnected || !(this as any).client) {
+      throw new ConfigurationError(`Database connection required for ${_propertyKey}. Call connect() first.`);
+    }
+    return originalMethod.apply(this, args);
+  };
+  return descriptor;
+}
+
+export function LogDatabaseOperation(_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = async function (...args: any[]) {
+    const start = performance.now();
+    try {
+      const result = await originalMethod.apply(this, args);
+      const end = performance.now();
+      console.debug(`[DatabaseAdapter] ${propertyKey} completed in ${(end - start).toFixed(2)}ms`);
+      return result;
+    } catch (error) {
+      console.error(`[DatabaseAdapter] ${propertyKey} failed:`, error);
+      throw error;
+    }
+  };
+  return descriptor;
+}
+
+export function RetryOnFailure(maxRetries: number = 3, delay: number = 1000) {
+  return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = async function (...args: any[]) {
+      let lastError: Error;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          return await originalMethod.apply(this, args);
+        } catch (error) {
+          lastError = error as Error;
+
+          if (attempt === maxRetries) {
+            throw lastError;
+          }
+
+          console.warn(`[DatabaseAdapter] ${propertyKey} attempt ${attempt} failed, retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+
+      throw lastError!;
+    };
+    return descriptor;
+  };
+}
+
 /**
  * Abstract base class for database adapters
  * Provides common functionality and interface for all database types
@@ -15,7 +71,7 @@ export abstract class BaseDatabaseAdapter<
   protected client: DrizzleClient<TSchema> | null = null;
   protected isConnected = false;
 
-  constructor(protected config: DatabaseConfig<TSchema>) {}
+  constructor(protected config: DatabaseConfig<TSchema>) { }
 
   /**
    * Establish database connection
@@ -56,6 +112,9 @@ export abstract class BaseDatabaseAdapter<
    * Get the drizzle client instance
    */
   getClient(): DrizzleClient<TSchema> {
+    if (!this.isConnected || !this.client) {
+      throw new ConfigurationError('Database connection required for getClient. Call connect() first.');
+    }
     if (!this.client) {
       throw new ConfigurationError(
         'Database client not initialized. Call connect() first.'

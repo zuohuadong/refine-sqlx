@@ -242,7 +242,7 @@ export type SQLiteProviderFactory<
   options?: RefineOrmOptions
 ) => UnifiedRefineOrmDataProvider<TSchema>;
 
-// Compatibility types for migration from refine-sqlx
+// Compatibility types for migration from refine-sql
 export interface RefineOrmCompatibilityLayer<
   TSchema extends Record<string, Table> = Record<string, Table>,
 > {

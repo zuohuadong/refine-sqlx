@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug or issue with refine-orm or refine-sqlx
+description: Report a bug or issue with refine-orm or refine-sql
 title: "[Bug]: "
 labels: ["bug", "needs-triage"]
 assignees: []
@@ -16,7 +16,7 @@ body:
       description: Which package is affected?
       options:
         - refine-orm
-        - refine-sqlx
+        - refine-sql
         - Both
         - Not sure
     validations:

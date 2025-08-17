@@ -22,8 +22,61 @@ export interface SqlQuery {
   args: any[];
 }
 
+// TypeScript 5.0 Decorators for transformers
+function MemoizeTransform(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  const cache = new Map<string, any>();
+  
+  descriptor.value = function (...args: any[]) {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    
+    const result = originalMethod.apply(this, args);
+    cache.set(key, result);
+    
+    // Limit cache size
+    if (cache.size > 1000) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
+    }
+    
+    return result;
+  };
+  return descriptor;
+}
+
+function ValidateInput(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    // Basic input validation
+    if (args.some(arg => arg === null || arg === undefined)) {
+      console.warn(`[${target.constructor.name}] ${propertyKey} received null/undefined arguments`);
+    }
+    return originalMethod.apply(this, args);
+  };
+  return descriptor;
+}
+
+function TransformationLogger(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    const start = performance.now();
+    const result = originalMethod.apply(this, args);
+    const end = performance.now();
+    
+    if (end - start > 10) { // Log slow transformations
+      console.debug(`[Transformer] ${propertyKey} took ${(end - start).toFixed(2)}ms`);
+    }
+    
+    return result;
+  };
+  return descriptor;
+}
+
 /**
- * Complete SQL transformer for refine-sqlx
+ * Complete SQL transformer for refine-sql
  */
 export class SqlTransformer {
   private filterTransformer: SqlFilterTransformer;
@@ -39,6 +92,9 @@ export class SqlTransformer {
   /**
    * Transform filters to SQL WHERE clause
    */
+  @MemoizeTransform
+  @ValidateInput
+  @TransformationLogger
   transformFilters(
     filters?: CrudFilters,
     context?: TransformationContext

@@ -1,3 +1,46 @@
+// TypeScript 5.0 Decorators for error handling
+function ErrorLogger(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    try {
+      const result = originalMethod.apply(this, args);
+      return result;
+    } catch (error) {
+      console.error(`[${this.constructor.name}] Error in ${propertyKey}:`, error);
+      throw error;
+    }
+  };
+  return descriptor;
+}
+
+function ErrorCode(code: string) {
+  return function (target: any) {
+    target.prototype.errorCode = code;
+    return target;
+  };
+}
+
+function StatusCode(statusCode: number) {
+  return function (target: any) {
+    target.prototype.httpStatusCode = statusCode;
+    return target;
+  };
+}
+
+function Recoverable(recoverable: boolean = true) {
+  return function (target: any) {
+    target.prototype.isRecoverable = recoverable;
+    return target;
+  };
+}
+
+function ErrorMetadata(metadata: Record<string, any>) {
+  return function (target: any) {
+    target.prototype.metadata = metadata;
+    return target;
+  };
+}
+
 // Base error class for all RefineOrm errors
 export abstract class RefineOrmError extends Error {
   abstract readonly code: string;
@@ -68,6 +111,10 @@ export abstract class RefineOrmError extends Error {
 }
 
 // Connection related errors
+@ErrorCode('CONNECTION_ERROR')
+@StatusCode(500)
+@Recoverable(true)
+@ErrorMetadata({ category: 'infrastructure', severity: 'high' })
 export class ConnectionError extends RefineOrmError {
   readonly code = 'CONNECTION_ERROR';
   readonly statusCode = 500;
@@ -111,6 +158,10 @@ export class ConnectionError extends RefineOrmError {
 }
 
 // Query execution errors
+@ErrorCode('QUERY_ERROR')
+@StatusCode(400)
+@Recoverable(false)
+@ErrorMetadata({ category: 'query', severity: 'medium' })
 export class QueryError extends RefineOrmError {
   readonly code = 'QUERY_ERROR';
   readonly statusCode = 400;
@@ -165,6 +216,10 @@ export class QueryError extends RefineOrmError {
 }
 
 // Data validation errors
+@ErrorCode('VALIDATION_ERROR')
+@StatusCode(422)
+@Recoverable(true)
+@ErrorMetadata({ category: 'validation', severity: 'low' })
 export class ValidationError extends RefineOrmError {
   readonly code = 'VALIDATION_ERROR';
   readonly statusCode = 422;
@@ -239,6 +294,10 @@ export class TransactionError extends RefineOrmError {
 }
 
 // Configuration errors
+@ErrorCode('CONFIGURATION_ERROR')
+@StatusCode(500)
+@Recoverable(false)
+@ErrorMetadata({ category: 'configuration', severity: 'high' })
 export class ConfigurationError extends RefineOrmError {
   readonly code = 'CONFIGURATION_ERROR';
   readonly statusCode = 500;

@@ -13,19 +13,19 @@ import type { CrudFilters, CrudSorting } from '@refinedev/core';
 // Test schema
 const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
-  email: text('email').notNull(),
+  name: text('name', { length: 255 }).notNull(),
+  email: text('email', { length: 255 }).notNull(),
   age: integer('age'),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: text('title').notNull(),
+  title: text('title', { length: 255 }).notNull(),
   content: text('content'),
   userId: integer('user_id').references(() => users.id),
   published: integer('published').default(0),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 const schema = { users, posts };

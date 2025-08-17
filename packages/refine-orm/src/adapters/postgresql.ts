@@ -6,7 +6,7 @@ let drizzleBun: any;
 let PostgresJsDatabase: any;
 let BunSQLDatabase: any;
 
-import { BaseDatabaseAdapter } from './base.js';
+import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
 import type {
   DatabaseConfig,
   PostgreSQLOptions,
@@ -40,6 +40,8 @@ export class PostgreSQLAdapter<
    * Establish connection to PostgreSQL database
    * Uses runtime detection to choose appropriate driver
    */
+  @LogDatabaseOperation
+  @RetryOnFailure(3, 2000)
   async connect(): Promise<void> {
     try {
       if (
@@ -103,6 +105,8 @@ export class PostgreSQLAdapter<
       // Create drizzle client with Bun SQL
       this.client = drizzleBun(this.connection, {
         schema: this.config.schema,
+        logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
     } catch (error) {
       throw new ConnectionError(
@@ -156,6 +160,7 @@ export class PostgreSQLAdapter<
       this.client = drizzlePostgres(this.connection, {
         schema: this.config.schema,
         logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
     } catch (error) {
       throw new ConnectionError(

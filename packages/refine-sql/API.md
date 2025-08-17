@@ -41,7 +41,7 @@ function createRefineSQL<TSchema extends TableSchema = any>(
 **Example:**
 
 ```typescript
-import createRefineSQL from 'refine-sqlx';
+import createRefineSQL from 'refine-sql';
 
 // File database
 const dataProvider = createRefineSQL('./app.db');

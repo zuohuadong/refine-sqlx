@@ -1,18 +1,18 @@
-# 从 refine-orm 迁移到 refine-sqlx
+# 从 refine-orm 迁移到 refine-sql
 
-本指南帮助你从 `refine-orm` 平滑迁移到 `refine-sqlx`，减少学习成本和代码修改量。
+本指南帮助你从 `refine-orm` 平滑迁移到 `refine-sql`，减少学习成本和代码修改量。
 
 ## 主要差异
 
 ### 数据库支持
 
 - **refine-orm**: 支持 PostgreSQL、MySQL、SQLite
-- **refine-sqlx**: 专注于 SQLite，提供更好的 SQLite 优化
+- **refine-sql**: 专注于 SQLite，提供更好的 SQLite 优化
 
 ### 架构差异
 
 - **refine-orm**: 基于 Drizzle ORM
-- **refine-sqlx**: 基于原生 SQL，提供类型安全的 API
+- **refine-sql**: 基于原生 SQL，提供类型安全的 API
 
 ## 迁移步骤
 
@@ -22,8 +22,8 @@
 # 卸载 refine-orm
 npm uninstall refine-orm
 
-# 安装 refine-sqlx
-npm install refine-sqlx
+# 安装 refine-sql
+npm install refine-sql
 ```
 
 ### 2. 更新导入语句
@@ -34,14 +34,14 @@ npm install refine-sqlx
 import { createPostgreSQLProvider, createSQLiteProvider } from 'refine-orm';
 ```
 
-#### 现在 (refine-sqlx)
+#### 现在 (refine-sql)
 
 ```typescript
 // 推荐使用新的主要工厂函数
-import { createProvider } from 'refine-sqlx';
+import { createProvider } from 'refine-sql';
 
 // 或者使用兼容性导入 (已弃用)
-import { createSQLiteProvider } from 'refine-sqlx';
+import { createSQLiteProvider } from 'refine-sql';
 ```
 
 ### 3. 数据提供者创建
@@ -59,7 +59,7 @@ const dataProvider = createPostgreSQLProvider(
 const dataProvider = createSQLiteProvider('./database.db', schema);
 ```
 
-#### 现在 (refine-sqlx)
+#### 现在 (refine-sql)
 
 ```typescript
 // 推荐使用新的主要工厂函数
@@ -76,25 +76,25 @@ const dataProvider = createSQLiteProvider('./database.db');
 ```typescript
 const posts = await dataProvider
   .from('posts')
-  .whereEq('status', 'published')
-  .whereGt('viewCount', 100)
-  .orderByDesc('createdAt')
+  .where('status', 'eq', 'published')
+  .where('viewCount', 'gt', 100)
+  .orderBy('createdAt', 'desc')
   .limit(10)
   .get();
 ```
 
-#### 现在 (refine-sqlx) - 完全兼容
+#### 现在 (refine-sql) - 使用新的统一 API
 
 ```typescript
 const posts = await dataProvider
   .from('posts')
-  .whereEq('status', 'published') // 兼容方法
-  .whereGt('viewCount', 100) // 兼容方法
-  .orderByDesc('createdAt') // 兼容方法
+  .where('status', 'eq', 'published') // 新的统一方法
+  .where('viewCount', 'gt', 100) // 新的统一方法
+  .orderBy('createdAt', 'desc') // 新的统一方法
   .limit(10)
   .get();
 
-// 或者使用新的统一 API
+// 所有方法都使用统一的 where() 和 orderBy() API
 const posts = await dataProvider
   .from('posts')
   .where('status', 'eq', 'published')
@@ -116,7 +116,7 @@ const posts = await dataProvider
   .get();
 ```
 
-#### 现在 (refine-sqlx) - 兼容 API
+#### 现在 (refine-sql) - 兼容 API
 
 ```typescript
 const posts = await dataProvider
@@ -141,7 +141,7 @@ const post = await dataProvider.create({
 });
 ```
 
-#### 现在 (refine-sqlx) - 兼容
+#### 现在 (refine-sql) - 兼容
 
 ```typescript
 interface BlogSchema extends TableSchema {
@@ -165,7 +165,7 @@ const post = await dataProvider.createTyped({
 
 ## 兼容性矩阵
 
-| 功能            | refine-orm | refine-sqlx | 兼容性                         |
+| 功能            | refine-orm | refine-sql | 兼容性                         |
 | --------------- | ---------- | ----------- | ------------------------------ |
 | SQLite 支持     | ✅         | ✅          | 完全兼容                       |
 | PostgreSQL 支持 | ✅         | ❌          | 不支持                         |
@@ -305,16 +305,16 @@ const users = await dataProvider
 
 ### 2. Drizzle ORM 特性
 
-`refine-sqlx` 不基于 Drizzle ORM，因此 Drizzle 特有的功能不可用。
+`refine-sql` 不基于 Drizzle ORM，因此 Drizzle 特有的功能不可用。
 
 ### 3. 原生查询构建器
 
-`refine-orm` 的原生 Drizzle 查询构建器在 `refine-sqlx` 中不可用。
+`refine-orm` 的原生 Drizzle 查询构建器在 `refine-sql` 中不可用。
 
 ## 迁移检查清单
 
 - [ ] 确认项目只使用 SQLite 数据库
-- [ ] 更新包依赖 (`refine-orm` → `refine-sqlx`)
+- [ ] 更新包依赖 (`refine-orm` → `refine-sql`)
 - [ ] 更新导入语句
 - [ ] 更新数据提供者创建代码
 - [ ] 测试链式查询功能
@@ -324,7 +324,7 @@ const users = await dataProvider
 
 ## 性能优势
 
-迁移到 `refine-sqlx` 后，你将获得：
+迁移到 `refine-sql` 后，你将获得：
 
 1. **更好的 SQLite 优化**: 专门为 SQLite 优化的查询生成
 2. **更小的包体积**: 没有多数据库支持的开销

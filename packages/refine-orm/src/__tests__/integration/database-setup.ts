@@ -19,6 +19,7 @@ import {
   tinyint,
   text as mysqlText,
 } from 'drizzle-orm/mysql-core';
+import { sql } from 'drizzle-orm';
 import {
   sqliteTable,
   text as sqliteText,
@@ -34,20 +35,20 @@ import type { RefineOrmDataProvider } from '../../types/client.js';
 // PostgreSQL Schema
 export const pgUsers = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
+  name: text('name', { length: 255 }).notNull(),
+  email: text('email', { length: 255 }).notNull().unique(),
   age: integer('age'),
   isActive: boolean('is_active').default(true),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 export const pgPosts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: text('title').notNull(),
+  title: text('title', { length: 255 }).notNull(),
   content: text('content'),
   userId: integer('user_id').references(() => pgUsers.id),
   published: boolean('published').default(false),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 export const pgComments = pgTable('comments', {
@@ -72,7 +73,7 @@ export const mysqlUsers = mysqlTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   age: int('age'),
   isActive: tinyint('is_active').default(1),
-  createdAt: datetime('created_at').default(new Date()),
+  createdAt: datetime('created_at', { mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const mysqlPosts = mysqlTable('posts', {
@@ -81,7 +82,7 @@ export const mysqlPosts = mysqlTable('posts', {
   content: mysqlText('content'),
   userId: int('user_id').references(() => mysqlUsers.id),
   published: tinyint('published').default(0),
-  createdAt: datetime('created_at').default(new Date()),
+  createdAt: datetime('created_at', { mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const mysqlComments = mysqlTable('comments', {
@@ -101,21 +102,21 @@ export const mysqlSchema = {
 
 // SQLite Schema
 export const sqliteUsers = sqliteTable('users', {
-  id: sqliteInteger('id').primaryKey({ autoIncrement: true }),
-  name: sqliteText('name').notNull(),
-  email: sqliteText('email').notNull().unique(),
-  age: sqliteInteger('age'),
+  id: sqliteInteger('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  name: sqliteText('name', { length: 255 }).notNull(),
+  email: sqliteText('email', { length: 255 }).notNull().unique(),
+  age: sqliteInteger('age', { mode: 'number' }),
   isActive: sqliteInteger('is_active', { mode: 'boolean' }).default(true),
-  createdAt: sqliteText('created_at').default('CURRENT_TIMESTAMP'),
+  createdAt: sqliteText('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const sqlitePosts = sqliteTable('posts', {
-  id: sqliteInteger('id').primaryKey({ autoIncrement: true }),
-  title: sqliteText('title').notNull(),
+  id: sqliteInteger('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  title: sqliteText('title', { length: 255 }).notNull(),
   content: sqliteText('content'),
-  userId: sqliteInteger('user_id').references(() => sqliteUsers.id),
+  userId: sqliteInteger('user_id', { mode: 'number' }).references(() => sqliteUsers.id),
   published: sqliteInteger('published', { mode: 'boolean' }).default(false),
-  createdAt: sqliteText('created_at').default('CURRENT_TIMESTAMP'),
+  createdAt: sqliteText('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const sqliteComments = sqliteTable('comments', {

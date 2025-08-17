@@ -4,17 +4,19 @@
 
 ## English
 
-A powerful, type-safe data provider for [Refine](https://refine.dev) with multi-database support using [Drizzle ORM](https://orm.drizzle.team).
+A powerful, type-safe data provider for [Refine](https://refine.dev) with multi-database support using modern [Drizzle ORM](https://orm.drizzle.team).
 
 ## Features
 
 - 🚀 **Multi-database support**: PostgreSQL, MySQL, SQLite
-- 🔒 **Type-safe**: Full TypeScript support with schema inference
+- 🔒 **Type-safe**: Full TypeScript 5.0+ support with schema inference
 - ⚡ **Runtime detection**: Automatic driver selection (Bun, Node.js, Cloudflare)
 - 🔗 **Advanced relationships**: Polymorphic associations and complex queries
 - 🎯 **Chain queries**: Fluent query builder interface
 - 🔄 **Transactions**: Full transaction support across all databases
 - 📦 **Tree-shakable**: Import only what you need
+- 🎨 **Modern Drizzle**: Latest Drizzle ORM features and optimizations
+- 🏷️ **TypeScript 5.0**: Support for new standard decorators and latest features
 
 ## Installation
 
@@ -43,25 +45,54 @@ npm install better-sqlite3  # Node.js
 
 ## Quick Start
 
-### 1. Define Your Schema
+### 1. Define Your Schema (Modern Drizzle ORM)
 
 ```typescript
-import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { 
+  pgTable, 
+  serial, 
+  varchar, 
+  timestamp, 
+  text, 
+  integer, 
+  uuid, 
+  jsonb,
+  index,
+  uniqueIndex,
+  foreignKey,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+  email: varchar('email', { length: 255 }).notNull(),
+  metadata: jsonb('metadata').$type<{
+    preferences: Record<string, any>;
+    settings: Record<string, any>;
+  }>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  emailIdx: uniqueIndex('users_email_idx').on(table.email),
+  nameIdx: index('users_name_idx').on(table.name),
+}));
 
 export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: varchar('title', { length: 255 }).notNull(),
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: varchar('title', { length: 500 }).notNull(),
   content: text('content'),
-  userId: integer('user_id').references(() => users.id),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+  authorId: uuid('author_id').notNull(),
+  tags: jsonb('tags').$type<string[]>().default([]),
+  status: varchar('status', { length: 20, enum: ['draft', 'published'] }).default('draft'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  authorFk: foreignKey({
+    columns: [table.authorId],
+    foreignColumns: [users.id],
+  }).onDelete('cascade'),
+  statusIdx: index('posts_status_idx').on(table.status),
+}));
 
 export const schema = { users, posts };
 ```
@@ -196,6 +227,51 @@ const comments = await dataProvider
   .get();
 ```
 
+### TypeScript 5.0 Decorators (Optional Enhancement)
+
+RefineORM supports TypeScript 5.0's new standard decorators for enhanced metadata and validation:
+
+```typescript
+// Enable in tsconfig.json:
+// "experimentalDecorators": false,
+// "emitDecoratorMetadata": false
+
+@Entity('users')
+class User {
+  @PrimaryKey()
+  @Column({ type: 'uuid' })
+  id!: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  @Index('idx_user_name')
+  name!: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  @Index('idx_user_email')
+  email!: string;
+
+  @Column({ type: 'jsonb' })
+  metadata?: Record<string, any>;
+
+  @Validate()
+  save() {
+    console.log('Saving user:', this);
+  }
+}
+
+// Use with RefineORM
+const user = new User();
+user.name = 'John Doe';
+user.email = 'john@example.com';
+user.save(); // Decorator will log validation
+
+// Still use Drizzle schema for database operations
+const result = await dataProvider.create({
+  resource: 'users',
+  variables: { name: user.name, email: user.email },
+});
+```
+
 ### Transactions
 
 ```typescript
@@ -214,8 +290,8 @@ await transactionManager.execute(async tx => {
   await tx.createMany({
     resource: 'posts',
     variables: [
-      { title: 'Post 1', userId: user.data.id },
-      { title: 'Post 2', userId: user.data.id },
+      { title: 'Post 1', authorId: user.data.id },
+      { title: 'Post 2', authorId: user.data.id },
     ],
   });
 });
@@ -355,7 +431,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 ---
 
 ## 中文
@@ -711,4 +787,4 @@ const dataProvider = await createPostgreSQLProvider(
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)

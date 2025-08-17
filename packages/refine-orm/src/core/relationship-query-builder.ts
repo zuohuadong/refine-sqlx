@@ -52,6 +52,60 @@ export type RelationshipResult<
   : InferSelectModel<TSchema[TRelations[K]['relatedTable']]> | null;
 };
 
+// TypeScript 5.0 Decorators for relationship queries
+function CacheRelationship(ttl: number = 300000) { // 5 minutes default
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const cache = new Map<string, { value: any; timestamp: number }>();
+    
+    descriptor.value = async function (...args: any[]) {
+      const key = JSON.stringify(args);
+      const cached = cache.get(key);
+      const now = Date.now();
+      
+      if (cached && (now - cached.timestamp) < ttl) {
+        return cached.value;
+      }
+      
+      const result = await originalMethod.apply(this, args);
+      cache.set(key, { value: result, timestamp: now });
+      
+      return result;
+    };
+    return descriptor;
+  };
+}
+
+function ValidateRelationship(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    // Validate relationship configuration
+    const [, , config] = args;
+    if (!config || typeof config !== 'object') {
+      throw new Error(`Invalid relationship configuration for ${propertyKey}`);
+    }
+    return originalMethod.apply(this, args);
+  };
+  return descriptor;
+}
+
+function LogRelationshipQuery(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = async function (...args: any[]) {
+    const start = performance.now();
+    try {
+      const result = await originalMethod.apply(this, args);
+      const end = performance.now();
+      console.debug(`[RelationshipQuery] ${propertyKey} completed in ${(end - start).toFixed(2)}ms`);
+      return result;
+    } catch (error) {
+      console.error(`[RelationshipQuery] ${propertyKey} failed:`, error);
+      throw error;
+    }
+  };
+  return descriptor;
+}
+
 /**
  * Relationship query builder for handling complex database relationships
  */
@@ -64,6 +118,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
   /**
    * Load relationships for a single record
    */
+  @LogRelationshipQuery
+  @CacheRelationship(180000) // Cache for 3 minutes
+  @ValidateRelationship
   async loadRelationshipsForRecord<TTable extends keyof TSchema>(
     _tableName: TTable,
     record: InferSelectModel<TSchema[TTable]>,

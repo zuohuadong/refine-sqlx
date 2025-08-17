@@ -1,14 +1,14 @@
 /**
- * refine-sqlx Basic Usage Example
+ * refine-sql Basic Usage Example
  * 
- * refine-sqlx is a lightweight package for SQLite and Cloudflare D1 environments
+ * refine-sql is a lightweight package for SQLite and Cloudflare D1 environments
  * Fully compatible with refine-orm API, making migration from refine-orm easy
  */
 
-import { createRefineSQL } from '../packages/refine-sqlx/src/index.js';
+import { createRefineSQL } from '../packages/refine-sql/src/index.js';
 
 async function main() {
-  console.log('🚀 refine-sqlx - SQLite/D1 精简包示例\n');
+  console.log('🚀 refine-sql - SQLite/D1 精简包示例\n');
 
   try {
     // ========== Auto-detect Runtime Environment ==========
@@ -33,12 +33,12 @@ async function main() {
     // ========== Chain Query API (Compatible with refine-orm) ==========
     console.log('3️⃣ Chain Query API (Compatible with refine-orm)');
     const chainQuery = provider.from('users')
-      .whereEq('status', 'active')        // refine-orm compatible method
-      .whereGt('age', 18)                 // refine-orm compatible method
-      .orderByDesc('created_at')          // refine-orm compatible method
+      .where('status', 'eq', 'active')   // New generic method
+      .where('age', 'gt', 18)            // New generic method
+      .orderBy('created_at', 'desc')     // New generic method
       .limit(10);
     
-    console.log('   ✅ Chain query built successfully (using refine-orm compatible API)');
+    console.log('   ✅ Chain query built successfully (using new generic API)');
     console.log('   📝 Execute: await chainQuery.get()\n');
 
     // ========== Relationship Queries (Compatible with refine-orm) ==========
@@ -53,7 +53,7 @@ async function main() {
     console.log('   ⚡ Node.js: Uses better-sqlite3, high performance');
     console.log('   ⚡ Cloudflare D1: Edge computing optimized, low latency\n');
 
-    console.log('🎉 refine-sqlx example completed!');
+    console.log('🎉 refine-sql example completed!');
     console.log('💡 Tip: Fully compatible with refine-orm API, zero-cost migration');
 
   } catch (error) {

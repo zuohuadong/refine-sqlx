@@ -16,7 +16,7 @@ body:
       description: Which package is your question about?
       options:
         - refine-orm
-        - refine-sqlx
+        - refine-sql
         - Both
         - General usage
     validations:

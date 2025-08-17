@@ -8,7 +8,7 @@ let BetterSqlite3Database: any;
 let BunSQLiteDatabase: any;
 let D1Database: any;
 
-import { BaseDatabaseAdapter } from './base.js';
+import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
 import type { DatabaseConfig, SQLiteOptions, ConnectionOptions } from '../types/config.js';
 import type { DrizzleClient } from '../types/client.js';
 import { ConnectionError, ConfigurationError } from '../types/errors.js';
@@ -39,6 +39,8 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    * Establish connection to SQLite database
    * Uses runtime detection to choose appropriate driver
    */
+  @LogDatabaseOperation
+  @RetryOnFailure(3, 1000)
   async connect(): Promise<void> {
     try {
       if (this.runtimeConfig.runtime === 'cloudflare-d1') {
@@ -85,7 +87,9 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
       
       // Create drizzle client with Bun SQLite
       this.client = drizzleBun(this.connection, { 
-        schema: this.config.schema 
+        schema: this.config.schema,
+        logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
       
     } catch (error) {
@@ -124,7 +128,8 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
       // Create drizzle client with better-sqlite3
       this.client = drizzleSqlite(this.connection, { 
         schema: this.config.schema,
-        logger: this.config.debug
+        logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
       
     } catch (error) {
@@ -160,7 +165,9 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
       
       // Create drizzle client with D1
       this.client = drizzleD1(this.connection, { 
-        schema: this.config.schema 
+        schema: this.config.schema,
+        logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
       
     } catch (error) {

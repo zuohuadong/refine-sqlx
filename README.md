@@ -287,8 +287,8 @@ CREATE TABLE todos (
 
 ```
 # Clone the repository
-git clone https://github.com/medz/refine-sqlx.git
-cd refine-sqlx
+git clone https://github.com/medz/refine-sql.git
+cd refine-sql
 
 # Install dependencies
 bun install
@@ -306,7 +306,7 @@ bun run typecheck
 ### Project Structure
 
 ```
-refine-sqlx/
+refine-sql/
 ├── packages/
 │   ├── refine-orm/          # Full-featured ORM data provider
 │   ├── refine-sql/          # Lightweight SQL data provider
@@ -370,20 +370,20 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 ## Community
 
-- [GitHub Discussions](https://github.com/medz/refine-sqlx/discussions) - Ask questions and share ideas
-- [Issues](https://github.com/medz/refine-sqlx/issues) - Report bugs and request features
+- [GitHub Discussions](https://github.com/medz/refine-sql/discussions) - Ask questions and share ideas
+- [Issues](https://github.com/medz/refine-sql/issues) - Report bugs and request features
 - [Discord](https://discord.gg/refine) - Join the Refine community
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 
 ## Acknowledgments
 
 - [Refine](https://refine.dev) - The amazing React framework that inspired this project
 - [Drizzle ORM](https://orm.drizzle.team) - The TypeScript ORM that powers refine-orm
 - [Bun](https://bun.sh) - The fast JavaScript runtime and toolkit
-- All our [contributors](https://github.com/medz/refine-sqlx/graphs/contributors) who help make this project better
+- All our [contributors](https://github.com/medz/refine-sql/graphs/contributors) who help make this project better
 
 ---
 
@@ -672,8 +672,8 @@ CREATE TABLE todos (
 
 ```
 # 克隆仓库
-git clone https://github.com/medz/refine-sqlx.git
-cd refine-sqlx
+git clone https://github.com/medz/refine-sql.git
+cd refine-sql
 
 # 安装依赖
 bun install
@@ -691,7 +691,7 @@ bun run typecheck
 ### 项目结构
 
 ```
-refine-sqlx/
+refine-sql/
 ├── packages/
 │   ├── refine-orm/          # 功能完整的 ORM 数据提供器
 │   ├── refine-sql/          # 轻量级 SQL 数据提供器
@@ -755,17 +755,17 @@ refine-sqlx/
 
 ## 社区
 
-- [GitHub 讨论](https://github.com/medz/refine-sqlx/discussions) - 提问和分享想法
-- [Issues](https://github.com/medz/refine-sqlx/issues) - 报告错误和请求功能
+- [GitHub 讨论](https://github.com/medz/refine-sql/discussions) - 提问和分享想法
+- [Issues](https://github.com/medz/refine-sql/issues) - 报告错误和请求功能
 - [Discord](https://discord.gg/refine) - 加入 Refine 社区
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 
 ## 致谢
 
 - [Refine](https://refine.dev) - 启发这个项目的出色 React 框架
 - [Drizzle ORM](https://orm.drizzle.team) - 为 refine-orm 提供动力的 TypeScript ORM
 - [Bun](https://bun.sh) - 快速的 JavaScript 运行时和工具包
-- 所有帮助改进这个项目的 [贡献者](https://github.com/medz/refine-sqlx/graphs/contributors)
+- 所有帮助改进这个项目的 [贡献者](https://github.com/medz/refine-sql/graphs/contributors)

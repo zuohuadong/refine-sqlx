@@ -1,7 +1,7 @@
 /**
- * Migration Example: From refine-orm to refine-sqlx
+ * Migration Example: From refine-orm to refine-sql
  * 
- * refine-sqlx is a streamlined version of refine-orm designed for SQLite/D1 environments
+ * refine-sql is a streamlined version of refine-orm designed for SQLite/D1 environments
  * Fully compatible with refine-orm API, enabling zero-cost migration
  */
 
@@ -16,9 +16,9 @@ const mysqlProvider = await createMySQLProvider('mysql://...', schema);
 const sqliteProvider = await createSQLiteProvider('./app.db', schema);
 */
 
-// ===== After Migration (refine-sqlx - SQLite/D1 Specialized Lightweight Package) =====
+// ===== After Migration (refine-sql - SQLite/D1 Specialized Lightweight Package) =====
 
-import { createProvider } from '../packages/refine-sqlx/src/index.js';
+import { createProvider } from '../packages/refine-sql/src/index.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Define TypeScript types for better development experience
@@ -50,7 +50,7 @@ type UserRecord = BlogSchema['users'];
 type PostRecord = BlogSchema['posts'];
 
 async function main() {
-  console.log('🚀 Blog App Migration Example - refine-orm to refine-sqlx');
+  console.log('🚀 Blog App Migration Example - refine-orm to refine-sql');
 
   // Create data provider - compatible with refine-orm API
   const dataProvider = createProvider('./blog_migration.db');
@@ -129,7 +129,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
   const post = await dataProvider.create({
     resource: 'posts',
     variables: {
-      title: 'Migrating from refine-orm to refine-sqlx',
+      title: 'Migrating from refine-orm to refine-sql',
       content: 'This article explains how to smoothly migrate...',
       author_id: user.data.id,
       created_at: new Date().toISOString()
@@ -174,7 +174,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
     resource: 'posts',
     id: post.data.id,
     variables: {
-      title: 'Migrating from refine-orm to refine-sqlx (Updated)',
+      title: 'Migrating from refine-orm to refine-sql (Updated)',
       content: 'This article explains how to smoothly migrate, including detailed steps...'
     }
   });
@@ -190,11 +190,11 @@ async function demonstrateCompatibleChainQueries(dataProvider: any) {
   // Method 1: Using compatible convenience methods (same as refine-orm)
   const recentPosts = await dataProvider
     .from('posts')
-    .whereNotNull('author_id')          // Compatible method
-    .orderByDesc('created_at')          // Compatible method
+    .where('author_id', 'nnull', null)  // New generic method
+    .orderBy('created_at', 'desc')      // New generic method
     .limit(5)
     .get();
-  console.log(`✅ Found ${recentPosts.length} recent posts (using compatible API)`);
+  console.log(`✅ Found ${recentPosts.length} recent posts (using new generic API)`);
 
   // Method 2: Using unified API (recommended)
   const popularPosts = await dataProvider
@@ -210,9 +210,9 @@ async function demonstrateCompatibleChainQueries(dataProvider: any) {
 
   const complexQuery = await dataProvider
     .from('posts')
-    .whereLike('title', 'Migrating')    // Compatible method
-    .whereGt('id', 0)                   // Compatible method
-    .orderByAsc('title')                // Compatible method
+    .where('title', 'contains', 'Migrating')  // New generic method
+    .where('id', 'gt', 0)                     // New generic method
+    .orderBy('title', 'asc')                  // New generic method
     .limit(10)
     .get();
   console.log(`✅ Complex query found ${complexQuery.length} posts`);
@@ -227,7 +227,7 @@ async function demonstrateCompatibleChainQueries(dataProvider: any) {
 
   const firstPost = await dataProvider
     .from('posts')
-    .orderByAsc('created_at')           // Compatible method
+    .orderBy('created_at', 'asc')       // New generic method
     .first();
   console.log(`✅ First post: ${firstPost?.title || 'None'}`);
 }

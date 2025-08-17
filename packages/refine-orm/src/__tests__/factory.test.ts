@@ -27,21 +27,21 @@ import { ConfigurationError, ConnectionError } from '../types/errors.js';
 
 // Mock schemas for testing different databases
 const sqliteUsers = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  name: text('name', { length: 255 }).notNull(),
+  email: text('email', { length: 255 }).notNull().unique(),
 });
 
 const pgUsers = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: pgText('name').notNull(),
-  email: pgText('email').notNull().unique(),
+  name: pgText('name', { length: 255 }).notNull(),
+  email: pgText('email', { length: 255 }).notNull().unique(),
 });
 
 const mysqlUsers = mysqlTable('users', {
   id: mysqlSerial('id').primaryKey(),
-  name: mysqlText('name').notNull(),
-  email: mysqlText('email').notNull().unique(),
+  name: mysqlText('name', { length: 255 }).notNull(),
+  email: mysqlText('email', { length: 255 }).notNull().unique(),
 });
 
 const sqliteSchema = { users: sqliteUsers };

@@ -142,18 +142,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         // Build the query using query builder
         const query = queryBuilder.buildListQuery(client, table, params);
-        const countQuery = client
-          .select({ count: sql<number>`count(*)` })
-          .from(table);
-
-        // Apply filters to count query if present
-        const whereConditions = queryBuilder.buildWhereConditions(
-          table,
-          params.filters
-        );
-        if (whereConditions) {
-          countQuery.where(whereConditions);
-        }
+        const countQuery = queryBuilder.buildCountQuery(client, table, params.filters);
 
         // Execute queries
         const [data, totalResult] = await Promise.all([

@@ -131,7 +131,7 @@ jobs:
       - name: Test package builds
         run: |
           cd packages/refine-orm && npm pack --dry-run
-          cd ../refine-sqlx && npm pack --dry-run
+          cd ../refine-sql && npm pack --dry-run
           cd ../refine-core-utils && npm pack --dry-run
 
       - name: Upload build artifacts

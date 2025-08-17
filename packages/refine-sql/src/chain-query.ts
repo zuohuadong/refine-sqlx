@@ -1,7 +1,20 @@
 import type { CrudFilters, CrudSorting, BaseRecord } from '@refinedev/core';
 import type { SqlClient, SqlQuery } from './client';
 import { SqlTransformer } from '@refine-orm/core-utils';
-import { deserializeSqlResult, handleErrors, validateParams } from './utils';
+import { deserializeSqlResult } from './utils';
+
+// Helper functions for method validation and logging
+function validateFieldName(field: string, methodName: string): void {
+  if (typeof field === 'string' && !field.trim()) {
+    throw new Error(`Invalid field name in ${methodName}: field cannot be empty`);
+  }
+}
+
+function logChainOperation(methodName: string, args: any[]): void {
+  if (process.env.NODE_ENV === 'development') {
+    console.debug(`[ChainQuery] ${methodName}(${args.map(a => JSON.stringify(a)).join(', ')})`);
+  }
+}
 
 /**
  * Filter operator types for chain queries
@@ -15,14 +28,20 @@ export type FilterOperator =
   | 'lte'
   | 'in'
   | 'notIn'
+  | 'nin'
   | 'like'
   | 'ilike'
   | 'notLike'
   | 'isNull'
   | 'isNotNull'
+  | 'null'
+  | 'nnull'
   | 'between'
   | 'notBetween'
+  | 'nbetween'
   | 'contains'
+  | 'containss'
+  | 'ncontains'
   | 'startswith'
   | 'endswith';
 
@@ -84,8 +103,8 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   private transformer: SqlTransformer;
 
   constructor(
-    private client: SqlClient,
-    private tableName: string
+    protected client: SqlClient,
+    protected tableName: string
   ) {
     this.transformer = new SqlTransformer();
     this.initializeWhereMethods();
@@ -95,14 +114,27 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Add WHERE condition with field, operator, and value
    */
-  whereField(field: string, operator: string, value: any): this {
-    const refineOperator = this.mapOperatorToRefine(operator as FilterOperator);
+  where(field: string, operator: FilterOperator, value: any): this {
+    // Validate field names and values
+    if (typeof field === 'string' && !field.trim()) {
+      throw new Error(`Invalid field name in where: field cannot be empty`);
+    }
+    
+    const refineOperator = this.mapOperatorToRefine(operator);
     this.filters.push({
       field,
       operator: refineOperator,
       value,
     });
     return this;
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   */
+  whereField(field: string, operator: string, value: any): this {
+    validateFieldName(field, 'whereField');
+    return this.where(field, operator as FilterOperator, value);
   }
 
   /**
@@ -150,7 +182,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     // Dynamically create WHERE methods
     Object.entries(whereMethods).forEach(([methodName, operator]) => {
       (this as any)[methodName] = (field: string, value: any) => {
-        return this.whereField(field, operator, value);
+        return this.where(field, operator as FilterOperator, value);
       };
     });
 
@@ -170,6 +202,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     column: K | string,
     direction: 'asc' | 'desc' = 'asc'
   ): this {
+    logChainOperation('orderBy', [column, direction]);
     this.sorters.push({ field: column as string, order: direction });
     return this;
   }
@@ -219,20 +252,11 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     return this;
   }
 
-  /**
-   * Execute the query and return all results
-   */
-  @handleErrors('Failed to execute query')
-  async get(): Promise<T[]> {
-    const query = this.buildSelectQuery();
-    const result = await this.client.query(query);
-    return deserializeSqlResult(result) as T[];
-  }
+
 
   /**
    * Execute the query and return the first result
    */
-  @handleErrors('Failed to get first result')
   async first(): Promise<T | null> {
     const originalLimit = this.limitValue;
     this.limit(1);
@@ -248,17 +272,12 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Execute the query and return results with pagination info
    */
-  @validateParams((args) => {
-    const [page, pageSize] = args;
-    if (page < 1) return 'Page number must be greater than 0';
-    if (pageSize < 1) return 'Page size must be greater than 0';
-    return true;
-  })
-  @handleErrors('Failed to get paginated results')
   async paginated(
     page: number = 1,
     pageSize: number = 10
   ): Promise<PaginatedResult<T>> {
+    if (page < 1) throw new Error('Page number must be greater than 0');
+    if (pageSize < 1) throw new Error('Page size must be greater than 0');
     // Get total count
     const total = await this.count();
 
@@ -370,14 +389,20 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
       lte: 'lte',
       in: 'in',
       notIn: 'nin',
+      nin: 'nin',
       like: 'contains',
       ilike: 'containss',
       notLike: 'ncontains',
       isNull: 'null',
       isNotNull: 'nnull',
+      null: 'null',
+      nnull: 'nnull',
       between: 'between',
       notBetween: 'nbetween',
+      nbetween: 'nbetween',
       contains: 'contains',
+      containss: 'containss',
+      ncontains: 'ncontains',
       startswith: 'startswith',
       endswith: 'endswith',
     };
@@ -386,7 +411,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   }
 
   // ===== Relationship Queries =====
-  private relationshipConfigs: Record<string, any> = {};
+  protected relationshipConfigs: Record<string, any> = {};
 
   /**
    * Configure relationship loading
@@ -397,11 +422,197 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   }
 
   /**
-   * Simplified relationship queries - Only return basic results
+   * Configure hasOne relationship
    */
-  @handleErrors('Failed to get relations')
+  withHasOne(
+    relationName: string,
+    relatedTable: string,
+    localKey: string = 'id',
+    relatedKey?: string
+  ): this {
+    this.relationshipConfigs[relationName] = {
+      type: 'hasOne',
+      relatedTable,
+      localKey,
+      relatedKey: relatedKey || `${this.tableName.slice(0, -1)}_id`,
+    };
+    return this;
+  }
+
+  /**
+   * Configure hasMany relationship
+   */
+  withHasMany(
+    relationName: string,
+    relatedTable: string,
+    localKey: string = 'id',
+    relatedKey?: string
+  ): this {
+    this.relationshipConfigs[relationName] = {
+      type: 'hasMany',
+      relatedTable,
+      localKey,
+      relatedKey: relatedKey || `${this.tableName.slice(0, -1)}_id`,
+    };
+    return this;
+  }
+
+  /**
+   * Configure belongsTo relationship
+   */
+  withBelongsTo(
+    relationName: string,
+    relatedTable: string,
+    foreignKey?: string,
+    relatedKey: string = 'id'
+  ): this {
+    this.relationshipConfigs[relationName] = {
+      type: 'belongsTo',
+      relatedTable,
+      foreignKey: foreignKey || `${relatedTable.slice(0, -1)}_id`,
+      relatedKey,
+    };
+    return this;
+  }
+
+  /**
+   * Configure belongsToMany relationship
+   */
+  withBelongsToMany(
+    relationName: string,
+    relatedTable: string,
+    pivotTable: string,
+    localKey: string = 'id',
+    relatedKey: string = 'id',
+    pivotLocalKey?: string,
+    pivotRelatedKey?: string
+  ): this {
+    this.relationshipConfigs[relationName] = {
+      type: 'belongsToMany',
+      relatedTable,
+      pivotTable,
+      localKey,
+      relatedKey,
+      pivotLocalKey: pivotLocalKey || `${this.tableName.slice(0, -1)}_id`,
+      pivotRelatedKey: pivotRelatedKey || `${relatedTable.slice(0, -1)}_id`,
+    };
+    return this;
+  }
+
+
+
+  /**
+   * Load relationships and return results
+   */
   async getWithRelations(): Promise<T[]> {
-    return await this.get();
+    const results = await this.get();
+    
+    if (!this.relationshipConfigs || Object.keys(this.relationshipConfigs).length === 0) {
+      return results;
+    }
+    
+    return this.loadRelationshipsForResults(results);
+  }
+
+  /**
+   * Override get() to automatically load relationships if configured
+   */
+  async get(): Promise<T[]> {
+    const query = this.buildSelectQuery();
+    const result = await this.client.query(query);
+    const results = deserializeSqlResult(result) as T[];
+    
+    // If relationships are configured, load them automatically
+    if (this.relationshipConfigs && Object.keys(this.relationshipConfigs).length > 0) {
+      return this.loadRelationshipsForResults(results);
+    }
+    
+    return results;
+  }
+
+  /**
+   * Load relationships for results
+   */
+  protected async loadRelationshipsForResults(results: T[]): Promise<T[]> {
+    if (!this.relationshipConfigs || results.length === 0) {
+      return results;
+    }
+
+    for (const result of results) {
+      for (const [relationName, config] of Object.entries(this.relationshipConfigs)) {
+        try {
+          const relatedData = await this.loadRelationship(result, relationName, config);
+          (result as any)[relationName] = relatedData;
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+          console.warn(`Failed to load relationship ${relationName}:`, error);
+        }
+          (result as any)[relationName] = config.type === 'hasMany' ? [] : null;
+        }
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Load a single relationship
+   */
+  private async loadRelationship(record: T, _relationName: string, config: any): Promise<any> {
+    const { type, relatedTable, localKey, relatedKey, foreignKey } = config;
+
+    switch (type) {
+      case 'hasOne':
+      case 'hasMany': {
+        const query = `SELECT * FROM ${relatedTable} WHERE ${relatedKey} = ?`;
+        const results = await this.client.query({ sql: query, args: [(record as any)[localKey]] });
+        return type === 'hasOne' ? (results.rows[0] || null) : results.rows;
+      }
+
+      case 'belongsTo': {
+        const query = `SELECT * FROM ${relatedTable} WHERE ${relatedKey} = ?`;
+        const results = await this.client.query({ sql: query, args: [(record as any)[foreignKey]] });
+        return results.rows[0] || null;
+      }
+
+      case 'belongsToMany': {
+        const { pivotTable, pivotLocalKey, pivotRelatedKey } = config;
+        const query = `
+          SELECT r.* FROM ${relatedTable} r
+          JOIN ${pivotTable} p ON r.${relatedKey} = p.${pivotRelatedKey}
+          WHERE p.${pivotLocalKey} = ?
+        `;
+        const results = await this.client.query({ sql: query, args: [(record as any)[localKey]] });
+        return results.rows;
+      }
+
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Aggregate query builder
+   */
+  async aggregate(aggregations: Array<{
+    function: 'count' | 'sum' | 'avg' | 'min' | 'max';
+    column?: string;
+    alias?: string;
+  }>): Promise<any[]> {
+    const selectClauses = aggregations.map(agg => {
+      const func = agg.function.toUpperCase();
+      const column = agg.column || '*';
+      const alias = agg.alias || `${agg.function}_${agg.column || 'all'}`;
+      return `${func}(${column}) as ${alias}`;
+    });
+
+    const query: SqlQuery = {
+      sql: `SELECT ${selectClauses.join(', ')} FROM ${this.tableName}${this.buildWhereClause()}`,
+      args: this.buildWhereArgs()
+    };
+
+    const result = await this.client.query(query);
+    return result.rows;
   }
 
   // ===== Batch Operation Methods =====
@@ -411,12 +622,8 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Simplified chunk processing - Reduce code complexity
    */
-  @validateParams((args) => {
-    const [size] = args;
-    if (size <= 0) return 'Chunk size must be greater than 0';
-    return true;
-  })
   async *chunk(size: number = 100): AsyncGenerator<T[], void, unknown> {
+    if (size <= 0) throw new Error('Chunk size must be greater than 0');
     let offset = 0;
     while (true) {
       const results = await this.clone().offset(offset).limit(size).get();
@@ -468,7 +675,6 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Generic aggregate method executor
    */
-  @handleErrors('Failed to execute aggregate function')
   private async executeAggregate(func: string, column?: string): Promise<number | any> {
     const query = column ?
       this.buildAggregateQuery(func, column) :

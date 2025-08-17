@@ -3,7 +3,7 @@ import type { Table } from 'drizzle-orm';
 // Dynamic imports for database drivers
 let drizzleMySQL: any;
 
-import { BaseDatabaseAdapter } from './base.js';
+import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
 import type {
   DatabaseConfig,
   MySQLOptions,
@@ -37,6 +37,8 @@ export class MySQLAdapter<
    * Establish connection to MySQL database
    * Currently uses mysql2 for all environments
    */
+  @LogDatabaseOperation
+  @RetryOnFailure(3, 2000)
   async connect(): Promise<void> {
     try {
       // Check for future bun:sql MySQL support
@@ -131,6 +133,7 @@ export class MySQLAdapter<
         schema: this.config.schema,
         mode: 'default',
         logger: this.config.debug,
+        casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
     } catch (error) {
       throw new ConnectionError(

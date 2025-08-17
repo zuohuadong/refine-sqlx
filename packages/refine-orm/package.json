@@ -8,14 +8,14 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "homepage": "https://github.com/medz/refine-sqlx#readme",
+  "homepage": "https://github.com/medz/refine-sql#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sqlx.git",
+    "url": "git+https://github.com/medz/refine-sql.git",
     "directory": "packages/refine-orm"
   },
   "bugs": {
-    "url": "https://github.com/medz/refine-sqlx/issues"
+    "url": "https://github.com/medz/refine-sql/issues"
   },
   "keywords": [
     "refine",
@@ -72,26 +72,26 @@
   "sideEffects": false,
   "dependencies": {
     "@refine-orm/core-utils": "workspace:*",
-    "drizzle-orm": "^0.44.4",
-    "zod": "^3.23.8"
+    "drizzle-orm": "^0.36.4"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/bun": "^1.2.18",
-    "@types/node": "^24.0.12",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/bun": "1.2.20",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.6.0",
     "better-sqlite3": "^12.2.0",
     "mysql2": "^3.11.4",
     "postgres": "^3.4.5",
-    "prettier": "^3.6.2",
-    "unbuild": "^3.5.0",
-    "vitest": "^3.2.4"
+    "prettier": "3.6.2",
+    "unbuild": "3.6.1",
+    "vitest": "3.2.4"
   },
   "peerDependencies": {
-    "@refinedev/core": "^4.57.10"
+    "@refinedev/core": "4.57.11"
   },
   "optionalDependencies": {
-    "better-sqlite3": "^12.2.0",
-    "mysql2": "^3.11.4",
-    "postgres": "^3.4.5"
+    "better-sqlite3": "12.2.0",
+    "mysql2": "3.14.3",
+    "postgres": "3.4.7"
   }
 }

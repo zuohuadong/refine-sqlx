@@ -297,7 +297,7 @@ If you have questions about the examples:
 
 1. Check the example's README.md file
 2. Look at similar examples for patterns
-3. Ask questions in [GitHub Discussions](https://github.com/medz/refine-sqlx/discussions)
-4. Report issues in [GitHub Issues](https://github.com/medz/refine-sqlx/issues)
+3. Ask questions in [GitHub Discussions](https://github.com/medz/refine-sql/discussions)
+4. Report issues in [GitHub Issues](https://github.com/medz/refine-sql/issues)
 
 Happy coding! 🚀

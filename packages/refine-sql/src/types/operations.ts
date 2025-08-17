@@ -1,4 +1,4 @@
-// Modern operation types for refine-sqlx
+// Modern operation types for refine-sql
 import type { BaseRecord } from '@refinedev/core';
 
 /**

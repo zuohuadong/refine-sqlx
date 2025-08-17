@@ -50,8 +50,7 @@ export function getColumnInfo(column: any): {
   };
 }
 
-// Zod schema generation functions have been removed as part of architecture simplification
-// drizzle-orm provides built-in type inference which is preferred over custom Zod schemas
+// Schema validation is handled by drizzle-orm's built-in type inference
 
 /**
  * Detect foreign key relationships based on column naming conventions

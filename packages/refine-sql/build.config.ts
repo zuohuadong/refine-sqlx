@@ -2,8 +2,16 @@ import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
   entries: [
-    // Single main entry - contains all functionality
+    // Main entry - full functionality
     'src/index.ts',
+    // Core module - minimal functionality
+    { input: 'src/core/index.ts', name: 'core' },
+    // Compatibility module - refine-orm compatible
+    { input: 'src/compat/index.ts', name: 'compat' },
+    // Runtime-specific modules
+    { input: 'src/d1/index.ts', name: 'd1' },
+    { input: 'src/bun/index.ts', name: 'bun' },
+    { input: 'src/node/index.ts', name: 'node' },
   ],
   outDir: 'dist',
   declaration: 'node16',

@@ -982,9 +982,85 @@ export class QueryOptimizer {
   }
 }
 
+// TypeScript 5.0 Decorators for performance monitoring
+function Monitored(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    const start = performance.now();
+    const result = originalMethod.apply(this, args);
+    const end = performance.now();
+    
+    if (this.trackMethodPerformance) {
+      this.trackMethodPerformance(propertyKey, end - start, args);
+    }
+    
+    return result;
+  };
+  return descriptor;
+}
+
+function Cached(ttl: number = 300000) { // 5 minutes default
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const cache = new Map<string, { value: any; timestamp: number }>();
+    
+    descriptor.value = function (...args: any[]) {
+      const key = JSON.stringify(args);
+      const cached = cache.get(key);
+      const now = Date.now();
+      
+      if (cached && (now - cached.timestamp) < ttl) {
+        return cached.value;
+      }
+      
+      const result = originalMethod.apply(this, args);
+      cache.set(key, { value: result, timestamp: now });
+      
+      // Clean up expired entries
+      for (const [k, v] of cache.entries()) {
+        if ((now - v.timestamp) >= ttl) {
+          cache.delete(k);
+        }
+      }
+      
+      return result;
+    };
+    return descriptor;
+  };
+}
+
+function Debounced(delay: number = 100) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    let timeoutId: NodeJS.Timeout;
+    
+    descriptor.value = function (...args: any[]) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        originalMethod.apply(this, args);
+      }, delay);
+    };
+    return descriptor;
+  };
+}
+
+function Singleton(target: any) {
+  let instance: any;
+  return class extends target {
+    constructor(...args: any[]) {
+      if (instance) {
+        return instance;
+      }
+      super(...args);
+      instance = this;
+    }
+  };
+}
+
 /**
  * Comprehensive performance manager for RefineORM
  */
+@Singleton
 export class PerformanceManager {
   private cache: QueryCache;
   private poolOptimizer: ConnectionPoolOptimizer;
@@ -1019,8 +1095,18 @@ export class PerformanceManager {
   }
 
   /**
+   * Track method performance for internal monitoring
+   */
+  private trackMethodPerformance(methodName: string, duration: number, args: any[]): void {
+    if (duration > 100) { // Log slow operations
+      console.warn(`[PerformanceManager] Slow operation detected: ${methodName} took ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  /**
    * Get query cache instance
    */
+  @Cached(60000) // Cache for 1 minute
   getCache(): QueryCache {
     return this.cache;
   }
@@ -1028,6 +1114,7 @@ export class PerformanceManager {
   /**
    * Get pool optimizer instance
    */
+  @Cached(60000)
   getPoolOptimizer(): ConnectionPoolOptimizer {
     return this.poolOptimizer;
   }
@@ -1035,6 +1122,7 @@ export class PerformanceManager {
   /**
    * Get batch optimizer instance
    */
+  @Cached(60000)
   getBatchOptimizer(): BatchOptimizer {
     return this.batchOptimizer;
   }
@@ -1042,6 +1130,8 @@ export class PerformanceManager {
   /**
    * Log query for comprehensive analysis
    */
+  @Monitored
+  @Debounced(50) // Debounce rapid logging
   logQuery(
     filters: CrudFilters,
     sorting: CrudSorting,

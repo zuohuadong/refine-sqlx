@@ -17,6 +17,8 @@ import {
   asc,
   desc,
   not,
+  count,
+  sql,
 } from 'drizzle-orm';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 import type { DrizzleClient } from '../types/client.js';
@@ -538,10 +540,15 @@ export class RefineQueryBuilder<
     table: Table,
     filters?: CrudFilters
   ) {
-    let query = client.select().from(table);
-    return this.applyQueryModifiers(query, table, { 
-      ...(filters && { filters })
-    });
+    let query = client.select({ count: count() }).from(table);
+    
+    // Apply WHERE conditions only (no sorting or pagination for count)
+    const whereConditions = this.buildWhereConditions(table, filters);
+    if (whereConditions) {
+      query = query.where(whereConditions);
+    }
+    
+    return query;
   }
 
   /**

@@ -131,11 +131,15 @@ export function logExecution<T, A extends any[], R>(
     try {
       const result = await target.call(this, ...args);
       const duration = performance.now() - start;
-      console.log(`✅ ${methodName} completed in ${duration.toFixed(2)}ms`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ ${methodName} completed in ${duration.toFixed(2)}ms`);
+      }
       return result;
     } catch (error) {
       const duration = performance.now() - start;
-      console.error(`❌ ${methodName} failed after ${duration.toFixed(2)}ms:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`❌ ${methodName} failed after ${duration.toFixed(2)}ms:`, error);
+      }
       throw error;
     }
   };

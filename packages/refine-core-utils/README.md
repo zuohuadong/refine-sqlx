@@ -279,7 +279,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 ---
 
 ## 中文
@@ -557,4 +557,4 @@ if (valueError) {
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)

@@ -1,4 +1,4 @@
-# Refine SQLx
+# Refine SQL
 
 [English](#english) | [中文](#中文)
 
@@ -6,7 +6,7 @@
 
 A lightweight, cross-platform SQL data provider for [Refine](https://refine.dev) with native runtime support.
 
-[![npm version](https://img.shields.io/npm/v/refine-sqlx.svg)](https://www.npmjs.com/package/refine-sqlx)
+[![npm version](https://img.shields.io/npm/v/refine-sql.svg)](https://www.npmjs.com/package/refine-sql)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -15,7 +15,7 @@ A lightweight, cross-platform SQL data provider for [Refine](https://refine.dev)
 - 🚀 **Cross-platform**: Works with Bun, Node.js, and Cloudflare Workers
 - ⚡ **Native performance**: Uses runtime-specific SQL drivers
 - 🔒 **Type-safe**: Full TypeScript support with schema inference
-- 📦 **Ultra-lightweight**: Core version only ~3kB, full version ~23kB
+- 📦 **Lightweight**: Minimal dependencies and optimized bundle size
 - 🎯 **Simple**: Easy to use with raw SQL
 - 🔄 **Transactions**: Built-in transaction support
 - 🔗 **Chain Queries**: Fluent interface for building complex queries (optional)
@@ -26,27 +26,9 @@ A lightweight, cross-platform SQL data provider for [Refine](https://refine.dev)
 ## Installation
 
 ```bash
-npm install refine-sqlx
+npm install refine-sql
 # or
-bun add refine-sqlx
-```
-
-## Bundle Size Optimization
-
-Choose the right version for your needs:
-
-| Version            | Size  | Use Case                                                     |
-| ------------------ | ----- | ------------------------------------------------------------ |
-| `refine-sqlx/lite` | ~3kB  | Basic CRUD operations only                                   |
-| `refine-sqlx`      | ~23kB | Full features including chain queries, polymorphic relations |
-
-### Lightweight Version (Recommended)
-
-For most use cases, the lite version provides all essential functionality:
-
-```typescript
-// 87% smaller bundle size
-import { createRefineSQL } from 'refine-sqlx/lite';
+bun add refine-sql
 ```
 
 ### Advanced Features (On-demand)
@@ -54,17 +36,14 @@ import { createRefineSQL } from 'refine-sqlx/lite';
 Import advanced features only when needed:
 
 ```typescript
-// Core functionality
-import { createRefineSQL } from 'refine-sqlx/lite';
-
-// Optional: Chain queries
-import { SqlxChainQuery } from 'refine-sqlx/chain-query';
+// Import the main provider
+import { createProvider } from 'refine-sql';
 
 // Optional: Polymorphic relations
-import { SqlxMorphQuery } from 'refine-sqlx/morph-query';
+import { SqlxMorphQuery } from 'refine-sql/morph-query';
 
 // Optional: Type-safe methods
-import { SqlxTypedMethods } from 'refine-sqlx/typed-methods';
+import { SqlxTypedMethods } from 'refine-sql/typed-methods';
 ```
 
 ### Optional Dependencies
@@ -83,7 +62,7 @@ npm install better-sqlite3
 ### Basic Usage
 
 ```typescript
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 // File database (Bun/Node.js)
 const dataProvider = createRefineSQL('./database.db');
@@ -99,7 +78,7 @@ const dataProvider = createRefineSQL(env.DB);
 
 ```typescript
 import { Refine } from '@refinedev/core';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const dataProvider = createRefineSQL('./database.db');
 
@@ -244,7 +223,7 @@ const dataProvider = createRefineSQL('./database.db', {
 ## Error Handling
 
 ```typescript
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 try {
   const dataProvider = createRefineSQL('./database.db');
@@ -284,7 +263,7 @@ const dataProvider = createRefineSQL('./database.db');
 ```typescript
 // server.ts
 import { Hono } from 'hono';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const app = new Hono();
 const dataProvider = createRefineSQL('./app.db');
@@ -301,7 +280,7 @@ export default app;
 
 ```typescript
 // worker.ts
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -321,7 +300,7 @@ export default {
 ```typescript
 // server.js
 import express from 'express';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const app = express();
 const dataProvider = createRefineSQL('./database.db');
@@ -340,7 +319,7 @@ app.listen(3000);
 
 ## ORM Compatibility Features
 
-The `refine-sqlx` package now includes enhanced ORM compatibility features for a more modern development experience:
+The `refine-sql` package now includes enhanced ORM compatibility features for a more modern development experience:
 
 ### Chain Query Builder
 
@@ -348,7 +327,7 @@ The `refine-sqlx` package now includes enhanced ORM compatibility features for a
 import createRefineSQL, {
   type EnhancedDataProvider,
   type TableSchema,
-} from 'refine-sqlx';
+} from 'refine-sql';
 
 // Define your schema for type safety
 interface MySchema extends TableSchema {
@@ -482,14 +461,14 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 ---
 
 ## 中文
 
 一个轻量级、跨平台的 [Refine](https://refine.dev) SQL 数据提供器，支持原生运行时。
 
-[![npm version](https://img.shields.io/npm/v/refine-sqlx.svg)](https://www.npmjs.com/package/refine-sqlx)
+[![npm version](https://img.shields.io/npm/v/refine-sql.svg)](https://www.npmjs.com/package/refine-sql)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -509,45 +488,18 @@ MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
 ## 安装
 
 ```bash
-npm install refine-sqlx
+npm install refine-sql
 # 或
-bun add refine-sqlx
+bun add refine-sql
 ```
 
 ## 包大小优化
 
 根据您的需求选择合适的版本：
 
-| 版本 | 大小 | 使用场景 |
-|------|------|----------|
-| `refine-sqlx/lite` | ~3kB | 仅基础 CRUD 操作 |
-| `refine-sqlx` | ~23kB | 包括链式查询、多态关系的完整功能 |
-
-### 轻量级版本（推荐）
-
-对于大多数使用场景，轻量级版本提供了所有必要功能：
-
 ```typescript
-// 包大小减少 87%
-import { createRefineSQL } from 'refine-sqlx/lite';
-```
-
-### 高级功能（按需）
-
-仅在需要时导入高级功能：
-
-```typescript
-// 核心功能
-import { createRefineSQL } from 'refine-sqlx/lite';
-
-// 可选：链式查询
-import { SqlxChainQuery } from 'refine-sqlx/chain-query';
-
-// 可选：多态关系
-import { SqlxMorphQuery } from 'refine-sqlx/morph-query';
-
-// 可选：类型安全方法
-import { SqlxTypedMethods } from 'refine-sqlx/typed-methods';
+// 导入主要提供器
+import { createProvider } from 'refine-sql';
 ```
 
 ### 可选依赖
@@ -566,7 +518,7 @@ npm install better-sqlite3
 ### 基础用法
 
 ```typescript
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 // 文件数据库 (Bun/Node.js)
 const dataProvider = createRefineSQL('./database.db');
@@ -582,7 +534,7 @@ const dataProvider = createRefineSQL(env.DB);
 
 ```typescript
 import { Refine } from '@refinedev/core';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const dataProvider = createRefineSQL('./database.db');
 
@@ -726,7 +678,7 @@ const dataProvider = createRefineSQL('./database.db', {
 ## 错误处理
 
 ```typescript
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 try {
   const dataProvider = createRefineSQL('./database.db');
@@ -766,7 +718,7 @@ const dataProvider = createRefineSQL('./database.db');
 ```typescript
 // server.ts
 import { Hono } from 'hono';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const app = new Hono();
 const dataProvider = createRefineSQL('./app.db');
@@ -783,7 +735,7 @@ export default app;
 
 ```typescript
 // worker.ts
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -803,7 +755,7 @@ export default {
 ```typescript
 // server.js
 import express from 'express';
-import { createRefineSQL } from 'refine-sqlx';
+import { createRefineSQL } from 'refine-sql';
 
 const app = express();
 const dataProvider = createRefineSQL('./database.db');
@@ -822,7 +774,7 @@ app.listen(3000);
 
 ## ORM 兼容性功能
 
-`refine-sqlx` 包现在包含增强的 ORM 兼容性功能，提供更现代的开发体验：
+`refine-sql` 包现在包含增强的 ORM 兼容性功能，提供更现代的开发体验：
 
 ### 链式查询构建器
 
@@ -830,7 +782,7 @@ app.listen(3000);
 import createRefineSQL, {
   type EnhancedDataProvider,
   type TableSchema,
-} from 'refine-sqlx';
+} from 'refine-sql';
 
 // 为类型安全定义您的模式
 interface MySchema extends TableSchema {
@@ -964,4 +916,4 @@ const users = await dataProvider.findManyTyped(
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/medz/refine-sql)

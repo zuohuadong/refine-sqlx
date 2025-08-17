@@ -1,4 +1,4 @@
-// Modern client types for refine-sqlx
+// Modern client types for refine-sql
 import type { DataProvider } from '@refinedev/core';
 
 /**

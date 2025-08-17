@@ -32,16 +32,26 @@ import detectSqlite from './detect-sqlite';
 import { SqlxChainQuery } from './chain-query';
 import { SqlxMorphQuery, type MorphConfig } from './morph-query';
 import { SqlxTypedMethods, type TableSchema } from './typed-methods';
+import {
+  TransactionManager,
+  NativeQueryBuilders,
+  AdvancedUtils,
+  type TransactionContext
+} from './advanced-features';
+import { CompatibleChainQuery } from './compatibility-layer';
 
 /**
  * Enhanced data provider interface compatible with refine-orm
  */
 export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
   extends DataProvider {
-  // Chain query methods (refine-sqlx style)
+  // Client access
+  client: SqlClient;
+
+  // Chain query methods (refine-sql style)
   from<T extends BaseRecord = BaseRecord>(tableName: string): SqlxChainQuery<T>;
 
-  // Polymorphic relationship methods (refine-sqlx style)
+  // Polymorphic relationship methods (refine-sql style)
   morphTo<T extends BaseRecord = BaseRecord>(
     tableName: string,
     morphConfig: MorphConfig
@@ -423,6 +433,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to delete records');
 
   return {
+    get client() { return resolveClient(); },
     getList,
     getMany,
     getOne,
@@ -438,17 +449,17 @@ export default function <TSchema extends TableSchema = TableSchema>(
     from: withClientCheck((tableName: string) => new SqlxChainQuery(client, tableName), () => client),
 
     // Polymorphic relationship methods
-    morphTo: withClientCheck((tableName: string, morphConfig: MorphConfig) => 
+    morphTo: withClientCheck((tableName: string, morphConfig: MorphConfig) =>
       new SqlxMorphQuery(client, tableName, morphConfig), () => client),
 
     // Native query builders
     query: {
       select: withClientCheck((resource: string) => new SqlxChainQuery(client, resource), () => client),
-      insert: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) => 
+      insert: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
         new SqlxChainQuery<T>(client, resource), () => client),
-      update: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) => 
+      update: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
         new SqlxChainQuery<T>(client, resource), () => client),
-      delete: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) => 
+      delete: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
         new SqlxChainQuery<T>(client, resource), () => client),
     },
 
@@ -461,12 +472,12 @@ export default function <TSchema extends TableSchema = TableSchema>(
     ): Promise<GetOneResponse<T>> {
       // Get base record first
       const baseRecord = await getOne<T>({ resource, id });
-      
+
       if (!relations?.length) return baseRecord as GetOneResponse<T>;
 
       // Simplified relationship loading implementation
       const recordWithRelations = { ...baseRecord.data } as any;
-      
+
       // Load all relations in parallel for better performance
       await Promise.allSettled(
         relations.map(async (relation) => {
@@ -571,7 +582,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
       defaults?: Variables;
     }): Promise<{ data: T; created: boolean }> {
       const existing = await findByConditions(params.resource, params.where);
-      
+
       if (existing) {
         return { data: existing as T, created: false };
       }
@@ -726,7 +737,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
       const resolvedClient = await resolveClient();
       await resolvedClient.execute({ sql: 'ROLLBACK', args: [] });
     },
-  } as EnhancedDataProvider<TSchema>;
+  } as unknown as EnhancedDataProvider<TSchema>;
 
   async function resolveClient() {
     if (client) return client;
@@ -741,9 +752,327 @@ export default function <TSchema extends TableSchema = TableSchema>(
     const factory =
       typeof db === 'object' && 'connect' in db ?
         db
-      : detectSqlite(db as any, options as any);
+        : detectSqlite(db as any, options as any);
     client = await factory.connect();
 
     return client;
   }
+}
+
+/**
+ * Enhanced data provider with all refine-orm compatible features
+ */
+export interface FullyCompatibleDataProvider<TSchema extends TableSchema = TableSchema> extends Omit<EnhancedDataProvider<TSchema>, 'from' | 'query' | 'morphTo' | 'upsert' | 'firstOrCreate' | 'updateOrCreate' | 'increment' | 'decrement' | 'getWithRelations' | 'transaction'> {
+  // Transaction support
+  transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T>;
+
+  // Native query builders
+  query: {
+    select(tableName: string): import('./advanced-features').SelectChain;
+    insert(tableName: string): import('./advanced-features').InsertChain;
+    update(tableName: string): import('./advanced-features').UpdateChain;
+    delete(tableName: string): import('./advanced-features').DeleteChain;
+  };
+
+  // Advanced utilities
+  upsert<T = BaseRecord>(
+    tableName: string,
+    data: Record<string, any>,
+    conflictColumns?: string[]
+  ): Promise<T>;
+
+  firstOrCreate<T = BaseRecord>(
+    tableName: string,
+    where: Record<string, any>,
+    defaults?: Record<string, any>
+  ): Promise<{ data: T; created: boolean }>;
+
+  updateOrCreate<T = BaseRecord>(
+    tableName: string,
+    where: Record<string, any>,
+    values: Record<string, any>
+  ): Promise<{ data: T; created: boolean }>;
+
+  increment(
+    tableName: string,
+    where: Record<string, any>,
+    column: string,
+    amount?: number
+  ): Promise<void>;
+
+  decrement(
+    tableName: string,
+    where: Record<string, any>,
+    column: string,
+    amount?: number
+  ): Promise<void>;
+
+  batchInsert<T = BaseRecord>(
+    tableName: string,
+    data: Record<string, any>[],
+    batchSize?: number,
+    onConflict?: 'ignore' | 'replace'
+  ): Promise<T[]>;
+
+  executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]>;
+
+  // Enhanced relationship loading
+  getWithRelations<TRecord = BaseRecord>(
+    resource: string,
+    id: any,
+    relations?: string[]
+  ): Promise<TRecord>;
+
+  // Enhanced chain query that returns compatible query builder
+  from(tableName: string): CompatibleChainQuery;
+
+  // Polymorphic relationships
+  morphTo(
+    tableName: string,
+    config: {
+      typeField: string;
+      idField: string;
+      relationName: string;
+      types: Record<string, string>;
+    }
+  ): CompatibleChainQuery;
+}
+
+/**
+ * Create a fully compatible data provider with all refine-orm features
+ */
+export function createFullyCompatibleProvider<TSchema extends TableSchema = TableSchema>(
+  baseProvider: EnhancedDataProvider<TSchema>
+): FullyCompatibleDataProvider<TSchema> {
+  const client = (baseProvider as any).client as SqlClient;
+
+  // Initialize advanced features
+  const transactionManager = new TransactionManager(client);
+  const nativeQueryBuilders = new NativeQueryBuilders(client);
+  const advancedUtils = new AdvancedUtils(client);
+
+  // Create enhanced provider
+  const enhancedProvider: FullyCompatibleDataProvider<TSchema> = {
+    // Inherit all base provider methods
+    ...baseProvider,
+
+    // Transaction support
+    async transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T> {
+      return transactionManager.transaction(fn);
+    },
+
+    // Native query builders
+    query: {
+      select: (tableName: string) => nativeQueryBuilders.select(tableName),
+      insert: (tableName: string) => nativeQueryBuilders.insert(tableName),
+      update: (tableName: string) => nativeQueryBuilders.update(tableName),
+      delete: (tableName: string) => nativeQueryBuilders.delete(tableName),
+    },
+
+    // Advanced utilities
+    async upsert<T = BaseRecord>(
+      tableName: string,
+      data: Record<string, any>,
+      conflictColumns?: string[]
+    ): Promise<T> {
+      return advancedUtils.upsert<T>(tableName, data, conflictColumns);
+    },
+
+    async firstOrCreate<T = BaseRecord>(
+      tableName: string,
+      where: Record<string, any>,
+      defaults: Record<string, any> = {}
+    ): Promise<{ data: T; created: boolean }> {
+      return advancedUtils.firstOrCreate<T>(tableName, where, defaults);
+    },
+
+    async updateOrCreate<T = BaseRecord>(
+      tableName: string,
+      where: Record<string, any>,
+      values: Record<string, any>
+    ): Promise<{ data: T; created: boolean }> {
+      return advancedUtils.updateOrCreate<T>(tableName, where, values);
+    },
+
+    async increment(
+      tableName: string,
+      where: Record<string, any>,
+      column: string,
+      amount: number = 1
+    ): Promise<void> {
+      return advancedUtils.increment(tableName, where, column, amount);
+    },
+
+    async decrement(
+      tableName: string,
+      where: Record<string, any>,
+      column: string,
+      amount: number = 1
+    ): Promise<void> {
+      return advancedUtils.decrement(tableName, where, column, amount);
+    },
+
+    async batchInsert<T = BaseRecord>(
+      tableName: string,
+      data: Record<string, any>[],
+      batchSize: number = 100,
+      onConflict: 'ignore' | 'replace' = 'ignore'
+    ): Promise<T[]> {
+      return advancedUtils.batchInsert<T>(tableName, data, batchSize, onConflict);
+    },
+
+    async executeRaw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+      return advancedUtils.executeRaw<T>(sql, params);
+    },
+
+    // Enhanced relationship loading
+    async getWithRelations<TRecord = BaseRecord>(
+      resource: string,
+      id: any,
+      relations: string[] = []
+    ): Promise<TRecord> {
+      // Get the base record
+      const record = await baseProvider.getOne({ resource, id });
+
+      if (!record.data || relations.length === 0) {
+        return record.data as TRecord;
+      }
+
+      // Load each relationship
+      const result = { ...record.data };
+
+      for (const relationName of relations) {
+        try {
+          // Simple relationship loading - in practice this would be more sophisticated
+          const relatedQuery = nativeQueryBuilders.select(getRelatedTableName(relationName));
+          const relatedData = await relatedQuery
+            .where(getForeignKey(resource), 'eq', id)
+            .get();
+
+          (result as any)[relationName] = relatedData;
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Failed to load relationship ${relationName}:`, error);
+          }
+          (result as any)[relationName] = [];
+        }
+      }
+
+      return result as TRecord;
+    },
+
+    // Enhanced chain query
+    from(tableName: string): CompatibleChainQuery {
+      return new CompatibleChainQuery(client, tableName);
+    },
+
+    // Polymorphic relationships
+    morphTo(
+      tableName: string,
+      config: {
+        typeField: string;
+        idField: string;
+        relationName: string;
+        types: Record<string, string>;
+      }
+    ): CompatibleChainQuery {
+      const query = new CompatibleChainQuery(client, tableName);
+
+      // Add morph conditions
+      if (config.types && Object.keys(config.types).length > 0) {
+        const typeValues = Object.keys(config.types);
+        query.where(config.typeField, 'in', typeValues);
+      }
+
+      return query;
+    },
+  };
+
+  return enhancedProvider;
+}
+
+/**
+ * Helper functions for relationship loading
+ */
+function getRelatedTableName(relationName: string): string {
+  // Simple pluralization - in practice this would be more sophisticated
+  return relationName.endsWith('s') ? relationName : `${relationName}s`;
+}
+
+function getForeignKey(resource: string): string {
+  // Simple foreign key generation - in practice this would be configurable
+  const singular = resource.endsWith('s') ? resource.slice(0, -1) : resource;
+  return `${singular}_id`;
+}
+
+/**
+ * Type definitions for enhanced compatibility
+ */
+export interface EnhancedCompatibilityConfig {
+  /** Enable all advanced features */
+  enableAdvancedFeatures?: boolean;
+  /** Enable transaction support */
+  enableTransactions?: boolean;
+  /** Enable native query builders */
+  enableNativeQueryBuilders?: boolean;
+  /** Enable advanced utilities (upsert, firstOrCreate, etc.) */
+  enableAdvancedUtils?: boolean;
+  /** Enable enhanced relationship loading */
+  enableEnhancedRelationships?: boolean;
+  /** Show performance metrics */
+  showPerformanceMetrics?: boolean;
+}
+
+/**
+ * Create enhanced provider with configuration options
+ */
+export function createEnhancedProvider<TSchema extends TableSchema = TableSchema>(
+  baseProvider: EnhancedDataProvider<TSchema>,
+  config: EnhancedCompatibilityConfig = {}
+): FullyCompatibleDataProvider<TSchema> {
+  const {
+    enableAdvancedFeatures = true,
+  } = config;
+
+  if (!enableAdvancedFeatures) {
+    // Return base provider with minimal enhancements
+    return baseProvider as unknown as FullyCompatibleDataProvider<TSchema>;
+  }
+
+  const enhancedProvider = createFullyCompatibleProvider(baseProvider);
+
+  // Add performance monitoring if enabled
+  if (config.showPerformanceMetrics) {
+    wrapWithPerformanceMonitoring(enhancedProvider);
+  }
+
+  return enhancedProvider;
+}
+
+/**
+ * Wrap provider methods with performance monitoring
+ */
+function wrapWithPerformanceMonitoring(provider: any) {
+  const originalMethods = ['getList', 'getOne', 'create', 'update', 'deleteOne'];
+
+  originalMethods.forEach(methodName => {
+    const originalMethod = provider[methodName];
+    provider[methodName] = async function (...args: any[]) {
+      const startTime = Date.now();
+      try {
+        const result = await originalMethod.apply(this, args);
+        const endTime = Date.now();
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[RefineSQL] ${methodName} completed in ${endTime - startTime}ms`);
+        }
+        return result;
+      } catch (error) {
+        const endTime = Date.now();
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`[RefineSQL] ${methodName} failed in ${endTime - startTime}ms:`, error);
+        }
+        throw error;
+      }
+    };
+  });
 }

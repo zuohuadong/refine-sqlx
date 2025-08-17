@@ -31,9 +31,9 @@
     "@refinedev/core": "^4.0.0"
   },
   "devDependencies": {
-    "@refinedev/core": "^4.0.0",
-    "typescript": "^5.0.0",
-    "unbuild": "^2.0.0"
+    "@refinedev/core": "4.57.11",
+    "typescript": "^5.6.0",
+    "unbuild": "3.6.1"
   },
   "keywords": [
     "refine",

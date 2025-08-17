@@ -34,9 +34,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
 
-    // Decorators (new standard decorators - TypeScript 5.0+)
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    // Decorators (TypeScript 5.0+ standard decorators)
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
 
     // Emit
     "declaration": true,
@@ -50,7 +50,7 @@
   "references": [
     { "path": "./packages/refine-core-utils" },
     { "path": "./packages/refine-orm" },
-    { "path": "./packages/refine-sqlx" }
+    { "path": "./packages/refine-sql" }
   ],
   "exclude": ["node_modules", "**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
 }

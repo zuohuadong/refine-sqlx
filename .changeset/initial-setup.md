@@ -1,5 +1,5 @@
 ---
-"refine-sqlx": patch
+"refine-sql": patch
 "refine-orm": patch
 ---
 

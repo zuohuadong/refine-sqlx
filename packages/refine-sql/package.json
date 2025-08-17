@@ -8,14 +8,14 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "homepage": "https://github.com/medz/refine-sqlx#readme",
+  "homepage": "https://github.com/medz/refine-sql#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sqlx.git",
+    "url": "git+https://github.com/medz/refine-sql.git",
     "directory": "packages/refine-sql"
   },
   "bugs": {
-    "url": "https://github.com/medz/refine-sqlx/issues"
+    "url": "https://github.com/medz/refine-sql/issues"
   },
   "keywords": [
     "refine",
@@ -66,6 +66,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.mjs",
+      "require": "./dist/core.cjs"
+    },
+    "./compat": {
+      "types": "./dist/compat.d.ts",
+      "import": "./dist/compat.mjs",
+      "require": "./dist/compat.cjs"
+    },
+    "./d1": {
+      "types": "./dist/d1.d.ts",
+      "import": "./dist/d1.mjs",
+      "require": "./dist/d1.cjs"
+    },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "import": "./dist/bun.mjs",
+      "require": "./dist/bun.cjs"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.mjs",
+      "require": "./dist/node.cjs"
     }
   },
   "files": [
@@ -73,24 +98,25 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "@cloudflare/workers-types": "^4",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
-    "@prettier/plugin-oxc": "^0.0.4",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/bun": "^1.2.18",
-    "@types/node": "^24.0.12",
+    "@cloudflare/workers-types": "4.20250816.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.6.2",
+    "@prettier/plugin-oxc": "0.0.4",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/bun": "1.2.20",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.6.0",
     "better-sqlite3": "^12.2.0",
-    "prettier": "^3.6.2",
-    "unbuild": "3.6.0",
-    "vitest": "^3.2.4"
+    "prettier": "3.6.2",
+    "unbuild": "3.6.1",
+    "vitest": "3.2.4"
   },
   "dependencies": {
     "@refine-orm/core-utils": "workspace:*"
   },
   "peerDependencies": {
-    "@refinedev/core": "^4.57.10"
+    "@refinedev/core": "^4.57.11"
   },
   "optionalDependencies": {
-    "better-sqlite3": "^12.2.0"
+    "better-sqlite3": "12.2.0"
   }
 }

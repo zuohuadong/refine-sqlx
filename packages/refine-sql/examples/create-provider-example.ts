@@ -1,5 +1,5 @@
 /**
- * refine-sqlx createProvider() 使用示例
+ * refine-sql createProvider() 使用示例
  * 展示新的统一工厂函数的各种用法
  */
 
@@ -25,7 +25,7 @@ interface BlogSchema extends TableSchema {
 }
 
 async function main() {
-    console.log('🚀 refine-sqlx createProvider() 示例');
+    console.log('🚀 refine-sql createProvider() 示例');
 
     // 1. 基础用法 - 文件数据库
     console.log('\n1. 基础用法 - 文件数据库');
@@ -94,8 +94,8 @@ async function main() {
         // 链式查询
         const activeUsers = await memoryProvider
             .from('users')
-            .whereLike('email', '%@example.com')
-            .orderByDesc('created_at')
+            .where('email', 'contains', '@example.com')
+            .orderBy('created_at', 'desc')
             .limit(5)
             .get();
         console.log('✅ 链式查询成功:', activeUsers.length, '条记录');
