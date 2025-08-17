@@ -225,8 +225,21 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     return { data: result.data as T };
   };
 
+  // 创建一个代理客户端来处理异步初始化
+  const proxyClient = new Proxy({} as SqlClient, {
+    get(target, prop) {
+      if (prop === 'query' || prop === 'execute') {
+        return async (...args: any[]) => {
+          const resolvedClient = await resolveClient();
+          return (resolvedClient as any)[prop](...args);
+        };
+      }
+      return (target as any)[prop];
+    }
+  });
+
   return {
-    client: client as SqlClient,
+    client: proxyClient,
     
     // 标准 DataProvider 方法
     getList,
