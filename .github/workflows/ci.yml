@@ -63,8 +63,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install --no-frozen-lockfile
+        run: bun install
 
       - name: Type check
         run: bun run typecheck
@@ -148,8 +156,16 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install --no-frozen-lockfile
+        run: bun install
 
       - name: Check formatting
         run: bun run format --check
@@ -171,8 +187,16 @@ jobs:
         with:
           node-version: 18
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install --no-frozen-lockfile
+        run: bun install
 
       - name: Type check
         run: bun run typecheck
@@ -201,8 +225,16 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install --no-frozen-lockfile
+        run: bun install
 
       - name: Build packages
         run: bun run build
