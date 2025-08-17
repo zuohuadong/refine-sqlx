@@ -23,14 +23,19 @@ const TEST_DATABASES = [
 
 // Run tests for each database type
 TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
-  describe(`${dbName} CRUD Operations Integration`, () => {
+  describe.skipIf(skipIfDatabaseNotAvailable(dbType))(`${dbName} CRUD Operations Integration`, () => {
     let provider: RefineOrmDataProvider<any>;
 
     beforeAll(async () => {
+      if (skipIfDatabaseNotAvailable(dbType)) {
+        console.warn(`Skipping ${dbName} tests - database not available`);
+        return;
+      }
+      
       try {
         provider = await testSetup.setupDatabase(dbType);
       } catch (error) {
-        console.warn(`Skipping ${dbName} tests due to setup failure:`, error);
+        console.error(`Failed to setup ${dbName} database:`, error);
         throw error;
       }
     }, 30000);

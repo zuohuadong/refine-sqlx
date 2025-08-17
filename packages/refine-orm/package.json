@@ -1,6 +1,6 @@
 {
   "name": "refine-orm",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Refine ORM data provider with multi-database support using drizzle-orm.",
   "type": "module",
   "license": "MIT",

@@ -22,7 +22,7 @@
     "test:integration": "bun run --filter='*' test:integration",
     "test:integration-bun": "bun run --filter='refine-sql' test:integration-bun",
     "test:integration-better-sqlite3": "bun run --filter='refine-sql' test:integration-better-sqlite3",
-    "test:integration-mysql": "bun run --filter='refine-orm' test:integration",
+    "test:integration-mysql": "bun run --filter='refine-orm' test:integration -- --reporter=verbose",
     "test:integration-postgresql": "bun run --filter='refine-orm' test:integration",
     "typecheck": "bun run --filter='*' typecheck",
     "typecheck:strict": "tsc --project tsconfig.strict.json",

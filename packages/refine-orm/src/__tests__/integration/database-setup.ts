@@ -353,9 +353,9 @@ export function isTestEnvironmentReady(
 ): boolean {
   switch (dbType) {
     case 'postgresql':
-      return !!process.env.POSTGRES_URL || process.env.CI === 'true';
+      return !!process.env.POSTGRES_URL;
     case 'mysql':
-      return !!process.env.MYSQL_URL || process.env.CI === 'true';
+      return !!process.env.MYSQL_URL;
     case 'sqlite':
       return true; // SQLite always available (in-memory)
     default:

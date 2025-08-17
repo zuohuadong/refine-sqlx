@@ -37,18 +37,7 @@ A lightweight, cross-platform SQL data provider with native runtime support.
 npm install refine-sql
 ```
 
-### 🔧 [@refine-orm/core-utils](./packages/refine-core-utils)
 
-Shared utilities and transformers for Refine data providers.
-
-- **Parameter transformation**: Convert Refine filters/sorting to SQL/ORM queries
-- **Type-safe**: Generic TypeScript support
-- **Extensible**: Configurable operators and transformers
-- **Performance**: Optimized for high-throughput applications
-
-```bash
-npm install @refine-orm/core-utils
-```
 
 ## Quick Start
 
@@ -64,7 +53,7 @@ Use **refine-orm** if you need:
 - Advanced query building
 - Multi-database support
 
-``typescript
+```typescript
 import { createPostgreSQLProvider } from 'refine-orm';
 import { schema } from './schema';
 
@@ -83,7 +72,7 @@ Use **refine-sql** if you need:
 - Cross-platform compatibility
 - Minimal setup
 
-``typescript
+```typescript
 import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
@@ -93,7 +82,7 @@ const dataProvider = createProvider('./database.db');
 
 **refine-sql** now provides **near 100% API compatibility** with refine-orm, allowing users to seamlessly migrate or use both API styles simultaneously:
 
-``typescript
+```typescript
 import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
@@ -184,7 +173,7 @@ See our [Compatibility Guide](./packages/refine-sql/COMPATIBILITY.md) for detail
 
 ### Blog Application with refine-orm
 
-``typescript
+```typescript
 // schema.ts
 import {
   pgTable,
@@ -238,7 +227,7 @@ function App() {
 
 ### Simple Todo App with refine-sql
 
-``typescript
+```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
 import { createProvider } from 'refine-sql';
@@ -257,8 +246,10 @@ function App() {
     </Refine>
   );
 }
+```
 
-// SQL Schema (todos.sql)
+```sql
+-- SQL Schema (todos.sql)
 CREATE TABLE todos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
@@ -285,7 +276,7 @@ CREATE TABLE todos (
 
 ### Setup
 
-```
+```bash
 # Clone the repository
 git clone https://github.com/medz/refine-sql.git
 cd refine-sql
@@ -309,8 +300,7 @@ bun run typecheck
 refine-sql/
 ├── packages/
 │   ├── refine-orm/          # Full-featured ORM data provider
-│   ├── refine-sql/          # Lightweight SQL data provider
-│   └── refine-core-utils/   # Shared utilities
+│   └── refine-sql/          # Lightweight SQL data provider
 ├── .github/
 │   └── workflows/           # CI/CD workflows
 ├── .changeset/              # Version management
@@ -422,18 +412,7 @@ npm install refine-orm drizzle-orm
 npm install refine-sql
 ```
 
-### 🔧 [@refine-orm/core-utils](./packages/refine-core-utils)
 
-Refine 数据提供器的共享工具和转换器。
-
-- **参数转换**: 将 Refine 过滤器/排序转换为 SQL/ORM 查询
-- **类型安全**: 通用 TypeScript 支持
-- **可扩展**: 可配置的操作符和转换器
-- **性能**: 为高吞吐量应用优化
-
-```bash
-npm install @refine-orm/core-utils
-```
 
 ## 快速开始
 
@@ -449,7 +428,7 @@ npm install @refine-orm/core-utils
 - 高级查询构建
 - 多数据库支持
 
-``typescript
+```typescript
 import { createPostgreSQLProvider } from 'refine-orm';
 import { schema } from './schema';
 
@@ -468,7 +447,7 @@ const dataProvider = await createPostgreSQLProvider(
 - 跨平台兼容性
 - 最小设置
 
-``typescript
+```typescript
 import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
@@ -478,7 +457,7 @@ const dataProvider = createProvider('./database.db');
 
 **refine-sql** 现在提供了与 refine-orm **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
 
-``typescript
+```typescript
 import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
@@ -569,7 +548,7 @@ await dataProvider.transaction(async (tx) => {
 
 ### 使用 refine-orm 的博客应用
 
-``typescript
+```typescript
 // schema.ts
 import {
   pgTable,
@@ -623,7 +602,7 @@ function App() {
 
 ### 使用 refine-sql 的简单待办应用
 
-``typescript
+```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
 import { createProvider } from 'refine-sql';
@@ -642,8 +621,10 @@ function App() {
     </Refine>
   );
 }
+```
 
-// SQL 模式 (todos.sql)
+```sql
+-- SQL 模式 (todos.sql)
 CREATE TABLE todos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
@@ -670,7 +651,7 @@ CREATE TABLE todos (
 
 ### 设置
 
-```
+```bash
 # 克隆仓库
 git clone https://github.com/medz/refine-sql.git
 cd refine-sql
@@ -694,8 +675,7 @@ bun run typecheck
 refine-sql/
 ├── packages/
 │   ├── refine-orm/          # 功能完整的 ORM 数据提供器
-│   ├── refine-sql/          # 轻量级 SQL 数据提供器
-│   └── refine-core-utils/   # 共享工具
+│   └── refine-sql/          # 轻量级 SQL 数据提供器
 ├── .github/
 │   └── workflows/           # CI/CD 工作流
 ├── .changeset/              # 版本管理

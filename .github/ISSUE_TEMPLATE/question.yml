@@ -56,23 +56,7 @@ body:
       placeholder: "I'm trying to build an application that..."
 
   - type: textarea
-    id: attempted
-    attributes:
-      label: What Have You Tried?
-      desbutes:
-      label: Your Question
-      description: Please ask your question clearly and provide context
-      placeholder: |
-        Please provide:
-        - What are you trying to accomplish?
-        - What specific problem are you facing?
-        - What have you tried so far?
-        - What would you like to know?
-    validations:
-      required: true
-
-  - type: textarea
-    id: context
+    id: background
     attributes:
       label: Context and Background
       description: Provide relevant context about your project and use case

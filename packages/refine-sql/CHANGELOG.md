@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1
+
+### Patch Changes
+
+- 9308ad4: Initial monorepo setup with Bun workspace structure and Changeset version management
+- Release version 0.3.1
+  - Updated README documentation
+  - Removed @refine-orm/core-utils package description from README
+  - Minor documentation improvements and formatting fixes
+
+- Updated dependencies
+  - @refine-orm/core-utils@0.3.1
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

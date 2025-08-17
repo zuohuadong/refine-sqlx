@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
         database: [sqlite, mysql, postgresql]
 
     services:
@@ -24,20 +24,23 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: refine_orm_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping --host=localhost --user=root --password=password"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
       postgres:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: testdb
+          POSTGRES_DB: refine_orm_test
+          POSTGRES_USER: test
         ports:
           - 5432:5432
         options: >-
@@ -79,17 +82,60 @@ jobs:
           bun run test:integration-bun
           bun run test:integration-better-sqlite3
 
+      - name: Install MySQL client
+        if: matrix.database == 'mysql'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Wait for MySQL
+        if: matrix.database == 'mysql'
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          timeout 60 bash -c 'until mysqladmin ping -h localhost -P 3306 -u root -ppassword --silent; do echo "MySQL not ready, waiting..."; sleep 2; done'
+          echo "MySQL is ready, setting up database..."
+          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS refine_orm_test;"
+          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE USER IF NOT EXISTS 'test'@'%' IDENTIFIED BY 'test';"
+          mysql -h localhost -P 3306 -u root -ppassword -e "GRANT ALL PRIVILEGES ON refine_orm_test.* TO 'test'@'%';"
+          mysql -h localhost -P 3306 -u root -ppassword -e "FLUSH PRIVILEGES;"
+          echo "Database setup complete"
+
       - name: Run integration tests - MySQL
         if: matrix.database == 'mysql'
         env:
-          MYSQL_URL: mysql://root:password@localhost:3306/testdb
-        run: bun run test:integration-mysql
+          MYSQL_URL: mysql://test:test@localhost:3306/refine_orm_test
+        run: |
+          echo "Testing MySQL connection..."
+          mysql -h localhost -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
+          echo "MySQL connection successful, running tests..."
+          bun run test:integration-mysql
+
+      - name: Install PostgreSQL client
+        if: matrix.database == 'postgresql'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do echo "PostgreSQL not ready, waiting..."; sleep 2; done'
+          echo "PostgreSQL is ready, setting up database..."
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE refine_orm_test;" || true
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE USER test WITH PASSWORD 'test';" || true
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE refine_orm_test TO test;" || true
+          echo "Database setup complete"
 
       - name: Run integration tests - PostgreSQL
         if: matrix.database == 'postgresql'
         env:
-          POSTGRES_URL: postgresql://postgres:password@localhost:5432/testdb
-        run: bun run test:integration-postgresql
+          POSTGRES_URL: postgresql://test:test@localhost:5432/refine_orm_test
+        run: |
+          echo "Testing PostgreSQL connection..."
+          PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
+          echo "PostgreSQL connection successful, running tests..."
+          bun run test:integration-postgresql
 
   lint:
     name: Lint
@@ -109,10 +155,45 @@ jobs:
       - name: Check formatting
         run: bun run format --check
 
+  test-node18:
+    name: Test Node.js 18 (SQLite only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Run unit tests
+        run: bun run test
+
+      - name: Run integration tests - SQLite
+        run: |
+          bun run test:integration-bun
+          bun run test:integration-better-sqlite3
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [test, lint]
+    needs: [test, test-node18, lint]
     steps:
       - name: Checkout
         uses: actions/checkout@v5

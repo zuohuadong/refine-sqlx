@@ -65,7 +65,7 @@ jobs:
     name: better-sqlite3 Integration Tests
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [18, 20, 22, 24]
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
