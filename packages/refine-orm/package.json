@@ -72,7 +72,7 @@
   "sideEffects": false,
   "dependencies": {
     "@refine-orm/core-utils": "workspace:*",
-    "drizzle-orm": "^0.36.4"
+    "drizzle-orm": "^0.44.4"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",
