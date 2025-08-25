@@ -98,7 +98,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20250816.0",
+    "@cloudflare/workers-types": "4.20250823.0",
     "@ianvs/prettier-plugin-sort-imports": "4.6.2",
     "@prettier/plugin-oxc": "0.0.4",
     "@types/better-sqlite3": "7.6.13",
