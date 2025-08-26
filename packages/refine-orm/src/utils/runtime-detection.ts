@@ -72,7 +72,7 @@ export function detectBunSqlSupport(
       case 'postgresql':
         return true; // bun:sql supports PostgreSQL
       case 'mysql':
-        return false; // bun:sql doesn't support MySQL yet
+        return true; // bun:sql supports MySQL since Bun 1.2.21
       case 'sqlite':
         return typeof (Bun as any).sqlite === 'function'; // Check for bun:sqlite
       default:
@@ -99,7 +99,10 @@ export function getRecommendedDriver(
       return 'postgres';
 
     case 'mysql':
-      // MySQL always uses mysql2 since bun:sql doesn't support it yet
+      // Use bun:sql if available, otherwise mysql2
+      if (runtime === 'bun' && detectBunSqlSupport('mysql')) {
+        return 'bun:sql';
+      }
       return 'mysql2';
 
     case 'sqlite':
@@ -163,6 +166,9 @@ export async function getAvailableDrivers(
       break;
 
     case 'mysql':
+      if (detectBunSqlSupport('mysql')) {
+        drivers.push('bun:sql');
+      }
       if (await checkDriverAvailability('mysql2')) {
         drivers.push('mysql2');
       }

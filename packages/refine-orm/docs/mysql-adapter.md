@@ -9,7 +9,7 @@ The MySQL adapter provides comprehensive MySQL database support for refine-orm u
 - ✅ **Connection pooling**: Built-in connection pool support for production environments
 - ✅ **SSL support**: Full SSL/TLS configuration support
 - ✅ **Type safety**: Complete TypeScript type inference with drizzle-orm
-- ✅ **Future-ready**: Detection logic for upcoming bun:sql MySQL support
+- ✅ **bun:sql support**: Uses Bun's native SQL driver for MySQL since Bun 1.2.21
 - ✅ **Error handling**: Comprehensive error handling and logging
 - ✅ **Transaction support**: Full transaction management capabilities
 
@@ -261,25 +261,25 @@ const info = adapter.getAdapterInfo();
 console.log('Runtime:', info.runtime); // 'bun' or 'node'
 console.log('Driver:', info.driver); // 'mysql2'
 console.log('Native support:', info.supportsNativeDriver); // false (mysql2 used)
-console.log('Future bun:sql:', info.futureSupport.bunSql); // false (not supported yet)
+console.log('Future bun:sql:', info.futureSupport.bunSql); // true (available since Bun 1.2.21)
 ```
 
 ### Current Driver Strategy
 
 | Runtime | Driver | Reason                            |
 | ------- | ------ | --------------------------------- |
-| Bun     | mysql2 | bun:sql doesn't support MySQL yet |
+| Bun 1.2.21+ | bun:sql | Native MySQL support available  |
+| Bun < 1.2.21 | mysql2 | Fallback for older Bun versions |
 | Node.js | mysql2 | Standard, stable MySQL driver     |
 
-### Future bun:sql Support
+### bun:sql MySQL Support
 
-When Bun adds MySQL support to bun:sql, the adapter will automatically detect and use it:
+Since Bun 1.2.21, MySQL support is available through bun:sql. The adapter automatically detects and uses it:
 
 ```typescript
-// Future implementation (when bun:sql supports MySQL)
+// Works with Bun 1.2.21+ - automatically uses bun:sql
 import { createMySQLProviderWithBunSql } from 'refine-orm';
 
-// This will work when bun:sql adds MySQL support
 const adapter = createMySQLProviderWithBunSql(
   'mysql://user:pass@localhost:3306/db',
   schema
@@ -413,7 +413,7 @@ const adapter = createMySQLProvider(connectionString, schema, {
 - `createMySQLProvider(connection, schema, options?)` - Create MySQL provider
 - `createMySQLProviderWithMySQL2(connection, schema, options?)` - Explicit mysql2 driver
 - `createMySQLProviderWithPool(connection, schema, poolOptions?, options?)` - With pool config
-- `createMySQLProviderWithBunSql(connection, schema, options?)` - Future bun:sql support
+- `createMySQLProviderWithBunSql(connection, schema, options?)` - Bun 1.2.21+ MySQL support
 - `testMySQLConnection(connection, options?)` - Test connection utility
 
 ## Examples

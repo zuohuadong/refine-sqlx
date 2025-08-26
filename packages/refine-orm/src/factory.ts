@@ -207,7 +207,7 @@ export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
 
 /**
  * Create a MySQL data provider with automatic runtime detection
- * Currently uses mysql2 for all environments (waiting for bun:sql MySQL support)
+ * Uses bun:sql for Bun runtime (1.2.21+) or mysql2 for other environments
  *
  * @example
  * ```typescript
@@ -242,11 +242,13 @@ export function createMySQLProvider<TSchema extends Record<string, Table>>(
   // Add helpful runtime information
   if (options.debug) {
     const runtime = getRuntimeInfo();
+    const useBunSql =
+      runtime.runtime === 'bun' && detectBunSqlSupport('mysql');
     console.log(
       `[RefineORM] Creating MySQL provider in ${runtime.runtime} runtime`
     );
     console.log(
-      `[RefineORM] Using mysql2 driver (bun:sql MySQL support coming soon)`
+      `[RefineORM] Using ${useBunSql ? 'bun:sql' : 'mysql2'} driver`
     );
   }
 

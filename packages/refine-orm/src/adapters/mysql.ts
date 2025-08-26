@@ -19,8 +19,8 @@ import {
 
 /**
  * MySQL database adapter with runtime detection
- * Currently uses mysql2 driver for all environments
- * Future: Will support bun:sql when MySQL support is added
+ * Supports both Bun (bun:sql) and Node.js (mysql2) environments
+ * Uses bun:sql for Bun runtime when available (Bun 1.2.21+)
  */
 export class MySQLAdapter<
   TSchema extends Record<string, Table> = Record<string, Table>,
@@ -35,13 +35,13 @@ export class MySQLAdapter<
 
   /**
    * Establish connection to MySQL database
-   * Currently uses mysql2 for all environments
+   * Uses bun:sql for Bun runtime (1.2.21+) or mysql2 for other environments
    */
   @LogDatabaseOperation
   @RetryOnFailure(3, 2000)
   async connect(): Promise<void> {
     try {
-      // Check for future bun:sql MySQL support
+      // Check for bun:sql MySQL support (available since Bun 1.2.21)
       if (
         this.runtimeConfig.runtime === 'bun' &&
         (await this.checkBunSqlMySQLSupport())
@@ -67,13 +67,45 @@ export class MySQLAdapter<
   }
 
   /**
-   * Connect using Bun's native SQL driver (future implementation)
-   * Currently not supported - bun:sql doesn't support MySQL yet
+   * Connect using Bun's native SQL driver (available since Bun 1.2.21)
    */
   private async connectWithBunSql(): Promise<void> {
-    throw new ConnectionError(
-      'Bun SQL does not support MySQL yet. Using mysql2 driver instead.'
-    );
+    try {
+      // @ts-ignore - Dynamic import for bun:sql
+      const bunSql = await import('bun:sql');
+      const sql = bunSql.sql;
+
+      if (!sql) {
+        throw new ConnectionError('bun:sql module not available');
+      }
+
+      // Create connection using Bun's SQL
+      const connectionString = this.getConnectionString();
+      this.connection = sql(connectionString);
+
+      // Dynamic import for drizzle-orm/mysql2 (compatible with bun:sql)
+      if (!drizzleMySQL) {
+        const drizzleModule = await import('drizzle-orm/mysql2');
+        drizzleMySQL = drizzleModule.drizzle;
+      }
+
+      // Create drizzle client with bun:sql connection
+      this.client = drizzleMySQL(this.connection, {
+        schema: this.config.schema,
+        mode: 'default',
+        logger: this.config.debug,
+        casing: 'snake_case',
+      }) as DrizzleClient<TSchema>;
+
+      if (this.config.debug) {
+        console.log('[RefineORM] Connected to MySQL using bun:sql');
+      }
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to initialize bun:sql MySQL connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
@@ -218,14 +250,13 @@ export class MySQLAdapter<
   }
 
   /**
-   * Check if bun:sql supports MySQL (future feature detection)
+   * Check if bun:sql supports MySQL (available since Bun 1.2.21)
    */
   private async checkBunSqlMySQLSupport(): Promise<boolean> {
     try {
       if (typeof Bun !== 'undefined' && typeof Bun.sql === 'function') {
-        // Future: Add version check or feature detection for MySQL support
-        // For now, always return false since bun:sql doesn't support MySQL
-        return false;
+        // MySQL support is available since Bun 1.2.21
+        return true;
       }
       return false;
     } catch {
@@ -356,8 +387,8 @@ export class MySQLAdapter<
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
       futureSupport: {
-        bunSql: false, // Will be true when bun:sql adds MySQL support
-        estimatedVersion: 'TBD', // To be determined by Bun team
+        bunSql: true, // Available since Bun 1.2.21
+        estimatedVersion: 'Bun 1.2.21+',
       },
     };
   }
@@ -520,15 +551,15 @@ export function createMySQLProviderWithPool<
 }
 
 /**
- * Future: Create MySQL provider with Bun SQL driver
- * This will be available when bun:sql adds MySQL support
+ * Create MySQL provider with Bun SQL driver
+ * Available since Bun 1.2.21 with native MySQL support
  */
 export function createMySQLProviderWithBunSql<
   TSchema extends Record<string, Table>,
 >(
-  _connectionString: string,
-  _schema: TSchema,
-  _options?: MySQLOptions
+  connectionString: string,
+  schema: TSchema,
+  options?: MySQLOptions
 ): MySQLAdapter<TSchema> {
   if (!detectBunRuntime()) {
     throw new ConfigurationError(
@@ -536,10 +567,24 @@ export function createMySQLProviderWithBunSql<
     );
   }
 
-  // Future implementation - currently throws error
-  throw new ConfigurationError(
-    'Bun SQL does not support MySQL yet. Please use createMySQLProvider() which uses mysql2 driver.'
-  );
+  // Check if Bun SQL supports MySQL (available since 1.2.21)
+  if (typeof Bun === 'undefined' || typeof Bun.sql !== 'function') {
+    throw new ConfigurationError(
+      'Bun SQL is not available. Please use Bun 1.2.21 or later.'
+    );
+  }
+
+  const config: DatabaseConfig<TSchema> = {
+    type: 'mysql',
+    connection: connectionString,
+    schema,
+    ...(options?.pool && { pool: options.pool }),
+    ...(options?.ssl && { ssl: options.ssl }),
+    ...(options?.debug !== undefined && { debug: options.debug }),
+    ...(options?.logger && { logger: options.logger }),
+  };
+
+  return new MySQLAdapter(config);
 }
 
 /**
