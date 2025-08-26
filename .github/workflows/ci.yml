@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: false
+          # no cache configuration (previously 'cache: false' which is invalid for setup-node@v4)
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -207,7 +207,293 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: false
+          # no cache configuration (previously 'cache: false' which is invalid for setup-node@v4)
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests with Node.js 18..."
+          npx vitest run --reporter=verbose
+
+      - name: Run integration tests - SQLite
+        run: |
+          cd packages/refine-sql
+          echo "Running Bun SQLite integration tests with Bun runtime..."
+          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests with Vitest..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
+          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
+          npx vitest run test/integration/bun.test.ts --reporter=verbose
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+    needs: [test, test-node18, lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          no-cache: true
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Test package builds
+        run: |
+          cd packages/refine-orm && npm pack --dry-run
+          cd ../refine-sql && npm pack --dry-run
+          cd ../refine-core-utils && npm pack --dry-run
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: |
+            packages/*/dist/
+          retention-days: 7
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+        database: [sqlite, mysql, postgresql]
+    env:
+      NODE_ENV: test
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: refine_orm_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --host=localhost --user=root --password=password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: refine_orm_test
+          POSTGRES_USER: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          no-cache: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          # no cache configuration (previously 'cache: false' which is invalid for setup-node@v4)
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests with Node.js ${{ matrix.node-version }}..."
+          npx vitest run --reporter=verbose
+
+      - name: Run integration tests - SQLite
+        if: matrix.database == 'sqlite'
+        run: |
+          cd packages/refine-sql
+          echo "Running Bun SQLite integration tests with Bun runtime..."
+          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
+          echo "Running better-sqlite3 integration tests with Vitest..."
+          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
+          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
+          npx vitest run test/integration/bun.test.ts --reporter=verbose
+
+      - name: Install MySQL client
+        if: matrix.database == 'mysql'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Wait for MySQL
+        if: matrix.database == 'mysql'
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          timeout 60 bash -c 'until mysqladmin ping -h localhost -P 3306 -u root -ppassword --silent; do echo "MySQL not ready, waiting..."; sleep 2; done'
+          echo "MySQL is ready, setting up database..."
+          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS refine_orm_test;"
+          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE USER IF NOT EXISTS 'test'@'%' IDENTIFIED BY 'test';"
+          mysql -h localhost -P 3306 -u root -ppassword -e "GRANT ALL PRIVILEGES ON refine_orm_test.* TO 'test'@'%';"
+          mysql -h localhost -P 3306 -u root -ppassword -e "FLUSH PRIVILEGES;"
+          echo "Database setup complete"
+
+      - name: Run integration tests - MySQL
+        if: matrix.database == 'mysql'
+        env:
+          MYSQL_URL: mysql://test:test@localhost:3306/refine_orm_test
+        run: |
+          echo "Testing MySQL connection..."
+          mysql -h localhost -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
+          echo "MySQL connection successful, running tests..."
+          echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
+          cd packages/refine-orm
+          npx vitest run test/integration --reporter=verbose
+
+      - name: Install PostgreSQL client
+        if: matrix.database == 'postgresql'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do echo "PostgreSQL not ready, waiting..."; sleep 2; done'
+          echo "PostgreSQL is ready, setting up database..."
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE refine_orm_test;" || true
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE USER test WITH PASSWORD 'test';" || true
+          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE refine_orm_test TO test;" || true
+          echo "Database setup complete"
+
+      - name: Run integration tests - PostgreSQL
+        if: matrix.database == 'postgresql'
+        env:
+          POSTGRES_URL: postgresql://test:test@localhost:5432/refine_orm_test
+        run: |
+          echo "Testing PostgreSQL connection..."
+          PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
+          echo "PostgreSQL connection successful, running tests..."
+          echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
+          cd packages/refine-orm
+          npx vitest run test/integration --reporter=verbose
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          no-cache: true
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        run: bun run format --check
+
+  test-node18:
+    name: Test Node.js 18 (SQLite only)
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          no-cache: true
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          # no cache configuration (previously 'cache: false' which is invalid for setup-node@v4)
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4

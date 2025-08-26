@@ -99,6 +99,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
   adapter: BaseDatabaseAdapter<TSchema>,
   options?: RefineOrmOptions & { enablePerformanceMonitoring?: boolean }
 ): RefineOrmDataProvider<TSchema> {
+  console.log('createProvider called with adapter:', typeof adapter, Object.getOwnPropertyNames(adapter));
   const queryBuilder = new RefineQueryBuilder<TSchema>();
 
   // Initialize performance monitoring if enabled
@@ -122,6 +123,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
     get schema() {
       return adapter.getClient().schema;
+    },
+
+    // Expose adapter for testing purposes
+    get adapter() {
+      return adapter;
     },
 
     // Get list of records with filtering, sorting, and pagination
@@ -718,9 +724,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
       }
     },
 
-    // Raw query support (placeholder for now)
-    async executeRaw<T = any>(_sql: string, _params?: any[]): Promise<T[]> {
-      throw new QueryError('Raw query execution not implemented yet');
+    // Raw query support
+    async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+      console.log('executeRaw called with adapter:', typeof adapter, Object.getOwnPropertyNames(adapter));
+      if (typeof adapter.executeRaw !== 'function') {
+        throw new Error(`Adapter does not have executeRaw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`);
+      }
+      return await adapter.executeRaw<T>(sql, params);
     },
 
     // Transaction support (placeholder for now)

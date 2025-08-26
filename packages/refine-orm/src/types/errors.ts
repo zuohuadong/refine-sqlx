@@ -1,16 +1,14 @@
 // TypeScript 5.0 Decorators for error handling
-function ErrorLogger(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
+function ErrorLogger(originalMethod: any, context: ClassMethodDecoratorContext) {
+  return function (this: any, ...args: any[]) {
     try {
       const result = originalMethod.apply(this, args);
       return result;
     } catch (error) {
-      console.error(`[${this.constructor.name}] Error in ${propertyKey}:`, error);
+      console.error(`[${this.constructor.name}] Error in ${String(context.name)}:`, error);
       throw error;
     }
   };
-  return descriptor;
 }
 
 function ErrorCode(code: string) {

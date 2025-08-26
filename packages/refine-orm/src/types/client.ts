@@ -386,6 +386,7 @@ export interface RefineOrmDataProvider<
   > {
   client: DrizzleClient<TSchema>;
   schema: TSchema;
+  adapter: any; // For testing purposes
 
   // Enhanced typed CRUD operations
   getList<TTable extends keyof TSchema & string>(

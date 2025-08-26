@@ -7,6 +7,7 @@ import {
   pgTable,
   serial,
   text,
+  varchar as pgVarchar,
   timestamp,
   integer,
   boolean,
@@ -14,7 +15,7 @@ import {
 import {
   mysqlTable,
   int,
-  varchar,
+  varchar as mysqlVarchar,
   datetime,
   tinyint,
   text as mysqlText,
@@ -35,8 +36,8 @@ import type { RefineOrmDataProvider } from '../../types/client.js';
 // PostgreSQL Schema
 export const pgUsers = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: text('name', { length: 255 }).notNull(),
-  email: text('email', { length: 255 }).notNull().unique(),
+  name: pgVarchar('name', { length: 255 }).notNull(),
+  email: pgVarchar('email', { length: 255 }).notNull().unique(),
   age: integer('age'),
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
@@ -44,7 +45,7 @@ export const pgUsers = pgTable('users', {
 
 export const pgPosts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: text('title', { length: 255 }).notNull(),
+  title: pgVarchar('title', { length: 255 }).notNull(),
   content: text('content'),
   userId: integer('user_id').references(() => pgUsers.id),
   published: boolean('published').default(false),
@@ -69,8 +70,8 @@ export const pgSchema = {
 // MySQL Schema
 export const mysqlUsers = mysqlTable('users', {
   id: int('id').primaryKey().autoincrement(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
+  name: mysqlVarchar('name', { length: 255 }).notNull(),
+  email: mysqlVarchar('email', { length: 255 }).notNull().unique(),
   age: int('age'),
   isActive: tinyint('is_active').default(1),
   createdAt: datetime('created_at', { mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
@@ -78,7 +79,7 @@ export const mysqlUsers = mysqlTable('users', {
 
 export const mysqlPosts = mysqlTable('posts', {
   id: int('id').primaryKey().autoincrement(),
-  title: varchar('title', { length: 255 }).notNull(),
+  title: mysqlVarchar('title', { length: 255 }).notNull(),
   content: mysqlText('content'),
   userId: int('user_id').references(() => mysqlUsers.id),
   published: tinyint('published').default(0),
@@ -88,7 +89,7 @@ export const mysqlPosts = mysqlTable('posts', {
 export const mysqlComments = mysqlTable('comments', {
   id: int('id').primaryKey().autoincrement(),
   content: mysqlText('content').notNull(),
-  commentableType: varchar('commentable_type', { length: 50 }).notNull(),
+  commentableType: mysqlVarchar('commentable_type', { length: 50 }).notNull(),
   commentableId: int('commentable_id').notNull(),
   userId: int('user_id').references(() => mysqlUsers.id),
   createdAt: datetime('created_at').default(new Date()),
@@ -211,17 +212,17 @@ export async function createTestProvider(
 
   switch (dbType) {
     case 'postgresql':
-      return createPostgreSQLProvider({
+      return await createPostgreSQLProvider({
         connection: config.connectionString,
         schema: config.schema,
       });
     case 'mysql':
-      return createMySQLProvider({
+      return await createMySQLProvider({
         connection: config.connectionString,
         schema: config.schema,
       });
     case 'sqlite':
-      return createSQLiteProvider({
+      return await createSQLiteProvider({
         connection: config.connectionString,
         schema: config.schema,
       });

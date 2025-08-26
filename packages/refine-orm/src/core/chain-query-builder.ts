@@ -622,7 +622,7 @@ export class ChainQueryBuilder<
    */
   private buildFieldCondition(
     column: Column,
-    operator: FilterOperator,
+    operator: FilterOperator | string,
     value: any
   ): SQL | undefined {
     switch (operator) {
@@ -670,32 +670,7 @@ export class ChainQueryBuilder<
         throw new ValidationError(
           'Not between operator requires array with exactly 2 values'
         );
-      default:
-        throw new QueryError(`Unsupported filter operator: ${operator}`);
-    }
-  }
-
-  /**
-   * Build field condition based on operator (for compatibility)
-   */
-  private buildFieldCondition(
-    column: Column,
-    operator: string,
-    value: any
-  ): SQL | undefined {
-    switch (operator) {
-      case 'eq':
-        return eq(column, value);
-      case 'ne':
-        return ne(column, value);
-      case 'gt':
-        return gt(column, value);
-      case 'gte':
-        return gte(column, value);
-      case 'lt':
-        return lt(column, value);
-      case 'lte':
-        return lte(column, value);
+      // Compatibility operators
       case 'contains':
         return like(column, `%${value}%`);
       case 'containss':
@@ -712,21 +687,10 @@ export class ChainQueryBuilder<
         return isNull(column);
       case 'nnull':
         return isNotNull(column);
-      case 'in':
-        return Array.isArray(value) ?
-            inArray(column, value)
-          : eq(column, value);
       case 'nin':
         return Array.isArray(value) ?
             notInArray(column, value)
           : ne(column, value);
-      case 'between':
-        if (Array.isArray(value) && value.length === 2) {
-          return and(gte(column, value[0]), lte(column, value[1]));
-        }
-        throw new ValidationError(
-          'Between operator requires array with exactly 2 values'
-        );
       case 'nbetween':
         if (Array.isArray(value) && value.length === 2) {
           return or(lt(column, value[0]), gt(column, value[1]));
@@ -738,6 +702,7 @@ export class ChainQueryBuilder<
         throw new QueryError(`Unsupported filter operator: ${operator}`);
     }
   }
+
 
   /**
    * Build Refine filters recursively

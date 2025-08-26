@@ -10,8 +10,9 @@ let D1Database: any;
 
 import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
 import type { DatabaseConfig, SQLiteOptions, ConnectionOptions } from '../types/config.js';
-import type { DrizzleClient } from '../types/client.js';
+import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
 import { ConnectionError, ConfigurationError } from '../types/errors.js';
+import { createProvider } from '../core/data-provider.js';
 import { 
   detectBunRuntime, 
   detectBunSqlSupport, 
@@ -322,11 +323,32 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    * Execute raw SQL query
    */
   async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    const client = this.getClient();
-    console.log('Executing raw SQL:', sql, 'with params:', params);
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
-    return [] as T[];
+    if (!this.client || !this.connection) {
+      throw new ConnectionError('No active SQLite connection');
+    }
+
+    try {
+      // For SQLite with better-sqlite3 or similar drivers
+      if (this.connection && typeof this.connection.prepare === 'function') {
+        const stmt = this.connection.prepare(sql);
+        if (sql.trim().toLowerCase().startsWith('select') || 
+            sql.trim().toLowerCase().startsWith('with')) {
+          return stmt.all(params || []) as T[];
+        } else {
+          const result = stmt.run(params || []);
+          return [result] as T[];
+        }
+      }
+      
+      // Fallback for other SQLite implementations
+      console.warn('SQLite raw query execution: Using basic implementation');
+      return [] as T[];
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to execute raw SQLite query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
@@ -376,11 +398,12 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
  * Factory function to create SQLite data provider
  * Automatically detects runtime and uses appropriate driver
  */
-export function createSQLiteProvider<TSchema extends Record<string, Table>>(
+export async function createSQLiteProvider<TSchema extends Record<string, Table>>(
   connection: string | ConnectionOptions | { d1Database: any },
   schema: TSchema,
   options?: SQLiteOptions
-): SQLiteAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
+  console.log('createSQLiteProvider called with:', { connection, schema: Object.keys(schema), options });
   const config: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection,
@@ -389,17 +412,27 @@ export function createSQLiteProvider<TSchema extends Record<string, Table>>(
     ...(options?.logger && { logger: options.logger })
   };
   
-  return new SQLiteAdapter(config);
+  console.log('Creating SQLiteAdapter with config:', config);
+  const adapter = new SQLiteAdapter(config);
+  console.log('Adapter created:', typeof adapter, Object.getOwnPropertyNames(adapter));
+  
+  console.log('Calling adapter.connect()...');
+  await adapter.connect();
+  console.log('Adapter connected. Calling createProvider...');
+  
+  const provider = createProvider(adapter, options);
+  console.log('Provider created:', typeof provider);
+  return provider;
 }
 
 /**
  * Create SQLite provider with explicit Bun SQLite driver
  */
-export function createSQLiteProviderWithBunSqlite<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithBunSqlite<TSchema extends Record<string, Table>>(
   databasePath: string,
   schema: TSchema,
   options?: SQLiteOptions
-): SQLiteAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   if (!detectBunRuntime() || !detectBunSqlSupport('sqlite')) {
     throw new ConfigurationError('Bun SQLite is not available in this environment');
   }
@@ -412,17 +445,19 @@ export function createSQLiteProviderWithBunSqlite<TSchema extends Record<string,
     ...(options?.logger && { logger: options.logger })
   };
   
-  return new SQLiteAdapter(config);
+  const adapter = new SQLiteAdapter(config);
+  await adapter.connect();
+  return createProvider(adapter, options);
 }
 
 /**
  * Create SQLite provider with explicit better-sqlite3 driver
  */
-export function createSQLiteProviderWithBetterSqlite3<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithBetterSqlite3<TSchema extends Record<string, Table>>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: SQLiteOptions
-): SQLiteAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const config: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection,
@@ -431,17 +466,19 @@ export function createSQLiteProviderWithBetterSqlite3<TSchema extends Record<str
     ...(options?.logger && { logger: options.logger })
   };
   
-  return new SQLiteAdapter(config);
+  const adapter = new SQLiteAdapter(config);
+  await adapter.connect();
+  return createProvider(adapter, options);
 }
 
 /**
  * Create SQLite provider with Cloudflare D1 driver
  */
-export function createSQLiteProviderWithD1<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithD1<TSchema extends Record<string, Table>>(
   d1Database: any,
   schema: TSchema,
   options?: SQLiteOptions
-): SQLiteAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   if (!detectCloudflareD1()) {
     throw new ConfigurationError('Cloudflare D1 is not available in this environment');
   }
@@ -454,5 +491,7 @@ export function createSQLiteProviderWithD1<TSchema extends Record<string, Table>
     ...(options?.logger && { logger: options.logger })
   };
   
-  return new SQLiteAdapter(config);
+  const adapter = new SQLiteAdapter(config);
+  await adapter.connect();
+  return createProvider(adapter, options);
 }

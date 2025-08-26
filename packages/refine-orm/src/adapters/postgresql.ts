@@ -3,6 +3,7 @@ import type { Table } from 'drizzle-orm';
 // Dynamic imports for database drivers
 let drizzlePostgres: any;
 let drizzleBun: any;
+let postgres: any;
 let PostgresJsDatabase: any;
 let BunSQLDatabase: any;
 
@@ -12,8 +13,9 @@ import type {
   PostgreSQLOptions,
   ConnectionOptions,
 } from '../types/config.js';
-import type { DrizzleClient } from '../types/client.js';
+import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
 import { ConnectionError, ConfigurationError } from '../types/errors.js';
+import { createProvider } from '../core/data-provider.js';
 import {
   detectBunRuntime,
   detectBunSqlSupport,
@@ -90,20 +92,23 @@ export class PostgreSQLAdapter<
       }
       this.connection = sql(connectionString);
 
-      // Dynamic import for drizzle-orm/bun-sql
-      if (!drizzleBun) {
-        let drizzleModule: any;
-        try {
-          // @ts-ignore - Dynamic import for drizzle-orm/bun-sql
-          drizzleModule = await import('drizzle-orm/bun-sql');
-        } catch {
-          throw new ConnectionError('drizzle-orm/bun-sql module not available');
-        }
-        drizzleBun = drizzleModule.drizzle;
+      // For Bun, fall back to using standard postgres driver
+      if (!drizzlePostgres) {
+        const drizzleModule = await import('drizzle-orm/postgres-js');
+        drizzlePostgres = drizzleModule.drizzle;
       }
 
-      // Create drizzle client with Bun SQL
-      this.client = drizzleBun(this.connection, {
+      // Import postgres driver
+      if (!postgres) {
+        const postgresModule = await import('postgres');
+        postgres = postgresModule.default;
+      }
+
+      // Create connection with postgres driver
+      const pgConnection = postgres(connectionString);
+      
+      // Create drizzle client with postgres connection
+      this.client = drizzlePostgres(pgConnection, {
         schema: this.config.schema,
         logger: this.config.debug,
         casing: 'snake_case',
@@ -388,11 +393,11 @@ export class PostgreSQLAdapter<
  * Factory function to create PostgreSQL data provider
  * Automatically detects runtime and uses appropriate driver
  */
-export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
+export async function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: PostgreSQLOptions
-): PostgreSQLAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const config: DatabaseConfig<TSchema> = {
     type: 'postgresql',
     connection,
@@ -403,19 +408,21 @@ export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
     ...(options?.logger && { logger: options.logger }),
   };
 
-  return new PostgreSQLAdapter(config);
+  const adapter = new PostgreSQLAdapter(config);
+  await adapter.connect();
+  return createProvider(adapter, options);
 }
 
 /**
  * Create PostgreSQL provider with explicit Bun SQL driver
  */
-export function createPostgreSQLProviderWithBunSql<
+export async function createPostgreSQLProviderWithBunSql<
   TSchema extends Record<string, Table>,
 >(
   connectionString: string,
   schema: TSchema,
   options?: PostgreSQLOptions
-): PostgreSQLAdapter<TSchema> {
+): Promise<PostgreSQLAdapter<TSchema>> {
   if (!detectBunRuntime() || !detectBunSqlSupport('postgresql')) {
     throw new ConfigurationError(
       'Bun SQL is not available for PostgreSQL in this environment'
@@ -430,19 +437,21 @@ export function createPostgreSQLProviderWithBunSql<
     ...(options?.logger && { logger: options.logger }),
   };
 
-  return new PostgreSQLAdapter(config);
+  const adapter = new PostgreSQLAdapter(config);
+  await adapter.connect();
+  return adapter;
 }
 
 /**
  * Create PostgreSQL provider with explicit postgres-js driver
  */
-export function createPostgreSQLProviderWithPostgresJs<
+export async function createPostgreSQLProviderWithPostgresJs<
   TSchema extends Record<string, Table>,
 >(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: PostgreSQLOptions
-): PostgreSQLAdapter<TSchema> {
+): Promise<PostgreSQLAdapter<TSchema>> {
   const config: DatabaseConfig<TSchema> = {
     type: 'postgresql',
     connection,
@@ -453,5 +462,7 @@ export function createPostgreSQLProviderWithPostgresJs<
     ...(options?.logger && { logger: options.logger }),
   };
 
-  return new PostgreSQLAdapter(config);
+  const adapter = new PostgreSQLAdapter(config);
+  await adapter.connect();
+  return adapter;
 }

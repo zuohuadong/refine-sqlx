@@ -19,32 +19,12 @@ import { addCompatibilityLayer, CompatibleChainQuery } from './compatibility-lay
  * refine-orm compatible data provider interface
  */
 export interface RefineOrmCompatibleProvider<TSchema extends TableSchema = TableSchema> 
-  extends EnhancedDataProvider<TSchema> {
+  extends Omit<EnhancedDataProvider<TSchema>, 'transaction'> {
   // Schema access (refine-orm style)
   schema: TSchema;
   
   // Chain query with refine-orm compatibility
   from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T>;
-  
-  // Batch operations (refine-orm style)
-  createMany<TRecord = BaseRecord>(params: {
-    resource: string;
-    variables: Record<string, any>[];
-    batchSize?: number;
-  }): Promise<{ data: TRecord[] }>;
-  
-  updateMany<TRecord = BaseRecord>(params: {
-    resource: string;
-    ids: any[];
-    variables: Record<string, any>;
-    batchSize?: number;
-  }): Promise<{ data: TRecord[] }>;
-  
-  deleteMany<TRecord = BaseRecord>(params: {
-    resource: string;
-    ids: any[];
-    batchSize?: number;
-  }): Promise<{ data: TRecord[] }>;
   
   // Advanced utilities (refine-orm style)
   upsert<TRecord = BaseRecord>(params: {
@@ -59,10 +39,10 @@ export interface RefineOrmCompatibleProvider<TSchema extends TableSchema = Table
     defaults?: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
   
-  updateOrCreate<TRecord = BaseRecord>(params: {
+  updateOrCreate<TRecord = BaseRecord, Variables = {}>(params: {
     resource: string;
     where: Record<string, any>;
-    values: Record<string, any>;
+    values: Variables;
   }): Promise<{ data: TRecord; created: boolean }>;
   
   // Raw SQL execution (refine-orm style)
@@ -157,6 +137,43 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
       return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
     },
+    
+    // Override transaction method to match expected signature
+    async transaction<TResult>(callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>): Promise<TResult> {
+      return compatibleProvider.transaction(async (tx) => {
+        // Create a compatible transaction provider
+        const txProvider: RefineOrmCompatibleProvider<TSchema> = {
+          ...tx,
+          schema: config.schema,
+          from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
+            return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
+          },
+          async transaction<TResult>(nestedCallback: (nestedTx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>): Promise<TResult> {
+            return tx.transaction(async (nestedTx) => {
+              const nestedTxProvider: RefineOrmCompatibleProvider<TSchema> = {
+                ...nestedTx,
+                schema: config.schema,
+                from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
+                  return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
+                },
+                executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
+                enablePerformanceMonitoring: (compatibleProvider as any).enablePerformanceMonitoring?.bind(compatibleProvider) || (() => {}),
+                getPerformanceMetrics: (compatibleProvider as any).getPerformanceMetrics?.bind(compatibleProvider) || (() => ({ enabled: false, metrics: [], summary: { totalQueries: 0, averageDuration: 0, successRate: 100 } })),
+              } as RefineOrmCompatibleProvider<TSchema>;
+              return nestedCallback(nestedTxProvider);
+            });
+          },
+          executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
+          enablePerformanceMonitoring: (compatibleProvider as any).enablePerformanceMonitoring?.bind(compatibleProvider) || (() => {}),
+          getPerformanceMetrics: (compatibleProvider as any).getPerformanceMetrics?.bind(compatibleProvider) || (() => ({ enabled: false, metrics: [], summary: { totalQueries: 0, averageDuration: 0, successRate: 100 } })),
+        } as RefineOrmCompatibleProvider<TSchema>;
+        
+        return callback(txProvider);
+      });
+    },
+    
+    // Raw SQL execution
+    executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
     
     // Enable performance monitoring if requested
     ...(config.options?.enablePerformanceMonitoring && {

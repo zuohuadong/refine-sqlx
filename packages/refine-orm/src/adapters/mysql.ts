@@ -9,8 +9,9 @@ import type {
   MySQLOptions,
   ConnectionOptions,
 } from '../types/config.js';
-import type { DrizzleClient } from '../types/client.js';
+import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
 import { ConnectionError, ConfigurationError } from '../types/errors.js';
+import { createProvider } from '../core/data-provider.js';
 import {
   detectBunRuntime,
   getRuntimeConfig,
@@ -471,11 +472,11 @@ export class MySQLAdapter<
  * Factory function to create MySQL data provider
  * Uses mysql2 driver for all environments (Bun and Node.js)
  */
-export function createMySQLProvider<TSchema extends Record<string, Table>>(
+export async function createMySQLProvider<TSchema extends Record<string, Table>>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: MySQLOptions
-): MySQLAdapter<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const config: DatabaseConfig<TSchema> = {
     type: 'mysql',
     connection,
@@ -486,7 +487,9 @@ export function createMySQLProvider<TSchema extends Record<string, Table>>(
     ...(options?.logger && { logger: options.logger }),
   };
 
-  return new MySQLAdapter(config);
+  const adapter = new MySQLAdapter(config);
+  await adapter.connect();
+  return createProvider(adapter, options);
 }
 
 /**

@@ -983,28 +983,25 @@ export class QueryOptimizer {
 }
 
 // TypeScript 5.0 Decorators for performance monitoring
-function Monitored(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
+function Monitored(originalMethod: any, context: ClassMethodDecoratorContext) {
+  return function replacementMethod(this: any, ...args: any[]) {
     const start = performance.now();
-    const result = originalMethod.apply(this, args);
+    const result = originalMethod.call(this, ...args);
     const end = performance.now();
     
     if (this.trackMethodPerformance) {
-      this.trackMethodPerformance(propertyKey, end - start, args);
+      this.trackMethodPerformance(context.name, end - start, args);
     }
     
     return result;
   };
-  return descriptor;
 }
 
 function Cached(ttl: number = 300000) { // 5 minutes default
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+  return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     const cache = new Map<string, { value: any; timestamp: number }>();
     
-    descriptor.value = function (...args: any[]) {
+    return function replacementMethod(this: any, ...args: any[]) {
       const key = JSON.stringify(args);
       const cached = cache.get(key);
       const now = Date.now();
@@ -1013,7 +1010,7 @@ function Cached(ttl: number = 300000) { // 5 minutes default
         return cached.value;
       }
       
-      const result = originalMethod.apply(this, args);
+      const result = originalMethod.call(this, ...args);
       cache.set(key, { value: result, timestamp: now });
       
       // Clean up expired entries
@@ -1025,26 +1022,23 @@ function Cached(ttl: number = 300000) { // 5 minutes default
       
       return result;
     };
-    return descriptor;
   };
 }
 
 function Debounced(delay: number = 100) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+  return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     let timeoutId: NodeJS.Timeout;
     
-    descriptor.value = function (...args: any[]) {
+    return function replacementMethod(this: any, ...args: any[]) {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        originalMethod.apply(this, args);
+        originalMethod.call(this, ...args);
       }, delay);
     };
-    return descriptor;
   };
 }
 
-function Singleton(target: any) {
+function Singleton<T extends new (...args: any[]) => any>(target: T): T {
   let instance: any;
   return class extends target {
     constructor(...args: any[]) {
@@ -1054,7 +1048,7 @@ function Singleton(target: any) {
       super(...args);
       instance = this;
     }
-  };
+  } as T;
 }
 
 /**

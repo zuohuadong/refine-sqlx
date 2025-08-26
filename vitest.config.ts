@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
@@ -28,9 +29,9 @@ export default defineConfig({
     teardownTimeout: 10000,
     retry: 1,
   },
-  resolve: {
-    alias: {
-      '@refine-orm/core-utils': './packages/refine-core-utils/src/index.ts',
+    resolve: {
+      alias: {
+        '@refine-orm/core-utils': path.resolve(__dirname, 'packages/refine-core-utils/src/index.ts'),
+      },
     },
-  },
 });

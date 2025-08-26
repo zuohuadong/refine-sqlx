@@ -54,11 +54,10 @@ export type RelationshipResult<
 
 // TypeScript 5.0 Decorators for relationship queries
 function CacheRelationship(ttl: number = 300000) { // 5 minutes default
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+  return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     const cache = new Map<string, { value: any; timestamp: number }>();
     
-    descriptor.value = async function (...args: any[]) {
+    return async function (this: any, ...args: any[]) {
       const key = JSON.stringify(args);
       const cached = cache.get(key);
       const now = Date.now();
@@ -72,38 +71,43 @@ function CacheRelationship(ttl: number = 300000) { // 5 minutes default
       
       return result;
     };
-    return descriptor;
   };
 }
 
-function ValidateRelationship(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
-    // Validate relationship configuration
-    const [, , config] = args;
-    if (!config || typeof config !== 'object') {
-      throw new Error(`Invalid relationship configuration for ${propertyKey}`);
-    }
-    return originalMethod.apply(this, args);
+function ValidateRelationship() {
+  return function <This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+  ) {
+    return function (this: This, ...args: Args): Return {
+      // Validate relationship configuration
+      const [, , config] = args;
+      if (!config || typeof config !== 'object') {
+        throw new Error(`Invalid relationship configuration for ${String(context.name)}`);
+      }
+      return originalMethod.apply(this, args);
+    };
   };
-  return descriptor;
 }
 
-function LogRelationshipQuery(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = async function (...args: any[]) {
-    const start = performance.now();
-    try {
-      const result = await originalMethod.apply(this, args);
-      const end = performance.now();
-      console.debug(`[RelationshipQuery] ${propertyKey} completed in ${(end - start).toFixed(2)}ms`);
-      return result;
-    } catch (error) {
-      console.error(`[RelationshipQuery] ${propertyKey} failed:`, error);
-      throw error;
-    }
+function LogRelationshipQuery() {
+  return function <This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+  ) {
+    return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
+      const start = performance.now();
+      try {
+        const result = await originalMethod.apply(this, args);
+        const end = performance.now();
+        console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`);
+        return result;
+      } catch (error) {
+        console.error(`[RelationshipQuery] ${String(context.name)} failed:`, error);
+        throw error;
+      }
+    };
   };
-  return descriptor;
 }
 
 /**
@@ -118,9 +122,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
   /**
    * Load relationships for a single record
    */
-  @LogRelationshipQuery
+  @LogRelationshipQuery()
   @CacheRelationship(180000) // Cache for 3 minutes
-  @ValidateRelationship
+  @ValidateRelationship()
   async loadRelationshipsForRecord<TTable extends keyof TSchema>(
     _tableName: TTable,
     record: InferSelectModel<TSchema[TTable]>,

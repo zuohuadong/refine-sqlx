@@ -6,38 +6,39 @@ import { performanceManager, QueryOptimizer } from '../utils/performance.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // TypeScript 5.0 Decorators for database adapters
-export function ConnectionRequired(_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
-    if (!(this as any).isConnected || !(this as any).client) {
-      throw new ConfigurationError(`Database connection required for ${_propertyKey}. Call connect() first.`);
+export function ConnectionRequired(originalMethod: any, context: ClassMethodDecoratorContext) {
+  return function (this: any, ...args: any[]) {
+    if (!this.isConnected || !this.client) {
+      throw new ConfigurationError(`Database connection required for ${String(context.name)}. Call connect() first.`);
     }
     return originalMethod.apply(this, args);
   };
-  return descriptor;
 }
 
-export function LogDatabaseOperation(_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = async function (...args: any[]) {
+export function LogDatabaseOperation<This, Args extends any[], Return>(
+  originalMethod: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+) {
+  return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
     const start = performance.now();
     try {
       const result = await originalMethod.apply(this, args);
       const end = performance.now();
-      console.debug(`[DatabaseAdapter] ${propertyKey} completed in ${(end - start).toFixed(2)}ms`);
+      console.debug(`[DatabaseAdapter] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`);
       return result;
     } catch (error) {
-      console.error(`[DatabaseAdapter] ${propertyKey} failed:`, error);
+      console.error(`[DatabaseAdapter] ${String(context.name)} failed:`, error);
       throw error;
     }
   };
-  return descriptor;
 }
 
 export function RetryOnFailure(maxRetries: number = 3, delay: number = 1000) {
-  return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-    descriptor.value = async function (...args: any[]) {
+  return function <This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+  ) {
+    return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
       let lastError: Error;
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -50,14 +51,13 @@ export function RetryOnFailure(maxRetries: number = 3, delay: number = 1000) {
             throw lastError;
           }
 
-          console.warn(`[DatabaseAdapter] ${propertyKey} attempt ${attempt} failed, retrying in ${delay}ms...`);
+          console.warn(`[DatabaseAdapter] ${String(context.name)} attempt ${attempt} failed, retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
 
       throw lastError!;
     };
-    return descriptor;
   };
 }
 
