@@ -81,12 +81,10 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.changesets.outputs.publishedPackages[0].version }}
-          release_name: Release ${{ steps.changesets.outputs.publishedPackages[0].version }}
+          tag: ${{ steps.changesets.outputs.publishedPackages[0].version }}
+          name: Release ${{ steps.changesets.outputs.publishedPackages[0].version }}
           body: |
             ## Changes
 
@@ -95,4 +93,5 @@ jobs:
             See the [CHANGELOG.md](./CHANGELOG.md) for more details.
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
