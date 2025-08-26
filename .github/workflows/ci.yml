@@ -78,11 +78,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Type check
-        run: bun run typecheck
-
       - name: Build packages
         run: bun run build
+
+      - name: Type check
+        run: bun run typecheck
 
       - name: Run unit tests
         run: |
@@ -220,11 +220,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Type check
-        run: bun run typecheck
-
       - name: Build packages
         run: bun run build
+
+      - name: Type check
+        run: bun run typecheck
 
       - name: Run unit tests
         run: |
