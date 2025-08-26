@@ -21,33 +21,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: bun install --frozen-lockfile
 
       - name: Run TypeScript type checking
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Build packages
-        run: npm run build
+        run: bun run build
 
       - name: Run unit tests
-        run: npm run test
+        run: bun run test
 
       - name: Check package size limits
-        run: npx size-limit
+        run: bun run size
 
       - name: Verify ESM/CJS compatibility
         run: |
           # Test ESM import
-          node -e "import('./packages/refine-orm/dist/index.mjs').then(() => console.log('ESM import works'))"
+          node -e "import('./packages/refine-orm/dist/index.mjs').then(() => console.log('ESM import works')).catch(e => { console.error('ESM failed:', e.message); process.exit(1); })"
           # Test CJS require
-          node -e "const pkg = require('./packages/refine-orm/dist/index.cjs'); console.log('CJS require works')"
+          node -e "try { const pkg = require('./packages/refine-orm/dist/index.cjs'); console.log('CJS require works'); } catch(e) { console.error('CJS failed:', e.message); process.exit(1); }"
 
   bun-compatibility:
     name: Bun compatibility

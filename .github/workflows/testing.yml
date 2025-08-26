@@ -59,7 +59,7 @@ jobs:
       - name: Run Node.js integration tests
         run: |
           cd packages/refine-sql
-          npm run test:integration-node
+          bun run test:integration-node
 
   # better-sqlite3 integration tests
   better-sqlite3-integration:
@@ -80,6 +80,6 @@ jobs:
       - name: Install better-sqlite3
         run: bun add --dev better-sqlite3
       - name: Run better-sqlite3 integration tests with Node.js
-        run: npm run test:integration-better-sqlite3
+        run: bun run test:integration-better-sqlite3
       - name: Run better-sqlite3 integration tests with Bun
         run: bun run test:integration-better-sqlite3
