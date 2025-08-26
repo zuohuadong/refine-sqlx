@@ -108,9 +108,9 @@ export interface SimpleSQLiteConfig<TSchema extends Record<string, Table>> {
  * });
  * ```
  */
-export function createProvider<TSchema extends Record<string, Table>>(
+export async function createProvider<TSchema extends Record<string, Table>>(
   config: UniversalRefineOrmConfig<TSchema>
-): RefineOrmDataProvider<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const { database, connection, schema, options = {} } = config;
 
   // Add runtime information to debug logs
@@ -124,28 +124,25 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
   switch (database) {
     case 'postgresql':
-      const pgAdapter = createPostgreSQLAdapter(
+      return await createPostgreSQLAdapter(
         connection as string | ConnectionOptions,
         schema,
         options as PostgreSQLOptions
       );
-      return createProviderCore(pgAdapter, options);
 
     case 'mysql':
-      const mysqlAdapter = createMySQLAdapter(
+      return await createMySQLAdapter(
         connection as string | ConnectionOptions,
         schema,
         options as MySQLOptions
       );
-      return createProviderCore(mysqlAdapter, options);
 
     case 'sqlite':
-      const sqliteAdapter = createSQLiteAdapter(
+      return await createSQLiteAdapter(
         connection,
         schema,
         options as SQLiteOptions
       );
-      return createProviderCore(sqliteAdapter, options);
 
     default:
       throw new ConfigurationError(
@@ -183,9 +180,9 @@ export function createProvider<TSchema extends Record<string, Table>>(
  * });
  * ```
  */
-export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
+export async function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
   config: SimplePostgreSQLConfig<TSchema>
-): RefineOrmDataProvider<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
 
   // Add helpful runtime information
@@ -201,8 +198,7 @@ export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
     );
   }
 
-  const adapter = createPostgreSQLAdapter(connection, schema, options);
-  return createProviderCore(adapter, options);
+  return await createPostgreSQLAdapter(connection, schema, options);
 }
 
 /**
@@ -234,9 +230,9 @@ export function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
  * });
  * ```
  */
-export function createMySQLProvider<TSchema extends Record<string, Table>>(
+export async function createMySQLProvider<TSchema extends Record<string, Table>>(
   config: SimpleMySQLConfig<TSchema>
-): RefineOrmDataProvider<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
 
   // Add helpful runtime information
@@ -252,8 +248,7 @@ export function createMySQLProvider<TSchema extends Record<string, Table>>(
     );
   }
 
-  const adapter = createMySQLAdapter(connection, schema, options);
-  return createProviderCore(adapter, options);
+  return await createMySQLAdapter(connection, schema, options);
 }
 
 /**
@@ -295,9 +290,9 @@ export function createMySQLProvider<TSchema extends Record<string, Table>>(
  * });
  * ```
  */
-export function createSQLiteProvider<TSchema extends Record<string, Table>>(
+export async function createSQLiteProvider<TSchema extends Record<string, Table>>(
   config: SimpleSQLiteConfig<TSchema>
-): RefineOrmDataProvider<TSchema> {
+): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
 
   // Add helpful runtime information
@@ -317,8 +312,7 @@ export function createSQLiteProvider<TSchema extends Record<string, Table>>(
     console.log(`[RefineORM] Using ${driver} driver`);
   }
 
-  const adapter = createSQLiteAdapter(connection, schema, options);
-  return createProviderCore(adapter, options);
+  return await createSQLiteAdapter(connection, schema, options);
 }
 
 /**
@@ -447,13 +441,13 @@ export function checkDatabaseSupport(
  * });
  * ```
  */
-export function createDataProvider<
+export async function createDataProvider<
   TSchema extends Record<string, Table>,
 >(config: {
   connection: string | ConnectionOptions | { d1Database: any };
   schema: TSchema;
   options?: RefineOrmOptions;
-}): RefineOrmDataProvider<TSchema> {
+}): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
 
   // Auto-detect database type from connection string
@@ -492,5 +486,5 @@ export function createDataProvider<
     console.log(`[RefineORM] Auto-detected database type: ${database}`);
   }
 
-  return createProvider({ database, connection, schema, options });
+  return await createProvider({ database, connection, schema, options });
 }
