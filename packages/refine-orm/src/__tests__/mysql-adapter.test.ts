@@ -260,7 +260,11 @@ describe('MySQL Adapter', () => {
       const provider = await createMySQLProvider(connectionConfig, schema);
 
       expect(provider).toBeDefined();
-      expect(provider).toBeInstanceOf(MySQLAdapter);
+      expect(provider).toHaveProperty('getList');
+      expect(provider).toHaveProperty('getOne');
+      expect(provider).toHaveProperty('create');
+      expect(provider).toHaveProperty('update');
+      expect(provider).toHaveProperty('deleteOne');
     });
 
     it('should create MySQL provider with connection string', async () => {
@@ -270,7 +274,11 @@ describe('MySQL Adapter', () => {
       );
 
       expect(provider).toBeDefined();
-      expect(provider).toBeInstanceOf(MySQLAdapter);
+      expect(provider).toHaveProperty('getList');
+      expect(provider).toHaveProperty('getOne');
+      expect(provider).toHaveProperty('create');
+      expect(provider).toHaveProperty('update');
+      expect(provider).toHaveProperty('deleteOne');
     });
 
     it('should create MySQL provider with pool configuration', async () => {

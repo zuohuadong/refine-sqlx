@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import {
-  createPostgreSQLProvider,
+  createPostgreSQLProviderWithPostgresJs,
   PostgreSQLAdapter,
 } from '../adapters/postgresql.js';
 import {
@@ -20,16 +20,22 @@ const users = pgTable('users', {
 const schema = { users };
 
 describe('PostgreSQL Adapter', () => {
-  it('should create adapter instance', () => {
+  it('should create adapter instance', async () => {
     const connectionString = 'postgresql://test:test@localhost:5432/test';
-    const adapter = createPostgreSQLProvider(connectionString, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionString, schema);
 
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
 
-  it('should get adapter info without connection', () => {
+  it('should get adapter info without connection', async () => {
     const connectionString = 'postgresql://test:test@localhost:5432/test';
-    const adapter = createPostgreSQLProvider(connectionString, schema);
+    
+    // Create adapter but don't connect
+    const adapter = new PostgreSQLAdapter({
+      type: 'postgresql',
+      connection: connectionString,
+      schema
+    });
 
     const info = adapter.getAdapterInfo();
     expect(info.type).toBe('postgresql');
@@ -47,18 +53,22 @@ describe('PostgreSQL Adapter', () => {
 
   it('should validate configuration', () => {
     expect(() => {
-      createPostgreSQLProvider('', schema);
+      new PostgreSQLAdapter({
+        type: 'postgresql',
+        connection: '',
+        schema
+      });
     }).toThrow();
   });
 
-  it('should handle connection string format', () => {
+  it('should handle connection string format', async () => {
     const connectionString = 'postgresql://user:pass@localhost:5432/db';
-    const adapter = createPostgreSQLProvider(connectionString, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionString, schema);
 
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
 
-  it('should handle connection options format', () => {
+  it('should handle connection options format', async () => {
     const connectionOptions = {
       host: 'localhost',
       port: 5432,
@@ -67,7 +77,7 @@ describe('PostgreSQL Adapter', () => {
       database: 'testdb',
     };
 
-    const adapter = createPostgreSQLProvider(connectionOptions, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionOptions, schema);
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
 });

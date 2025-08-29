@@ -21,6 +21,7 @@
     "test": "npx vitest run --reporter=verbose",
     "test:integration": "bun run --filter='*' test:integration",
     "test:integration-bun": "cd packages/refine-sql && bun test test/integration/bun.test.ts",
+    "test:integration-node": "cd packages/refine-sql && npx vitest run test/integration/node.test.ts",
     "test:integration-better-sqlite3": "cd packages/refine-sql && npx vitest run test/integration/better-sqlite3.test.ts",
     "test:integration-mysql": "cd packages/refine-orm && npx vitest run test/integration --reporter=verbose",
     "test:integration-postgresql": "cd packages/refine-orm && npx vitest run test/integration",
