@@ -222,7 +222,11 @@ export class SqlTransformer {
 
     // WHERE clause
     if (options.where && options.where.trim()) {
-      parts.push(options.where.startsWith('WHERE') ? options.where : `WHERE ${options.where}`);
+      parts.push(
+        options.where.startsWith('WHERE') ?
+          options.where
+        : `WHERE ${options.where}`
+      );
     }
 
     // ORDER BY clause
@@ -334,7 +338,7 @@ export class SqlTransformer {
       limit,
       offset,
     });
-    
+
     return { sql, args: whereParams };
   }
 
