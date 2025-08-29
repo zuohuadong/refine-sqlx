@@ -13,44 +13,52 @@ import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type BetterSqlite3 from 'better-sqlite3';
 
 import createDataProvider, { type EnhancedDataProvider } from './data-provider';
-import { addCompatibilityLayer, CompatibleChainQuery } from './compatibility-layer';
+import {
+  addCompatibilityLayer,
+  CompatibleChainQuery,
+} from './compatibility-layer';
 
 /**
  * refine-orm compatible data provider interface
  */
-export interface RefineOrmCompatibleProvider<TSchema extends TableSchema = TableSchema> 
-  extends Omit<EnhancedDataProvider<TSchema>, 'transaction'> {
+export interface RefineOrmCompatibleProvider<
+  TSchema extends TableSchema = TableSchema,
+> extends Omit<EnhancedDataProvider<TSchema>, 'transaction'> {
   // Schema access (refine-orm style)
   schema: TSchema;
-  
+
   // Chain query with refine-orm compatibility
-  from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T>;
-  
+  from<T extends BaseRecord = BaseRecord>(
+    tableName: string
+  ): CompatibleChainQuery<T>;
+
   // Advanced utilities (refine-orm style)
   upsert<TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>;
     conflictColumns?: string[];
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   firstOrCreate<TRecord = BaseRecord>(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   updateOrCreate<TRecord = BaseRecord, Variables = {}>(params: {
     resource: string;
     where: Record<string, any>;
     values: Variables;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   // Raw SQL execution (refine-orm style)
   executeRaw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
-  
+
   // Transaction support (refine-orm style)
-  transaction<TResult>(callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>): Promise<TResult>;
-  
+  transaction<TResult>(
+    callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>
+  ): Promise<TResult>;
+
   // Performance monitoring (refine-orm style)
   enablePerformanceMonitoring(): void;
   getPerformanceMetrics(): {
@@ -67,9 +75,17 @@ export interface RefineOrmCompatibleProvider<TSchema extends TableSchema = Table
 /**
  * Configuration for SQLite provider (refine-orm compatible)
  */
-export interface SQLiteProviderConfig<TSchema extends TableSchema = TableSchema> {
+export interface SQLiteProviderConfig<
+  TSchema extends TableSchema = TableSchema,
+> {
   /** Database connection */
-  connection: string | ':memory:' | D1Database | BunDatabase | NodeDatabase | BetterSqlite3.Database;
+  connection:
+    | string
+    | ':memory:'
+    | D1Database
+    | BunDatabase
+    | NodeDatabase
+    | BetterSqlite3.Database;
   /** Table schema definition */
   schema: TSchema;
   /** Additional options */
@@ -95,7 +111,7 @@ export interface SQLiteProviderConfig<TSchema extends TableSchema = TableSchema>
 /**
  * Create SQLite provider with refine-orm compatible API
  * This function provides the same interface as refine-orm's createSQLiteProvider
- * 
+ *
  * @example
  * ```typescript
  * // File database
@@ -103,13 +119,13 @@ export interface SQLiteProviderConfig<TSchema extends TableSchema = TableSchema>
  *   connection: './database.db',
  *   schema: { users, posts, comments }
  * });
- * 
+ *
  * // Memory database
  * const provider = createSQLiteProvider({
  *   connection: ':memory:',
  *   schema: { users, posts }
  * });
- * 
+ *
  * // Cloudflare D1
  * const provider = createSQLiteProvider({
  *   connection: env.DB, // D1 database
@@ -121,78 +137,142 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   config: SQLiteProviderConfig<TSchema>
 ): RefineOrmCompatibleProvider<TSchema> {
   // Create base provider
-  const baseProvider = createDataProvider(config.connection as any, config.options);
-  
+  const baseProvider = createDataProvider(
+    config.connection as any,
+    config.options
+  );
+
   // Add compatibility layer
   const compatibleProvider = addCompatibilityLayer(baseProvider);
-  
+
   // Create enhanced provider with refine-orm style API
   const enhancedProvider: RefineOrmCompatibleProvider<TSchema> = {
     ...compatibleProvider,
-    
+
     // Add schema property (refine-orm style)
     schema: config.schema,
-    
+
     // Override from method to return CompatibleChainQuery
-    from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
-      return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
+    from<T extends BaseRecord = BaseRecord>(
+      tableName: string
+    ): CompatibleChainQuery<T> {
+      return new CompatibleChainQuery<T>(
+        baseProvider.client as SqlClient,
+        tableName
+      );
     },
-    
+
     // Override transaction method to match expected signature
-    async transaction<TResult>(callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>): Promise<TResult> {
-      return compatibleProvider.transaction(async (tx) => {
+    async transaction<TResult>(
+      callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>
+    ): Promise<TResult> {
+      return compatibleProvider.transaction(async tx => {
         // Create a compatible transaction provider
         const txProvider: RefineOrmCompatibleProvider<TSchema> = {
           ...tx,
           schema: config.schema,
-          from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
-            return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
+          from<T extends BaseRecord = BaseRecord>(
+            tableName: string
+          ): CompatibleChainQuery<T> {
+            return new CompatibleChainQuery<T>(
+              baseProvider.client as SqlClient,
+              tableName
+            );
           },
-          async transaction<TResult>(nestedCallback: (nestedTx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>): Promise<TResult> {
-            return tx.transaction(async (nestedTx) => {
+          async transaction<TResult>(
+            nestedCallback: (
+              nestedTx: RefineOrmCompatibleProvider<TSchema>
+            ) => Promise<TResult>
+          ): Promise<TResult> {
+            return tx.transaction(async nestedTx => {
               const nestedTxProvider: RefineOrmCompatibleProvider<TSchema> = {
                 ...nestedTx,
                 schema: config.schema,
-                from<T extends BaseRecord = BaseRecord>(tableName: string): CompatibleChainQuery<T> {
-                  return new CompatibleChainQuery<T>(baseProvider.client as SqlClient, tableName);
+                from<T extends BaseRecord = BaseRecord>(
+                  tableName: string
+                ): CompatibleChainQuery<T> {
+                  return new CompatibleChainQuery<T>(
+                    baseProvider.client as SqlClient,
+                    tableName
+                  );
                 },
-                executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
-                enablePerformanceMonitoring: (compatibleProvider as any).enablePerformanceMonitoring?.bind(compatibleProvider) || (() => {}),
-                getPerformanceMetrics: (compatibleProvider as any).getPerformanceMetrics?.bind(compatibleProvider) || (() => ({ enabled: false, metrics: [], summary: { totalQueries: 0, averageDuration: 0, successRate: 100 } })),
+                executeRaw:
+                  (compatibleProvider as any).executeRaw?.bind(
+                    compatibleProvider
+                  ) || (async () => []),
+                enablePerformanceMonitoring:
+                  (compatibleProvider as any).enablePerformanceMonitoring?.bind(
+                    compatibleProvider
+                  ) || (() => {}),
+                getPerformanceMetrics:
+                  (compatibleProvider as any).getPerformanceMetrics?.bind(
+                    compatibleProvider
+                  ) ||
+                  (() => ({
+                    enabled: false,
+                    metrics: [],
+                    summary: {
+                      totalQueries: 0,
+                      averageDuration: 0,
+                      successRate: 100,
+                    },
+                  })),
               } as RefineOrmCompatibleProvider<TSchema>;
               return nestedCallback(nestedTxProvider);
             });
           },
-          executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
-          enablePerformanceMonitoring: (compatibleProvider as any).enablePerformanceMonitoring?.bind(compatibleProvider) || (() => {}),
-          getPerformanceMetrics: (compatibleProvider as any).getPerformanceMetrics?.bind(compatibleProvider) || (() => ({ enabled: false, metrics: [], summary: { totalQueries: 0, averageDuration: 0, successRate: 100 } })),
+          executeRaw:
+            (compatibleProvider as any).executeRaw?.bind(compatibleProvider) ||
+            (async () => []),
+          enablePerformanceMonitoring:
+            (compatibleProvider as any).enablePerformanceMonitoring?.bind(
+              compatibleProvider
+            ) || (() => {}),
+          getPerformanceMetrics:
+            (compatibleProvider as any).getPerformanceMetrics?.bind(
+              compatibleProvider
+            ) ||
+            (() => ({
+              enabled: false,
+              metrics: [],
+              summary: {
+                totalQueries: 0,
+                averageDuration: 0,
+                successRate: 100,
+              },
+            })),
         } as RefineOrmCompatibleProvider<TSchema>;
-        
+
         return callback(txProvider);
       });
     },
-    
+
     // Raw SQL execution
-    executeRaw: (compatibleProvider as any).executeRaw?.bind(compatibleProvider) || (async () => []),
-    
+    executeRaw:
+      (compatibleProvider as any).executeRaw?.bind(compatibleProvider) ||
+      (async () => []),
+
     // Enable performance monitoring if requested
     ...(config.options?.enablePerformanceMonitoring && {
-      enablePerformanceMonitoring: compatibleProvider.enablePerformanceMonitoring,
+      enablePerformanceMonitoring:
+        compatibleProvider.enablePerformanceMonitoring,
       getPerformanceMetrics: compatibleProvider.getPerformanceMetrics,
     }),
   };
-  
+
   // Auto-enable performance monitoring if configured
   if (config.options?.enablePerformanceMonitoring) {
     enhancedProvider.enablePerformanceMonitoring();
   }
-  
+
   // Enable debug logging if configured
   if (config.options?.debug && process.env.NODE_ENV === 'development') {
-    console.log('[refine-sql] SQLite provider created with refine-orm compatibility');
+    console.log(
+      '[refine-sql] SQLite provider created with refine-orm compatibility'
+    );
     console.log('[refine-sql] Schema tables:', Object.keys(config.schema));
   }
-  
+
   return enhancedProvider;
 }
 
@@ -200,11 +280,19 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
  * Universal provider factory (refine-orm compatible)
  * Automatically detects database type and creates appropriate provider
  */
-export interface UniversalProviderConfig<TSchema extends TableSchema = TableSchema> {
+export interface UniversalProviderConfig<
+  TSchema extends TableSchema = TableSchema,
+> {
   /** Database type */
   database: 'sqlite';
   /** Connection configuration */
-  connection: string | ':memory:' | D1Database | BunDatabase | NodeDatabase | BetterSqlite3.Database;
+  connection:
+    | string
+    | ':memory:'
+    | D1Database
+    | BunDatabase
+    | NodeDatabase
+    | BetterSqlite3.Database;
   /** Table schema definition */
   schema: TSchema;
   /** Additional options */
@@ -217,7 +305,7 @@ export interface UniversalProviderConfig<TSchema extends TableSchema = TableSche
 /**
  * Create provider with automatic database type detection (refine-orm compatible)
  * Currently only supports SQLite, but maintains the same API as refine-orm
- * 
+ *
  * @example
  * ```typescript
  * const provider = createProvider({
@@ -231,9 +319,11 @@ export function createProvider<TSchema extends TableSchema = TableSchema>(
   config: UniversalProviderConfig<TSchema>
 ): RefineOrmCompatibleProvider<TSchema> {
   if (config.database !== 'sqlite') {
-    throw new Error(`Database type '${config.database}' is not supported. refine-sql only supports SQLite.`);
+    throw new Error(
+      `Database type '${config.database}' is not supported. refine-sql only supports SQLite.`
+    );
   }
-  
+
   return createSQLiteProvider({
     connection: config.connection,
     schema: config.schema,
@@ -255,9 +345,12 @@ export const MigrationHelpers = {
   } {
     const issues: string[] = [];
     const recommendations: string[] = [];
-    
+
     // Check for unsupported databases
-    const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+    const deps = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+    };
     if (deps['pg'] || deps['postgres']) {
       issues.push('PostgreSQL is not supported in refine-sql');
       recommendations.push('Consider using refine-orm for PostgreSQL support');
@@ -266,19 +359,21 @@ export const MigrationHelpers = {
       issues.push('MySQL is not supported in refine-sql');
       recommendations.push('Consider using refine-orm for MySQL support');
     }
-    
+
     // Check for SQLite support
-    if (deps['better-sqlite3'] || deps['bun'] || deps['@cloudflare/workers-types']) {
-      recommendations.push('SQLite support detected - good for refine-sql migration');
+    if (
+      deps['better-sqlite3'] ||
+      deps['bun'] ||
+      deps['@cloudflare/workers-types']
+    ) {
+      recommendations.push(
+        'SQLite support detected - good for refine-sql migration'
+      );
     }
-    
-    return {
-      compatible: issues.length === 0,
-      issues,
-      recommendations,
-    };
+
+    return { compatible: issues.length === 0, issues, recommendations };
   },
-  
+
   /**
    * Generate migration checklist
    */
@@ -294,7 +389,7 @@ export const MigrationHelpers = {
       '8. Update deployment configuration for smaller bundle size',
     ];
   },
-  
+
   /**
    * Get bundle size comparison
    */
@@ -321,9 +416,12 @@ export const CodeTransformer = {
   transformImports(code: string): string {
     return code
       .replace(/from ['"]refine-orm['"]/g, "from 'refine-sql'")
-      .replace(/import.*from ['"]refine-orm['"]/g, "import { createSQLiteProvider } from 'refine-sql'");
+      .replace(
+        /import.*from ['"]refine-orm['"]/g,
+        "import { createSQLiteProvider } from 'refine-sql'"
+      );
   },
-  
+
   /**
    * Transform provider creation
    */
@@ -332,7 +430,7 @@ export const CodeTransformer = {
       .replace(/createSQLiteProvider\(/g, 'createSQLiteProvider({')
       .replace(/,\s*schema\s*\)/g, ', schema })');
   },
-  
+
   /**
    * Transform deprecated method calls
    */
@@ -347,15 +445,18 @@ export const CodeTransformer = {
       '.orderByAsc(': '.orderBy(',
       '.orderByDesc(': '.orderBy(',
     };
-    
+
     let transformedCode = code;
     Object.entries(methodTransforms).forEach(([oldMethod, newMethod]) => {
-      transformedCode = transformedCode.replace(new RegExp(oldMethod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newMethod);
+      transformedCode = transformedCode.replace(
+        new RegExp(oldMethod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        newMethod
+      );
     });
-    
+
     return transformedCode;
   },
-  
+
   /**
    * Full code transformation
    */
@@ -369,14 +470,7 @@ export const CodeTransformer = {
 };
 
 // Export compatibility types
-export type {
-  TableSchema,
-  SQLiteOptions,
-  EnhancedDataProvider,
-};
+export type { TableSchema, SQLiteOptions, EnhancedDataProvider };
 
 // Re-export core functionality for convenience
-export {
-  CompatibleChainQuery,
-  addCompatibilityLayer,
-};
+export { CompatibleChainQuery, addCompatibilityLayer };

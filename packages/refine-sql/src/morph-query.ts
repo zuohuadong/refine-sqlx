@@ -22,8 +22,14 @@ export function createMorphQuery<T extends BaseRecord = BaseRecord>(
 }
 
 // Polymorphic query class
-export class SqlxMorphQuery<T extends BaseRecord = BaseRecord> extends SqlxChainQuery<T> {
-  constructor(client: SqlClient, tableName: string, private morphConfig: MorphConfig) {
+export class SqlxMorphQuery<
+  T extends BaseRecord = BaseRecord,
+> extends SqlxChainQuery<T> {
+  constructor(
+    client: SqlClient,
+    tableName: string,
+    private morphConfig: MorphConfig
+  ) {
     super(client, tableName);
   }
 

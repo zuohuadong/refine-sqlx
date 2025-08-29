@@ -1,11 +1,17 @@
 // TypeScript 5.0 Decorators for error handling
-function ErrorLogger(originalMethod: any, context: ClassMethodDecoratorContext) {
+function ErrorLogger(
+  originalMethod: any,
+  context: ClassMethodDecoratorContext
+) {
   return function (this: any, ...args: any[]) {
     try {
       const result = originalMethod.apply(this, args);
       return result;
     } catch (error) {
-      console.error(`[${this.constructor.name}] Error in ${String(context.name)}:`, error);
+      console.error(
+        `[${this.constructor.name}] Error in ${String(context.name)}:`,
+        error
+      );
       throw error;
     }
   };
@@ -771,7 +777,12 @@ export class ErrorHandler {
     ) {
       const driverMatch = message.match(/module ['"]([^'"]+)['"]/);
       const driverName = driverMatch ? driverMatch[1] : 'unknown';
-      return new DriverError(driverName ?? 'unknown', error.message, error, context);
+      return new DriverError(
+        driverName ?? 'unknown',
+        error.message,
+        error,
+        context
+      );
     }
 
     // Database constraint violations (specific types)

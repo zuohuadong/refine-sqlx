@@ -9,22 +9,22 @@ import { logExecution } from '../utils';
 export interface BaseAdapter {
   /** Get the underlying SQL client */
   getClient(): SqlClient;
-  
+
   /** Connect to the database */
   connect(): Promise<void>;
-  
+
   /** Disconnect from the database */
   disconnect(): Promise<void>;
-  
+
   /** Check if connected */
   isConnected(): boolean;
-  
+
   /** Get adapter configuration */
   getConfig(): SQLiteOptions;
-  
+
   /** Get adapter type */
   getType(): 'sqlite';
-  
+
   /** Get driver name */
   getDriver(): string;
 }

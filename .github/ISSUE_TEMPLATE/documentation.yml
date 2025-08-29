@@ -1,7 +1,7 @@
 name: 📚 Documentation Issue
 description: Report an issue with documentation or request documentation improvements
-title: "[Docs]: "
-labels: ["documentation", "needs-triage"]
+title: '[Docs]: '
+labels: ['documentation', 'needs-triage']
 assignees: []
 
 body:

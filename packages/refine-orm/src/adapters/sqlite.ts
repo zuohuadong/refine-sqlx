@@ -8,26 +8,34 @@ let BetterSqlite3Database: any;
 let BunSQLiteDatabase: any;
 let D1Database: any;
 
-import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
-import type { DatabaseConfig, SQLiteOptions, ConnectionOptions } from '../types/config.js';
+import {
+  BaseDatabaseAdapter,
+  LogDatabaseOperation,
+  RetryOnFailure,
+} from './base.js';
+import type {
+  DatabaseConfig,
+  SQLiteOptions,
+  ConnectionOptions,
+} from '../types/config.js';
 import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
 import { ConnectionError, ConfigurationError } from '../types/errors.js';
 import { createProvider } from '../core/data-provider.js';
-import { 
-  detectBunRuntime, 
-  detectBunSqlSupport, 
+import {
+  detectBunRuntime,
+  detectBunSqlSupport,
   getRuntimeConfig,
   checkDriverAvailability,
-  detectCloudflareD1
+  detectCloudflareD1,
 } from '../utils/runtime-detection.js';
 
 /**
  * SQLite database adapter with runtime detection
  * Supports Bun (bun:sqlite), Node.js (better-sqlite3), and Cloudflare D1 environments
  */
-export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string, Table>> 
-  extends BaseDatabaseAdapter<TSchema> {
-  
+export class SQLiteAdapter<
+  TSchema extends Record<string, Table> = Record<string, Table>,
+> extends BaseDatabaseAdapter<TSchema> {
   private connection: any = null;
   private runtimeConfig = getRuntimeConfig('sqlite');
 
@@ -46,16 +54,21 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
     try {
       if (this.runtimeConfig.runtime === 'cloudflare-d1') {
         await this.connectWithD1();
-      } else if (this.runtimeConfig.runtime === 'bun' && this.runtimeConfig.supportsNativeDriver) {
+      } else if (
+        this.runtimeConfig.runtime === 'bun' &&
+        this.runtimeConfig.supportsNativeDriver
+      ) {
         await this.connectWithBunSqlite();
       } else {
         await this.connectWithBetterSqlite3();
       }
-      
+
       this.isConnected = true;
-      
+
       if (this.config.debug) {
-        console.log(`[RefineORM] Connected to SQLite using ${this.runtimeConfig.driver}`);
+        console.log(
+          `[RefineORM] Connected to SQLite using ${this.runtimeConfig.driver}`
+        );
       }
     } catch (error) {
       throw new ConnectionError(
@@ -69,30 +82,34 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    * Connect using Bun's native SQLite driver
    */
   private async connectWithBunSqlite(): Promise<void> {
-    if (typeof Bun === 'undefined' || typeof (Bun as any).sqlite !== 'function') {
-      throw new ConnectionError('Bun SQLite is not available in this environment');
+    if (
+      typeof Bun === 'undefined' ||
+      typeof (Bun as any).sqlite !== 'function'
+    ) {
+      throw new ConnectionError(
+        'Bun SQLite is not available in this environment'
+      );
     }
 
     const dbPath = this.getDatabasePath();
-    
+
     try {
       // Dynamic import for Bun SQLite
       const { Database } = await import('bun:sqlite');
       this.connection = new Database(dbPath);
-      
+
       // Dynamic import for drizzle-orm/bun-sqlite
       if (!drizzleBun) {
         const drizzleModule = await import('drizzle-orm/bun-sqlite');
         drizzleBun = drizzleModule.drizzle;
       }
-      
+
       // Create drizzle client with Bun SQLite
-      this.client = drizzleBun(this.connection, { 
+      this.client = drizzleBun(this.connection, {
         schema: this.config.schema,
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize Bun SQLite connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -115,24 +132,23 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
     try {
       const Database = await import('better-sqlite3');
       const dbPath = this.getDatabasePath();
-      
+
       // Dynamic import for drizzle-orm/better-sqlite3
       if (!drizzleSqlite) {
         const drizzleModule = await import('drizzle-orm/better-sqlite3');
         drizzleSqlite = drizzleModule.drizzle;
       }
-      
+
       // Create better-sqlite3 connection with options
       const sqliteOptions = this.getSqliteOptions();
       this.connection = new Database.default(dbPath, sqliteOptions);
-      
+
       // Create drizzle client with better-sqlite3
-      this.client = drizzleSqlite(this.connection, { 
+      this.client = drizzleSqlite(this.connection, {
         schema: this.config.schema,
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize better-sqlite3 connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -146,7 +162,9 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    */
   private async connectWithD1(): Promise<void> {
     if (!detectCloudflareD1()) {
-      throw new ConnectionError('Cloudflare D1 is not available in this environment');
+      throw new ConnectionError(
+        'Cloudflare D1 is not available in this environment'
+      );
     }
 
     try {
@@ -155,22 +173,26 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
         const drizzleModule = await import('drizzle-orm/d1');
         drizzleD1 = drizzleModule.drizzle;
       }
-      
+
       // Get D1 database instance from connection config
-      if (typeof this.config.connection !== 'object' || !('d1Database' in this.config.connection)) {
-        throw new ConnectionError('D1 database instance is required for Cloudflare D1 connection');
+      if (
+        typeof this.config.connection !== 'object' ||
+        !('d1Database' in this.config.connection)
+      ) {
+        throw new ConnectionError(
+          'D1 database instance is required for Cloudflare D1 connection'
+        );
       }
-      
+
       const d1Database = (this.config.connection as any).d1Database;
       this.connection = d1Database;
-      
+
       // Create drizzle client with D1
-      this.client = drizzleD1(this.connection, { 
+      this.client = drizzleD1(this.connection, {
         schema: this.config.schema,
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize Cloudflare D1 connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -184,7 +206,7 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    */
   private getSqliteOptions(): Record<string, any> {
     const options: Record<string, any> = {};
-    
+
     if (typeof this.config.connection === 'object') {
       const connOptions = this.config.connection as ConnectionOptions & {
         readonly?: boolean;
@@ -192,24 +214,24 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
         timeout?: number;
         verbose?: boolean;
       };
-      
+
       if (connOptions['readonly'] !== undefined) {
         options.readonly = connOptions['readonly'];
       }
-      
+
       if (connOptions['fileMustExist'] !== undefined) {
         options.fileMustExist = connOptions['fileMustExist'];
       }
-      
+
       if (connOptions['timeout'] !== undefined) {
         options.timeout = connOptions['timeout'];
       }
-      
+
       if (connOptions['verbose'] !== undefined) {
         options.verbose = connOptions['verbose'];
       }
     }
-    
+
     return options;
   }
 
@@ -224,11 +246,11 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
           this.connection.close();
         }
         // Bun SQLite and D1 connections are automatically managed
-        
+
         this.connection = null;
         this.client = null;
         this.isConnected = false;
-        
+
         if (this.config.debug) {
           console.log('[RefineORM] Disconnected from SQLite');
         }
@@ -261,7 +283,7 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
         // For better-sqlite3, use prepare and get
         this.connection.prepare('SELECT 1').get();
       }
-      
+
       return true;
     } catch (error) {
       if (this.config.debug) {
@@ -278,27 +300,29 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
     if (typeof this.config.connection === 'string') {
       return this.config.connection;
     }
-    
+
     if (typeof this.config.connection === 'object') {
       const conn = this.config.connection as ConnectionOptions & {
         filename?: string;
         path?: string;
       };
-      
+
       if (conn.filename) {
         return conn.filename;
       }
-      
+
       if (conn.path) {
         return conn.path;
       }
-      
+
       if (conn.database) {
         return conn.database;
       }
     }
-    
-    throw new ConfigurationError('SQLite connection requires a database path or filename');
+
+    throw new ConfigurationError(
+      'SQLite connection requires a database path or filename'
+    );
   }
 
   /**
@@ -306,15 +330,20 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
    */
   protected override validateConfig(): void {
     super.validateConfig();
-    
+
     if (this.config.type !== 'sqlite') {
       throw new ConfigurationError('Invalid database type for SQLite adapter');
     }
-    
+
     // For D1, we need a D1 database instance
     if (detectCloudflareD1()) {
-      if (typeof this.config.connection !== 'object' || !('d1Database' in this.config.connection)) {
-        throw new ConfigurationError('D1 database instance is required for Cloudflare D1 connection');
+      if (
+        typeof this.config.connection !== 'object' ||
+        !('d1Database' in this.config.connection)
+      ) {
+        throw new ConfigurationError(
+          'D1 database instance is required for Cloudflare D1 connection'
+        );
       }
     }
   }
@@ -331,15 +360,17 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
       // For SQLite with better-sqlite3 or similar drivers
       if (this.connection && typeof this.connection.prepare === 'function') {
         const stmt = this.connection.prepare(sql);
-        if (sql.trim().toLowerCase().startsWith('select') || 
-            sql.trim().toLowerCase().startsWith('with')) {
+        if (
+          sql.trim().toLowerCase().startsWith('select') ||
+          sql.trim().toLowerCase().startsWith('with')
+        ) {
           return stmt.all(params || []) as T[];
         } else {
           const result = stmt.run(params || []);
           return [result] as T[];
         }
       }
-      
+
       // Fallback for other SQLite implementations
       console.warn('SQLite raw query execution: Using basic implementation');
       return [] as T[];
@@ -390,36 +421,46 @@ export class SQLiteAdapter<TSchema extends Record<string, Table> = Record<string
       runtime: this.runtimeConfig.runtime,
       driver: this.runtimeConfig.driver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
-      isConnected: this.isConnected
+      isConnected: this.isConnected,
     };
   }
-}/**
+} /**
 
  * Factory function to create SQLite data provider
  * Automatically detects runtime and uses appropriate driver
  */
-export async function createSQLiteProvider<TSchema extends Record<string, Table>>(
+export async function createSQLiteProvider<
+  TSchema extends Record<string, Table>,
+>(
   connection: string | ConnectionOptions | { d1Database: any },
   schema: TSchema,
   options?: SQLiteOptions
 ): Promise<RefineOrmDataProvider<TSchema>> {
-  console.log('createSQLiteProvider called with:', { connection, schema: Object.keys(schema), options });
+  console.log('createSQLiteProvider called with:', {
+    connection,
+    schema: Object.keys(schema),
+    options,
+  });
   const config: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection,
     schema,
     ...(options?.debug !== undefined && { debug: options.debug }),
-    ...(options?.logger && { logger: options.logger })
+    ...(options?.logger && { logger: options.logger }),
   };
-  
+
   console.log('Creating SQLiteAdapter with config:', config);
   const adapter = new SQLiteAdapter(config);
-  console.log('Adapter created:', typeof adapter, Object.getOwnPropertyNames(adapter));
-  
+  console.log(
+    'Adapter created:',
+    typeof adapter,
+    Object.getOwnPropertyNames(adapter)
+  );
+
   console.log('Calling adapter.connect()...');
   await adapter.connect();
   console.log('Adapter connected. Calling createProvider...');
-  
+
   const provider = createProvider(adapter, options);
   console.log('Provider created:', typeof provider);
   return provider;
@@ -428,23 +469,27 @@ export async function createSQLiteProvider<TSchema extends Record<string, Table>
 /**
  * Create SQLite provider with explicit Bun SQLite driver
  */
-export async function createSQLiteProviderWithBunSqlite<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithBunSqlite<
+  TSchema extends Record<string, Table>,
+>(
   databasePath: string,
   schema: TSchema,
   options?: SQLiteOptions
 ): Promise<RefineOrmDataProvider<TSchema>> {
   if (!detectBunRuntime() || !detectBunSqlSupport('sqlite')) {
-    throw new ConfigurationError('Bun SQLite is not available in this environment');
+    throw new ConfigurationError(
+      'Bun SQLite is not available in this environment'
+    );
   }
-  
+
   const config: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection: databasePath,
     schema,
     ...(options?.debug !== undefined && { debug: options.debug }),
-    ...(options?.logger && { logger: options.logger })
+    ...(options?.logger && { logger: options.logger }),
   };
-  
+
   const adapter = new SQLiteAdapter(config);
   await adapter.connect();
   return createProvider(adapter, options);
@@ -453,7 +498,9 @@ export async function createSQLiteProviderWithBunSqlite<TSchema extends Record<s
 /**
  * Create SQLite provider with explicit better-sqlite3 driver
  */
-export async function createSQLiteProviderWithBetterSqlite3<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithBetterSqlite3<
+  TSchema extends Record<string, Table>,
+>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: SQLiteOptions
@@ -463,9 +510,9 @@ export async function createSQLiteProviderWithBetterSqlite3<TSchema extends Reco
     connection,
     schema,
     ...(options?.debug !== undefined && { debug: options.debug }),
-    ...(options?.logger && { logger: options.logger })
+    ...(options?.logger && { logger: options.logger }),
   };
-  
+
   const adapter = new SQLiteAdapter(config);
   await adapter.connect();
   return createProvider(adapter, options);
@@ -474,23 +521,27 @@ export async function createSQLiteProviderWithBetterSqlite3<TSchema extends Reco
 /**
  * Create SQLite provider with Cloudflare D1 driver
  */
-export async function createSQLiteProviderWithD1<TSchema extends Record<string, Table>>(
+export async function createSQLiteProviderWithD1<
+  TSchema extends Record<string, Table>,
+>(
   d1Database: any,
   schema: TSchema,
   options?: SQLiteOptions
 ): Promise<RefineOrmDataProvider<TSchema>> {
   if (!detectCloudflareD1()) {
-    throw new ConfigurationError('Cloudflare D1 is not available in this environment');
+    throw new ConfigurationError(
+      'Cloudflare D1 is not available in this environment'
+    );
   }
-  
+
   const config: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection: { d1Database },
     schema,
     ...(options?.debug !== undefined && { debug: options.debug }),
-    ...(options?.logger && { logger: options.logger })
+    ...(options?.logger && { logger: options.logger }),
   };
-  
+
   const adapter = new SQLiteAdapter(config);
   await adapter.connect();
   return createProvider(adapter, options);

@@ -1,7 +1,7 @@
 /**
  * Compatibility layer for smooth migration from refine-orm to refine-sql
  * Provides refine-orm compatible APIs while maintaining refine-sql's performance benefits
- * 
+ *
  * Key compatibility features:
  * - All WHERE and ORDER BY methods available directly in SqlxChainQuery
  * - Relationship loading (withHasOne, withHasMany, withBelongsTo, withBelongsToMany)
@@ -21,7 +21,9 @@ import { SqlxChainQuery } from './chain-query';
  * Note: Most deprecated methods (whereEq, whereNe, etc.) are now available directly
  * from the base SqlxChainQuery class and should be used instead of this compatibility layer.
  */
-export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends SqlxChainQuery<T> {
+export class CompatibleChainQuery<
+  T extends BaseRecord = BaseRecord,
+> extends SqlxChainQuery<T> {
   constructor(client: SqlClient, tableName: string) {
     super(client, tableName);
     // No need to initialize compatibility methods - they're now part of the base class
@@ -55,7 +57,12 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
     foreignKey?: string,
     relatedKey: string = 'id'
   ): this {
-    return super.withBelongsTo(relationName, relatedTable, foreignKey, relatedKey);
+    return super.withBelongsTo(
+      relationName,
+      relatedTable,
+      foreignKey,
+      relatedKey
+    );
   }
 
   withBelongsToMany(
@@ -67,7 +74,15 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
     pivotLocalKey?: string,
     pivotRelatedKey?: string
   ): this {
-    return super.withBelongsToMany(relationName, relatedTable, pivotTable, localKey, relatedKey, pivotLocalKey, pivotRelatedKey);
+    return super.withBelongsToMany(
+      relationName,
+      relatedTable,
+      pivotTable,
+      localKey,
+      relatedKey,
+      pivotLocalKey,
+      pivotRelatedKey
+    );
   }
 
   /**
@@ -100,7 +115,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Execute query and apply callback to each result
    */
-  async each(callback: (record: T, index: number) => void | Promise<void>): Promise<void> {
+  async each(
+    callback: (record: T, index: number) => void | Promise<void>
+  ): Promise<void> {
     const results = await this.get();
     for (let i = 0; i < results.length; i++) {
       await callback(results[i], i);
@@ -110,7 +127,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Execute query and map results
    */
-  async map<U>(callback: (record: T, index: number) => U | Promise<U>): Promise<U[]> {
+  async map<U>(
+    callback: (record: T, index: number) => U | Promise<U>
+  ): Promise<U[]> {
     const results = await this.get();
     const mapped: U[] = [];
     for (let i = 0; i < results.length; i++) {
@@ -123,7 +142,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Execute query and filter results
    */
-  async filter(callback: (record: T, index: number) => boolean | Promise<boolean>): Promise<T[]> {
+  async filter(
+    callback: (record: T, index: number) => boolean | Promise<boolean>
+  ): Promise<T[]> {
     const results = await this.get();
     const filtered: T[] = [];
     for (let i = 0; i < results.length; i++) {
@@ -138,7 +159,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Find first record matching condition
    */
-  async find(callback: (record: T) => boolean | Promise<boolean>): Promise<T | null> {
+  async find(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<T | null> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -150,7 +173,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Check if any record matches condition
    */
-  async some(callback: (record: T) => boolean | Promise<boolean>): Promise<boolean> {
+  async some(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<boolean> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -162,7 +187,9 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   /**
    * Check if all records match condition
    */
-  async every(callback: (record: T) => boolean | Promise<boolean>): Promise<boolean> {
+  async every(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<boolean> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -203,7 +230,7 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   async minBy(field: keyof T): Promise<T | null> {
     const results = await this.get();
     if (results.length === 0) return null;
-    return results.reduce((min, current) => 
+    return results.reduce((min, current) =>
       (current as any)[field] < (min as any)[field] ? current : min
     );
   }
@@ -214,7 +241,7 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
   async maxBy(field: keyof T): Promise<T | null> {
     const results = await this.get();
     if (results.length === 0) return null;
-    return results.reduce((max, current) => 
+    return results.reduce((max, current) =>
       (current as any)[field] > (max as any)[field] ? current : max
     );
   }
@@ -228,15 +255,18 @@ export class CompatibleChainQuery<T extends BaseRecord = BaseRecord> extends Sql
     const executionTime = Date.now() - startTime;
     return { data, executionTime };
   }
-
-
 }
 
 /**
  * Compatibility wrapper for the data provider
  * Adds refine-orm compatible methods and behaviors
  */
-export function addCompatibilityLayer<T extends { from: (table: string) => any; getOne?: (params: any) => Promise<any> }>(
+export function addCompatibilityLayer<
+  T extends {
+    from: (table: string) => any;
+    getOne?: (params: any) => Promise<any>;
+  },
+>(
   dataProvider: T
 ): T & {
   // Add refine-orm compatible methods
@@ -245,65 +275,68 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
     id: any,
     relations?: string[]
   ): Promise<TRecord>;
-  
+
   // Batch operations
   createMany<TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   updateMany<TRecord = BaseRecord>(params: {
     resource: string;
     ids: any[];
     variables: Record<string, any>;
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   deleteMany<TRecord = BaseRecord>(params: {
     resource: string;
     ids: any[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   // Advanced utilities
   upsert<TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>;
     conflictColumns?: string[];
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   firstOrCreate<TRecord = BaseRecord>(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   updateOrCreate<TRecord = BaseRecord>(params: {
     resource: string;
     where: Record<string, any>;
     values: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   // Raw SQL execution
   executeRaw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
-  
+
   // Transaction support
   transaction<TResult>(callback: (tx: T) => Promise<TResult>): Promise<TResult>;
-  
+
   // Performance monitoring
   enablePerformanceMonitoring(): void;
   getPerformanceMetrics(): any;
 } {
   // Override the from method to return CompatibleChainQuery
   const originalFrom = dataProvider.from.bind(dataProvider);
-  
-  (dataProvider as any).from = function(tableName: string) {
+
+  (dataProvider as any).from = function (tableName: string) {
     const originalQuery = originalFrom(tableName);
-    
+
     // Create compatible query that extends the original
-    const compatibleQuery = new CompatibleChainQuery(originalQuery.client, tableName);
-    
+    const compatibleQuery = new CompatibleChainQuery(
+      originalQuery.client,
+      tableName
+    );
+
     // Copy any existing state from original query
     if (originalQuery.filters) {
       (compatibleQuery as any).filters = [...originalQuery.filters];
@@ -311,34 +344,34 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
     if (originalQuery.sorters) {
       (compatibleQuery as any).sorters = [...originalQuery.sorters];
     }
-    
+
     return compatibleQuery;
   };
 
   // Add getWithRelations method
-  (dataProvider as any).getWithRelations = async function<TRecord = BaseRecord>(
-    resource: string,
-    id: any,
-    relations: string[] = []
-  ): Promise<TRecord> {
+  (dataProvider as any).getWithRelations = async function <
+    TRecord = BaseRecord,
+  >(resource: string, id: any, relations: string[] = []): Promise<TRecord> {
     // Get the base record
     const record = await (dataProvider as any).getOne({ resource, id });
-    
+
     if (!record.data || relations.length === 0) {
       return record.data;
     }
 
     // Load each relationship
     const result = { ...record.data };
-    
+
     for (const _relationName of relations) {
       try {
         // Simple relationship loading - in practice this would be more sophisticated
-        const relatedQuery = dataProvider.from(getRelatedTableName(_relationName));
+        const relatedQuery = dataProvider.from(
+          getRelatedTableName(_relationName)
+        );
         const relatedData = await relatedQuery
           .where(getForeignKey(resource, _relationName), 'eq', id)
           .get();
-        
+
         (result as any)[_relationName] = relatedData;
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
@@ -352,28 +385,32 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
   };
 
   // Add batch operations
-  (dataProvider as any).createMany = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).createMany = async function <
+    TRecord = BaseRecord,
+  >(params: {
     resource: string;
     variables: Record<string, any>[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }> {
     const batchSize = params.batchSize || 100;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.variables.length; i += batchSize) {
       const batch = params.variables.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(variables => 
+        batch.map(variables =>
           (dataProvider as any).create({ resource: params.resource, variables })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
-  (dataProvider as any).updateMany = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).updateMany = async function <
+    TRecord = BaseRecord,
+  >(params: {
     resource: string;
     ids: any[];
     variables: Record<string, any>;
@@ -381,50 +418,56 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
   }): Promise<{ data: TRecord[] }> {
     const batchSize = params.batchSize || 50;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.ids.length; i += batchSize) {
       const batch = params.ids.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(id => 
-          (dataProvider as any).update({ resource: params.resource, id, variables: params.variables })
+        batch.map(id =>
+          (dataProvider as any).update({
+            resource: params.resource,
+            id,
+            variables: params.variables,
+          })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
-  (dataProvider as any).deleteMany = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).deleteMany = async function <
+    TRecord = BaseRecord,
+  >(params: {
     resource: string;
     ids: any[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }> {
     const batchSize = params.batchSize || 50;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.ids.length; i += batchSize) {
       const batch = params.ids.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(id => 
+        batch.map(id =>
           (dataProvider as any).deleteOne({ resource: params.resource, id })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
   // Add advanced utilities
-  (dataProvider as any).upsert = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).upsert = async function <TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>;
     conflictColumns?: string[];
   }): Promise<{ data: TRecord; created: boolean }> {
     const conflictColumn = params.conflictColumns?.[0] || 'id';
     const conflictValue = params.variables[conflictColumn];
-    
+
     if (conflictValue) {
       try {
         const existing = await (dataProvider as any).getOne({
@@ -443,7 +486,7 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
         // Record doesn't exist, continue to create
       }
     }
-    
+
     const created = await (dataProvider as any).create({
       resource: params.resource,
       variables: params.variables,
@@ -451,7 +494,9 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
     return { data: created.data, created: true };
   };
 
-  (dataProvider as any).firstOrCreate = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).firstOrCreate = async function <
+    TRecord = BaseRecord,
+  >(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Record<string, any>;
@@ -481,7 +526,9 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
     return { data: created.data, created: true };
   };
 
-  (dataProvider as any).updateOrCreate = async function<TRecord = BaseRecord>(params: {
+  (dataProvider as any).updateOrCreate = async function <
+    TRecord = BaseRecord,
+  >(params: {
     resource: string;
     where: Record<string, any>;
     values: Record<string, any>;
@@ -517,8 +564,8 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
   };
 
   // Add raw SQL execution
-  (dataProvider as any).executeRaw = async function<TRecord = any>(
-    sql: string, 
+  (dataProvider as any).executeRaw = async function <TRecord = any>(
+    sql: string,
     params?: any[]
   ): Promise<TRecord[]> {
     if ((dataProvider as any).raw) {
@@ -528,7 +575,7 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
   };
 
   // Add transaction support
-  (dataProvider as any).transaction = async function<TResult>(
+  (dataProvider as any).transaction = async function <TResult>(
     callback: (tx: T) => Promise<TResult>
   ): Promise<TResult> {
     if ((dataProvider as any).beginTransaction) {
@@ -551,14 +598,20 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
   let performanceEnabled = false;
   const performanceMetrics: any[] = [];
 
-  (dataProvider as any).enablePerformanceMonitoring = function(): void {
+  (dataProvider as any).enablePerformanceMonitoring = function (): void {
     performanceEnabled = true;
-    
+
     // Wrap methods with performance tracking
-    const methodsToTrack = ['getList', 'getOne', 'create', 'update', 'deleteOne'];
+    const methodsToTrack = [
+      'getList',
+      'getOne',
+      'create',
+      'update',
+      'deleteOne',
+    ];
     methodsToTrack.forEach(methodName => {
       const originalMethod = (dataProvider as any)[methodName];
-      (dataProvider as any)[methodName] = async function(...args: any[]) {
+      (dataProvider as any)[methodName] = async function (...args: any[]) {
         const startTime = Date.now();
         try {
           const result = await originalMethod.apply(this, args);
@@ -585,17 +638,21 @@ export function addCompatibilityLayer<T extends { from: (table: string) => any; 
     });
   };
 
-  (dataProvider as any).getPerformanceMetrics = function(): any {
+  (dataProvider as any).getPerformanceMetrics = function (): any {
     return {
       enabled: performanceEnabled,
       metrics: performanceMetrics,
       summary: {
         totalQueries: performanceMetrics.length,
-        averageDuration: performanceMetrics.length > 0 
-          ? performanceMetrics.reduce((sum, m) => sum + m.duration, 0) / performanceMetrics.length 
+        averageDuration:
+          performanceMetrics.length > 0 ?
+            performanceMetrics.reduce((sum, m) => sum + m.duration, 0) /
+            performanceMetrics.length
           : 0,
-        successRate: performanceMetrics.length > 0 
-          ? performanceMetrics.filter(m => m.success).length / performanceMetrics.length 
+        successRate:
+          performanceMetrics.length > 0 ?
+            performanceMetrics.filter(m => m.success).length /
+            performanceMetrics.length
           : 0,
       },
     };
@@ -628,10 +685,10 @@ export interface CompatibleDataProvider {
   create: (params: any) => Promise<any>;
   update: (params: any) => Promise<any>;
   deleteOne: (params: any) => Promise<any>;
-  
+
   // Chain query methods
   from: (table: string) => CompatibleChainQuery;
-  
+
   // Compatibility methods
   getWithRelations: <TRecord = BaseRecord>(
     resource: string,

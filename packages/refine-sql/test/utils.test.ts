@@ -147,7 +147,10 @@ describe('SqlTransformer.transformFilters', () => {
         { field: 'name', operator: 'ncontains', value: 'spam' },
       ];
       const result = transformer.transformFilters(filters);
-      expect(result).toEqual({ sql: 'WHERE name NOT LIKE ?', args: ['%spam%'] });
+      expect(result).toEqual({
+        sql: 'WHERE name NOT LIKE ?',
+        args: ['%spam%'],
+      });
     });
 
     it('should handle containss operator', () => {
@@ -283,7 +286,10 @@ describe('SqlTransformer.transformFilters', () => {
         { field: 'age', operator: 'between', value: [18, 65] },
       ];
       const result = transformer.transformFilters(filters);
-      expect(result).toEqual({ sql: 'WHERE age BETWEEN ? AND ?', args: [18, 65] });
+      expect(result).toEqual({
+        sql: 'WHERE age BETWEEN ? AND ?',
+        args: [18, 65],
+      });
     });
 
     it('should handle nbetween operator', () => {

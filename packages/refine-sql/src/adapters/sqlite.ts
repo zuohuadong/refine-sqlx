@@ -5,8 +5,6 @@ import { SQLiteAdapter } from './base';
 import detectSqlite from '../detect-sqlite';
 import { handleErrors, logExecution } from '../utils';
 
-
-
 class AutoSQLiteAdapter extends SQLiteAdapter {
   private connection: string | { d1Database: any };
   private schema: any;
@@ -28,15 +26,22 @@ class AutoSQLiteAdapter extends SQLiteAdapter {
   async connect(): Promise<void> {
     if (!this.client) {
       // Handle D1 database
-      if (typeof this.connection === 'object' && 'd1Database' in this.connection) {
-        const createCloudflareD1Adapter = (await import('./cloudflare-d1')).default;
+      if (
+        typeof this.connection === 'object' &&
+        'd1Database' in this.connection
+      ) {
+        const createCloudflareD1Adapter = (await import('./cloudflare-d1'))
+          .default;
         this.client = createCloudflareD1Adapter(this.connection.d1Database);
         this.detectedDriver = 'd1';
       } else {
         // Auto-detect SQLite driver
-        const factory = detectSqlite(this.connection as string, this.config as any);
+        const factory = detectSqlite(
+          this.connection as string,
+          this.config as any
+        );
         this.client = await factory.connect();
-        
+
         // Detect which driver was used
         const runtime = this.detectRuntime();
         switch (runtime) {
@@ -51,7 +56,7 @@ class AutoSQLiteAdapter extends SQLiteAdapter {
         }
       }
     }
-    
+
     await super.connect();
   }
 

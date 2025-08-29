@@ -221,13 +221,13 @@ export class SqlTransformer {
     parts.push(`FROM ${this.escapeIdentifier(options.from)}`);
 
     // WHERE clause
-    if (options.where) {
-      parts.push(options.where);
+    if (options.where && options.where.trim()) {
+      parts.push(options.where.startsWith('WHERE') ? options.where : `WHERE ${options.where}`);
     }
 
     // ORDER BY clause
     if (options.orderBy) {
-      parts.push(options.orderBy);
+      parts.push(`ORDER BY ${options.orderBy}`);
     }
 
     // LIMIT clause
@@ -294,15 +294,48 @@ export class SqlTransformer {
 
   // Instance methods that delegate to static methods
   buildSelectQuery(table: string, options: any): { sql: string; args: any[] } {
+    // Process filters
+    let whereClause = '';
+    let whereParams: any[] = [];
+    if (options.filters && options.filters.length > 0) {
+      const whereResult = SqlTransformer.filtersToSql(options.filters);
+      whereClause = whereResult.sql;
+      whereParams = whereResult.params;
+    } else if (options.where) {
+      whereClause = options.where;
+    }
+
+    // Process sorting
+    let orderByClause = '';
+    if (options.sorting && options.sorting.length > 0) {
+      const orderByClauses = options.sorting.map((sort: any) => {
+        const direction = sort.order === 'desc' ? 'DESC' : 'ASC';
+        return `${SqlTransformer.escapeIdentifier(sort.field)} ${direction}`;
+      });
+      orderByClause = orderByClauses.join(', ');
+    } else if (options.orderBy) {
+      orderByClause = options.orderBy;
+    }
+
+    // Process pagination
+    let limit = options.limit;
+    let offset = options.offset;
+    if (options.pagination) {
+      const { current = 1, pageSize = 10 } = options.pagination;
+      limit = pageSize;
+      offset = (current - 1) * pageSize;
+    }
+
     const sql = SqlTransformer.buildQuery({
       from: table,
       select: options.select,
-      where: options.where,
-      orderBy: options.orderBy,
-      limit: options.limit,
-      offset: options.offset,
+      where: whereClause,
+      orderBy: orderByClause,
+      limit,
+      offset,
     });
-    return { sql, args: options.args || [] };
+    
+    return { sql, args: whereParams };
   }
 
   buildCountQuery(table: string, filters?: any): { sql: string; args: any[] } {

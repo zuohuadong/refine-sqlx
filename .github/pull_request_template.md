@@ -30,28 +30,34 @@
 <!-- Provide a detailed list of changes made in this PR -->
 
 ### Added
-- 
+
+-
 
 ### Changed
-- 
+
+-
 
 ### Removed
-- 
+
+-
 
 ### Fixed
-- 
+
+-
 
 ## Testing
 
 <!-- Describe the testing you've done -->
 
 ### Test Coverage
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manual testing completed
 - [ ] All existing tests pass
 
 ### Test Environment
+
 - [ ] Node.js (version: )
 - [ ] Bun (version: )
 - [ ] PostgreSQL (version: )
@@ -59,11 +65,12 @@
 - [ ] SQLite
 
 ### Test Cases
+
 <!-- Describe specific test cases you've run -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Database Compatibility
 
@@ -88,9 +95,11 @@
 <!-- If this is a breaking change, describe what breaks and how to migrate -->
 
 ### What breaks:
-- 
+
+-
 
 ### Migration guide:
+
 ```typescript
 // Before
 const oldWay = createProvider(config);
@@ -108,6 +117,7 @@ const newWay = createProvider(newConfig);
 - [ ] Performance regression (describe below and justify)
 
 ### Performance Details
+
 <!-- If applicable, provide benchmarks or performance analysis -->
 
 ## Documentation
@@ -168,6 +178,7 @@ const newWay = createProvider(newConfig);
 ## For Reviewers
 
 ### Review Focus Areas
+
 <!-- Highlight specific areas that need careful review -->
 
 - [ ] Logic correctness
@@ -179,11 +190,12 @@ const newWay = createProvider(newConfig);
 - [ ] Breaking change impact
 
 ### Testing Instructions
+
 <!-- Provide specific instructions for reviewers to test the changes -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ---
 

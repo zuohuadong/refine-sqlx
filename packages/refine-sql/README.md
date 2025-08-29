@@ -461,8 +461,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sql)
----
+## MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 
 ## 中文
 
@@ -651,11 +650,11 @@ const { data } = useList({
 
 ## 运行时支持
 
-| 运行时 | SQLite 支持 | 驱动 |
-|--------|-------------|------|
-| Bun | ✅ | bun:sqlite |
-| Node.js | ✅ | better-sqlite3 |
-| Cloudflare Workers | ✅ | D1 数据库 |
+| 运行时             | SQLite 支持 | 驱动           |
+| ------------------ | ----------- | -------------- |
+| Bun                | ✅          | bun:sqlite     |
+| Node.js            | ✅          | better-sqlite3 |
+| Cloudflare Workers | ✅          | D1 数据库      |
 
 ## 配置选项
 

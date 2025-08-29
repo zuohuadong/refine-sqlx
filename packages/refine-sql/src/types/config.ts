@@ -10,11 +10,7 @@ export interface RefineOrmOptions {
   /** Custom logger function */
   logger?: (query: string, params: any[]) => void;
   /** Connection pool options */
-  pool?: {
-    min?: number;
-    max?: number;
-    idle?: number;
-  };
+  pool?: { min?: number; max?: number; idle?: number };
   /** Query timeout in milliseconds */
   timeout?: number;
   /** Enable query caching */
@@ -33,19 +29,12 @@ export interface SQLiteOptions extends RefineOrmOptions {
   fileMustExist?: boolean;
   timeout?: number;
   verbose?: boolean;
-  
+
   // Runtime-specific options
-  bun?: {
-    create?: boolean;
-    readwrite?: boolean;
-    strict?: boolean;
-  };
-  
-  node?: {
-    open?: boolean;
-    enableForeignKeys?: boolean;
-  };
-  
+  bun?: { create?: boolean; readwrite?: boolean; strict?: boolean };
+
+  node?: { open?: boolean; enableForeignKeys?: boolean };
+
   'better-sqlite3'?: {
     memory?: boolean;
     fileMustExist?: boolean;
@@ -77,16 +66,9 @@ export interface SchemaConfig<TSchema extends TableSchema = TableSchema> {
   /** Schema definition */
   schema: TSchema;
   /** Schema validation options */
-  validation?: {
-    enabled?: boolean;
-    strict?: boolean;
-  };
+  validation?: { enabled?: boolean; strict?: boolean };
   /** Migration options */
-  migrations?: {
-    enabled?: boolean;
-    directory?: string;
-    tableName?: string;
-  };
+  migrations?: { enabled?: boolean; directory?: string; tableName?: string };
 }
 
 /**

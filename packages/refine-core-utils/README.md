@@ -95,7 +95,9 @@ const filters = transformer.transformFilters([
 // Result: { sql: '"name" = ?', args: ['John'] }
 
 // Transform sorting
-const sorting = transformer.transformSorting([{ field: 'created_at', order: 'desc' }]);
+const sorting = transformer.transformSorting([
+  { field: 'created_at', order: 'desc' },
+]);
 // Result: { sql: '"created_at" DESC', args: [] }
 ```
 
@@ -257,8 +259,6 @@ if (valueError) {
 - `createSqlTransformer()` - Create SQL transformer instance
 - `createDrizzleTransformer(...)` - Create Drizzle transformer instance
 
-
-
 ### Validation Functions
 
 - `validateFilters(filters)` - Validate filter structure
@@ -279,8 +279,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sql)
----
+## MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 
 ## 中文
 
@@ -375,7 +374,9 @@ const filters = transformer.transformFilters([
 // 结果: { sql: '"name" = ?', args: ['John'] }
 
 // 转换排序
-const sorting = transformer.transformSorting([{ field: 'created_at', order: 'desc' }]);
+const sorting = transformer.transformSorting([
+  { field: 'created_at', order: 'desc' },
+]);
 // 结果: { sql: '"created_at" DESC', args: [] }
 ```
 

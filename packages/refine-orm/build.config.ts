@@ -15,19 +15,17 @@ export default defineBuildConfig({
       target: 'es2022',
       format: 'esm',
       // 启用新标准装饰器支持
-      supported: {
-        decorators: true,
-      },
+      supported: { decorators: true },
       drop: ['console', 'debugger'],
       mangleProps: /^_/,
       treeShaking: true,
       legalComments: 'none',
     },
     emitCJS: true,
-    output: { 
-      compact: true, 
+    output: {
+      compact: true,
       minifyInternalExports: true,
-      generatedCode: 'es2015'
+      generatedCode: 'es2015',
     },
   },
   externals: [

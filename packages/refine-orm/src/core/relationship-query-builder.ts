@@ -53,22 +53,23 @@ export type RelationshipResult<
 };
 
 // TypeScript 5.0 Decorators for relationship queries
-function CacheRelationship(ttl: number = 300000) { // 5 minutes default
+function CacheRelationship(ttl: number = 300000) {
+  // 5 minutes default
   return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     const cache = new Map<string, { value: any; timestamp: number }>();
-    
+
     return async function (this: any, ...args: any[]) {
       const key = JSON.stringify(args);
       const cached = cache.get(key);
       const now = Date.now();
-      
-      if (cached && (now - cached.timestamp) < ttl) {
+
+      if (cached && now - cached.timestamp < ttl) {
         return cached.value;
       }
-      
+
       const result = await originalMethod.apply(this, args);
       cache.set(key, { value: result, timestamp: now });
-      
+
       return result;
     };
   };
@@ -77,13 +78,18 @@ function CacheRelationship(ttl: number = 300000) { // 5 minutes default
 function ValidateRelationship() {
   return function <This, Args extends any[], Return>(
     originalMethod: (this: This, ...args: Args) => Return,
-    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    context: ClassMethodDecoratorContext<
+      This,
+      (this: This, ...args: Args) => Return
+    >
   ) {
     return function (this: This, ...args: Args): Return {
       // Validate relationship configuration
       const [, , config] = args;
       if (!config || typeof config !== 'object') {
-        throw new Error(`Invalid relationship configuration for ${String(context.name)}`);
+        throw new Error(
+          `Invalid relationship configuration for ${String(context.name)}`
+        );
       }
       return originalMethod.apply(this, args);
     };
@@ -93,17 +99,28 @@ function ValidateRelationship() {
 function LogRelationshipQuery() {
   return function <This, Args extends any[], Return>(
     originalMethod: (this: This, ...args: Args) => Return,
-    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    context: ClassMethodDecoratorContext<
+      This,
+      (this: This, ...args: Args) => Return
+    >
   ) {
-    return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
+    return async function (
+      this: This,
+      ...args: Args
+    ): Promise<Awaited<Return>> {
       const start = performance.now();
       try {
         const result = await originalMethod.apply(this, args);
         const end = performance.now();
-        console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`);
+        console.debug(
+          `[RelationshipQuery] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`
+        );
         return result;
       } catch (error) {
-        console.error(`[RelationshipQuery] ${String(context.name)} failed:`, error);
+        console.error(
+          `[RelationshipQuery] ${String(context.name)} failed:`,
+          error
+        );
         throw error;
       }
     };
@@ -561,7 +578,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
     if (!relatedTable) {
       throw new QueryError(`Related table not found in schema`);
     }
-    
+
     let query = this.client.select().from(relatedTable);
     const relatedColumn = this.getTableColumn(relatedTable, relatedKey);
 

@@ -7,7 +7,11 @@ let postgres: any;
 let PostgresJsDatabase: any;
 let BunSQLDatabase: any;
 
-import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
+import {
+  BaseDatabaseAdapter,
+  LogDatabaseOperation,
+  RetryOnFailure,
+} from './base.js';
 import type {
   DatabaseConfig,
   PostgreSQLOptions,
@@ -106,7 +110,7 @@ export class PostgreSQLAdapter<
 
       // Create connection with postgres driver
       const pgConnection = postgres(connectionString);
-      
+
       // Create drizzle client with postgres connection
       this.client = drizzlePostgres(pgConnection, {
         schema: this.config.schema,
@@ -393,7 +397,9 @@ export class PostgreSQLAdapter<
  * Factory function to create PostgreSQL data provider
  * Automatically detects runtime and uses appropriate driver
  */
-export async function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
+export async function createPostgreSQLProvider<
+  TSchema extends Record<string, Table>,
+>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: PostgreSQLOptions

@@ -180,7 +180,9 @@ export async function createProvider<TSchema extends Record<string, Table>>(
  * });
  * ```
  */
-export async function createPostgreSQLProvider<TSchema extends Record<string, Table>>(
+export async function createPostgreSQLProvider<
+  TSchema extends Record<string, Table>,
+>(
   config: SimplePostgreSQLConfig<TSchema>
 ): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
@@ -230,22 +232,19 @@ export async function createPostgreSQLProvider<TSchema extends Record<string, Ta
  * });
  * ```
  */
-export async function createMySQLProvider<TSchema extends Record<string, Table>>(
-  config: SimpleMySQLConfig<TSchema>
-): Promise<RefineOrmDataProvider<TSchema>> {
+export async function createMySQLProvider<
+  TSchema extends Record<string, Table>,
+>(config: SimpleMySQLConfig<TSchema>): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;
 
   // Add helpful runtime information
   if (options.debug) {
     const runtime = getRuntimeInfo();
-    const useBunSql =
-      runtime.runtime === 'bun' && detectBunSqlSupport('mysql');
+    const useBunSql = runtime.runtime === 'bun' && detectBunSqlSupport('mysql');
     console.log(
       `[RefineORM] Creating MySQL provider in ${runtime.runtime} runtime`
     );
-    console.log(
-      `[RefineORM] Using ${useBunSql ? 'bun:sql' : 'mysql2'} driver`
-    );
+    console.log(`[RefineORM] Using ${useBunSql ? 'bun:sql' : 'mysql2'} driver`);
   }
 
   return await createMySQLAdapter(connection, schema, options);
@@ -290,7 +289,9 @@ export async function createMySQLProvider<TSchema extends Record<string, Table>>
  * });
  * ```
  */
-export async function createSQLiteProvider<TSchema extends Record<string, Table>>(
+export async function createSQLiteProvider<
+  TSchema extends Record<string, Table>,
+>(
   config: SimpleSQLiteConfig<TSchema>
 ): Promise<RefineOrmDataProvider<TSchema>> {
   const { connection, schema, options = {} } = config;

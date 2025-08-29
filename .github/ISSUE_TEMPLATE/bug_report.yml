@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a bug or issue with refine-orm or refine-sql
-title: "[Bug]: "
-labels: ["bug", "needs-triage"]
+title: '[Bug]: '
+labels: ['bug', 'needs-triage']
 assignees: []
 body:
   - type: markdown
@@ -54,7 +54,7 @@ body:
     attributes:
       label: Package Version
       description: What version of the package are you using?
-      placeholder: "e.g., 1.0.0"
+      placeholder: 'e.g., 1.0.0'
     validations:
       required: true
 
@@ -104,7 +104,7 @@ body:
       render: typescript
       placeholder: |
         import { createPostgreSQLProvider } from 'refine-orm';
-        
+
         // Your code here...
 
   - type: textarea

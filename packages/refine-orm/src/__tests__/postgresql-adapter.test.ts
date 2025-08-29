@@ -22,19 +22,22 @@ const schema = { users };
 describe('PostgreSQL Adapter', () => {
   it('should create adapter instance', async () => {
     const connectionString = 'postgresql://test:test@localhost:5432/test';
-    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionString, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(
+      connectionString,
+      schema
+    );
 
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
 
   it('should get adapter info without connection', async () => {
     const connectionString = 'postgresql://test:test@localhost:5432/test';
-    
+
     // Create adapter but don't connect
     const adapter = new PostgreSQLAdapter({
       type: 'postgresql',
       connection: connectionString,
-      schema
+      schema,
     });
 
     const info = adapter.getAdapterInfo();
@@ -53,17 +56,16 @@ describe('PostgreSQL Adapter', () => {
 
   it('should validate configuration', () => {
     expect(() => {
-      new PostgreSQLAdapter({
-        type: 'postgresql',
-        connection: '',
-        schema
-      });
+      new PostgreSQLAdapter({ type: 'postgresql', connection: '', schema });
     }).toThrow();
   });
 
   it('should handle connection string format', async () => {
     const connectionString = 'postgresql://user:pass@localhost:5432/db';
-    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionString, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(
+      connectionString,
+      schema
+    );
 
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
@@ -77,7 +79,10 @@ describe('PostgreSQL Adapter', () => {
       database: 'testdb',
     };
 
-    const adapter = await createPostgreSQLProviderWithPostgresJs(connectionOptions, schema);
+    const adapter = await createPostgreSQLProviderWithPostgresJs(
+      connectionOptions,
+      schema
+    );
     expect(adapter).toBeInstanceOf(PostgreSQLAdapter);
   });
 });

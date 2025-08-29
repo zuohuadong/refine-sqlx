@@ -7,10 +7,18 @@ import type { DataProvider } from '@refinedev/core';
 export interface ModernDataProvider extends DataProvider {
   // Core query methods
   raw<T = any>(sql: string, bindings?: any[]): Promise<T[]>;
-  
+
   // Transaction management
-  transaction<TResult>(callback: (provider: ModernDataProvider) => Promise<TResult>): Promise<TResult>;
+  transaction<TResult>(
+    callback: (provider: ModernDataProvider) => Promise<TResult>
+  ): Promise<TResult>;
 }
 
 // Re-export from client.d.ts
-export type { SqlQuery, SqlResult, SqlAffected, SqlClient, SqlClientFactory } from '../client';
+export type {
+  SqlQuery,
+  SqlResult,
+  SqlAffected,
+  SqlClient,
+  SqlClientFactory,
+} from '../client';

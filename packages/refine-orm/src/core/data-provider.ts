@@ -99,7 +99,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
   adapter: BaseDatabaseAdapter<TSchema>,
   options?: RefineOrmOptions & { enablePerformanceMonitoring?: boolean }
 ): RefineOrmDataProvider<TSchema> {
-  console.log('createProvider called with adapter:', typeof adapter, Object.getOwnPropertyNames(adapter));
+  console.log(
+    'createProvider called with adapter:',
+    typeof adapter,
+    Object.getOwnPropertyNames(adapter)
+  );
   const queryBuilder = new RefineQueryBuilder<TSchema>();
 
   // Initialize performance monitoring if enabled
@@ -148,7 +152,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         // Build the query using query builder
         const query = queryBuilder.buildListQuery(client, table, params);
-        const countQuery = queryBuilder.buildCountQuery(client, table, params.filters);
+        const countQuery = queryBuilder.buildCountQuery(
+          client,
+          table,
+          params.filters
+        );
 
         // Execute queries
         const [data, totalResult] = await Promise.all([
@@ -726,9 +734,15 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
     // Raw query support
     async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
-      console.log('executeRaw called with adapter:', typeof adapter, Object.getOwnPropertyNames(adapter));
+      console.log(
+        'executeRaw called with adapter:',
+        typeof adapter,
+        Object.getOwnPropertyNames(adapter)
+      );
       if (typeof adapter.executeRaw !== 'function') {
-        throw new Error(`Adapter does not have executeRaw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`);
+        throw new Error(
+          `Adapter does not have executeRaw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`
+        );
       }
       return await adapter.executeRaw<T>(sql, params);
     },

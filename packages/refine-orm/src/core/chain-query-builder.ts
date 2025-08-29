@@ -703,7 +703,6 @@ export class ChainQueryBuilder<
     }
   }
 
-
   /**
    * Build Refine filters recursively
    */

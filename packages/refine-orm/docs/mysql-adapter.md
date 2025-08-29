@@ -266,11 +266,11 @@ console.log('Future bun:sql:', info.futureSupport.bunSql); // true (available si
 
 ### Current Driver Strategy
 
-| Runtime | Driver | Reason                            |
-| ------- | ------ | --------------------------------- |
-| Bun 1.2.21+ | bun:sql | Native MySQL support available  |
-| Bun < 1.2.21 | mysql2 | Fallback for older Bun versions |
-| Node.js | mysql2 | Standard, stable MySQL driver     |
+| Runtime      | Driver  | Reason                          |
+| ------------ | ------- | ------------------------------- |
+| Bun 1.2.21+  | bun:sql | Native MySQL support available  |
+| Bun < 1.2.21 | mysql2  | Fallback for older Bun versions |
+| Node.js      | mysql2  | Standard, stable MySQL driver   |
 
 ### bun:sql MySQL Support
 

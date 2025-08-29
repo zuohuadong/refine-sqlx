@@ -40,10 +40,10 @@ export interface CoreDataProvider<TSchema extends TableSchema = TableSchema>
   extends DataProvider {
   // 客户端访问
   client: SqlClient;
-  
+
   // 链式查询
   from<T extends BaseRecord = BaseRecord>(tableName: string): CoreChainQuery<T>;
-  
+
   // 原生 SQL
   raw<T = any>(sql: string, bindings?: any[]): Promise<T[]>;
 }
@@ -80,7 +80,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     const factory =
       typeof db === 'object' && 'connect' in db ?
         db
-        : detectSqlite(db as any, options as any);
+      : detectSqlite(db as any, options as any);
     client = await factory.connect();
 
     return client;
@@ -101,7 +101,9 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
         try {
           const results = await getList({
             resource,
-            filters: [{ field: 'email', operator: 'eq', value: variables.email }],
+            filters: [
+              { field: 'email', operator: 'eq', value: variables.email },
+            ],
             pagination: { current: 1, pageSize: 1, mode: 'server' },
           });
           if (results.data.length > 0) {
@@ -111,7 +113,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
           // 继续到后备方案
         }
       }
-      
+
       // 后备方案：返回 lastInsertId 结果
       const result = await getOne({ resource, id: lastInsertId });
       return { data: result.data as T };
@@ -132,7 +134,9 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     const [data] = deserializeSqlResult(result);
 
     if (!data) {
-      throw new Error(`Record with id "${params.id}" not found in "${params.resource}"`);
+      throw new Error(
+        `Record with id "${params.id}" not found in "${params.resource}"`
+      );
     }
 
     return { data: data as T };
@@ -157,10 +161,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     const countRows = deserializeSqlResult(countResult);
     const total = Number(countRows[0]?.count) || 0;
 
-    return {
-      data: data as T[],
-      total,
-    };
+    return { data: data as T[], total };
   };
 
   const getMany = async <T extends BaseRecord = BaseRecord>(
@@ -184,14 +185,21 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     params: CreateParams<Variables>
   ): Promise<CreateResponse<T>> => {
     const resolvedClient = await resolveClient();
-    const query = builder.buildInsertQuery(params.resource, params.variables as any);
+    const query = builder.buildInsertQuery(
+      params.resource,
+      params.variables as any
+    );
     const { lastInsertId } = await resolvedClient.execute(query);
-    
+
     if (lastInsertId === undefined || lastInsertId === null) {
       throw new Error('Create operation failed');
     }
 
-    return findCreatedRecord<T>(params.resource, params.variables, lastInsertId);
+    return findCreatedRecord<T>(
+      params.resource,
+      params.variables,
+      lastInsertId
+    );
   };
 
   const update = async <T extends BaseRecord = BaseRecord>(
@@ -235,12 +243,12 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
         };
       }
       return (target as any)[prop];
-    }
+    },
   });
 
   return {
     client: proxyClient,
-    
+
     // 标准 DataProvider 方法
     getList,
     getMany,
@@ -251,7 +259,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     getApiUrl: () => '',
 
     // 链式查询
-    from: <T extends BaseRecord = BaseRecord>(tableName: string) => 
+    from: <T extends BaseRecord = BaseRecord>(tableName: string) =>
       new CoreChainQuery<T>(client, tableName),
 
     // 原生 SQL

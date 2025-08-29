@@ -988,38 +988,39 @@ function Monitored(originalMethod: any, context: ClassMethodDecoratorContext) {
     const start = performance.now();
     const result = originalMethod.call(this, ...args);
     const end = performance.now();
-    
+
     if (this.trackMethodPerformance) {
       this.trackMethodPerformance(context.name, end - start, args);
     }
-    
+
     return result;
   };
 }
 
-function Cached(ttl: number = 300000) { // 5 minutes default
+function Cached(ttl: number = 300000) {
+  // 5 minutes default
   return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     const cache = new Map<string, { value: any; timestamp: number }>();
-    
+
     return function replacementMethod(this: any, ...args: any[]) {
       const key = JSON.stringify(args);
       const cached = cache.get(key);
       const now = Date.now();
-      
-      if (cached && (now - cached.timestamp) < ttl) {
+
+      if (cached && now - cached.timestamp < ttl) {
         return cached.value;
       }
-      
+
       const result = originalMethod.call(this, ...args);
       cache.set(key, { value: result, timestamp: now });
-      
+
       // Clean up expired entries
       for (const [k, v] of cache.entries()) {
-        if ((now - v.timestamp) >= ttl) {
+        if (now - v.timestamp >= ttl) {
           cache.delete(k);
         }
       }
-      
+
       return result;
     };
   };
@@ -1028,7 +1029,7 @@ function Cached(ttl: number = 300000) { // 5 minutes default
 function Debounced(delay: number = 100) {
   return function (originalMethod: any, context: ClassMethodDecoratorContext) {
     let timeoutId: NodeJS.Timeout;
-    
+
     return function replacementMethod(this: any, ...args: any[]) {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -1091,9 +1092,16 @@ export class PerformanceManager {
   /**
    * Track method performance for internal monitoring
    */
-  private trackMethodPerformance(methodName: string, duration: number, args: any[]): void {
-    if (duration > 100) { // Log slow operations
-      console.warn(`[PerformanceManager] Slow operation detected: ${methodName} took ${duration.toFixed(2)}ms`);
+  private trackMethodPerformance(
+    methodName: string,
+    duration: number,
+    args: any[]
+  ): void {
+    if (duration > 100) {
+      // Log slow operations
+      console.warn(
+        `[PerformanceManager] Slow operation detected: ${methodName} took ${duration.toFixed(2)}ms`
+      );
     }
   }
 

@@ -8,7 +8,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    
+
     // Additional strict checks
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -19,14 +19,12 @@
     "alwaysStrict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     // Emit settings for strict checking
     "noEmit": true,
     "skipLibCheck": false
   },
-  "include": [
-    "packages/*/src/**/*"
-  ],
+  "include": ["packages/*/src/**/*"],
   "exclude": [
     "node_modules",
     "**/dist/**",

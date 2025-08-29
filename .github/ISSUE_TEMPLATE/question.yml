@@ -1,7 +1,7 @@
 name: Question
 description: Ask a question about usage or implementation
-title: "[Question]: "
-labels: ["question", "needs-triage"]
+title: '[Question]: '
+labels: ['question', 'needs-triage']
 assignees: []
 body:
   - type: markdown
@@ -44,7 +44,7 @@ body:
     attributes:
       label: Your Question
       description: What would you like to know?
-      placeholder: "How do I..."
+      placeholder: 'How do I...'
     validations:
       required: true
 
@@ -76,12 +76,12 @@ body:
       placeholder: |
         // Share your current code here
         import { createPostgreSQLProvider } from 'refine-orm';
-        
+
         const dataProvider = createPostgreSQLProvider(
           process.env.DATABASE_URL!,
           schema
         );
-        
+
         // Your code that you have questions about
 
   - type: textarea

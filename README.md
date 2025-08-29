@@ -37,8 +37,6 @@ A lightweight, cross-platform SQL data provider with native runtime support.
 npm install refine-sql
 ```
 
-
-
 ## Quick Start
 
 ### Choose Your Package
@@ -109,39 +107,41 @@ const posts2 = await dataProvider.query
 console.log(posts1.length === posts2.length); // true
 
 // Relationship queries - both styles supported
-const userWithPosts = await dataProvider.getWithRelations(
-  'users',
-  1,
-  ['posts', 'comments']
-);
+const userWithPosts = await dataProvider.getWithRelations('users', 1, [
+  'posts',
+  'comments',
+]);
 
 // ORM-style convenience methods
 const { data, created } = await dataProvider.firstOrCreate({
   resource: 'users',
   where: { email: 'user@example.com' },
-  defaults: { name: 'New User' }
+  defaults: { name: 'New User' },
 });
 
 // Transaction support
-await dataProvider.transaction(async (tx) => {
+await dataProvider.transaction(async tx => {
   const user = await tx.create({ resource: 'users', variables: userData });
-  const post = await tx.create({ resource: 'posts', variables: { ...postData, user_id: user.data.id } });
+  const post = await tx.create({
+    resource: 'posts',
+    variables: { ...postData, user_id: user.data.id },
+  });
   return { user, post };
 });
 ```
 
 ### 🎯 Compatibility Matrix
 
-| Feature Category | refine-sql | refine-orm | Compatibility | Notes |
-|------------------|-------------|------------|---------------|-------|
-| Basic CRUD | ✅ | ✅ | 100% | Fully compatible |
-| Chain Queries | `from()` | `query.select()` | 100% | Both APIs coexist |
-| Relationship Queries | ✅ | ✅ | 95% | Basic functionality compatible |
-| Polymorphic Relations | ✅ | ✅ | 100% | API consistent |
-| Transaction Support | ✅ | ✅ | 100% | Fully compatible |
-| ORM Methods | ✅ | ✅ | 100% | `upsert`, `firstOrCreate`, etc. |
-| Raw Queries | `raw()` | `executeRaw()` | 95% | Slight method name differences |
-| Type Safety | ✅ | ✅ | 100% | Consistent type inference |
+| Feature Category      | refine-sql | refine-orm       | Compatibility | Notes                           |
+| --------------------- | ---------- | ---------------- | ------------- | ------------------------------- |
+| Basic CRUD            | ✅         | ✅               | 100%          | Fully compatible                |
+| Chain Queries         | `from()`   | `query.select()` | 100%          | Both APIs coexist               |
+| Relationship Queries  | ✅         | ✅               | 95%           | Basic functionality compatible  |
+| Polymorphic Relations | ✅         | ✅               | 100%          | API consistent                  |
+| Transaction Support   | ✅         | ✅               | 100%          | Fully compatible                |
+| ORM Methods           | ✅         | ✅               | 100%          | `upsert`, `firstOrCreate`, etc. |
+| Raw Queries           | `raw()`    | `executeRaw()`   | 95%           | Slight method name differences  |
+| Type Safety           | ✅         | ✅               | 100%          | Consistent type inference       |
 
 **Compatibility Advantages:**
 
@@ -238,10 +238,7 @@ function App() {
   return (
     <Refine
       dataProvider={dataProvider}
-      resources={[
-        { name: 'todos', list: '/todos', create: '/todos/create' },
-      ]}
-    >
+      resources={[{ name: 'todos', list: '/todos', create: '/todos/create' }]}>
       {/* Your components */}
     </Refine>
   );
@@ -412,8 +409,6 @@ npm install refine-orm drizzle-orm
 npm install refine-sql
 ```
 
-
-
 ## 快速开始
 
 ### 选择您的包
@@ -484,39 +479,41 @@ const posts2 = await dataProvider.query
 console.log(posts1.length === posts2.length); // true
 
 // 关系查询 - 两种风格都支持
-const userWithPosts = await dataProvider.getWithRelations(
-  'users',
-  1,
-  ['posts', 'comments']
-);
+const userWithPosts = await dataProvider.getWithRelations('users', 1, [
+  'posts',
+  'comments',
+]);
 
 // ORM 风格的便捷方法
 const { data, created } = await dataProvider.firstOrCreate({
   resource: 'users',
   where: { email: 'user@example.com' },
-  defaults: { name: 'New User' }
+  defaults: { name: 'New User' },
 });
 
 // 事务支持
-await dataProvider.transaction(async (tx) => {
+await dataProvider.transaction(async tx => {
   const user = await tx.create({ resource: 'users', variables: userData });
-  const post = await tx.create({ resource: 'posts', variables: { ...postData, user_id: user.data.id } });
+  const post = await tx.create({
+    resource: 'posts',
+    variables: { ...postData, user_id: user.data.id },
+  });
   return { user, post };
 });
 ```
 
 ### 🎯 兼容性对照表
 
-| 功能类别 | refine-sql | refine-orm | 兼容性 | 说明 |
-|---------|-------------|------------|--------|------|
-| 基础 CRUD | ✅ | ✅ | 100% | 完全兼容 |
-| 链式查询 | `from()` | `query.select()` | 100% | 两套 API 并存 |
-| 关系查询 | ✅ | ✅ | 95% | 基本功能兼容 |
-| 多态关联 | ✅ | ✅ | 100% | API 一致 |
-| 事务支持 | ✅ | ✅ | 100% | 完全兼容 |
-| ORM 方法 | ✅ | ✅ | 100% | `upsert`, `firstOrCreate` 等 |
-| 原生查询 | `raw()` | `executeRaw()` | 95% | 方法名略有差异 |
-| 类型安全 | ✅ | ✅ | 100% | 类型推断一致 |
+| 功能类别  | refine-sql | refine-orm       | 兼容性 | 说明                         |
+| --------- | ---------- | ---------------- | ------ | ---------------------------- |
+| 基础 CRUD | ✅         | ✅               | 100%   | 完全兼容                     |
+| 链式查询  | `from()`   | `query.select()` | 100%   | 两套 API 并存                |
+| 关系查询  | ✅         | ✅               | 95%    | 基本功能兼容                 |
+| 多态关联  | ✅         | ✅               | 100%   | API 一致                     |
+| 事务支持  | ✅         | ✅               | 100%   | 完全兼容                     |
+| ORM 方法  | ✅         | ✅               | 100%   | `upsert`, `firstOrCreate` 等 |
+| 原生查询  | `raw()`    | `executeRaw()`   | 95%    | 方法名略有差异               |
+| 类型安全  | ✅         | ✅               | 100%   | 类型推断一致                 |
 
 **兼容性优势：**
 
@@ -532,17 +529,17 @@ await dataProvider.transaction(async (tx) => {
 
 ## 功能对比
 
-| 功能 | refine-orm | refine-sql |
-|------|------------|-------------|
-| **数据库** | PostgreSQL, MySQL, SQLite | 仅 SQLite |
-| **类型安全** | 完整模式推断 | 基础 TypeScript |
-| **关系** | 高级（多态等） | 兼容 API + 手动 SQL |
-| **查询构建器** | 链式查询、ORM 方法 | 兼容链式查询 + 原生 SQL |
-| **运行时支持** | Bun, Node.js, Cloudflare | Bun, Node.js, Cloudflare |
-| **包大小** | 较大（完整 ORM） | 较小（最小化） |
-| **学习曲线** | 中等（需要 Drizzle 知识） | 低（需要 SQL 知识） |
-| **从 ORM 迁移** | 不适用 | ✅ **优秀的兼容性** |
-| **性能** | 良好（ORM 开销） | ✅ **更好（原生 SQL）** |
+| 功能            | refine-orm                | refine-sql               |
+| --------------- | ------------------------- | ------------------------ |
+| **数据库**      | PostgreSQL, MySQL, SQLite | 仅 SQLite                |
+| **类型安全**    | 完整模式推断              | 基础 TypeScript          |
+| **关系**        | 高级（多态等）            | 兼容 API + 手动 SQL      |
+| **查询构建器**  | 链式查询、ORM 方法        | 兼容链式查询 + 原生 SQL  |
+| **运行时支持**  | Bun, Node.js, Cloudflare  | Bun, Node.js, Cloudflare |
+| **包大小**      | 较大（完整 ORM）          | 较小（最小化）           |
+| **学习曲线**    | 中等（需要 Drizzle 知识） | 低（需要 SQL 知识）      |
+| **从 ORM 迁移** | 不适用                    | ✅ **优秀的兼容性**      |
+| **性能**        | 良好（ORM 开销）          | ✅ **更好（原生 SQL）**  |
 
 ## 示例
 
@@ -613,10 +610,7 @@ function App() {
   return (
     <Refine
       dataProvider={dataProvider}
-      resources={[
-        { name: 'todos', list: '/todos', create: '/todos/create' },
-      ]}
-    >
+      resources={[{ name: 'todos', list: '/todos', create: '/todos/create' }]}>
       {/* 您的组件 */}
     </Refine>
   );
@@ -635,12 +629,12 @@ CREATE TABLE todos (
 
 ## 运行时支持
 
-| 运行时 | refine-orm | refine-sql |
-|--------|------------|-------------|
-| **Bun** | ✅ 原生 SQL 驱动 | ✅ bun:sqlite |
-| **Node.js** | ✅ 标准驱动 | ✅ better-sqlite3 |
-| **Cloudflare Workers** | ✅ D1 (仅 SQLite) | ✅ D1 数据库 |
-| **Deno** | 🔄 即将推出 | 🔄 即将推出 |
+| 运行时                 | refine-orm        | refine-sql        |
+| ---------------------- | ----------------- | ----------------- |
+| **Bun**                | ✅ 原生 SQL 驱动  | ✅ bun:sqlite     |
+| **Node.js**            | ✅ 标准驱动       | ✅ better-sqlite3 |
+| **Cloudflare Workers** | ✅ D1 (仅 SQLite) | ✅ D1 数据库      |
+| **Deno**               | 🔄 即将推出       | 🔄 即将推出       |
 
 ## 开发
 

@@ -10,7 +10,9 @@ import { CoreChainQuery } from '../core/chain-query';
 /**
  * 兼容性链式查询构建器
  */
-export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreChainQuery<T> {
+export class CompatChainQuery<
+  T extends BaseRecord = BaseRecord,
+> extends CoreChainQuery<T> {
   constructor(client: SqlClient, tableName: string) {
     super(client, tableName);
   }
@@ -26,7 +28,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   ): this {
     // 简化实现：存储关系配置但不实际加载
     // 完整实现需要关系加载逻辑
-    console.warn(`withHasOne(${relationName}) is not fully implemented in core module`);
+    console.warn(
+      `withHasOne(${relationName}) is not fully implemented in core module`
+    );
     return this;
   }
 
@@ -36,7 +40,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
     localKey: string = 'id',
     relatedKey?: string
   ): this {
-    console.warn(`withHasMany(${relationName}) is not fully implemented in core module`);
+    console.warn(
+      `withHasMany(${relationName}) is not fully implemented in core module`
+    );
     return this;
   }
 
@@ -46,7 +52,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
     foreignKey?: string,
     relatedKey: string = 'id'
   ): this {
-    console.warn(`withBelongsTo(${relationName}) is not fully implemented in core module`);
+    console.warn(
+      `withBelongsTo(${relationName}) is not fully implemented in core module`
+    );
     return this;
   }
 
@@ -59,7 +67,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
     pivotLocalKey?: string,
     pivotRelatedKey?: string
   ): this {
-    console.warn(`withBelongsToMany(${relationName}) is not fully implemented in core module`);
+    console.warn(
+      `withBelongsToMany(${relationName}) is not fully implemented in core module`
+    );
     return this;
   }
 
@@ -92,7 +102,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   /**
    * 映射结果
    */
-  async map<U>(callback: (record: T, index: number) => U | Promise<U>): Promise<U[]> {
+  async map<U>(
+    callback: (record: T, index: number) => U | Promise<U>
+  ): Promise<U[]> {
     const results = await this.get();
     const mapped: U[] = [];
     for (let i = 0; i < results.length; i++) {
@@ -105,7 +117,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   /**
    * 过滤结果
    */
-  async filter(callback: (record: T, index: number) => boolean | Promise<boolean>): Promise<T[]> {
+  async filter(
+    callback: (record: T, index: number) => boolean | Promise<boolean>
+  ): Promise<T[]> {
     const results = await this.get();
     const filtered: T[] = [];
     for (let i = 0; i < results.length; i++) {
@@ -120,7 +134,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   /**
    * 查找第一个匹配的记录
    */
-  async find(callback: (record: T) => boolean | Promise<boolean>): Promise<T | null> {
+  async find(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<T | null> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -132,7 +148,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   /**
    * 检查是否有记录匹配条件
    */
-  async some(callback: (record: T) => boolean | Promise<boolean>): Promise<boolean> {
+  async some(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<boolean> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -144,7 +162,9 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   /**
    * 检查是否所有记录都匹配条件
    */
-  async every(callback: (record: T) => boolean | Promise<boolean>): Promise<boolean> {
+  async every(
+    callback: (record: T) => boolean | Promise<boolean>
+  ): Promise<boolean> {
     const results = await this.get();
     for (const record of results) {
       const matches = await callback(record);
@@ -185,7 +205,7 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   async minBy(field: keyof T): Promise<T | null> {
     const results = await this.get();
     if (results.length === 0) return null;
-    return results.reduce((min, current) => 
+    return results.reduce((min, current) =>
       (current as any)[field] < (min as any)[field] ? current : min
     );
   }
@@ -196,7 +216,7 @@ export class CompatChainQuery<T extends BaseRecord = BaseRecord> extends CoreCha
   async maxBy(field: keyof T): Promise<T | null> {
     const results = await this.get();
     if (results.length === 0) return null;
-    return results.reduce((max, current) => 
+    return results.reduce((max, current) =>
       (current as any)[field] > (max as any)[field] ? current : max
     );
   }

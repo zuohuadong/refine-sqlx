@@ -95,6 +95,9 @@ describe('SqlTransformer.transformFilters', () => {
       { field: 'age', operator: 'between', value: [18, 65] },
     ];
     const result = transformer.transformFilters(filters);
-    expect(result).toEqual({ sql: 'WHERE age BETWEEN ? AND ?', args: [18, 65] });
+    expect(result).toEqual({
+      sql: 'WHERE age BETWEEN ? AND ?',
+      args: [18, 65],
+    });
   });
 });

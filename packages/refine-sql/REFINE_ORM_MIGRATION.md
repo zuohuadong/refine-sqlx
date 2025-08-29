@@ -45,16 +45,10 @@ const schema = { users };
 
 // 现在 (refine-sql) - 简单的 TypeScript 接口
 interface MySchema {
-  users: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  users: { id: number; name: string; email: string };
 }
 
-const schema: MySchema = {
-  users: {} as MySchema['users'],
-};
+const schema: MySchema = { users: {} as MySchema['users'] };
 ```
 
 ### 4. 更新提供器创建
@@ -67,10 +61,7 @@ const dataProvider = createSQLiteProvider('./database.db', schema);
 const dataProvider = createSQLiteProvider({
   connection: './database.db',
   schema: schema,
-  options: {
-    enablePerformanceMonitoring: true,
-    debug: true,
-  },
+  options: { enablePerformanceMonitoring: true, debug: true },
 });
 ```
 
@@ -82,9 +73,9 @@ const dataProvider = createSQLiteProvider({
 // 之前的方法仍然可用，但推荐使用新方法
 const users = await dataProvider
   .from('users')
-  .where('status', 'eq', 'active')    // 新的统一方法
-  .where('age', 'gt', 18)             // 新的统一方法
-  .orderBy('created_at', 'desc')      // 新的统一方法
+  .where('status', 'eq', 'active') // 新的统一方法
+  .where('age', 'gt', 18) // 新的统一方法
+  .orderBy('created_at', 'desc') // 新的统一方法
   .limit(10)
   .get();
 ```
@@ -134,26 +125,19 @@ interface MySchema {
     status: string;
     created_at?: string;
   };
-  posts: {
-    id: number;
-    title: string;
-    userId: number;
-  };
+  posts: { id: number; title: string; userId: number };
 }
 
 const dataProvider = createSQLiteProvider({
   connection: './database.db',
-  schema: {
-    users: {} as MySchema['users'],
-    posts: {} as MySchema['posts'],
-  },
+  schema: { users: {} as MySchema['users'], posts: {} as MySchema['posts'] },
 });
 
 // 使用示例 - API 完全兼容
 const activeUsers = await dataProvider
   .from('users')
-  .where('status', 'eq', 'active')    // 推荐使用新的统一方法
-  .orderBy('created_at', 'desc')      // 推荐使用新的统一方法
+  .where('status', 'eq', 'active') // 推荐使用新的统一方法
+  .orderBy('created_at', 'desc') // 推荐使用新的统一方法
   .get();
 ```
 
@@ -162,16 +146,22 @@ const activeUsers = await dataProvider
 refine-sql 支持 refine-orm 的所有核心功能：
 
 ### 标准 CRUD 操作
+
 ```typescript
 // 完全兼容 refine-orm API
 await dataProvider.getList({ resource: 'users' });
 await dataProvider.getOne({ resource: 'users', id: 1 });
 await dataProvider.create({ resource: 'users', variables: { name: 'John' } });
-await dataProvider.update({ resource: 'users', id: 1, variables: { name: 'Jane' } });
+await dataProvider.update({
+  resource: 'users',
+  id: 1,
+  variables: { name: 'Jane' },
+});
 await dataProvider.deleteOne({ resource: 'users', id: 1 });
 ```
 
 ### 链式查询
+
 ```typescript
 // 所有 refine-orm 的链式查询方法都支持
 const query = dataProvider
@@ -183,9 +173,12 @@ const query = dataProvider
 ```
 
 ### 关系查询
+
 ```typescript
 // 关系加载完全兼容
-const userWithPosts = await dataProvider.getWithRelations('users', 1, ['posts']);
+const userWithPosts = await dataProvider.getWithRelations('users', 1, [
+  'posts',
+]);
 
 // 链式关系查询
 const postsWithAuthors = await dataProvider
@@ -195,6 +188,7 @@ const postsWithAuthors = await dataProvider
 ```
 
 ### 批量操作
+
 ```typescript
 // 批量操作完全兼容
 await dataProvider.createMany({
@@ -205,6 +199,7 @@ await dataProvider.createMany({
 ```
 
 ### 高级工具
+
 ```typescript
 // 高级工具完全兼容
 await dataProvider.upsert({
@@ -221,15 +216,17 @@ await dataProvider.firstOrCreate({
 ```
 
 ### 事务支持
+
 ```typescript
 // 事务支持完全兼容
-await dataProvider.transaction(async (tx) => {
+await dataProvider.transaction(async tx => {
   await tx.create({ resource: 'users', variables: { name: 'User1' } });
   await tx.create({ resource: 'posts', variables: { title: 'Post1' } });
 });
 ```
 
 ### 原生 SQL
+
 ```typescript
 // 原生 SQL 执行完全兼容
 const results = await dataProvider.executeRaw(
@@ -267,12 +264,12 @@ export default {
 
 ## 性能对比
 
-| 特性 | refine-orm | refine-sql | 改进 |
-|------|------------|------------|------|
-| 包大小 | ~150kB | ~23kB | 85% 更小 |
-| 冷启动时间 | ~200ms | ~100ms | 50% 更快 |
-| 查询性能 | 基准 | 30% 更快 | SQLite 优化 |
-| 内存使用 | 基准 | 40% 更少 | 轻量级实现 |
+| 特性       | refine-orm | refine-sql | 改进        |
+| ---------- | ---------- | ---------- | ----------- |
+| 包大小     | ~150kB     | ~23kB      | 85% 更小    |
+| 冷启动时间 | ~200ms     | ~100ms     | 50% 更快    |
+| 查询性能   | 基准       | 30% 更快   | SQLite 优化 |
+| 内存使用   | 基准       | 40% 更少   | 轻量级实现  |
 
 ## 迁移检查清单
 
@@ -308,15 +305,19 @@ const checklist = MigrationHelpers.generateChecklist();
 ## 常见问题
 
 ### Q: 是否支持 PostgreSQL 和 MySQL？
+
 A: refine-sql 专注于 SQLite 和 D1，不支持其他数据库。如需多数据库支持，请继续使用 refine-orm。
 
 ### Q: 所有 refine-orm 功能都支持吗？
+
 A: 支持所有核心功能，包括 CRUD、链式查询、关系、批量操作、事务等。
 
 ### Q: 性能真的有提升吗？
+
 A: 是的，特别是在 Cloudflare Workers 等边缘环境中，包大小减少 85%，冷启动时间减少 50%。
 
 ### Q: 可以逐步迁移吗？
+
 A: 可以，refine-sql 完全兼容 refine-orm API，可以直接替换而无需修改业务逻辑。
 
 ## 获取帮助

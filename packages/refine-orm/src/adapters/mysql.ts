@@ -3,7 +3,11 @@ import type { Table } from 'drizzle-orm';
 // Dynamic imports for database drivers
 let drizzleMySQL: any;
 
-import { BaseDatabaseAdapter, LogDatabaseOperation, RetryOnFailure } from './base.js';
+import {
+  BaseDatabaseAdapter,
+  LogDatabaseOperation,
+  RetryOnFailure,
+} from './base.js';
 import type {
   DatabaseConfig,
   MySQLOptions,
@@ -472,7 +476,9 @@ export class MySQLAdapter<
  * Factory function to create MySQL data provider
  * Uses mysql2 driver for all environments (Bun and Node.js)
  */
-export async function createMySQLProvider<TSchema extends Record<string, Table>>(
+export async function createMySQLProvider<
+  TSchema extends Record<string, Table>,
+>(
   connection: string | ConnectionOptions,
   schema: TSchema,
   options?: MySQLOptions

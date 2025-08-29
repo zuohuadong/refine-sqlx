@@ -6,22 +6,28 @@ import { withAdapterErrorHandling } from '../utils';
 export default function createBetterSQLite3Adapter(
   db: BetterSqlite3.Database
 ): SqlClient {
-  const query = withAdapterErrorHandling(async (query: SqlQuery): Promise<SqlResult> => {
-    const stmt = db.prepare(query.sql).bind(...query.args);
-    const columns = stmt.columns();
+  const query = withAdapterErrorHandling(
+    async (query: SqlQuery): Promise<SqlResult> => {
+      const stmt = db.prepare(query.sql).bind(...query.args);
+      const columns = stmt.columns();
 
-    return {
-      columnNames: columns.map(column => column.name),
-      rows: stmt.raw().all() as unknown[][],
-    };
-  }, 'query');
+      return {
+        columnNames: columns.map(column => column.name),
+        rows: stmt.raw().all() as unknown[][],
+      };
+    },
+    'query'
+  );
 
-  const execute = withAdapterErrorHandling(async (query: SqlQuery): Promise<SqlAffected> => {
-    const stmt = db.prepare(query.sql).bind(...query.args);
-    const result = stmt.run();
+  const execute = withAdapterErrorHandling(
+    async (query: SqlQuery): Promise<SqlAffected> => {
+      const stmt = db.prepare(query.sql).bind(...query.args);
+      const result = stmt.run();
 
-    return createSqlAffected(result);
-  }, 'execute');
+      return createSqlAffected(result);
+    },
+    'execute'
+  );
 
   const transaction = createTransactionWrapper(execute, query);
 

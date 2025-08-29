@@ -23,9 +23,7 @@ export default defineBuildConfig({
       target: 'es2022', // 升级到 ES2022 以支持新装饰器
       format: 'esm',
       // 启用新标准装饰器支持
-      supported: {
-        decorators: true,
-      },
+      supported: { decorators: true },
       // Remove development debug code
       drop: ['console', 'debugger'],
       // More aggressive compression settings
@@ -35,15 +33,15 @@ export default defineBuildConfig({
     },
     emitCJS: true,
     // Optimize output
-    output: { 
-      compact: true, 
+    output: {
+      compact: true,
       minifyInternalExports: true,
-      generatedCode: 'es2015'
+      generatedCode: 'es2015',
     },
   },
   externals: [
     'bun:sqlite',
-    'node:sqlite', 
+    'node:sqlite',
     'better-sqlite3',
     '@cloudflare/workers-types',
   ],

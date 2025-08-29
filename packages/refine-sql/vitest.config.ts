@@ -17,12 +17,7 @@ export default defineConfig({
         'src/client.d.ts',
       ],
       thresholds: {
-        global: {
-          branches: 70,
-          functions: 70,
-          lines: 70,
-          statements: 70,
-        },
+        global: { branches: 70, functions: 70, lines: 70, statements: 70 },
       },
     },
   },

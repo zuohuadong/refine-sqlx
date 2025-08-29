@@ -20,8 +20,9 @@ if (isBunRuntime) {
   }
 }
 
-const testSuite = isBunRuntime && Database && createBunSQLiteAdapter
-  ? createIntegrationTestSuite(
+const testSuite =
+  isBunRuntime && Database && createBunSQLiteAdapter ?
+    createIntegrationTestSuite(
       'Bun SQLite',
       async (): Promise<SqlClient> => {
         // Create in-memory database

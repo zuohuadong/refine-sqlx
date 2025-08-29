@@ -1,7 +1,7 @@
 name: 📝 User Feedback
 description: Share your experience, suggestions, or general feedback about refine-orm or refine-sql
-title: "[FEEDBACK] "
-labels: ["feedback", "user-experience"]
+title: '[FEEDBACK] '
+labels: ['feedback', 'user-experience']
 assignees:
   - medz
 body:

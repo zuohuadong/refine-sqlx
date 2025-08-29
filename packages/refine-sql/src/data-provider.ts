@@ -22,7 +22,13 @@ import type {
 } from '@refinedev/core';
 import type { SqlClient, SqlClientFactory, SqlResult } from './client';
 import { SqlTransformer } from '@refine-orm/core-utils';
-import { deserializeSqlResult, withClientCheck, withErrorHandling, handleErrors, dbOperation } from './utils';
+import {
+  deserializeSqlResult,
+  withClientCheck,
+  withErrorHandling,
+  handleErrors,
+  dbOperation,
+} from './utils';
 import type { SQLiteOptions } from './types/config';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Database as BunDatabase } from 'bun:sqlite';
@@ -36,7 +42,7 @@ import {
   TransactionManager,
   NativeQueryBuilders,
   AdvancedUtils,
-  type TransactionContext
+  type TransactionContext,
 } from './advanced-features';
 import { CompatibleChainQuery } from './compatibility-layer';
 
@@ -59,10 +65,18 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
 
   // Native query builders
   query: {
-    select<T extends BaseRecord = BaseRecord>(resource: string): SqlxChainQuery<T>;
-    insert<T extends BaseRecord = BaseRecord>(resource: string): SqlxChainQuery<T>;
-    update<T extends BaseRecord = BaseRecord>(resource: string): SqlxChainQuery<T>;
-    delete<T extends BaseRecord = BaseRecord>(resource: string): SqlxChainQuery<T>;
+    select<T extends BaseRecord = BaseRecord>(
+      resource: string
+    ): SqlxChainQuery<T>;
+    insert<T extends BaseRecord = BaseRecord>(
+      resource: string
+    ): SqlxChainQuery<T>;
+    update<T extends BaseRecord = BaseRecord>(
+      resource: string
+    ): SqlxChainQuery<T>;
+    delete<T extends BaseRecord = BaseRecord>(
+      resource: string
+    ): SqlxChainQuery<T>;
   };
 
   // Relationship queries
@@ -74,14 +88,20 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
   ): Promise<GetOneResponse<T>>;
 
   // Advanced methods
-  upsert<T extends BaseRecord = BaseRecord, Variables extends Record<string, any> = Record<string, any>>(params: {
+  upsert<
+    T extends BaseRecord = BaseRecord,
+    Variables extends Record<string, any> = Record<string, any>,
+  >(params: {
     resource: string;
     variables: Variables;
     conflictColumns?: string[];
     updateColumns?: string[];
   }): Promise<CreateResponse<T> | UpdateResponse<T>>;
 
-  firstOrCreate<T extends BaseRecord = BaseRecord, Variables extends Record<string, any> = Record<string, any>>(params: {
+  firstOrCreate<
+    T extends BaseRecord = BaseRecord,
+    Variables extends Record<string, any> = Record<string, any>,
+  >(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Variables;
@@ -191,14 +211,17 @@ export default function <TSchema extends TableSchema = TableSchema>(
     const resolvedClient = await resolveClient();
     const query = {
       sql: `UPDATE ${resource} SET ${column} = ${column} ${operation} ? WHERE id = ?`,
-      args: [amount, id]
+      args: [amount, id],
     };
     await resolvedClient.execute(query);
     return getOne({ resource, id });
   };
 
   // Helper function: Find record by conditions
-  const findByConditions = async (resource: string, conditions: Record<string, any>) => {
+  const findByConditions = async (
+    resource: string,
+    conditions: Record<string, any>
+  ) => {
     const filters = Object.entries(conditions).map(([field, value]) => ({
       field,
       operator: 'eq' as const,
@@ -224,7 +247,10 @@ export default function <TSchema extends TableSchema = TableSchema>(
     try {
       const result = await getOne({ resource, id: lastInsertId });
       // Verify the returned record matches our inserted data
-      if (variables.email && (result.data as any)['email'] === variables.email) {
+      if (
+        variables.email &&
+        (result.data as any)['email'] === variables.email
+      ) {
         return { data: result.data as T };
       }
       if (variables.name && (result.data as any)['name'] === variables.name) {
@@ -268,35 +294,39 @@ export default function <TSchema extends TableSchema = TableSchema>(
       throw new Error('Create operation failed');
     }
 
-    return findCreatedRecord<T>(params.resource, params.variables, lastInsertId);
+    return findCreatedRecord<T>(
+      params.resource,
+      params.variables,
+      lastInsertId
+    );
   }
 
   // 使用函数包装器简化 getOne 方法
-  const getOne = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: GetOneParams): Promise<GetOneResponse<T>> {
+  const getOne = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: GetOneParams): Promise<GetOneResponse<T>> {
     const client = await resolveClient();
     const idColumnName = params.meta?.idColumnName ?? 'id';
     const query = transformer.buildSelectQuery(params.resource, {
-      filters: [
-        {
-          field: idColumnName,
-          operator: 'eq',
-          value: params.id,
-        },
-      ],
+      filters: [{ field: idColumnName, operator: 'eq', value: params.id }],
     });
 
     const result = await client.query(query);
     const [data] = deserializeSqlResult(result);
 
     if (!data) {
-      throw new Error(`Record with id "${params.id}" not found in "${params.resource}"`);
+      throw new Error(
+        `Record with id "${params.id}" not found in "${params.resource}"`
+      );
     }
 
     return { data: data as T };
   }, 'Failed to get record');
 
   // 使用函数包装器简化 getList 方法
-  const getList = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: GetListParams): Promise<GetListResponse<T>> {
+  const getList = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: GetListParams): Promise<GetListResponse<T>> {
     const client = await resolveClient();
     const query = transformer.buildSelectQuery(params.resource, {
       filters: params.filters,
@@ -316,26 +346,19 @@ export default function <TSchema extends TableSchema = TableSchema>(
       rows: [[count]],
     } = await client.query(countQuery);
 
-    return {
-      data: data as T[],
-      total: count as number,
-    };
+    return { data: data as T[], total: count as number };
   }, 'Failed to get list');
 
   // 使用函数包装器简化 getMany 方法
-  const getMany = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: GetManyParams): Promise<GetManyResponse<T>> {
+  const getMany = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: GetManyParams): Promise<GetManyResponse<T>> {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
     const idColumnName = params.meta?.idColumnName ?? 'id';
     const query = transformer.buildSelectQuery(params.resource, {
-      filters: [
-        {
-          field: idColumnName,
-          operator: 'in',
-          value: params.ids,
-        },
-      ],
+      filters: [{ field: idColumnName, operator: 'in', value: params.ids }],
     });
 
     const result = await client.query(query);
@@ -345,7 +368,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to get records');
 
   // 使用函数包装器简化 update 方法
-  const update = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: UpdateParams): Promise<UpdateResponse<T>> {
+  const update = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: UpdateParams): Promise<UpdateResponse<T>> {
     const client = await resolveClient();
     const query = transformer.buildUpdateQuery(
       params.resource,
@@ -359,27 +384,33 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to update record');
 
   // 使用函数包装器简化 updateMany 方法
-  const updateMany = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: UpdateManyParams): Promise<UpdateManyResponse<T>> {
+  const updateMany = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: UpdateManyParams): Promise<UpdateManyResponse<T>> {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
     const queries = params.ids.map(id =>
-      transformer.buildUpdateQuery(
-        params.resource,
-        params.variables as any,
-        { field: 'id', value: id }
-      )
+      transformer.buildUpdateQuery(params.resource, params.variables as any, {
+        field: 'id',
+        value: id,
+      })
     );
 
     // Execute all queries in a batch
     await Promise.all(queries.map(query => client.execute(query)));
 
-    const result = await getMany<T>({ resource: params.resource, ids: params.ids });
+    const result = await getMany<T>({
+      resource: params.resource,
+      ids: params.ids,
+    });
     return { data: result.data as T[] };
   }, 'Failed to update records');
 
   // 使用函数包装器简化 createMany 方法
-  const createMany = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: CreateManyParams): Promise<CreateManyResponse<T>> {
+  const createMany = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: CreateManyParams): Promise<CreateManyResponse<T>> {
     const client = await resolveClient();
     if (!params.variables.length) return { data: [] };
 
@@ -387,21 +418,39 @@ export default function <TSchema extends TableSchema = TableSchema>(
       transformer.buildInsertQuery(params.resource, variables as any)
     );
 
-    // Execute all queries in a batch
-    const results = await Promise.all(
-      queries.map(query => client.execute(query))
-    );
+    let results: any[];
+    
+    // Try transaction first, then batch, then fall back to Promise.all
+    if (client.transaction) {
+      results = await client.transaction!(async (tx) => {
+        const transactionResults = [];
+        for (const query of queries) {
+          const result = await tx.execute(query);
+          transactionResults.push(result);
+        }
+        return transactionResults;
+      });
+    } else if (client.batch) {
+      results = await client.batch!(queries);
+    } else {
+      // Execute all queries in parallel
+      results = await Promise.all(
+        queries.map(query => client.execute(query))
+      );
+    }
 
     const ids = results
-      .map(result => result.lastInsertId)
-      .filter((id): id is number => id !== undefined);
+      .map(result => result?.lastInsertId)
+      .filter((id): id is number => typeof id === 'number' && id !== undefined);
 
     const result = await getMany<T>({ resource: params.resource, ids });
     return { data: result.data as T[] };
   }, 'Failed to create records');
 
   // 使用函数包装器简化 deleteOne 方法
-  const deleteOne = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: DeleteOneParams): Promise<DeleteOneResponse<T>> {
+  const deleteOne = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: DeleteOneParams): Promise<DeleteOneResponse<T>> {
     const client = await resolveClient();
     const result = await getOne<T>(params);
 
@@ -416,11 +465,16 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to delete record');
 
   // 使用函数包装器简化 deleteMany 方法
-  const deleteMany = withErrorHandling(async function <T extends BaseRecord = BaseRecord>(params: DeleteManyParams): Promise<DeleteManyResponse<T>> {
+  const deleteMany = withErrorHandling(async function <
+    T extends BaseRecord = BaseRecord,
+  >(params: DeleteManyParams): Promise<DeleteManyResponse<T>> {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
-    const result = await getMany<T>({ resource: params.resource, ids: params.ids });
+    const result = await getMany<T>({
+      resource: params.resource,
+      ids: params.ids,
+    });
 
     const idColumnName = params.meta?.idColumnName ?? 'id';
     const query = transformer.buildDeleteQuery(params.resource, {
@@ -433,7 +487,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to delete records');
 
   return {
-    get client() { return resolveClient(); },
+    get client() {
+      return resolveClient();
+    },
     getList,
     getMany,
     getOne,
@@ -446,21 +502,39 @@ export default function <TSchema extends TableSchema = TableSchema>(
     getApiUrl: () => '',
 
     // Chain query methods - simplified with client check
-    from: withClientCheck((tableName: string) => new SqlxChainQuery(client, tableName), () => client),
+    from: withClientCheck(
+      (tableName: string) => new SqlxChainQuery(client, tableName),
+      () => client
+    ),
 
     // Polymorphic relationship methods
-    morphTo: withClientCheck((tableName: string, morphConfig: MorphConfig) =>
-      new SqlxMorphQuery(client, tableName, morphConfig), () => client),
+    morphTo: withClientCheck(
+      (tableName: string, morphConfig: MorphConfig) =>
+        new SqlxMorphQuery(client, tableName, morphConfig),
+      () => client
+    ),
 
     // Native query builders
     query: {
-      select: withClientCheck((resource: string) => new SqlxChainQuery(client, resource), () => client),
-      insert: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
-        new SqlxChainQuery<T>(client, resource), () => client),
-      update: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
-        new SqlxChainQuery<T>(client, resource), () => client),
-      delete: withClientCheck(<T extends BaseRecord = BaseRecord>(resource: string) =>
-        new SqlxChainQuery<T>(client, resource), () => client),
+      select: withClientCheck(
+        (resource: string) => new SqlxChainQuery(client, resource),
+        () => client
+      ),
+      insert: withClientCheck(
+        <T extends BaseRecord = BaseRecord>(resource: string) =>
+          new SqlxChainQuery<T>(client, resource),
+        () => client
+      ),
+      update: withClientCheck(
+        <T extends BaseRecord = BaseRecord>(resource: string) =>
+          new SqlxChainQuery<T>(client, resource),
+        () => client
+      ),
+      delete: withClientCheck(
+        <T extends BaseRecord = BaseRecord>(resource: string) =>
+          new SqlxChainQuery<T>(client, resource),
+        () => client
+      ),
     },
 
     // Relationship queries
@@ -480,7 +554,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
 
       // Load all relations in parallel for better performance
       await Promise.allSettled(
-        relations.map(async (relation) => {
+        relations.map(async relation => {
           try {
             if (relation.endsWith('s')) {
               // Assume hasMany relationship
@@ -493,7 +567,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
               recordWithRelations[relation] = relatedRecords.data;
             } else {
               // Assume belongsTo relationship
-              const foreignKeyValue = (baseRecord.data as any)[`${relation}_id`];
+              const foreignKeyValue = (baseRecord.data as any)[
+                `${relation}_id`
+              ];
               if (foreignKeyValue) {
                 const relatedRecord = await getOne({
                   resource: relation + 's', // Assume table name is plural
@@ -515,24 +591,48 @@ export default function <TSchema extends TableSchema = TableSchema>(
     },
 
     // Type-safe methods (lazy initialization)
-    get getTyped() { return getTypedMethods().getTyped.bind(getTypedMethods()); },
-    get getListTyped() { return getTypedMethods().getListTyped.bind(getTypedMethods()); },
-    get getManyTyped() { return getTypedMethods().getManyTyped.bind(getTypedMethods()); },
-    get createTyped() { return getTypedMethods().createTyped.bind(getTypedMethods()); },
-    get updateTyped() { return getTypedMethods().updateTyped.bind(getTypedMethods()); },
-    get deleteTyped() { return getTypedMethods().deleteTyped.bind(getTypedMethods()); },
-    get createManyTyped() { return getTypedMethods().createManyTyped.bind(getTypedMethods()); },
-    get updateManyTyped() { return getTypedMethods().updateManyTyped.bind(getTypedMethods()); },
-    get deleteManyTyped() { return getTypedMethods().deleteManyTyped.bind(getTypedMethods()); },
-    get queryTyped() { return getTypedMethods().queryTyped.bind(getTypedMethods()); },
-    get executeTyped() { return getTypedMethods().executeTyped.bind(getTypedMethods()); },
-    get existsTyped() { return getTypedMethods().existsTyped.bind(getTypedMethods()); },
-    get findTyped() { return getTypedMethods().findTyped.bind(getTypedMethods()); },
-    get findManyTyped() { return getTypedMethods().findManyTyped.bind(getTypedMethods()); },
-
-
-
-
+    get getTyped() {
+      return getTypedMethods().getTyped.bind(getTypedMethods());
+    },
+    get getListTyped() {
+      return getTypedMethods().getListTyped.bind(getTypedMethods());
+    },
+    get getManyTyped() {
+      return getTypedMethods().getManyTyped.bind(getTypedMethods());
+    },
+    get createTyped() {
+      return getTypedMethods().createTyped.bind(getTypedMethods());
+    },
+    get updateTyped() {
+      return getTypedMethods().updateTyped.bind(getTypedMethods());
+    },
+    get deleteTyped() {
+      return getTypedMethods().deleteTyped.bind(getTypedMethods());
+    },
+    get createManyTyped() {
+      return getTypedMethods().createManyTyped.bind(getTypedMethods());
+    },
+    get updateManyTyped() {
+      return getTypedMethods().updateManyTyped.bind(getTypedMethods());
+    },
+    get deleteManyTyped() {
+      return getTypedMethods().deleteManyTyped.bind(getTypedMethods());
+    },
+    get queryTyped() {
+      return getTypedMethods().queryTyped.bind(getTypedMethods());
+    },
+    get executeTyped() {
+      return getTypedMethods().executeTyped.bind(getTypedMethods());
+    },
+    get existsTyped() {
+      return getTypedMethods().existsTyped.bind(getTypedMethods());
+    },
+    get findTyped() {
+      return getTypedMethods().findTyped.bind(getTypedMethods());
+    },
+    get findManyTyped() {
+      return getTypedMethods().findManyTyped.bind(getTypedMethods());
+    },
 
     // ===== Advanced Methods =====
 
@@ -567,7 +667,10 @@ export default function <TSchema extends TableSchema = TableSchema>(
         }
       }
 
-      return create<T>({ resource: params.resource, variables: params.variables as any });
+      return create<T>({
+        resource: params.resource,
+        variables: params.variables as any,
+      });
     },
 
     /**
@@ -638,7 +741,13 @@ export default function <TSchema extends TableSchema = TableSchema>(
       column: string;
       amount?: number;
     }): Promise<UpdateResponse<BaseRecord>> {
-      return updateNumericField(params.resource, params.id, params.column, '+', params.amount);
+      return updateNumericField(
+        params.resource,
+        params.id,
+        params.column,
+        '+',
+        params.amount
+      );
     },
 
     /**
@@ -650,7 +759,13 @@ export default function <TSchema extends TableSchema = TableSchema>(
       column: string;
       amount?: number;
     }): Promise<UpdateResponse<BaseRecord>> {
-      return updateNumericField(params.resource, params.id, params.column, '-', params.amount);
+      return updateNumericField(
+        params.resource,
+        params.id,
+        params.column,
+        '-',
+        params.amount
+      );
     },
 
     /**
@@ -658,10 +773,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
      */
     async raw<T = any>(sql: string, bindings?: any[]): Promise<T[]> {
       const resolvedClient = await resolveClient();
-      const query = {
-        sql: sql,
-        args: bindings || []
-      };
+      const query = { sql: sql, args: bindings || [] };
       const result = await resolvedClient.query(query);
       return deserializeSqlResult(result) as T[];
     },
@@ -671,10 +783,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
      */
     async getTableInfo(tableName: string): Promise<any[]> {
       const resolvedClient = await resolveClient();
-      const query = {
-        sql: `PRAGMA table_info(${tableName})`,
-        args: []
-      };
+      const query = { sql: `PRAGMA table_info(${tableName})`, args: [] };
       const result = await resolvedClient.query(query);
       return deserializeSqlResult(result);
     },
@@ -686,7 +795,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
       const resolvedClient = await resolveClient();
       const query = {
         sql: `SELECT name FROM sqlite_master WHERE type='table' AND name=?`,
-        args: [tableName]
+        args: [tableName],
       };
       const result = await resolvedClient.query(query);
       return deserializeSqlResult(result).length > 0;
@@ -752,7 +861,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
     const factory =
       typeof db === 'object' && 'connect' in db ?
         db
-        : detectSqlite(db as any, options as any);
+      : detectSqlite(db as any, options as any);
     client = await factory.connect();
 
     return client;
@@ -762,7 +871,21 @@ export default function <TSchema extends TableSchema = TableSchema>(
 /**
  * Enhanced data provider with all refine-orm compatible features
  */
-export interface FullyCompatibleDataProvider<TSchema extends TableSchema = TableSchema> extends Omit<EnhancedDataProvider<TSchema>, 'from' | 'query' | 'morphTo' | 'upsert' | 'firstOrCreate' | 'updateOrCreate' | 'increment' | 'decrement' | 'getWithRelations' | 'transaction'> {
+export interface FullyCompatibleDataProvider<
+  TSchema extends TableSchema = TableSchema,
+> extends Omit<
+    EnhancedDataProvider<TSchema>,
+    | 'from'
+    | 'query'
+    | 'morphTo'
+    | 'upsert'
+    | 'firstOrCreate'
+    | 'updateOrCreate'
+    | 'increment'
+    | 'decrement'
+    | 'getWithRelations'
+    | 'transaction'
+  > {
   // Transaction support
   transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T>;
 
@@ -841,7 +964,9 @@ export interface FullyCompatibleDataProvider<TSchema extends TableSchema = Table
 /**
  * Create a fully compatible data provider with all refine-orm features
  */
-export function createFullyCompatibleProvider<TSchema extends TableSchema = TableSchema>(
+export function createFullyCompatibleProvider<
+  TSchema extends TableSchema = TableSchema,
+>(
   baseProvider: EnhancedDataProvider<TSchema>
 ): FullyCompatibleDataProvider<TSchema> {
   const client = (baseProvider as any).client as SqlClient;
@@ -857,7 +982,9 @@ export function createFullyCompatibleProvider<TSchema extends TableSchema = Tabl
     ...baseProvider,
 
     // Transaction support
-    async transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T> {
+    async transaction<T>(
+      fn: (tx: TransactionContext) => Promise<T>
+    ): Promise<T> {
       return transactionManager.transaction(fn);
     },
 
@@ -918,7 +1045,12 @@ export function createFullyCompatibleProvider<TSchema extends TableSchema = Tabl
       batchSize: number = 100,
       onConflict: 'ignore' | 'replace' = 'ignore'
     ): Promise<T[]> {
-      return advancedUtils.batchInsert<T>(tableName, data, batchSize, onConflict);
+      return advancedUtils.batchInsert<T>(
+        tableName,
+        data,
+        batchSize,
+        onConflict
+      );
     },
 
     async executeRaw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
@@ -944,7 +1076,9 @@ export function createFullyCompatibleProvider<TSchema extends TableSchema = Tabl
       for (const relationName of relations) {
         try {
           // Simple relationship loading - in practice this would be more sophisticated
-          const relatedQuery = nativeQueryBuilders.select(getRelatedTableName(relationName));
+          const relatedQuery = nativeQueryBuilders.select(
+            getRelatedTableName(relationName)
+          );
           const relatedData = await relatedQuery
             .where(getForeignKey(resource), 'eq', id)
             .get();
@@ -1026,13 +1160,13 @@ export interface EnhancedCompatibilityConfig {
 /**
  * Create enhanced provider with configuration options
  */
-export function createEnhancedProvider<TSchema extends TableSchema = TableSchema>(
+export function createEnhancedProvider<
+  TSchema extends TableSchema = TableSchema,
+>(
   baseProvider: EnhancedDataProvider<TSchema>,
   config: EnhancedCompatibilityConfig = {}
 ): FullyCompatibleDataProvider<TSchema> {
-  const {
-    enableAdvancedFeatures = true,
-  } = config;
+  const { enableAdvancedFeatures = true } = config;
 
   if (!enableAdvancedFeatures) {
     // Return base provider with minimal enhancements
@@ -1053,7 +1187,13 @@ export function createEnhancedProvider<TSchema extends TableSchema = TableSchema
  * Wrap provider methods with performance monitoring
  */
 function wrapWithPerformanceMonitoring(provider: any) {
-  const originalMethods = ['getList', 'getOne', 'create', 'update', 'deleteOne'];
+  const originalMethods = [
+    'getList',
+    'getOne',
+    'create',
+    'update',
+    'deleteOne',
+  ];
 
   originalMethods.forEach(methodName => {
     const originalMethod = provider[methodName];
@@ -1063,13 +1203,18 @@ function wrapWithPerformanceMonitoring(provider: any) {
         const result = await originalMethod.apply(this, args);
         const endTime = Date.now();
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[RefineSQL] ${methodName} completed in ${endTime - startTime}ms`);
+          console.log(
+            `[RefineSQL] ${methodName} completed in ${endTime - startTime}ms`
+          );
         }
         return result;
       } catch (error) {
         const endTime = Date.now();
         if (process.env.NODE_ENV === 'development') {
-          console.error(`[RefineSQL] ${methodName} failed in ${endTime - startTime}ms:`, error);
+          console.error(
+            `[RefineSQL] ${methodName} failed in ${endTime - startTime}ms:`,
+            error
+          );
         }
         throw error;
       }

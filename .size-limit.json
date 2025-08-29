@@ -11,7 +11,12 @@
     "path": "packages/refine-sql/dist/index.mjs",
     "limit": "25 KB",
     "gzip": true,
-    "ignore": ["@refine-orm/core-utils", "better-sqlite3", "bun:sqlite", "@refinedev/core"]
+    "ignore": [
+      "@refine-orm/core-utils",
+      "better-sqlite3",
+      "bun:sqlite",
+      "@refinedev/core"
+    ]
   },
 
   {
@@ -19,7 +24,14 @@
     "path": "packages/refine-orm/dist/index.mjs",
     "limit": "35 KB",
     "gzip": true,
-    "ignore": ["@refine-orm/core-utils", "drizzle-orm", "postgres", "mysql2", "better-sqlite3", "@refinedev/core"]
+    "ignore": [
+      "@refine-orm/core-utils",
+      "drizzle-orm",
+      "postgres",
+      "mysql2",
+      "better-sqlite3",
+      "@refinedev/core"
+    ]
   },
   {
     "name": "refine-orm (postgresql adapter)",

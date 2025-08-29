@@ -19,9 +19,7 @@ export interface D1DataProvider<TSchema extends TableSchema = TableSchema>
  */
 export function createD1Provider<TSchema extends TableSchema = TableSchema>(
   database: D1Database,
-  options?: {
-    debug?: boolean;
-  }
+  options?: { debug?: boolean }
 ): D1DataProvider<TSchema> {
   if (options?.debug) {
     console.log('[refine-sql/d1] Creating D1 provider for Cloudflare Workers');

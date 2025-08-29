@@ -82,7 +82,9 @@ export class MorphQueryBuilder<
   ): this {
     const table = this.schema[this.resource];
     if (!table) {
-      throw new QueryError(`Table '${String(this.resource)}' not found in schema`);
+      throw new QueryError(
+        `Table '${String(this.resource)}' not found in schema`
+      );
     }
     const tableColumn = this.getTableColumn(table, column as string);
 
@@ -138,7 +140,9 @@ export class MorphQueryBuilder<
   ): this {
     const table = this.schema[this.resource];
     if (!table) {
-      throw new QueryError(`Table '${String(this.resource)}' not found in schema`);
+      throw new QueryError(
+        `Table '${String(this.resource)}' not found in schema`
+      );
     }
     const tableColumn = this.getTableColumn(table, column as string);
 

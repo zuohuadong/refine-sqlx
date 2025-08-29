@@ -5,16 +5,14 @@ export default defineBuildConfig({
   declaration: true,
   clean: true,
   failOnWarn: false,
-  rollup: { 
+  rollup: {
     emitCJS: true,
     esbuild: {
       minify: true,
       target: 'es2022',
       format: 'esm',
       // 启用新标准装饰器支持
-      supported: {
-        decorators: true,
-      }
-    }
+      supported: { decorators: true },
+    },
   },
 });

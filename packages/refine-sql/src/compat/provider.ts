@@ -19,62 +19,72 @@ import { CompatChainQuery } from './chain-query';
  * 兼容性数据提供器接口
  */
 export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
-  extends Omit<CoreDataProvider<TSchema>, 'from' | 'createMany' | 'updateMany' | 'deleteMany'> {
+  extends Omit<
+    CoreDataProvider<TSchema>,
+    'from' | 'createMany' | 'updateMany' | 'deleteMany'
+  > {
   // Schema 访问 (refine-orm 风格)
   schema: TSchema;
-  
+
   // 兼容性链式查询
-  from<T extends BaseRecord = BaseRecord>(tableName: string): CompatChainQuery<T>;
-  
+  from<T extends BaseRecord = BaseRecord>(
+    tableName: string
+  ): CompatChainQuery<T>;
+
   // 批量操作
-  createMany<TRecord = BaseRecord, TVariables extends Record<string, any> = Record<string, any>>(params: {
+  createMany<
+    TRecord = BaseRecord,
+    TVariables extends Record<string, any> = Record<string, any>,
+  >(params: {
     resource: string;
     variables: TVariables[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   updateMany<TRecord = BaseRecord>(params: {
     resource: string;
     ids: any[];
     variables: Record<string, any>;
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   deleteMany<TRecord = BaseRecord>(params: {
     resource: string;
     ids: any[];
     batchSize?: number;
   }): Promise<{ data: TRecord[] }>;
-  
+
   // 高级工具
   upsert<TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>;
     conflictColumns?: string[];
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   firstOrCreate<TRecord = BaseRecord>(params: {
     resource: string;
     where: Record<string, any>;
     defaults?: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   updateOrCreate<TRecord = BaseRecord>(params: {
     resource: string;
     where: Record<string, any>;
     values: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
-  
+
   // 关系查询
   getWithRelations<TRecord = BaseRecord>(
     resource: string,
     id: any,
     relations?: string[]
   ): Promise<TRecord>;
-  
+
   // 事务支持
-  transaction<TResult>(callback: (tx: CompatDataProvider<TSchema>) => Promise<TResult>): Promise<TResult>;
-  
+  transaction<TResult>(
+    callback: (tx: CompatDataProvider<TSchema>) => Promise<TResult>
+  ): Promise<TResult>;
+
   // 性能监控
   enablePerformanceMonitoring(): void;
   getPerformanceMetrics(): {
@@ -91,8 +101,16 @@ export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
 /**
  * 兼容性提供器配置
  */
-export interface CompatProviderConfig<TSchema extends TableSchema = TableSchema> {
-  connection: string | ':memory:' | D1Database | BunDatabase | NodeDatabase | BetterSqlite3.Database;
+export interface CompatProviderConfig<
+  TSchema extends TableSchema = TableSchema,
+> {
+  connection:
+    | string
+    | ':memory:'
+    | D1Database
+    | BunDatabase
+    | NodeDatabase
+    | BetterSqlite3.Database;
   schema: TSchema;
   options?: SQLiteOptions & {
     enablePerformanceMonitoring?: boolean;
@@ -107,8 +125,11 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   config: CompatProviderConfig<TSchema>
 ): CompatDataProvider<TSchema> {
   // 创建核心提供器
-  const coreProvider = createCoreProvider<TSchema>(config.connection, config.options);
-  
+  const coreProvider = createCoreProvider<TSchema>(
+    config.connection,
+    config.options
+  );
+
   // 性能监控
   let performanceEnabled = false;
   const performanceMetrics: any[] = [];
@@ -121,17 +142,17 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   }): Promise<{ data: TRecord[] }> => {
     const batchSize = params.batchSize || 100;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.variables.length; i += batchSize) {
       const batch = params.variables.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(variables => 
+        batch.map(variables =>
           coreProvider.create({ resource: params.resource, variables })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
@@ -143,17 +164,21 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   }): Promise<{ data: TRecord[] }> => {
     const batchSize = params.batchSize || 50;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.ids.length; i += batchSize) {
       const batch = params.ids.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(id => 
-          coreProvider.update({ resource: params.resource, id, variables: params.variables })
+        batch.map(id =>
+          coreProvider.update({
+            resource: params.resource,
+            id,
+            variables: params.variables,
+          })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
@@ -164,17 +189,17 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   }): Promise<{ data: TRecord[] }> => {
     const batchSize = params.batchSize || 50;
     const results: TRecord[] = [];
-    
+
     for (let i = 0; i < params.ids.length; i += batchSize) {
       const batch = params.ids.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(id => 
+        batch.map(id =>
           coreProvider.deleteOne({ resource: params.resource, id })
         )
       );
       results.push(...batchResults.map((r: any) => r.data));
     }
-    
+
     return { data: results };
   };
 
@@ -186,7 +211,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   }): Promise<{ data: TRecord; created: boolean }> => {
     const conflictColumn = params.conflictColumns?.[0] || 'id';
     const conflictValue = params.variables[conflictColumn];
-    
+
     if (conflictValue) {
       try {
         const existing = await coreProvider.getOne({
@@ -205,7 +230,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
         // 记录不存在，继续创建
       }
     }
-    
+
     const created = await coreProvider.create({
       resource: params.resource,
       variables: params.variables,
@@ -295,7 +320,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     const recordWithRelations = { ...baseRecord.data } as any;
 
     await Promise.allSettled(
-      relations.map(async (relation) => {
+      relations.map(async relation => {
         try {
           if (relation.endsWith('s')) {
             // hasMany 关系
@@ -340,12 +365,18 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // 性能监控
   const enablePerformanceMonitoring = (): void => {
     performanceEnabled = true;
-    
+
     // 包装方法以进行性能跟踪
-    const methodsToTrack = ['getList', 'getOne', 'create', 'update', 'deleteOne'];
+    const methodsToTrack = [
+      'getList',
+      'getOne',
+      'create',
+      'update',
+      'deleteOne',
+    ];
     methodsToTrack.forEach(methodName => {
       const originalMethod = (coreProvider as any)[methodName];
-      (coreProvider as any)[methodName] = async function(...args: any[]) {
+      (coreProvider as any)[methodName] = async function (...args: any[]) {
         const startTime = Date.now();
         try {
           const result = await originalMethod.apply(this, args);
@@ -378,11 +409,15 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
       metrics: performanceMetrics,
       summary: {
         totalQueries: performanceMetrics.length,
-        averageDuration: performanceMetrics.length > 0 
-          ? performanceMetrics.reduce((sum, m) => sum + m.duration, 0) / performanceMetrics.length 
+        averageDuration:
+          performanceMetrics.length > 0 ?
+            performanceMetrics.reduce((sum, m) => sum + m.duration, 0) /
+            performanceMetrics.length
           : 0,
-        successRate: performanceMetrics.length > 0 
-          ? performanceMetrics.filter(m => m.success).length / performanceMetrics.length 
+        successRate:
+          performanceMetrics.length > 0 ?
+            performanceMetrics.filter(m => m.success).length /
+            performanceMetrics.length
           : 0,
       },
     };
@@ -391,30 +426,30 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // 创建兼容性提供器
   const compatProvider: CompatDataProvider<TSchema> = {
     ...coreProvider,
-    
+
     // Schema 访问
     schema: config.schema,
-    
+
     // 重写 from 方法返回兼容性查询构建器
-    from: <T extends BaseRecord = BaseRecord>(tableName: string) => 
+    from: <T extends BaseRecord = BaseRecord>(tableName: string) =>
       new CompatChainQuery<T>(coreProvider.client as SqlClient, tableName),
-    
+
     // 批量操作
     createMany,
     updateMany,
     deleteMany,
-    
+
     // 高级工具
     upsert,
     firstOrCreate,
     updateOrCreate,
-    
+
     // 关系查询
     getWithRelations,
-    
+
     // 事务支持
     transaction,
-    
+
     // 性能监控
     enablePerformanceMonitoring,
     getPerformanceMetrics,
@@ -427,8 +462,13 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
 
   // 调试日志
   if (config.options?.debug) {
-    console.log('[refine-sql/compat] SQLite provider created with refine-orm compatibility');
-    console.log('[refine-sql/compat] Schema tables:', Object.keys(config.schema));
+    console.log(
+      '[refine-sql/compat] SQLite provider created with refine-orm compatibility'
+    );
+    console.log(
+      '[refine-sql/compat] Schema tables:',
+      Object.keys(config.schema)
+    );
   }
 
   return compatProvider;

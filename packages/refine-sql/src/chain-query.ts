@@ -6,13 +6,17 @@ import { deserializeSqlResult } from './utils';
 // Helper functions for method validation and logging
 function validateFieldName(field: string, methodName: string): void {
   if (typeof field === 'string' && !field.trim()) {
-    throw new Error(`Invalid field name in ${methodName}: field cannot be empty`);
+    throw new Error(
+      `Invalid field name in ${methodName}: field cannot be empty`
+    );
   }
 }
 
 function logChainOperation(methodName: string, args: any[]): void {
   if (process.env.NODE_ENV === 'development') {
-    console.debug(`[ChainQuery] ${methodName}(${args.map(a => JSON.stringify(a)).join(', ')})`);
+    console.debug(
+      `[ChainQuery] ${methodName}(${args.map(a => JSON.stringify(a)).join(', ')})`
+    );
   }
 }
 
@@ -119,13 +123,9 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     if (typeof field === 'string' && !field.trim()) {
       throw new Error(`Invalid field name in where: field cannot be empty`);
     }
-    
+
     const refineOperator = this.mapOperatorToRefine(operator);
-    this.filters.push({
-      field,
-      operator: refineOperator,
-      value,
-    });
+    this.filters.push({ field, operator: refineOperator, value });
     return this;
   }
 
@@ -142,11 +142,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
    */
   whereRaw(condition: string): this {
     // For SQLite, we'll store raw conditions as special filters
-    this.filters.push({
-      field: '__raw__',
-      operator: 'eq',
-      value: condition,
-    });
+    this.filters.push({ field: '__raw__', operator: 'eq', value: condition });
     return this;
   }
 
@@ -176,7 +172,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
       whereEndsWith: 'endswith',
       whereContains: 'contains',
       whereBetween: 'between',
-      whereNotBetween: 'nbetween'
+      whereNotBetween: 'nbetween',
     };
 
     // Dynamically create WHERE methods
@@ -192,8 +188,6 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   }
 
   // ===== Simplified Sorting and Pagination Methods =====
-
-
 
   /**
    * Add ORDER BY clause
@@ -251,8 +245,6 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     this.selectColumns = columns as string[];
     return this;
   }
-
-
 
   /**
    * Execute the query and return the first result
@@ -318,11 +310,11 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
             current:
               this.offsetValue ?
                 Math.floor(this.offsetValue / (this.limitValue || 10)) + 1
-                : 1,
+              : 1,
             pageSize: this.limitValue || 10,
             mode: 'server',
           }
-          : undefined,
+        : undefined,
     });
   }
 
@@ -335,8 +327,6 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
       this.filters.length > 0 ? this.filters : undefined
     );
   }
-
-
 
   /**
    * Map chain query operators to Refine filter operators
@@ -499,18 +489,19 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     return this;
   }
 
-
-
   /**
    * Load relationships and return results
    */
   async getWithRelations(): Promise<T[]> {
     const results = await this.get();
-    
-    if (!this.relationshipConfigs || Object.keys(this.relationshipConfigs).length === 0) {
+
+    if (
+      !this.relationshipConfigs ||
+      Object.keys(this.relationshipConfigs).length === 0
+    ) {
       return results;
     }
-    
+
     return this.loadRelationshipsForResults(results);
   }
 
@@ -521,12 +512,15 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     const query = this.buildSelectQuery();
     const result = await this.client.query(query);
     const results = deserializeSqlResult(result) as T[];
-    
+
     // If relationships are configured, load them automatically
-    if (this.relationshipConfigs && Object.keys(this.relationshipConfigs).length > 0) {
+    if (
+      this.relationshipConfigs &&
+      Object.keys(this.relationshipConfigs).length > 0
+    ) {
       return this.loadRelationshipsForResults(results);
     }
-    
+
     return results;
   }
 
@@ -539,14 +533,20 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     }
 
     for (const result of results) {
-      for (const [relationName, config] of Object.entries(this.relationshipConfigs)) {
+      for (const [relationName, config] of Object.entries(
+        this.relationshipConfigs
+      )) {
         try {
-          const relatedData = await this.loadRelationship(result, relationName, config);
+          const relatedData = await this.loadRelationship(
+            result,
+            relationName,
+            config
+          );
           (result as any)[relationName] = relatedData;
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
-          console.warn(`Failed to load relationship ${relationName}:`, error);
-        }
+            console.warn(`Failed to load relationship ${relationName}:`, error);
+          }
           (result as any)[relationName] = config.type === 'hasMany' ? [] : null;
         }
       }
@@ -558,20 +558,30 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Load a single relationship
    */
-  private async loadRelationship(record: T, _relationName: string, config: any): Promise<any> {
+  private async loadRelationship(
+    record: T,
+    _relationName: string,
+    config: any
+  ): Promise<any> {
     const { type, relatedTable, localKey, relatedKey, foreignKey } = config;
 
     switch (type) {
       case 'hasOne':
       case 'hasMany': {
         const query = `SELECT * FROM ${relatedTable} WHERE ${relatedKey} = ?`;
-        const results = await this.client.query({ sql: query, args: [(record as any)[localKey]] });
-        return type === 'hasOne' ? (results.rows[0] || null) : results.rows;
+        const results = await this.client.query({
+          sql: query,
+          args: [(record as any)[localKey]],
+        });
+        return type === 'hasOne' ? results.rows[0] || null : results.rows;
       }
 
       case 'belongsTo': {
         const query = `SELECT * FROM ${relatedTable} WHERE ${relatedKey} = ?`;
-        const results = await this.client.query({ sql: query, args: [(record as any)[foreignKey]] });
+        const results = await this.client.query({
+          sql: query,
+          args: [(record as any)[foreignKey]],
+        });
         return results.rows[0] || null;
       }
 
@@ -582,7 +592,10 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
           JOIN ${pivotTable} p ON r.${relatedKey} = p.${pivotRelatedKey}
           WHERE p.${pivotLocalKey} = ?
         `;
-        const results = await this.client.query({ sql: query, args: [(record as any)[localKey]] });
+        const results = await this.client.query({
+          sql: query,
+          args: [(record as any)[localKey]],
+        });
         return results.rows;
       }
 
@@ -594,11 +607,13 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Aggregate query builder
    */
-  async aggregate(aggregations: Array<{
-    function: 'count' | 'sum' | 'avg' | 'min' | 'max';
-    column?: string;
-    alias?: string;
-  }>): Promise<any[]> {
+  async aggregate(
+    aggregations: Array<{
+      function: 'count' | 'sum' | 'avg' | 'min' | 'max';
+      column?: string;
+      alias?: string;
+    }>
+  ): Promise<any[]> {
     const selectClauses = aggregations.map(agg => {
       const func = agg.function.toUpperCase();
       const column = agg.column || '*';
@@ -608,7 +623,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
 
     const query: SqlQuery = {
       sql: `SELECT ${selectClauses.join(', ')} FROM ${this.tableName}${this.buildWhereClause()}`,
-      args: this.buildWhereArgs()
+      args: this.buildWhereArgs(),
     };
 
     const result = await this.client.query(query);
@@ -675,10 +690,12 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   /**
    * Generic aggregate method executor
    */
-  private async executeAggregate(func: string, column?: string): Promise<number | any> {
-    const query = column ?
-      this.buildAggregateQuery(func, column) :
-      this.buildCountQuery();
+  private async executeAggregate(
+    func: string,
+    column?: string
+  ): Promise<number | any> {
+    const query =
+      column ? this.buildAggregateQuery(func, column) : this.buildCountQuery();
     const result = await this.client.query(query);
     const [[value]] = result.rows;
     return func === 'SUM' || func === 'AVG' ? (value as number) || 0 : value;
@@ -690,7 +707,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   private buildAggregateQuery(func: string, column: string): SqlQuery {
     return {
       sql: `SELECT ${func}(${column}) FROM ${this.tableName}${this.buildWhereClause()}`,
-      args: this.buildWhereArgs()
+      args: this.buildWhereArgs(),
     };
   }
 
@@ -700,24 +717,31 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   private buildWhereClause(): string {
     if (this.filters.length === 0) return '';
     // Simplified WHERE clause building
-    return ' WHERE ' + this.filters.map(f => {
-      if ('field' in f) {
-        return `${f.field} = ?`;
-      }
-      return '1=1'; // fallback for conditional filters
-    }).join(' AND ');
+    return (
+      ' WHERE ' +
+      this.filters
+        .map(f => {
+          if ('field' in f) {
+            return `${f.field} = ?`;
+          }
+          return '1=1'; // fallback for conditional filters
+        })
+        .join(' AND ')
+    );
   }
 
   /**
    * Build WHERE arguments for aggregate queries
    */
   private buildWhereArgs(): any[] {
-    return this.filters.map(f => {
-      if ('field' in f) {
-        return f.value;
-      }
-      return null; // fallback for conditional filters
-    }).filter(v => v !== null);
+    return this.filters
+      .map(f => {
+        if ('field' in f) {
+          return f.value;
+        }
+        return null; // fallback for conditional filters
+      })
+      .filter(v => v !== null);
   }
 
   // Dynamically generate aggregate methods with error handling
@@ -735,7 +759,9 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   private createAggregateMethod(func: string) {
     return async (column: string) => {
       if (!column || typeof column !== 'string') {
-        throw new Error(`Column name is required for ${func.toLowerCase()} operation`);
+        throw new Error(
+          `Column name is required for ${func.toLowerCase()} operation`
+        );
       }
       return await this.executeAggregate(func, column);
     };

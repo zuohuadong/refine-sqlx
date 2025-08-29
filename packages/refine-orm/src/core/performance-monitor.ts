@@ -35,8 +35,12 @@ export class RefineOrmPerformanceMonitor {
       ...(options.cacheSize !== undefined && { cacheSize: options.cacheSize }),
       ...(options.cacheTTL !== undefined && { cacheTTL: options.cacheTTL }),
       ...(options.batchSize !== undefined && { batchSize: options.batchSize }),
-      ...(options.batchDelay !== undefined && { batchDelay: options.batchDelay }),
-      ...(options.batchExecutor !== undefined && { batchExecutor: options.batchExecutor }),
+      ...(options.batchDelay !== undefined && {
+        batchDelay: options.batchDelay,
+      }),
+      ...(options.batchExecutor !== undefined && {
+        batchExecutor: options.batchExecutor,
+      }),
     });
   }
 

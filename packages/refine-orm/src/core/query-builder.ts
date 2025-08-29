@@ -541,13 +541,13 @@ export class RefineQueryBuilder<
     filters?: CrudFilters
   ) {
     let query = client.select({ count: count() }).from(table);
-    
+
     // Apply WHERE conditions only (no sorting or pagination for count)
     const whereConditions = this.buildWhereConditions(table, filters);
     if (whereConditions) {
       query = query.where(whereConditions);
     }
-    
+
     return query;
   }
 

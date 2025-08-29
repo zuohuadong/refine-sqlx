@@ -1,17 +1,17 @@
 import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from '../client';
-import { 
-  convertObjectRowsToArrayRows, 
-  normalizeLastInsertId, 
-  createSqlAffected, 
-  isSelectQuery 
+import {
+  convertObjectRowsToArrayRows,
+  normalizeLastInsertId,
+  createSqlAffected,
+  isSelectQuery,
 } from '../utils';
 
 // Re-export common utility functions
-export { 
-  convertObjectRowsToArrayRows, 
-  normalizeLastInsertId, 
-  createSqlAffected, 
-  isSelectQuery 
+export {
+  convertObjectRowsToArrayRows,
+  normalizeLastInsertId,
+  createSqlAffected,
+  isSelectQuery,
 };
 
 /**

@@ -19,15 +19,15 @@ export interface BunDataProvider<TSchema extends TableSchema = TableSchema>
  */
 export function createBunProvider<TSchema extends TableSchema = TableSchema>(
   database: string | BunDatabase,
-  options?: {
-    debug?: boolean;
-  }
+  options?: { debug?: boolean }
 ): BunDataProvider<TSchema> {
   if (options?.debug) {
     console.log('[refine-sql/bun] Creating Bun SQLite provider');
   }
 
-  return createCoreProvider<TSchema>(database as any) as BunDataProvider<TSchema>;
+  return createCoreProvider<TSchema>(
+    database as any
+  ) as BunDataProvider<TSchema>;
 }
 
 // 重新导出核心类型

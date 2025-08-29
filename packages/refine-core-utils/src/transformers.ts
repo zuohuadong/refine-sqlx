@@ -25,16 +25,16 @@ export interface SqlQuery {
 // Simple utility functions instead of decorators to avoid TypeScript 5.0+ issues
 function memoizeTransform<T extends (...args: any[]) => any>(fn: T): T {
   const cache = new Map<string, any>();
-  
+
   return ((...args: any[]) => {
     const key = JSON.stringify(args);
     if (cache.has(key)) {
       return cache.get(key);
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
-    
+
     // Limit cache size
     if (cache.size > 1000) {
       const firstKey = cache.keys().next().value;
@@ -42,31 +42,42 @@ function memoizeTransform<T extends (...args: any[]) => any>(fn: T): T {
         cache.delete(firstKey);
       }
     }
-    
+
     return result;
   }) as T;
 }
 
-function validateInput<T extends (...args: any[]) => any>(fn: T, methodName: string): T {
+function validateInput<T extends (...args: any[]) => any>(
+  fn: T,
+  methodName: string
+): T {
   return ((...args: any[]) => {
     // Basic input validation
     if (args.some(arg => arg === null || arg === undefined)) {
-      console.warn(`[SqlTransformer] ${methodName} received null/undefined arguments`);
+      console.warn(
+        `[SqlTransformer] ${methodName} received null/undefined arguments`
+      );
     }
     return fn(...args);
   }) as T;
 }
 
-function logTransformation<T extends (...args: any[]) => any>(fn: T, methodName: string): T {
+function logTransformation<T extends (...args: any[]) => any>(
+  fn: T,
+  methodName: string
+): T {
   return ((...args: any[]) => {
     const start = performance.now();
     const result = fn(...args);
     const end = performance.now();
-    
-    if (end - start > 10) { // Log slow transformations
-      console.debug(`[Transformer] ${methodName} took ${(end - start).toFixed(2)}ms`);
+
+    if (end - start > 10) {
+      // Log slow transformations
+      console.debug(
+        `[Transformer] ${methodName} took ${(end - start).toFixed(2)}ms`
+      );
     }
-    
+
     return result;
   }) as T;
 }
@@ -90,21 +101,26 @@ export class SqlTransformer {
    */
   transformFilters = logTransformation(
     validateInput(
-      memoizeTransform((
-        filters?: CrudFilters,
-        context?: TransformationContext
-      ): SqlQuery | undefined => {
-        if (!filters || filters.length === 0) {
-          return undefined;
-        }
+      memoizeTransform(
+        (
+          filters?: CrudFilters,
+          context?: TransformationContext
+        ): SqlQuery | undefined => {
+          if (!filters || filters.length === 0) {
+            return undefined;
+          }
 
-        const result = this.filterTransformer.transformFilters(filters, context);
-        if (result.isEmpty) {
-          return undefined;
-        }
+          const result = this.filterTransformer.transformFilters(
+            filters,
+            context
+          );
+          if (result.isEmpty) {
+            return undefined;
+          }
 
-        return { sql: result.result, args: result.params || [] };
-      }),
+          return { sql: result.result, args: result.params || [] };
+        }
+      ),
       'transformFilters'
     ),
     'transformFilters'

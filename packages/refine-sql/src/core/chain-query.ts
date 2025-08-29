@@ -9,15 +9,31 @@ import { LightweightSqlBuilder } from './sql-builder';
 import { deserializeSqlResult } from '../utils';
 
 export type FilterOperator =
-  | 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'
-  | 'in' | 'nin' | 'contains' | 'startswith' | 'endswith'
-  | 'null' | 'nnull' | 'between' | 'nbetween';
+  | 'eq'
+  | 'ne'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'in'
+  | 'nin'
+  | 'contains'
+  | 'startswith'
+  | 'endswith'
+  | 'null'
+  | 'nnull'
+  | 'between'
+  | 'nbetween';
 
 /**
  * 核心链式查询构建器
  */
 export class CoreChainQuery<T extends BaseRecord = BaseRecord> {
-  private filters: Array<{ field: string; operator: FilterOperator; value: any }> = [];
+  private filters: Array<{
+    field: string;
+    operator: FilterOperator;
+    value: any;
+  }> = [];
   private sorters: Array<{ field: string; order: 'asc' | 'desc' }> = [];
   private limitValue?: number;
   private offsetValue?: number;
@@ -86,12 +102,12 @@ export class CoreChainQuery<T extends BaseRecord = BaseRecord> {
   async first(): Promise<T | null> {
     const originalLimit = this.limitValue;
     this.limit(1);
-    
+
     const results = await this.get();
-    
+
     // 恢复原始 limit
     this.limitValue = originalLimit;
-    
+
     return results[0] || null;
   }
 
@@ -99,7 +115,10 @@ export class CoreChainQuery<T extends BaseRecord = BaseRecord> {
    * 获取记录数量
    */
   async count(): Promise<number> {
-    const query = this.builder.buildCountQuery(this.tableName, this.filters as any);
+    const query = this.builder.buildCountQuery(
+      this.tableName,
+      this.filters as any
+    );
     const result = await this.client.query(query);
     const rows = deserializeSqlResult(result);
     return Number(rows[0]?.count) || 0;
@@ -129,15 +148,21 @@ export class CoreChainQuery<T extends BaseRecord = BaseRecord> {
    * 构建最终查询
    */
   private buildQuery(): SqlQuery {
-    const pagination = this.limitValue || this.offsetValue ? {
-      current: this.offsetValue ? Math.floor(this.offsetValue / (this.limitValue || 10)) + 1 : 1,
-      pageSize: this.limitValue || 10,
-      mode: 'server' as const,
-    } : undefined;
+    const pagination =
+      this.limitValue || this.offsetValue ?
+        {
+          current:
+            this.offsetValue ?
+              Math.floor(this.offsetValue / (this.limitValue || 10)) + 1
+            : 1,
+          pageSize: this.limitValue || 10,
+          mode: 'server' as const,
+        }
+      : undefined;
 
     return this.builder.buildSelectQuery(this.tableName, {
-      filters: this.filters.length > 0 ? this.filters as any : undefined,
-      sorting: this.sorters.length > 0 ? this.sorters as any : undefined,
+      filters: this.filters.length > 0 ? (this.filters as any) : undefined,
+      sorting: this.sorters.length > 0 ? (this.sorters as any) : undefined,
       pagination,
     });
   }

@@ -28,15 +28,13 @@ export class TransactionManager {
   /**
    * Execute a function within a database transaction
    */
-  async transaction<T>(
-    fn: (tx: TransactionContext) => Promise<T>
-  ): Promise<T> {
+  async transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T> {
     const transactionId = this.generateTransactionId();
 
     try {
       // SQLite transaction implementation
       await this.client.execute({ sql: 'BEGIN TRANSACTION', args: [] });
-      
+
       const txContext: TransactionContext = {
         client: this.client,
         rollback: () => this.rollbackTransaction(transactionId),
@@ -135,7 +133,10 @@ export class SelectChain {
   private distinctValue = false;
   private joinClauses: string[] = [];
 
-  constructor(private client: SqlClient, private tableName: string) {}
+  constructor(
+    private client: SqlClient,
+    private tableName: string
+  ) {}
 
   /**
    * Select specific columns
@@ -175,13 +176,15 @@ export class SelectChain {
   /**
    * Add multiple WHERE conditions with AND logic
    */
-  whereAnd(conditions: Array<{ column: string; operator: string; value: any }>): this {
+  whereAnd(
+    conditions: Array<{ column: string; operator: string; value: any }>
+  ): this {
     const andConditions = conditions.map(c => {
       const condition = this.buildWhereCondition(c.column, c.operator, c.value);
       this.whereArgs.push(...condition.args);
       return condition.sql;
     });
-    
+
     if (andConditions.length > 0) {
       this.whereConditions.push(`(${andConditions.join(' AND ')})`);
     }
@@ -191,13 +194,15 @@ export class SelectChain {
   /**
    * Add multiple WHERE conditions with OR logic
    */
-  whereOr(conditions: Array<{ column: string; operator: string; value: any }>): this {
+  whereOr(
+    conditions: Array<{ column: string; operator: string; value: any }>
+  ): this {
     const orConditions = conditions.map(c => {
       const condition = this.buildWhereCondition(c.column, c.operator, c.value);
       this.whereArgs.push(...condition.args);
       return condition.sql;
     });
-    
+
     if (orConditions.length > 0) {
       this.whereConditions.push(`(${orConditions.join(' OR ')})`);
     }
@@ -303,9 +308,9 @@ export class SelectChain {
   async first<T = BaseRecord>(): Promise<T | null> {
     const originalLimit = this.limitValue;
     this.limitValue = 1;
-    
+
     const results = await this.get<T>();
-    
+
     this.limitValue = originalLimit;
     return results[0] || null;
   }
@@ -324,92 +329,90 @@ export class SelectChain {
    */
   private buildQuery(): SqlQuery {
     let sql = 'SELECT ';
-    
+
     // Add DISTINCT
     if (this.distinctValue) {
       sql += 'DISTINCT ';
     }
-    
+
     // Add columns
     if (this.selectFields.length > 0) {
       sql += this.selectFields.join(', ');
     } else {
       sql += '*';
     }
-    
+
     sql += ` FROM ${this.tableName}`;
-    
+
     // Add JOINs
     if (this.joinClauses.length > 0) {
       sql += ' ' + this.joinClauses.join(' ');
     }
-    
+
     // Add WHERE
     if (this.whereConditions.length > 0) {
       sql += ' WHERE ' + this.whereConditions.join(' AND ');
     }
-    
+
     // Add GROUP BY
     if (this.groupByColumns.length > 0) {
       sql += ' GROUP BY ' + this.groupByColumns.join(', ');
     }
-    
+
     // Add HAVING
     if (this.havingConditions.length > 0) {
       sql += ' HAVING ' + this.havingConditions.join(' AND ');
     }
-    
+
     // Add ORDER BY
     if (this.orderByConditions.length > 0) {
       sql += ' ORDER BY ' + this.orderByConditions.join(', ');
     }
-    
+
     // Add LIMIT
     if (this.limitValue !== undefined) {
       sql += ` LIMIT ${this.limitValue}`;
     }
-    
+
     // Add OFFSET
     if (this.offsetValue !== undefined) {
       sql += ` OFFSET ${this.offsetValue}`;
     }
-    
-    return {
-      sql,
-      args: [...this.whereArgs, ...this.havingArgs]
-    };
+
+    return { sql, args: [...this.whereArgs, ...this.havingArgs] };
   }
 
   private buildCountQuery(): SqlQuery {
     let sql = `SELECT COUNT(*) as count FROM ${this.tableName}`;
-    
+
     // Add JOINs
     if (this.joinClauses.length > 0) {
       sql += ' ' + this.joinClauses.join(' ');
     }
-    
+
     // Add WHERE
     if (this.whereConditions.length > 0) {
       sql += ' WHERE ' + this.whereConditions.join(' AND ');
     }
-    
+
     // Add GROUP BY
     if (this.groupByColumns.length > 0) {
       sql += ' GROUP BY ' + this.groupByColumns.join(', ');
     }
-    
+
     // Add HAVING
     if (this.havingConditions.length > 0) {
       sql += ' HAVING ' + this.havingConditions.join(' AND ');
     }
-    
-    return {
-      sql,
-      args: [...this.whereArgs, ...this.havingArgs]
-    };
+
+    return { sql, args: [...this.whereArgs, ...this.havingArgs] };
   }
 
-  private buildWhereCondition(column: string, operator: string, value: any): { sql: string; args: any[] } {
+  private buildWhereCondition(
+    column: string,
+    operator: string,
+    value: any
+  ): { sql: string; args: any[] } {
     switch (operator.toLowerCase()) {
       case 'eq':
       case '=':
@@ -453,7 +456,9 @@ export class SelectChain {
         if (Array.isArray(value) && value.length === 2) {
           return { sql: `${column} BETWEEN ? AND ?`, args: value };
         }
-        throw new Error('Between operator requires array with exactly 2 values');
+        throw new Error(
+          'Between operator requires array with exactly 2 values'
+        );
       default:
         throw new Error(`Unsupported operator: ${operator}`);
     }
@@ -468,7 +473,10 @@ export class InsertChain {
   private onConflictAction?: 'ignore' | 'replace';
   private returningColumns?: string[];
 
-  constructor(private client: SqlClient, private tableName: string) {}
+  constructor(
+    private client: SqlClient,
+    private tableName: string
+  ) {}
 
   /**
    * Set values to insert
@@ -514,9 +522,9 @@ export class InsertChain {
   private buildQuery(): SqlQuery {
     const firstRecord = this.insertData[0];
     const columns = Object.keys(firstRecord);
-    
+
     let sql = '';
-    
+
     if (this.onConflictAction === 'replace') {
       sql = `INSERT OR REPLACE INTO ${this.tableName}`;
     } else if (this.onConflictAction === 'ignore') {
@@ -524,27 +532,27 @@ export class InsertChain {
     } else {
       sql = `INSERT INTO ${this.tableName}`;
     }
-    
+
     sql += ` (${columns.join(', ')}) VALUES `;
-    
-    const valuePlaceholders = this.insertData.map(() => 
-      `(${columns.map(() => '?').join(', ')})`
-    ).join(', ');
-    
+
+    const valuePlaceholders = this.insertData
+      .map(() => `(${columns.map(() => '?').join(', ')})`)
+      .join(', ');
+
     sql += valuePlaceholders;
-    
+
     // Add RETURNING clause if specified
     if (this.returningColumns && this.returningColumns.length > 0) {
       sql += ` RETURNING ${this.returningColumns.join(', ')}`;
     } else {
       sql += ' RETURNING *';
     }
-    
+
     // Flatten all values for parameters
-    const args = this.insertData.flatMap(record => 
+    const args = this.insertData.flatMap(record =>
       columns.map(col => record[col])
     );
-    
+
     return { sql, args };
   }
 }
@@ -558,7 +566,10 @@ export class UpdateChain {
   private whereArgs: any[] = [];
   private returningColumns?: string[];
 
-  constructor(private client: SqlClient, private tableName: string) {}
+  constructor(
+    private client: SqlClient,
+    private tableName: string
+  ) {}
 
   /**
    * Set data to update
@@ -615,27 +626,34 @@ export class UpdateChain {
 
     const columns = Object.keys(this.updateData);
     const setClause = columns.map(col => `${col} = ?`).join(', ');
-    
+
     let sql = `UPDATE ${this.tableName} SET ${setClause}`;
-    
+
     // Add WHERE
     if (this.whereConditions.length > 0) {
       sql += ' WHERE ' + this.whereConditions.join(' AND ');
     }
-    
+
     // Add RETURNING clause
     if (this.returningColumns && this.returningColumns.length > 0) {
       sql += ` RETURNING ${this.returningColumns.join(', ')}`;
     } else {
       sql += ' RETURNING *';
     }
-    
-    const args = [...columns.map(col => this.updateData![col]), ...this.whereArgs];
-    
+
+    const args = [
+      ...columns.map(col => this.updateData![col]),
+      ...this.whereArgs,
+    ];
+
     return { sql, args };
   }
 
-  private buildWhereCondition(column: string, operator: string, value: any): { sql: string; args: any[] } {
+  private buildWhereCondition(
+    column: string,
+    operator: string,
+    value: any
+  ): { sql: string; args: any[] } {
     // Same implementation as SelectChain
     switch (operator.toLowerCase()) {
       case 'eq':
@@ -676,7 +694,10 @@ export class DeleteChain {
   private whereArgs: any[] = [];
   private returningColumns?: string[];
 
-  constructor(private client: SqlClient, private tableName: string) {}
+  constructor(
+    private client: SqlClient,
+    private tableName: string
+  ) {}
 
   /**
    * Add WHERE condition
@@ -716,23 +737,27 @@ export class DeleteChain {
 
   private buildQuery(): SqlQuery {
     let sql = `DELETE FROM ${this.tableName}`;
-    
+
     // Add WHERE
     if (this.whereConditions.length > 0) {
       sql += ' WHERE ' + this.whereConditions.join(' AND ');
     }
-    
+
     // Add RETURNING clause
     if (this.returningColumns && this.returningColumns.length > 0) {
       sql += ` RETURNING ${this.returningColumns.join(', ')}`;
     } else {
       sql += ' RETURNING *';
     }
-    
+
     return { sql, args: this.whereArgs };
   }
 
-  private buildWhereCondition(column: string, operator: string, value: any): { sql: string; args: any[] } {
+  private buildWhereCondition(
+    column: string,
+    operator: string,
+    value: any
+  ): { sql: string; args: any[] } {
     // Same implementation as SelectChain and UpdateChain
     switch (operator.toLowerCase()) {
       case 'eq':
@@ -768,7 +793,7 @@ export class AdvancedUtils {
     conflictColumns?: string[]
   ): Promise<T> {
     const insertChain = new InsertChain(this.client, tableName);
-    
+
     if (conflictColumns && conflictColumns.length > 0) {
       // Use INSERT OR REPLACE for specific conflict columns
       insertChain.onConflict('replace');
@@ -776,7 +801,7 @@ export class AdvancedUtils {
       // Use INSERT OR REPLACE for any conflict
       insertChain.onConflict('replace');
     }
-    
+
     const result = await insertChain.values(data).execute<T>();
     return result[0];
   }
@@ -791,23 +816,23 @@ export class AdvancedUtils {
   ): Promise<{ data: T; created: boolean }> {
     // Try to find existing record
     const selectChain = new SelectChain(this.client, tableName);
-    
+
     // Add where conditions
     Object.entries(where).forEach(([column, value]) => {
       selectChain.where(column, 'eq', value);
     });
-    
+
     const existing = await selectChain.first<T>();
-    
+
     if (existing) {
       return { data: existing, created: false };
     }
-    
+
     // Create new record
     const insertData = { ...where, ...defaults };
     const insertChain = new InsertChain(this.client, tableName);
     const result = await insertChain.values(insertData).execute<T>();
-    
+
     return { data: result[0], created: true };
   }
 
@@ -821,23 +846,23 @@ export class AdvancedUtils {
   ): Promise<{ data: T; created: boolean }> {
     // Try to update existing record
     const updateChain = new UpdateChain(this.client, tableName);
-    
+
     // Add where conditions
     Object.entries(where).forEach(([column, value]) => {
       updateChain.where(column, 'eq', value);
     });
-    
+
     const updateResult = await updateChain.set(values).execute<T>();
-    
+
     if (updateResult.length > 0) {
       return { data: updateResult[0], created: false };
     }
-    
+
     // Create new record if update didn't affect any rows
     const insertData = { ...where, ...values };
     const insertChain = new InsertChain(this.client, tableName);
     const insertResult = await insertChain.values(insertData).execute<T>();
-    
+
     return { data: insertResult[0], created: true };
   }
 
@@ -851,12 +876,12 @@ export class AdvancedUtils {
     amount: number = 1
   ): Promise<void> {
     const updateChain = new UpdateChain(this.client, tableName);
-    
+
     // Add where conditions
     Object.entries(where).forEach(([col, value]) => {
       updateChain.where(col, 'eq', value);
     });
-    
+
     // Use raw SQL for increment
     await updateChain.set({ [column]: `${column} + ${amount}` }).execute();
   }
@@ -883,20 +908,20 @@ export class AdvancedUtils {
     onConflict: 'ignore' | 'replace' = 'ignore'
   ): Promise<T[]> {
     const results: T[] = [];
-    
+
     // Process in batches
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize);
       const insertChain = new InsertChain(this.client, tableName);
-      
+
       const batchResult = await insertChain
         .values(batch)
         .onConflict(onConflict)
         .execute<T>();
-      
+
       results.push(...batchResult);
     }
-    
+
     return results;
   }
 

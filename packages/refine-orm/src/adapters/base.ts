@@ -6,10 +6,15 @@ import { performanceManager, QueryOptimizer } from '../utils/performance.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // TypeScript 5.0 Decorators for database adapters
-export function ConnectionRequired(originalMethod: any, context: ClassMethodDecoratorContext) {
+export function ConnectionRequired(
+  originalMethod: any,
+  context: ClassMethodDecoratorContext
+) {
   return function (this: any, ...args: any[]) {
     if (!this.isConnected || !this.client) {
-      throw new ConfigurationError(`Database connection required for ${String(context.name)}. Call connect() first.`);
+      throw new ConfigurationError(
+        `Database connection required for ${String(context.name)}. Call connect() first.`
+      );
     }
     return originalMethod.apply(this, args);
   };
@@ -17,14 +22,19 @@ export function ConnectionRequired(originalMethod: any, context: ClassMethodDeco
 
 export function LogDatabaseOperation<This, Args extends any[], Return>(
   originalMethod: (this: This, ...args: Args) => Return,
-  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+  context: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >
 ) {
   return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
     const start = performance.now();
     try {
       const result = await originalMethod.apply(this, args);
       const end = performance.now();
-      console.debug(`[DatabaseAdapter] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`);
+      console.debug(
+        `[DatabaseAdapter] ${String(context.name)} completed in ${(end - start).toFixed(2)}ms`
+      );
       return result;
     } catch (error) {
       console.error(`[DatabaseAdapter] ${String(context.name)} failed:`, error);
@@ -36,9 +46,15 @@ export function LogDatabaseOperation<This, Args extends any[], Return>(
 export function RetryOnFailure(maxRetries: number = 3, delay: number = 1000) {
   return function <This, Args extends any[], Return>(
     originalMethod: (this: This, ...args: Args) => Return,
-    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    context: ClassMethodDecoratorContext<
+      This,
+      (this: This, ...args: Args) => Return
+    >
   ) {
-    return async function (this: This, ...args: Args): Promise<Awaited<Return>> {
+    return async function (
+      this: This,
+      ...args: Args
+    ): Promise<Awaited<Return>> {
       let lastError: Error;
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -51,7 +67,9 @@ export function RetryOnFailure(maxRetries: number = 3, delay: number = 1000) {
             throw lastError;
           }
 
-          console.warn(`[DatabaseAdapter] ${String(context.name)} attempt ${attempt} failed, retrying in ${delay}ms...`);
+          console.warn(
+            `[DatabaseAdapter] ${String(context.name)} attempt ${attempt} failed, retrying in ${delay}ms...`
+          );
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
@@ -71,7 +89,7 @@ export abstract class BaseDatabaseAdapter<
   protected client: DrizzleClient<TSchema> | null = null;
   protected isConnected = false;
 
-  constructor(protected config: DatabaseConfig<TSchema>) { }
+  constructor(protected config: DatabaseConfig<TSchema>) {}
 
   /**
    * Establish database connection
@@ -113,7 +131,9 @@ export abstract class BaseDatabaseAdapter<
    */
   getClient(): DrizzleClient<TSchema> {
     if (!this.isConnected || !this.client) {
-      throw new ConfigurationError('Database connection required for getClient. Call connect() first.');
+      throw new ConfigurationError(
+        'Database connection required for getClient. Call connect() first.'
+      );
     }
     if (!this.client) {
       throw new ConfigurationError(

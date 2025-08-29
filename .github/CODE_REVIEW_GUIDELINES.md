@@ -47,6 +47,7 @@ This document outlines the code review process and standards for the refine-orm 
 ## Review Categories
 
 ### 🔴 Must Fix (Blocking)
+
 - Security vulnerabilities
 - Breaking changes without proper migration
 - Incorrect functionality
@@ -54,6 +55,7 @@ This document outlines the code review process and standards for the refine-orm 
 - Code that doesn't compile or pass CI
 
 ### 🟡 Should Fix (Non-blocking but important)
+
 - Performance concerns
 - Code style violations
 - Missing documentation
@@ -61,6 +63,7 @@ This document outlines the code review process and standards for the refine-orm 
 - Unclear variable/function names
 
 ### 🟢 Nice to Have (Suggestions)
+
 - Code optimization opportunities
 - Alternative implementation approaches
 - Additional test cases
@@ -71,6 +74,7 @@ This document outlines the code review process and standards for the refine-orm 
 ### Writing Good Review Comments
 
 **Good Examples:**
+
 ```
 ✅ "Consider using a Map instead of an object here for better performance with large datasets"
 ✅ "This function could benefit from JSDoc comments explaining the parameters"
@@ -78,6 +82,7 @@ This document outlines the code review process and standards for the refine-orm 
 ```
 
 **Avoid:**
+
 ```
 ❌ "This is wrong"
 ❌ "Bad code"
@@ -96,12 +101,14 @@ This document outlines the code review process and standards for the refine-orm 
 ## Approval Process
 
 ### Single Approval Required
+
 - Documentation updates
 - Test improvements
 - Minor bug fixes
 - Dependency updates
 
 ### Multiple Approvals Required
+
 - Breaking changes
 - New features
 - Architecture changes
@@ -110,6 +117,7 @@ This document outlines the code review process and standards for the refine-orm 
 ## Automated Checks
 
 All PRs must pass:
+
 - ✅ TypeScript compilation
 - ✅ ESLint checks
 - ✅ Prettier formatting
@@ -121,18 +129,21 @@ All PRs must pass:
 ## Special Review Cases
 
 ### Breaking Changes
+
 - Must include migration guide
 - Requires approval from maintainers
 - Should be documented in CHANGELOG
 - Consider deprecation warnings first
 
 ### Performance Changes
+
 - Include benchmarks if applicable
 - Test with realistic data sizes
 - Consider memory usage implications
 - Document performance characteristics
 
 ### Security Changes
+
 - Extra scrutiny required
 - Consider security implications
 - Test edge cases thoroughly
@@ -147,6 +158,7 @@ All PRs must pass:
 ## Conflict Resolution
 
 If there are disagreements:
+
 1. Discuss in the PR comments
 2. Escalate to maintainers if needed
 3. Consider scheduling a call for complex issues
@@ -155,12 +167,14 @@ If there are disagreements:
 ## Review Tools
 
 ### GitHub Features
+
 - Use suggestion mode for small fixes
 - Request changes for blocking issues
 - Approve when ready to merge
 - Use draft PRs for work in progress
 
 ### Local Testing
+
 ```bash
 # Checkout PR locally for testing
 gh pr checkout <PR_NUMBER>
@@ -175,10 +189,12 @@ bun run test:integration
 ## Reviewer Assignment
 
 ### Automatic Assignment
+
 - CODEOWNERS file determines default reviewers
 - GitHub automatically assigns based on changed files
 
 ### Manual Assignment
+
 - Request specific expertise for complex changes
 - Include domain experts for specialized areas
 - Consider timezone for timely reviews
@@ -186,12 +202,14 @@ bun run test:integration
 ## Post-Review
 
 ### After Approval
+
 - Squash commits if needed
 - Update commit message if required
 - Merge using appropriate strategy
 - Delete feature branch
 
 ### After Merge
+
 - Monitor for any issues
 - Update documentation if needed
 - Communicate changes to team
@@ -200,11 +218,13 @@ bun run test:integration
 ## Learning and Improvement
 
 ### For New Contributors
+
 - Start with smaller PRs to learn the process
 - Ask questions if review feedback is unclear
 - Learn from review comments for future PRs
 
 ### For Reviewers
+
 - Provide constructive feedback
 - Explain the "why" behind suggestions
 - Share knowledge and best practices

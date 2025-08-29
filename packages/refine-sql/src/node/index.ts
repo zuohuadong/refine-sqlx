@@ -26,10 +26,14 @@ export function createNodeProvider<TSchema extends TableSchema = TableSchema>(
   }
 ): NodeDataProvider<TSchema> {
   if (options?.debug) {
-    console.log(`[refine-sql/node] Creating Node.js SQLite provider with ${options.driver || 'auto'} driver`);
+    console.log(
+      `[refine-sql/node] Creating Node.js SQLite provider with ${options.driver || 'auto'} driver`
+    );
   }
 
-  return createCoreProvider<TSchema>(database as any) as NodeDataProvider<TSchema>;
+  return createCoreProvider<TSchema>(
+    database as any
+  ) as NodeDataProvider<TSchema>;
 }
 
 // 重新导出核心类型

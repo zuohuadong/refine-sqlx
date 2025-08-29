@@ -36,7 +36,7 @@ export {
 } from './data-provider';
 
 // Export migration and compatibility utilities
-export { 
+export {
   createMigrationProvider,
   CodeTransformer,
   MigrationHelpers,
@@ -46,7 +46,7 @@ export {
   type CompatibilityCheck,
   type MigrationChecklist,
 } from './migration-guide';
-export { 
+export {
   CompatibleChainQuery,
   addCompatibilityLayer,
   type CompatibleDataProvider,
@@ -64,12 +64,12 @@ export {
 } from './refine-orm-compat';
 
 // Export decorators and utilities for advanced usage
-export { 
-  cached, 
-  handleErrors, 
-  logExecution, 
-  validateParams, 
+export {
+  cached,
+  handleErrors,
+  logExecution,
+  validateParams,
   dbOperation,
   withAdapterErrorHandling,
-  withClientCheck
+  withClientCheck,
 } from './utils';

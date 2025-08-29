@@ -10,11 +10,12 @@ import { deserializeSqlResult } from './utils';
 
 // Type definitions
 export type TableSchema = Record<string, any>;
-export type InferRecord<TSchema, TTable extends keyof TSchema> = TSchema[TTable];
+export type InferRecord<
+  TSchema,
+  TTable extends keyof TSchema,
+> = TSchema[TTable];
 
-export type TypedCreateParams<T> = {
-  variables: Partial<T>;
-};
+export type TypedCreateParams<T> = { variables: Partial<T> };
 
 export type TypedUpdateParams<T> = {
   id: any;
@@ -22,30 +23,17 @@ export type TypedUpdateParams<T> = {
   meta?: any;
 };
 
-export type TypedGetOneResponse<T> = {
-  data: T;
-};
+export type TypedGetOneResponse<T> = { data: T };
 
-export type TypedGetListResponse<T> = {
-  data: T[];
-  total: number;
-};
+export type TypedGetListResponse<T> = { data: T[]; total: number };
 
-export type TypedGetManyResponse<T> = {
-  data: T[];
-};
+export type TypedGetManyResponse<T> = { data: T[] };
 
-export type TypedCreateResponse<T> = {
-  data: T;
-};
+export type TypedCreateResponse<T> = { data: T };
 
-export type TypedUpdateResponse<T> = {
-  data: T;
-};
+export type TypedUpdateResponse<T> = { data: T };
 
-export type TypedDeleteOneResponse<T> = {
-  data: T;
-};
+export type TypedDeleteOneResponse<T> = { data: T };
 
 // Type-safe methods class
 export class SqlxTypedMethods<TSchema extends TableSchema = TableSchema> {

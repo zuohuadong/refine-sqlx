@@ -58,8 +58,6 @@ export function isSelectQuery(sql: string): boolean {
   return sql.trim().toLowerCase().startsWith('select');
 }
 
-
-
 /**
  * Method decorator for caching method results (new standard decorators)
  */
@@ -80,8 +78,6 @@ export function cached<T, A extends any[], R>(
   };
 }
 
-
-
 /**
  * Function wrapper for error handling with consistent error messages
  */
@@ -96,7 +92,9 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
     } catch (error) {
       const functionName = fn.name || 'anonymous';
       const finalMessage = errorMessage || `Error in ${functionName}`;
-      throw new Error(`${finalMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `${finalMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }) as T;
 }
@@ -111,7 +109,9 @@ export function handleErrors(errorMessage?: string) {
         return await target.call(this, ...args);
       } catch (error) {
         const finalMessage = errorMessage || `Error in ${String(context.name)}`;
-        throw new Error(`${finalMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(
+          `${finalMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     };
   };
@@ -122,7 +122,10 @@ export function handleErrors(errorMessage?: string) {
  */
 export function logExecution<T, A extends any[], R>(
   target: (this: T, ...args: A) => R | Promise<R>,
-  context: ClassMethodDecoratorContext<T, (this: T, ...args: A) => R | Promise<R>>
+  context: ClassMethodDecoratorContext<
+    T,
+    (this: T, ...args: A) => R | Promise<R>
+  >
 ) {
   return async function (this: T, ...args: A): Promise<R> {
     const methodName = String(context.name);
@@ -138,7 +141,10 @@ export function logExecution<T, A extends any[], R>(
     } catch (error) {
       const duration = performance.now() - start;
       if (process.env.NODE_ENV === 'development') {
-        console.error(`❌ ${methodName} failed after ${duration.toFixed(2)}ms:`, error);
+        console.error(
+          `❌ ${methodName} failed after ${duration.toFixed(2)}ms:`,
+          error
+        );
       }
       throw error;
     }
@@ -159,15 +165,16 @@ export function validateParams<T, A extends any[], R>(
       const validation = validator(args);
       if (validation !== true) {
         const methodName = String(context.name);
-        const message = typeof validation === 'string' ? validation : `Invalid parameters for ${methodName}`;
+        const message =
+          typeof validation === 'string' ? validation : (
+            `Invalid parameters for ${methodName}`
+          );
         throw new Error(message);
       }
       return target.call(this, ...args);
     };
   };
 }
-
-
 
 /**
  * Method decorator for database operations with automatic error handling
@@ -177,7 +184,10 @@ export function dbOperation<T, A extends any[], R>(
 ) {
   return function (
     target: (this: T, ...args: A) => R | Promise<R>,
-    context: ClassMethodDecoratorContext<T, (this: T, ...args: A) => R | Promise<R>>
+    context: ClassMethodDecoratorContext<
+      T,
+      (this: T, ...args: A) => R | Promise<R>
+    >
   ) {
     return async function (this: T, ...args: A): Promise<R> {
       try {
@@ -190,7 +200,9 @@ export function dbOperation<T, A extends any[], R>(
         return result;
       } catch (error) {
         const methodName = String(context.name);
-        throw new Error(`Database ${operationType} failed in ${methodName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(
+          `Database ${operationType} failed in ${methodName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     };
   };
@@ -209,7 +221,9 @@ export function withAdapterErrorHandling<T extends (...args: any[]) => any>(
       return result;
     } catch (error) {
       const functionName = fn.name || 'unknown';
-      throw new Error(`Adapter ${operationType} failed in ${functionName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Adapter ${operationType} failed in ${functionName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }) as T;
 }
@@ -227,7 +241,3 @@ export function withClientCheck<T extends (...args: any[]) => any>(
     return fn(...args);
   }) as T;
 }
-
-
-
-

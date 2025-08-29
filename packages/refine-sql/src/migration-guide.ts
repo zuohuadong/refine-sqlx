@@ -6,7 +6,9 @@ import type { BaseRecord } from '@refinedev/core';
 import { addCompatibilityLayer } from './compatibility-layer';
 
 // Define EnhancedDataProvider interface
-export interface EnhancedDataProvider<TSchema extends Record<string, any> = Record<string, any>> {
+export interface EnhancedDataProvider<
+  TSchema extends Record<string, any> = Record<string, any>,
+> {
   getList: (params: any) => Promise<any>;
   getOne: (params: any) => Promise<any>;
   create: (params: any) => Promise<any>;
@@ -33,7 +35,9 @@ export interface MigrationConfig {
  * Create a migration-friendly data provider
  * This wrapper provides both old and new APIs during the transition period
  */
-export function createMigrationProvider<TSchema extends Record<string, any> = Record<string, any>>(
+export function createMigrationProvider<
+  TSchema extends Record<string, any> = Record<string, any>,
+>(
   dataProvider: any,
   config: MigrationConfig = {}
 ): MigrationCompatibleProvider<TSchema> {
@@ -48,8 +52,9 @@ export function createMigrationProvider<TSchema extends Record<string, any> = Re
   }
 
   // Add compatibility layer if enabled
-  const compatibleProvider = enableCompatibilityMode
-    ? addCompatibilityLayer(dataProvider)
+  const compatibleProvider =
+    enableCompatibilityMode ?
+      addCompatibilityLayer(dataProvider)
     : dataProvider;
 
   // Wrap methods with deprecation warnings
@@ -85,7 +90,8 @@ function wrapWithDeprecationWarnings(provider: any) {
   if (provider.getWithRelations) {
     const originalGetWithRelations = provider.getWithRelations;
     provider.getWithRelations = function (...args: any[]) {
-      warnOnce('getWithRelations',
+      warnOnce(
+        'getWithRelations',
         'getWithRelations is deprecated. Use chain queries with relationships instead.'
       );
       return originalGetWithRelations.apply(this, args);
@@ -96,18 +102,24 @@ function wrapWithDeprecationWarnings(provider: any) {
 /**
  * Wrap chain query methods with deprecation warnings
  */
-function wrapChainQueryWithWarnings(chainQuery: any, warnOnce: (method: string, message: string) => void) {
+function wrapChainQueryWithWarnings(
+  chainQuery: any,
+  warnOnce: (method: string, message: string) => void
+) {
   // Methods that should show deprecation warnings
   const deprecatedMethods = {
     whereEq: 'Use .where(field, "eq", value) instead of .whereEq(field, value)',
     whereNe: 'Use .where(field, "ne", value) instead of .whereNe(field, value)',
     whereGt: 'Use .where(field, "gt", value) instead of .whereGt(field, value)',
-    whereGte: 'Use .where(field, "gte", value) instead of .whereGte(field, value)',
+    whereGte:
+      'Use .where(field, "gte", value) instead of .whereGte(field, value)',
     whereLt: 'Use .where(field, "lt", value) instead of .whereLt(field, value)',
-    whereLte: 'Use .where(field, "lte", value) instead of .whereLte(field, value)',
+    whereLte:
+      'Use .where(field, "lte", value) instead of .whereLte(field, value)',
     orderByAsc: 'Use .orderBy(field, "asc") instead of .orderByAsc(field)',
     orderByDesc: 'Use .orderBy(field, "desc") instead of .orderByDesc(field)',
-    getWithRelations: 'Relationships are now loaded automatically with .get() when configured',
+    getWithRelations:
+      'Relationships are now loaded automatically with .get() when configured',
   };
 
   // Wrap deprecated methods
@@ -127,7 +139,9 @@ function wrapChainQueryWithWarnings(chainQuery: any, warnOnce: (method: string, 
 /**
  * Migration-compatible provider interface
  */
-export interface MigrationCompatibleProvider<TSchema extends Record<string, any> = Record<string, any>> {
+export interface MigrationCompatibleProvider<
+  TSchema extends Record<string, any> = Record<string, any>,
+> {
   // Standard refine methods
   getList: (params: any) => Promise<any>;
   getOne: (params: any) => Promise<any>;
@@ -149,7 +163,9 @@ export interface MigrationCompatibleProvider<TSchema extends Record<string, any>
 /**
  * Migration-compatible chain query interface
  */
-export interface MigrationCompatibleChainQuery<T extends BaseRecord = BaseRecord> {
+export interface MigrationCompatibleChainQuery<
+  T extends BaseRecord = BaseRecord,
+> {
   // New preferred methods
   where(field: string, operator: string, value: any): this;
   orderBy(field: string, direction?: 'asc' | 'desc'): this;
@@ -170,9 +186,24 @@ export interface MigrationCompatibleChainQuery<T extends BaseRecord = BaseRecord
   orderByDesc(field: string): this;
 
   // Relationship methods
-  withHasOne(relationName: string, relatedTable: string, localKey?: string, relatedKey?: string): this;
-  withHasMany(relationName: string, relatedTable: string, localKey?: string, relatedKey?: string): this;
-  withBelongsTo(relationName: string, relatedTable: string, foreignKey?: string, relatedKey?: string): this;
+  withHasOne(
+    relationName: string,
+    relatedTable: string,
+    localKey?: string,
+    relatedKey?: string
+  ): this;
+  withHasMany(
+    relationName: string,
+    relatedTable: string,
+    localKey?: string,
+    relatedKey?: string
+  ): this;
+  withBelongsTo(
+    relationName: string,
+    relatedTable: string,
+    foreignKey?: string,
+    relatedKey?: string
+  ): this;
   withBelongsToMany(
     relationName: string,
     relatedTable: string,
@@ -210,17 +241,20 @@ export class CodeTransformer {
       /import\s+{([^}]+)}\s+from\s+['"]refine-orm['"]/g,
       (_match, imports) => {
         const importList = imports.split(',').map((imp: string) => imp.trim());
-        const transformedImports = importList.map((imp: string) => {
-          switch (imp) {
-            case 'createPostgreSQLProvider':
-            case 'createMySQLProvider':
-              return `// ${imp} - Not available in refine-sql (SQLite only)`;
-            case 'createSQLiteProvider':
-              return 'createProvider';
-            default:
-              return imp;
-          }
-        }).filter((imp: string) => !imp.startsWith('//')).join(', ');
+        const transformedImports = importList
+          .map((imp: string) => {
+            switch (imp) {
+              case 'createPostgreSQLProvider':
+              case 'createMySQLProvider':
+                return `// ${imp} - Not available in refine-sql (SQLite only)`;
+              case 'createSQLiteProvider':
+                return 'createProvider';
+              default:
+                return imp;
+            }
+          })
+          .filter((imp: string) => !imp.startsWith('//'))
+          .join(', ');
 
         return `import { ${transformedImports} } from 'refine-sql';`;
       }
@@ -245,7 +279,10 @@ export class CodeTransformer {
     };
 
     Object.entries(methodTransforms).forEach(([oldMethod, newMethod]) => {
-      transformed = transformed.replace(new RegExp(oldMethod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newMethod);
+      transformed = transformed.replace(
+        new RegExp(oldMethod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        newMethod
+      );
     });
 
     return transformed;
@@ -263,16 +300,29 @@ export class CodeTransformer {
     };
 
     // Check for unsupported features
-    if (code.includes('createPostgreSQLProvider') || code.includes('createMySQLProvider')) {
+    if (
+      code.includes('createPostgreSQLProvider') ||
+      code.includes('createMySQLProvider')
+    ) {
       report.errors.push({
         type: 'unsupported-database',
-        message: 'PostgreSQL and MySQL are not supported in refine-sql. Only SQLite is supported.',
+        message:
+          'PostgreSQL and MySQL are not supported in refine-sql. Only SQLite is supported.',
         line: 0,
       });
     }
 
     // Check for deprecated methods
-    const deprecatedMethods = ['whereEq', 'whereNe', 'whereGt', 'whereGte', 'whereLt', 'whereLte', 'orderByAsc', 'orderByDesc'];
+    const deprecatedMethods = [
+      'whereEq',
+      'whereNe',
+      'whereGt',
+      'whereGte',
+      'whereLt',
+      'whereLte',
+      'orderByAsc',
+      'orderByDesc',
+    ];
     deprecatedMethods.forEach(method => {
       const regex = new RegExp(`\\.${method}\\(`, 'g');
       const matches = code.match(regex);
@@ -302,16 +352,8 @@ export interface MigrationReport {
     newCode: string;
     count: number;
   }>;
-  warnings: Array<{
-    type: string;
-    message: string;
-    line: number;
-  }>;
-  errors: Array<{
-    type: string;
-    message: string;
-    line: number;
-  }>;
+  warnings: Array<{ type: string; message: string; line: number }>;
+  errors: Array<{ type: string; message: string; line: number }>;
 }
 
 /**
@@ -329,12 +371,16 @@ export const MigrationHelpers = {
     };
 
     // Check dependencies
-    const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+    const deps = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+    };
 
     if (deps['drizzle-orm']) {
       result.issues.push({
         type: 'dependency',
-        message: 'drizzle-orm dependency detected. refine-sql uses native SQL instead of Drizzle ORM.',
+        message:
+          'drizzle-orm dependency detected. refine-sql uses native SQL instead of Drizzle ORM.',
         severity: 'warning',
       });
     }
@@ -342,7 +388,8 @@ export const MigrationHelpers = {
     if (deps['postgres'] || deps['mysql2']) {
       result.issues.push({
         type: 'database',
-        message: 'PostgreSQL/MySQL dependencies detected. refine-sql only supports SQLite.',
+        message:
+          'PostgreSQL/MySQL dependencies detected. refine-sql only supports SQLite.',
         severity: 'error',
       });
       result.compatible = false;
@@ -351,7 +398,8 @@ export const MigrationHelpers = {
     if (deps['better-sqlite3']) {
       result.recommendations.push({
         type: 'optimization',
-        message: 'better-sqlite3 is supported. Consider using Bun runtime for better performance.',
+        message:
+          'better-sqlite3 is supported. Consider using Bun runtime for better performance.',
       });
     }
 
@@ -398,10 +446,7 @@ export interface CompatibilityCheck {
     message: string;
     severity: 'error' | 'warning' | 'info';
   }>;
-  recommendations: Array<{
-    type: string;
-    message: string;
-  }>;
+  recommendations: Array<{ type: string; message: string }>;
 }
 
 /**

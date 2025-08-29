@@ -48,51 +48,70 @@ npm install better-sqlite3  # Node.js
 ### 1. Define Your Schema (Modern Drizzle ORM)
 
 ```typescript
-import { 
-  pgTable, 
-  serial, 
-  varchar, 
-  timestamp, 
-  text, 
-  integer, 
-  uuid, 
+import {
+  pgTable,
+  serial,
+  varchar,
+  timestamp,
+  text,
+  integer,
+  uuid,
   jsonb,
   index,
   uniqueIndex,
   foreignKey,
 } from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull(),
-  metadata: jsonb('metadata').$type<{
-    preferences: Record<string, any>;
-    settings: Record<string, any>;
-  }>(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => ({
-  emailIdx: uniqueIndex('users_email_idx').on(table.email),
-  nameIdx: index('users_name_idx').on(table.name),
-}));
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    metadata: jsonb('metadata').$type<{
+      preferences: Record<string, any>;
+      settings: Record<string, any>;
+    }>(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => ({
+    emailIdx: uniqueIndex('users_email_idx').on(table.email),
+    nameIdx: index('users_name_idx').on(table.name),
+  })
+);
 
-export const posts = pgTable('posts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  title: varchar('title', { length: 500 }).notNull(),
-  content: text('content'),
-  authorId: uuid('author_id').notNull(),
-  tags: jsonb('tags').$type<string[]>().default([]),
-  status: varchar('status', { length: 20, enum: ['draft', 'published'] }).default('draft'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => ({
-  authorFk: foreignKey({
-    columns: [table.authorId],
-    foreignColumns: [users.id],
-  }).onDelete('cascade'),
-  statusIdx: index('posts_status_idx').on(table.status),
-}));
+export const posts = pgTable(
+  'posts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: varchar('title', { length: 500 }).notNull(),
+    content: text('content'),
+    authorId: uuid('author_id').notNull(),
+    tags: jsonb('tags').$type<string[]>().default([]),
+    status: varchar('status', {
+      length: 20,
+      enum: ['draft', 'published'],
+    }).default('draft'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => ({
+    authorFk: foreignKey({
+      columns: [table.authorId],
+      foreignColumns: [users.id],
+    }).onDelete('cascade'),
+    statusIdx: index('posts_status_idx').on(table.status),
+  })
+);
 
 export const schema = { users, posts };
 ```
@@ -431,8 +450,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sql)
----
+## MIT © [RefineORM Team](https://github.com/medz/refine-sql)
 
 ## 中文
 
@@ -700,11 +718,11 @@ const dataProvider = await createPostgreSQLProvider(connectionString, schema, {
 
 ## 运行时支持
 
-| 运行时 | PostgreSQL | MySQL | SQLite |
-|--------|------------|-------|--------|
-| Bun | ✅ bun:sql | ✅ mysql2 | ✅ bun:sqlite |
-| Node.js | ✅ postgres | ✅ mysql2 | ✅ better-sqlite3 |
-| Cloudflare Workers | ❌ | ❌ | ✅ D1 |
+| 运行时             | PostgreSQL  | MySQL     | SQLite            |
+| ------------------ | ----------- | --------- | ----------------- |
+| Bun                | ✅ bun:sql  | ✅ mysql2 | ✅ bun:sqlite     |
+| Node.js            | ✅ postgres | ✅ mysql2 | ✅ better-sqlite3 |
+| Cloudflare Workers | ❌          | ❌        | ✅ D1             |
 
 ## 错误处理
 

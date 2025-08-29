@@ -74,7 +74,9 @@ export const mysqlUsers = mysqlTable('users', {
   email: mysqlVarchar('email', { length: 255 }).notNull().unique(),
   age: int('age'),
   isActive: tinyint('is_active').default(1),
-  createdAt: datetime('created_at', { mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at', { mode: 'date' }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
 });
 
 export const mysqlPosts = mysqlTable('posts', {
@@ -83,7 +85,9 @@ export const mysqlPosts = mysqlTable('posts', {
   content: mysqlText('content'),
   userId: int('user_id').references(() => mysqlUsers.id),
   published: tinyint('published').default(0),
-  createdAt: datetime('created_at', { mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at', { mode: 'date' }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
 });
 
 export const mysqlComments = mysqlTable('comments', {
@@ -103,7 +107,9 @@ export const mysqlSchema = {
 
 // SQLite Schema
 export const sqliteUsers = sqliteTable('users', {
-  id: sqliteInteger('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  id: sqliteInteger('id', { mode: 'number' }).primaryKey({
+    autoIncrement: true,
+  }),
   name: sqliteText('name', { length: 255 }).notNull(),
   email: sqliteText('email', { length: 255 }).notNull().unique(),
   age: sqliteInteger('age', { mode: 'number' }),
@@ -112,10 +118,14 @@ export const sqliteUsers = sqliteTable('users', {
 });
 
 export const sqlitePosts = sqliteTable('posts', {
-  id: sqliteInteger('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  id: sqliteInteger('id', { mode: 'number' }).primaryKey({
+    autoIncrement: true,
+  }),
   title: sqliteText('title', { length: 255 }).notNull(),
   content: sqliteText('content'),
-  userId: sqliteInteger('user_id', { mode: 'number' }).references(() => sqliteUsers.id),
+  userId: sqliteInteger('user_id', { mode: 'number' }).references(
+    () => sqliteUsers.id
+  ),
   published: sqliteInteger('published', { mode: 'boolean' }).default(false),
   createdAt: sqliteText('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
