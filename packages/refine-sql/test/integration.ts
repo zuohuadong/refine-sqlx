@@ -16,8 +16,12 @@ export function createIntegrationTestSuite(
     beforeEach(async () => {
       client = await createClient();
 
-      // Drop table if it exists and create fresh table
-      await client.execute({ sql: 'DROP TABLE IF EXISTS users', args: [] });
+      // Ensure clean database state
+      try {
+        await client.execute({ sql: 'DROP TABLE IF EXISTS users', args: [] });
+      } catch {
+        // Ignore errors if table doesn't exist
+      }
 
       await client.execute({
         sql: `CREATE TABLE users (
@@ -32,6 +36,13 @@ export function createIntegrationTestSuite(
     });
 
     afterEach(async () => {
+      // Clean up data before closing
+      try {
+        await client.execute({ sql: 'DROP TABLE IF EXISTS users', args: [] });
+      } catch {
+        // Ignore errors if table doesn't exist
+      }
+
       if (closeClient) {
         await closeClient(client);
       }

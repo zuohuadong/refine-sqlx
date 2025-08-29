@@ -419,10 +419,10 @@ export default function <TSchema extends TableSchema = TableSchema>(
     );
 
     let results: any[];
-    
+
     // Try transaction first, then batch, then fall back to Promise.all
     if (client.transaction) {
-      results = await client.transaction!(async (tx) => {
+      results = await client.transaction!(async tx => {
         const transactionResults = [];
         for (const query of queries) {
           const result = await tx.execute(query);
@@ -434,9 +434,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
       results = await client.batch!(queries);
     } else {
       // Execute all queries in parallel
-      results = await Promise.all(
-        queries.map(query => client.execute(query))
-      );
+      results = await Promise.all(queries.map(query => client.execute(query)));
     }
 
     const ids = results
