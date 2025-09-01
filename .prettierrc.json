@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/prettierrc",
-  "plugins": ["@prettier/plugin-oxc", "@ianvs/prettier-plugin-sort-imports"],
+  "plugins": ["@prettier/plugin-oxc"],
   "tabWidth": 2,
   "semi": true,
   "singleQuote": true,
@@ -13,18 +13,5 @@
   "endOfLine": "lf",
   "trailingComma": "es5",
   "arrowParens": "avoid",
-  "quoteProps": "as-needed",
-  "importOrder": [
-    "^(node:|bun:)",
-    "<THIRD_PARTY_MODULES>",
-    "^@refine-orm/(.*)$",
-    "^@/(.*)$",
-    "^[./]"
-  ],
-  "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
-  "importOrderBuiltinModulesToTop": true,
-  "importOrderParserPlugins": ["typescript", "decorators"],
-  "importOrderMergeDuplicateImports": true,
-  "importOrderCombineTypeAndValueImports": true
+  "quoteProps": "as-needed"
 }
