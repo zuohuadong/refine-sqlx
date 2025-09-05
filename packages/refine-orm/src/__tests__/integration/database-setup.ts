@@ -292,9 +292,54 @@ export class DatabaseTestSetup {
     provider: RefineOrmDataProvider<any>,
     dbType: string
   ): Promise<void> {
-    // For integration tests, we assume tables are already created
-    // In a real scenario, you would run migrations here
-    console.log(`Tables assumed to exist for ${dbType}`);
+    try {
+      if (dbType === 'sqlite') {
+        // Create SQLite tables since we're using in-memory database
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            age INTEGER,
+            is_active INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            user_id INTEGER,
+            published INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content TEXT NOT NULL,
+            commentable_type TEXT NOT NULL,
+            commentable_id INTEGER NOT NULL,
+            user_id INTEGER,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+          )
+        `);
+
+        console.log(`Created SQLite tables for ${dbType}`);
+      } else {
+        // For PostgreSQL and MySQL, we assume tables are already created
+        // In a real scenario, you would run migrations here
+        console.log(`Tables assumed to exist for ${dbType}`);
+      }
+    } catch (error) {
+      console.warn(`Failed to create tables for ${dbType}:`, error);
+      throw error;
+    }
   }
 
   private async seedData(
@@ -302,7 +347,7 @@ export class DatabaseTestSetup {
     dbType: string
   ): Promise<void> {
     try {
-      // Clear existing data
+      // Clear existing data only if tables exist
       await this.cleanupTables(provider, dbType);
 
       // Insert test users
@@ -319,9 +364,11 @@ export class DatabaseTestSetup {
       for (const commentData of TEST_DATA.comments) {
         await provider.create({ resource: 'comments', variables: commentData });
       }
+
+      console.log(`Successfully seeded data for ${dbType}`);
     } catch (error) {
-      console.warn(`Failed to seed data for ${dbType}:`, error);
-      // Don't throw here, as some tests might not need seeded data
+      console.error(`Failed to seed data for ${dbType}:`, error);
+      throw error;
     }
   }
 
@@ -331,29 +378,59 @@ export class DatabaseTestSetup {
   ): Promise<void> {
     try {
       // Delete in reverse order to handle foreign key constraints
-      await provider.executeRaw('DELETE FROM comments');
-      await provider.executeRaw('DELETE FROM posts');
-      await provider.executeRaw('DELETE FROM users');
-
-      // Reset auto-increment counters if needed
+      // Use IF EXISTS for better error handling
       if (dbType === 'sqlite') {
-        await provider.executeRaw(
-          'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
-          ['users', 'posts', 'comments']
-        );
-      } else if (dbType === 'mysql') {
-        await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
-        await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-        await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
-      } else if (dbType === 'postgresql') {
-        await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-        await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-        await provider.executeRaw(
-          'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
-        );
+        // For SQLite, we can check if tables exist before trying to delete from them
+        try {
+          await provider.executeRaw('DELETE FROM comments WHERE 1=1');
+        } catch (error) {
+          // Table might not exist, that's ok
+          console.debug('Comments table does not exist or is empty');
+        }
+        try {
+          await provider.executeRaw('DELETE FROM posts WHERE 1=1');
+        } catch (error) {
+          // Table might not exist, that's ok
+          console.debug('Posts table does not exist or is empty');
+        }
+        try {
+          await provider.executeRaw('DELETE FROM users WHERE 1=1');
+        } catch (error) {
+          // Table might not exist, that's ok
+          console.debug('Users table does not exist or is empty');
+        }
+        
+        // Reset auto-increment counters if needed
+        try {
+          await provider.executeRaw(
+            'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
+            ['users', 'posts', 'comments']
+          );
+        } catch (error) {
+          // sqlite_sequence might not exist, that's ok
+          console.debug('sqlite_sequence cleanup skipped');
+        }
+      } else {
+        // For other databases, use the original approach
+        await provider.executeRaw('DELETE FROM comments');
+        await provider.executeRaw('DELETE FROM posts');
+        await provider.executeRaw('DELETE FROM users');
+
+        if (dbType === 'mysql') {
+          await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
+          await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
+          await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
+        } else if (dbType === 'postgresql') {
+          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+          await provider.executeRaw(
+            'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+          );
+        }
       }
     } catch (error) {
       console.warn(`Failed to cleanup tables for ${dbType}:`, error);
+      // Don't throw here as cleanup failures shouldn't fail tests
     }
   }
 }
