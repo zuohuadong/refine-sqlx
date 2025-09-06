@@ -1,5 +1,5 @@
 import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import type {
   GetListParams,
   GetListResponse,
@@ -273,9 +273,30 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const query = queryBuilder.buildCreateQuery(
           client,
           table,
-          params.variables
+          params.variables,
+          adapter.config.type
         );
-        const result = await (query.execute ? query.execute() : query);
+        
+        let result;
+        if (adapter.config.type === 'mysql') {
+          // MySQL doesn't support RETURNING, so we need to handle it differently
+          const insertResult = await query.execute();
+          if (!insertResult || !insertResult.insertId) {
+            throw new QueryError(
+              `Failed to create record in '${params.resource}' - no insertId returned`
+            );
+          }
+          
+          // Fetch the inserted record by ID
+          const idColumn = queryBuilder.validateAndGetIdColumn(table);
+          result = await client
+            .select()
+            .from(table)
+            .where(eq(idColumn, insertResult.insertId))
+            .execute();
+        } else {
+          result = await (query.execute ? query.execute() : query);
+        }
 
         if (!result || result.length === 0) {
           throw new QueryError(

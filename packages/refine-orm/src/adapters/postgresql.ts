@@ -117,6 +117,11 @@ export class PostgreSQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize Bun SQL connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -171,6 +176,11 @@ export class PostgreSQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize postgres-js connection: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -597,8 +597,16 @@ export class RefineQueryBuilder<
   /**
    * Build create query
    */
-  buildCreateQuery(client: DrizzleClient<TSchema>, table: Table, data: any) {
-    return client.insert(table).values(data).returning();
+  buildCreateQuery(client: DrizzleClient<TSchema>, table: Table, data: any, dbType?: string) {
+    const insertQuery = client.insert(table).values(data);
+    
+    // MySQL doesn't support RETURNING clause
+    if (dbType === 'mysql') {
+      return insertQuery;
+    }
+    
+    // PostgreSQL and SQLite support RETURNING
+    return insertQuery.returning();
   }
 
   /**

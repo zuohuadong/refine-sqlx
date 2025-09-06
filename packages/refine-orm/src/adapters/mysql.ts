@@ -101,6 +101,11 @@ export class MySQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
 
       if (this.config.debug) {
         console.log('[RefineORM] Connected to MySQL using bun:sql');
@@ -172,6 +177,11 @@ export class MySQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize mysql2 connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
