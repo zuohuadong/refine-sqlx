@@ -110,6 +110,11 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize Bun SQLite connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -149,6 +154,11 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Manually assign schema if it's missing from Drizzle client
+      if (!this.client.schema) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize better-sqlite3 connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -424,45 +434,82 @@ export class SQLiteAdapter<
       isConnected: this.isConnected,
     };
   }
-} /**
+} 
 
+/**
  * Factory function to create SQLite data provider
  * Automatically detects runtime and uses appropriate driver
  */
 export async function createSQLiteProvider<
   TSchema extends Record<string, Table>,
 >(
+  config: {
+    connection: string | ConnectionOptions | { d1Database: any };
+    schema: TSchema;
+    options?: SQLiteOptions;
+  }
+): Promise<RefineOrmDataProvider<TSchema>>;
+
+export async function createSQLiteProvider<
+  TSchema extends Record<string, Table>,
+>(
   connection: string | ConnectionOptions | { d1Database: any },
   schema: TSchema,
   options?: SQLiteOptions
+): Promise<RefineOrmDataProvider<TSchema>>;
+
+export async function createSQLiteProvider<
+  TSchema extends Record<string, Table>,
+>(
+  configOrConnection:
+    | {
+        connection: string | ConnectionOptions | { d1Database: any };
+        schema: TSchema;
+        options?: SQLiteOptions;
+      }
+    | string
+    | ConnectionOptions
+    | { d1Database: any },
+  schema?: TSchema,
+  options?: SQLiteOptions
 ): Promise<RefineOrmDataProvider<TSchema>> {
-  console.log('createSQLiteProvider called with:', {
-    connection,
-    schema: Object.keys(schema),
-    options,
-  });
-  const config: DatabaseConfig<TSchema> = {
+  let connection: string | ConnectionOptions | { d1Database: any };
+  let finalSchema: TSchema;
+  let finalOptions: SQLiteOptions | undefined;
+
+  // Handle both object and separate parameter signatures
+  if (
+    typeof configOrConnection === 'object' &&
+    configOrConnection !== null &&
+    'connection' in configOrConnection &&
+    'schema' in configOrConnection
+  ) {
+    // Object signature
+    connection = configOrConnection.connection;
+    finalSchema = configOrConnection.schema;
+    finalOptions = configOrConnection.options;
+  } else {
+    // Separate parameters signature
+    if (!schema) {
+      throw new Error('Schema is required when using separate parameters');
+    }
+    connection = configOrConnection as string | ConnectionOptions | { d1Database: any };
+    finalSchema = schema;
+    finalOptions = options;
+  }
+
+  const dbConfig: DatabaseConfig<TSchema> = {
     type: 'sqlite',
     connection,
-    schema,
-    ...(options?.debug !== undefined && { debug: options.debug }),
-    ...(options?.logger && { logger: options.logger }),
+    schema: finalSchema,
+    ...(finalOptions?.debug !== undefined && { debug: finalOptions.debug }),
+    ...(finalOptions?.logger && { logger: finalOptions.logger }),
   };
 
-  console.log('Creating SQLiteAdapter with config:', config);
-  const adapter = new SQLiteAdapter(config);
-  console.log(
-    'Adapter created:',
-    typeof adapter,
-    Object.getOwnPropertyNames(adapter)
-  );
-
-  console.log('Calling adapter.connect()...');
+  const adapter = new SQLiteAdapter(dbConfig);
   await adapter.connect();
-  console.log('Adapter connected. Calling createProvider...');
 
-  const provider = createProvider(adapter, options);
-  console.log('Provider created:', typeof provider);
+  const provider = createProvider(adapter, finalOptions);
   return provider;
 }
 

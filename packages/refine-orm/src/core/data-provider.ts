@@ -266,7 +266,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         if (!table) {
           throw new QueryError(
-            `Table '${params.resource}' not found in schema`
+            `Table '${params.resource}' not found in schema. Available tables: ${client.schema ? Object.keys(client.schema).join(', ') : 'none'}`
           );
         }
 
