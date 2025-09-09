@@ -149,9 +149,8 @@ export class MySQLAdapter<
         this.connection = createPool({
           ...connectionConfig,
           connectionLimit: poolConfig.connectionLimit,
-          // Note: acquireTimeout is not a standard mysql2 option and will generate warnings
-          // Using connectTimeout instead for connection establishment
           connectTimeout: poolConfig.timeout,
+          acquireTimeout: poolConfig.timeout, // Keep for backwards compatibility
           waitForConnections: true,
           queueLimit: poolConfig.queueLimit,
           // MySQL-specific optimizations
@@ -159,9 +158,8 @@ export class MySQLAdapter<
           dateStrings: false,
           supportBigNumbers: true,
           bigNumberStrings: false,
-          idleTimeout: poolConfig.idleTimeout,
-          enableKeepAlive: true,
-          keepAliveInitialDelay: 0,
+          // Remove idleTimeout as it's not a standard mysql2 pool option
+          // enableKeepAlive and keepAliveInitialDelay are also not standard
         });
       } else {
         // Create single connection with optimizations
@@ -236,8 +234,18 @@ export class MySQLAdapter<
     const config: any = {};
 
     if (typeof this.config.connection === 'string') {
-      // Parse connection string
-      config.uri = this.config.connection;
+      // For connection string, return it directly - don't wrap in uri property
+      const url = new URL(this.config.connection);
+      config.host = url.hostname;
+      config.port = parseInt(url.port) || 3306;
+      config.user = url.username;
+      config.password = url.password;
+      config.database = url.pathname.slice(1); // Remove leading slash
+      
+      // Handle SSL parameter from query string
+      if (url.searchParams.get('ssl') !== null) {
+        config.ssl = url.searchParams.get('ssl') === 'true' || url.searchParams.get('ssl') === '1';
+      }
     } else if (typeof this.config.connection === 'object') {
       const connOptions = this.config.connection as ConnectionOptions;
 
@@ -391,11 +399,14 @@ export class MySQLAdapter<
     // Validate connection configuration
     if (typeof this.config.connection === 'object') {
       const conn = this.config.connection;
-      const requiredFields = ['host', 'user', 'password', 'database'];
-      
-      for (const field of requiredFields) {
-        if (!conn[field]) {
-          throw new ConfigurationError(`Missing required connection field: ${field}`);
+      // Check if it's a regular connection options object (not D1 database)
+      if ('host' in conn || 'user' in conn || 'database' in conn) {
+        const requiredFields = ['host', 'user', 'password', 'database'] as const;
+        
+        for (const field of requiredFields) {
+          if (!(field in conn) || !conn[field as keyof typeof conn]) {
+            throw new ConfigurationError(`Missing required connection field: ${field}`);
+          }
         }
       }
     } else if (typeof this.config.connection === 'string') {

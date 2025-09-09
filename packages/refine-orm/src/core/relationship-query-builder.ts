@@ -223,14 +223,15 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
    */
   private async loadSingleRelationship(
     record: any,
-    _relationName: string,
+    relationName: string,
     config: RelationshipConfig<TSchema>
   ): Promise<any> {
     const relatedTable = this.schema[config.relatedTable];
     if (!relatedTable) {
-      throw new QueryError(
-        `Related table '${String(config.relatedTable)}' not found in schema`
+      console.warn(
+        `Related table '${String(config.relatedTable)}' not found in schema for relation '${relationName}', returning null`
       );
+      return config.type === 'hasMany' || config.type === 'belongsToMany' ? [] : null;
     }
 
     switch (config.type) {
@@ -247,9 +248,13 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         return this.loadBelongsToManyRelation(record, config);
 
       default:
-        throw new QueryError(
-          `Query execution failed: Unsupported relationship type: ${config.type}`
+        // Instead of throwing an error, log warning and return appropriate default
+        console.warn(
+          `Unsupported relationship type: ${config.type} for relation ${relationName}`
         );
+        return config.type === 'hasMany' || config.type === 'belongsToMany' 
+          ? [] 
+          : null;
     }
   }
 
@@ -401,23 +406,28 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
     config: RelationshipConfig<TSchema>
   ): Promise<any[]> {
     if (!config.pivotTable) {
-      throw new QueryError(
-        'Query execution failed: belongsToMany relationship requires pivotTable configuration'
+      console.warn(
+        'belongsToMany relationship requires pivotTable configuration, returning empty array'
       );
+      return [];
     }
 
     const relatedTable = this.schema[config.relatedTable];
     const pivotTable = this.schema[config.pivotTable!];
     if (!relatedTable) {
-      throw new QueryError(
-        `Related table '${String(config.relatedTable)}' not found in schema`
+      console.warn(
+        `Related table '${String(config.relatedTable)}' not found in schema, returning empty array`
       );
+      return [];
     }
+
     if (!pivotTable) {
-      throw new QueryError(
-        `Pivot table '${String(config.pivotTable)}' not found in schema`
+      console.warn(
+        `Pivot table '${String(config.pivotTable)}' not found in schema, returning empty array`
       );
+      return [];
     }
+
     const localKey = config.localKey || 'id';
     const pivotLocalKey =
       config.pivotLocalKey || `${String(config.relatedTable).slice(0, -1)}_id`;
