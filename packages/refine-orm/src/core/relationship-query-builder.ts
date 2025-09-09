@@ -1,7 +1,7 @@
 import type { Table, InferSelectModel, SQL, Column } from 'drizzle-orm';
 import { eq, inArray, and } from 'drizzle-orm';
 import type { DrizzleClient } from '../types/client.js';
-import { QueryError } from '../types/errors.js';
+import { QueryError, ValidationError } from '../types/errors.js';
 
 /**
  * Configuration for database relationships
@@ -87,7 +87,7 @@ function ValidateRelationship() {
       // Validate relationship configuration
       const [, , config] = args;
       if (!config || typeof config !== 'object') {
-        throw new Error(
+        throw new ValidationError(
           `Invalid relationship configuration for ${String(context.name)}`
         );
       }
@@ -247,7 +247,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         return this.loadBelongsToManyRelation(record, config);
 
       default:
-        throw new QueryError(`Unsupported relationship type: ${config.type}`);
+        throw new QueryError(
+          `Query execution failed: Unsupported relationship type: ${config.type}`
+        );
     }
   }
 
@@ -275,7 +277,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         return this.loadBatchBelongsToManyRelation(recordIds, config);
 
       default:
-        throw new QueryError(`Unsupported relationship type: ${config.type}`);
+        throw new QueryError(
+          `Query execution failed: Unsupported relationship type: ${config.type}`
+        );
     }
   }
 
@@ -398,7 +402,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
   ): Promise<any[]> {
     if (!config.pivotTable) {
       throw new QueryError(
-        'belongsToMany relationship requires pivotTable configuration'
+        'Query execution failed: belongsToMany relationship requires pivotTable configuration'
       );
     }
 
@@ -623,7 +627,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
   ): Promise<Record<string, any[]>> {
     if (!config.pivotTable) {
       throw new QueryError(
-        'belongsToMany relationship requires pivotTable configuration'
+        'Query execution failed: belongsToMany relationship requires pivotTable configuration'
       );
     }
 
@@ -734,8 +738,8 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         return tableAny[fieldName];
       }
 
-      // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      // Try through columns property - check if _ exists first
+      if (tableAny._ && tableAny._.columns && tableAny._.columns[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 

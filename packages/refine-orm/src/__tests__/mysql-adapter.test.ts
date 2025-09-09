@@ -31,7 +31,10 @@ const schema = { users };
 
 // Mock mysql2 module
 vi.mock('mysql2/promise', () => ({
-  default: { createConnection: vi.fn(), createPool: vi.fn() },
+  default: {
+    createConnection: vi.fn(),
+    createPool: vi.fn(),
+  },
   createConnection: vi.fn(),
   createPool: vi.fn(),
 }));
@@ -43,7 +46,7 @@ describe('MySQL Adapter', () => {
   let mockConnection: any;
   let mockPool: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     mockConnection = {
@@ -63,15 +66,13 @@ describe('MySQL Adapter', () => {
       end: vi.fn(),
     };
 
-    const mysql2 = require('mysql2/promise');
-    vi.mocked(mysql2.default.createConnection).mockResolvedValue(
-      mockConnection
-    );
+    const mysql2 = await import('mysql2/promise');
+    vi.mocked(mysql2.default.createConnection).mockResolvedValue(mockConnection);
     vi.mocked(mysql2.default.createPool).mockResolvedValue(mockPool);
     vi.mocked(mysql2.createConnection).mockResolvedValue(mockConnection);
     vi.mocked(mysql2.createPool).mockResolvedValue(mockPool);
 
-    const drizzle = require('drizzle-orm/mysql2');
+    const drizzle = await import('drizzle-orm/mysql2');
     vi.mocked(drizzle.drizzle).mockReturnValue({
       schema,
       select: vi.fn(),

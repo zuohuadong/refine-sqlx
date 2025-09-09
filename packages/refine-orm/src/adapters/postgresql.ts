@@ -361,26 +361,57 @@ export class PostgreSQLAdapter<
    * Begin database transaction
    */
   async beginTransaction(): Promise<void> {
-    const client = this.getClient();
-    console.log('Beginning transaction with client:', client);
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active PostgreSQL connection');
+    }
+
+    try {
+      // For pg/node-postgres, use the BEGIN command
+      await this.connection.query('BEGIN');
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to begin PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Commit database transaction
    */
   async commitTransaction(): Promise<void> {
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active PostgreSQL connection');
+    }
+
+    try {
+      // For pg/node-postgres, use the COMMIT command
+      await this.connection.query('COMMIT');
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to commit PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Rollback database transaction
    */
   async rollbackTransaction(): Promise<void> {
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active PostgreSQL connection');
+    }
+
+    try {
+      // For pg/node-postgres, use the ROLLBACK command
+      await this.connection.query('ROLLBACK');
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to rollback PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**

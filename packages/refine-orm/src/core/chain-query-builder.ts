@@ -327,13 +327,59 @@ export class ChainQueryBuilder<
       (this as any).relationshipConfigs = {};
     }
 
-    // Build default relationship config
-    const relationConfig = {
-      type: 'hasMany' as const, // Default, can be overridden
-      relatedTable: relation,
-      localKey: 'id',
-      relatedKey: `${String(this.tableName).slice(0, -1)}_id`,
-    };
+    // Build default relationship config using the same inference logic as buildDefaultRelationshipConfigs
+    const relationStr = String(relation);
+    const resourceStr = String(this.tableName);
+    let relationConfig: any;
+
+    if (relationStr.endsWith('s') && relationStr !== resourceStr) {
+      // Likely hasMany relationship (plural form)
+      relationConfig = {
+        type: 'hasMany',
+        relatedTable: relation,
+        localKey: 'id',
+        relatedKey: `${resourceStr.slice(0, -1)}_id`,
+      };
+    } else if (relationStr.endsWith('_id')) {
+      // Likely belongsTo relationship (foreign key)
+      const relatedTableName = relationStr.replace('_id', 's') as keyof TSchema;
+      if (this.schema[relatedTableName]) {
+        relationConfig = {
+          type: 'belongsTo',
+          relatedTable: relatedTableName,
+          foreignKey: relationStr,
+          relatedKey: 'id',
+        };
+      } else {
+        // Fallback to hasMany if no plural table found
+        relationConfig = {
+          type: 'hasMany',
+          relatedTable: relation,
+          localKey: 'id',
+          relatedKey: `${resourceStr.slice(0, -1)}_id`,
+        };
+      }
+    } else {
+      // Check if it's a singular relation name that maps to a plural table
+      const pluralTableName = `${relationStr}s` as keyof TSchema;
+      if (this.schema[pluralTableName]) {
+        // belongsTo relationship - singular relation name, plural table
+        relationConfig = {
+          type: 'belongsTo',
+          relatedTable: pluralTableName,
+          foreignKey: `${relationStr}_id`,
+          relatedKey: 'id',
+        };
+      } else {
+        // Default to hasOne relationship
+        relationConfig = {
+          type: 'hasOne',
+          relatedTable: relation,
+          localKey: 'id',
+          relatedKey: `${resourceStr.slice(0, -1)}_id`,
+        };
+      }
+    }
 
     // If callback provided, we could potentially modify the config
     // For now, just store the relation name

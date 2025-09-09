@@ -1,5 +1,5 @@
 import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql, eq } from 'drizzle-orm';
+import { sql, eq, and, gte, lte } from 'drizzle-orm';
 import type {
   GetListParams,
   GetListResponse,
@@ -79,13 +79,25 @@ function buildDefaultRelationshipConfigs<TSchema extends Record<string, Table>>(
         };
       }
     } else {
-      // Default to hasOne relationship
-      configs[relationStr] = {
-        type: 'hasOne',
-        relatedTable: relation,
-        localKey: 'id',
-        relatedKey: `${resourceStr.slice(0, -1)}_id`,
-      };
+      // Check if it's a singular relation name that maps to a plural table
+      const pluralTableName = `${relationStr}s` as keyof TSchema;
+      if (schema[pluralTableName]) {
+        // belongsTo relationship - singular relation name, plural table
+        configs[relationStr] = {
+          type: 'belongsTo',
+          relatedTable: pluralTableName,
+          foreignKey: `${relationStr}_id`,
+          relatedKey: 'id',
+        };
+      } else {
+        // Default to hasOne relationship
+        configs[relationStr] = {
+          type: 'hasOne',
+          relatedTable: relation,
+          localKey: 'id',
+          relatedKey: `${resourceStr.slice(0, -1)}_id`,
+        };
+      }
     }
   }
 
@@ -182,6 +194,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
           total: totalResult[0]?.count || 0,
         };
       } catch (error) {
+        // Re-throw ValidationError directly without wrapping
+        if (error instanceof Error && (error as any)?.code === 'VALIDATION_ERROR') {
+          throw error;
+        }
         throw new QueryError(
           `Failed to get list for resource '${params.resource}': ${error instanceof Error ? error.message : 'Unknown error'}`,
           undefined,
@@ -336,9 +352,30 @@ export function createProvider<TSchema extends Record<string, Table>>(
           client,
           table,
           params.id,
-          params.variables
+          params.variables,
+          adapter.config.type
         );
-        const result = await (query.execute ? query.execute() : query);
+        
+        let result;
+        if (adapter.config.type === 'mysql') {
+          // MySQL doesn't support RETURNING, so we need to handle it differently
+          const updateResult = await query.execute();
+          if (!updateResult || updateResult.affectedRows === 0) {
+            throw new QueryError(
+              `Record with id '${params.id}' not found in '${params.resource}'`
+            );
+          }
+          
+          // Fetch the updated record by ID
+          const idColumn = queryBuilder.validateAndGetIdColumn(table);
+          result = await client
+            .select()
+            .from(table)
+            .where(eq(idColumn, params.id))
+            .execute();
+        } else {
+          result = await (query.execute ? query.execute() : query);
+        }
 
         if (!result || result.length === 0) {
           throw new QueryError(
@@ -371,8 +408,34 @@ export function createProvider<TSchema extends Record<string, Table>>(
           );
         }
 
-        const query = queryBuilder.buildDeleteQuery(client, table, params.id);
-        const result = await (query.execute ? query.execute() : query);
+        const query = queryBuilder.buildDeleteQuery(client, table, params.id, adapter.config.type);
+        
+        let result;
+        if (adapter.config.type === 'mysql') {
+          // MySQL doesn't support RETURNING, so we need to fetch the record first
+          const idColumn = queryBuilder.validateAndGetIdColumn(table);
+          result = await client
+            .select()
+            .from(table)
+            .where(eq(idColumn, params.id))
+            .execute();
+          
+          if (!result || result.length === 0) {
+            throw new QueryError(
+              `Record with id '${params.id}' not found in '${params.resource}'`
+            );
+          }
+          
+          // Now delete the record
+          const deleteResult = await query.execute();
+          if (!deleteResult || deleteResult.affectedRows === 0) {
+            throw new QueryError(
+              `Failed to delete record with id '${params.id}' in '${params.resource}'`
+            );
+          }
+        } else {
+          result = await (query.execute ? query.execute() : query);
+        }
 
         if (!result || result.length === 0) {
           throw new QueryError(
@@ -421,21 +484,69 @@ export function createProvider<TSchema extends Record<string, Table>>(
             const query = queryBuilder.buildCreateManyQuery(
               client,
               table,
-              batch
+              batch,
+              adapter.config.type
             );
-            const batchResult = await (query.execute ? query.execute() : query);
-            results.push(
-              ...(batchResult as InferSelectModel<TSchema[TTable]>[])
-            );
+            
+            if (adapter.config.type === 'mysql') {
+              // MySQL doesn't support RETURNING, handle it differently
+              const insertResult = await query.execute();
+              if (!insertResult || !insertResult.insertId) {
+                throw new QueryError(
+                  `Failed to create batch records in '${params.resource}' - no insertId returned`
+                );
+              }
+              
+              // For MySQL, we need to fetch the inserted records
+              const idColumn = queryBuilder.validateAndGetIdColumn(table);
+              const startId = insertResult.insertId;
+              const endId = startId + batch.length - 1;
+              
+              const batchResult = await client
+                .select()
+                .from(table)
+                .where(and(gte(idColumn, startId), lte(idColumn, endId)))
+                .execute();
+              
+              results.push(...(batchResult as InferSelectModel<TSchema[TTable]>[]));
+            } else {
+              const batchResult = await (query.execute ? query.execute() : query);
+              results.push(...(batchResult as InferSelectModel<TSchema[TTable]>[]));
+            }
           }
         } else {
           const query = queryBuilder.buildCreateManyQuery(
             client,
             table,
-            params.variables
+            params.variables,
+            adapter.config.type
           );
-          const result = await (query.execute ? query.execute() : query);
-          results.push(...(result as InferSelectModel<TSchema[TTable]>[]));
+          
+          if (adapter.config.type === 'mysql') {
+            // MySQL doesn't support RETURNING, handle it differently
+            const insertResult = await query.execute();
+            if (!insertResult || !insertResult.insertId) {
+              throw new QueryError(
+                `Failed to create records in '${params.resource}' - no insertId returned`
+              );
+            }
+            
+            // For MySQL, we need to fetch the inserted records
+            const idColumn = queryBuilder.validateAndGetIdColumn(table);
+            const startId = insertResult.insertId;
+            const endId = startId + params.variables.length - 1;
+            
+            const queryResult = await client
+              .select()
+              .from(table)
+              .where(and(gte(idColumn, startId), lte(idColumn, endId)))
+              .execute();
+            
+            results.push(...(queryResult as InferSelectModel<TSchema[TTable]>[]));
+          } else {
+            const queryResult = await (query.execute ? query.execute() : query);
+            results.push(...(queryResult as InferSelectModel<TSchema[TTable]>[]));
+          }
         }
 
         // Track performance if monitoring is enabled
@@ -761,18 +872,45 @@ export function createProvider<TSchema extends Record<string, Table>>(
         Object.getOwnPropertyNames(adapter)
       );
       if (typeof adapter.executeRaw !== 'function') {
-        throw new Error(
+        throw new ConfigurationError(
           `Adapter does not have executeRaw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`
         );
       }
       return await adapter.executeRaw<T>(sql, params);
     },
 
-    // Transaction support (placeholder for now)
+    // Transaction support
     async transaction<T>(
-      _fn: (tx: RefineOrmDataProvider<TSchema>) => Promise<T>
+      fn: (tx: RefineOrmDataProvider<TSchema>) => Promise<T>
     ): Promise<T> {
-      throw new QueryError('Transaction support not implemented yet');
+      try {
+        // Begin transaction
+        await adapter.beginTransaction();
+        
+        // Create a transaction-aware data provider
+        const txDataProvider = createProvider(adapter, options);
+        
+        try {
+          // Execute the transaction function
+          const result = await fn(txDataProvider);
+          
+          // Commit the transaction
+          await adapter.commitTransaction();
+          
+          return result;
+        } catch (error) {
+          // Rollback the transaction on error
+          await adapter.rollbackTransaction();
+          throw error;
+        }
+      } catch (error) {
+        throw new QueryError(
+          `Transaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          undefined,
+          [],
+          error instanceof Error ? error : undefined
+        );
+      }
     },
 
     // Additional DataProvider methods

@@ -131,6 +131,8 @@ export class MySQLAdapter<
 
     try {
       const mysql = await import('mysql2/promise');
+      const createConnection = mysql.default?.createConnection || mysql.createConnection;
+      const createPool = mysql.default?.createPool || mysql.createPool;
 
       // Dynamic import for drizzle-orm/mysql2
       if (!drizzleMySQL) {
@@ -144,25 +146,28 @@ export class MySQLAdapter<
 
       if (this.config.pool || poolConfig.usePool) {
         // Create optimized connection pool
-        this.connection = mysql.createPool({
+        this.connection = createPool({
           ...connectionConfig,
           connectionLimit: poolConfig.connectionLimit,
-          acquireTimeout: poolConfig.acquireTimeout,
-          timeout: poolConfig.timeout,
-          idleTimeout: poolConfig.idleTimeout,
+          // Note: acquireTimeout is not a standard mysql2 option and will generate warnings
+          // Using connectTimeout instead for connection establishment
+          connectTimeout: poolConfig.timeout,
+          waitForConnections: true,
           queueLimit: poolConfig.queueLimit,
           // MySQL-specific optimizations
-          reconnect: true,
           multipleStatements: false,
           dateStrings: false,
           supportBigNumbers: true,
           bigNumberStrings: false,
+          idleTimeout: poolConfig.idleTimeout,
+          enableKeepAlive: true,
+          keepAliveInitialDelay: 0,
         });
       } else {
         // Create single connection with optimizations
-        this.connection = await mysql.createConnection({
+        this.connection = await createConnection({
           ...connectionConfig,
-          reconnect: true,
+          connectTimeout: 60000, // 60 seconds for single connection
           multipleStatements: false,
           dateStrings: false,
           supportBigNumbers: true,
@@ -381,6 +386,23 @@ export class MySQLAdapter<
 
     if (this.config.type !== 'mysql') {
       throw new ConfigurationError('Invalid database type for MySQL adapter');
+    }
+
+    // Validate connection configuration
+    if (typeof this.config.connection === 'object') {
+      const conn = this.config.connection;
+      const requiredFields = ['host', 'user', 'password', 'database'];
+      
+      for (const field of requiredFields) {
+        if (!conn[field]) {
+          throw new ConfigurationError(`Missing required connection field: ${field}`);
+        }
+      }
+    } else if (typeof this.config.connection === 'string') {
+      // Validate connection string format
+      if (!this.config.connection.startsWith('mysql://')) {
+        throw new ConfigurationError('Invalid MySQL connection string format');
+      }
     }
   }
 
@@ -615,6 +637,7 @@ export async function testMySQLConnection(
 ): Promise<{ success: boolean; error?: string; info?: any }> {
   try {
     const mysql = await import('mysql2/promise');
+    const createConnection = mysql.default?.createConnection || mysql.createConnection;
 
     let connectionConfig: any;
     if (typeof connection === 'string') {
@@ -627,11 +650,11 @@ export async function testMySQLConnection(
         password: connection.password,
         database: connection.database,
         ssl: connection.ssl,
-        timeout: options?.timeout || 10000,
+        connectTimeout: options?.timeout || 10000,
       };
     }
 
-    const testConnection = await mysql.createConnection(connectionConfig);
+    const testConnection = await createConnection(connectionConfig);
     const [rows] = await testConnection.execute(
       'SELECT VERSION() as version, NOW() as now'
     );

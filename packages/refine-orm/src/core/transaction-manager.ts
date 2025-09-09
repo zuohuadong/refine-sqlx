@@ -41,34 +41,51 @@ export class TransactionManager<
     const transactionId = this.generateTransactionId();
 
     try {
-      // Start transaction based on adapter type
-      const tx = await this.beginTransaction(transactionId, options);
+      // Use drizzle's native transaction method directly
+      return await (this.client as any).transaction(async (tx: any) => {
+        // Store the transaction for tracking
+        this.activeTransactions.set(transactionId, tx);
 
-      // Create transaction context
-      const txContext: TransactionContext<TSchema> = {
-        client: tx,
-        schema: this.schema,
-        rollback: () => this.rollbackTransaction(transactionId),
-        commit: () => this.commitTransaction(transactionId),
-      };
-
-      // Execute the transaction function
-      const result = await fn(txContext);
-
-      // Commit if not already committed/rolled back
-      if (this.activeTransactions.has(transactionId)) {
-        await this.commitTransaction(transactionId);
-      }
-
-      return result;
-    } catch (error) {
-      // Rollback if transaction is still active
-      if (this.activeTransactions.has(transactionId)) {
-        try {
-          await this.rollbackTransaction(transactionId);
-        } catch (rollbackError) {
-          console.error('Failed to rollback transaction:', rollbackError);
+        // Set isolation level if specified
+        if (options?.isolationLevel && this.adapterType !== 'sqlite') {
+          const isolationLevel = this.mapIsolationLevel(options.isolationLevel);
+          if (isolationLevel) {
+            await tx.execute(`SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`);
+          }
         }
+
+        // Set read-only mode if specified (PostgreSQL only)
+        if (options?.readOnly && this.adapterType === 'postgresql') {
+          await tx.execute('SET TRANSACTION READ ONLY');
+        }
+
+        // Create transaction context
+        const txContext: TransactionContext<TSchema> = {
+          client: tx,
+          schema: this.schema,
+          rollback: () => {
+            throw new TransactionError('Transaction rolled back');
+          },
+          commit: () => Promise.resolve(), // Drizzle handles commit automatically
+        };
+
+        try {
+          // Execute the transaction function
+          const result = await fn(txContext);
+          this.activeTransactions.delete(transactionId);
+          return result;
+        } catch (error) {
+          this.activeTransactions.delete(transactionId);
+          throw error;
+        }
+      });
+    } catch (error) {
+      // Clean up transaction tracking
+      this.activeTransactions.delete(transactionId);
+
+      // Handle TransactionError specially to preserve rollback semantics
+      if (error instanceof TransactionError && error.message === 'Transaction rolled back') {
+        throw error;
       }
 
       throw new TransactionError(
@@ -76,143 +93,6 @@ export class TransactionManager<
         error instanceof Error ? error : undefined,
         { transactionId }
       );
-    }
-  }
-
-  /**
-   * Begin a new transaction
-   */
-  private async beginTransaction(
-    transactionId: string,
-    options?: TransactionOptions
-  ): Promise<any> {
-    try {
-      let tx: any;
-
-      switch (this.adapterType) {
-        case 'postgresql':
-          tx = await this.beginPostgreSQLTransaction(options);
-          break;
-        case 'mysql':
-          tx = await this.beginMySQLTransaction(options);
-          break;
-        case 'sqlite':
-          tx = await this.beginSQLiteTransaction(options);
-          break;
-        default:
-          throw new TransactionError(
-            `Unsupported adapter type: ${this.adapterType}`,
-            undefined,
-            { adapterType: this.adapterType }
-          );
-      }
-
-      this.activeTransactions.set(transactionId, tx);
-      return tx;
-    } catch (error) {
-      throw new TransactionError(
-        `Failed to begin transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined,
-        { transactionId }
-      );
-    }
-  }
-
-  /**
-   * Begin PostgreSQL transaction
-   */
-  private async beginPostgreSQLTransaction(
-    options?: TransactionOptions
-  ): Promise<any> {
-    const isolationLevel = this.mapIsolationLevel(options?.isolationLevel);
-
-    return await (this.client as any).transaction(async (tx: any) => {
-      if (isolationLevel) {
-        await tx.execute(`SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`);
-      }
-
-      if (options?.readOnly) {
-        await tx.execute('SET TRANSACTION READ ONLY');
-      }
-
-      return tx;
-    });
-  }
-
-  /**
-   * Begin MySQL transaction
-   */
-  private async beginMySQLTransaction(
-    options?: TransactionOptions
-  ): Promise<any> {
-    const isolationLevel = this.mapIsolationLevel(options?.isolationLevel);
-
-    return await (this.client as any).transaction(async (tx: any) => {
-      if (isolationLevel) {
-        await tx.execute(`SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`);
-      }
-
-      return tx;
-    });
-  }
-
-  /**
-   * Begin SQLite transaction
-   */
-  private async beginSQLiteTransaction(
-    _options?: TransactionOptions
-  ): Promise<any> {
-    // SQLite has limited transaction options
-    return await (this.client as any).transaction(async (tx: any) => {
-      return tx;
-    });
-  }
-
-  /**
-   * Commit transaction
-   */
-  private async commitTransaction(transactionId: string): Promise<void> {
-    const tx = this.activeTransactions.get(transactionId);
-    if (!tx) {
-      throw new TransactionError(
-        `Transaction ${transactionId} not found`,
-        undefined,
-        { transactionId }
-      );
-    }
-
-    try {
-      // For drizzle-orm, transactions are automatically committed when the function completes successfully
-      this.activeTransactions.delete(transactionId);
-    } catch (error) {
-      throw new TransactionError(
-        `Failed to commit transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined,
-        { transactionId }
-      );
-    }
-  }
-
-  /**
-   * Rollback transaction
-   */
-  private async rollbackTransaction(transactionId: string): Promise<void> {
-    const tx = this.activeTransactions.get(transactionId);
-    if (!tx) {
-      throw new TransactionError(
-        `Transaction ${transactionId} not found`,
-        undefined,
-        { transactionId }
-      );
-    }
-
-    try {
-      // For drizzle-orm, we need to throw an error to trigger rollback
-      this.activeTransactions.delete(transactionId);
-      throw new Error('Transaction rolled back');
-    } catch (error) {
-      // This is expected for rollback
-      this.activeTransactions.delete(transactionId);
     }
   }
 
@@ -266,15 +146,12 @@ export class TransactionManager<
   async rollbackAllTransactions(): Promise<void> {
     const transactionIds = this.getActiveTransactionIds();
 
-    for (const transactionId of transactionIds) {
-      try {
-        await this.rollbackTransaction(transactionId);
-      } catch (error) {
-        console.error(
-          `Failed to rollback transaction ${transactionId}:`,
-          error
-        );
-      }
+    // For drizzle transactions, we can't force rollback externally
+    // Just clear the tracking and let transactions complete naturally
+    this.activeTransactions.clear();
+    
+    if (transactionIds.length > 0) {
+      console.warn(`Cleared tracking for ${transactionIds.length} active transactions. They will complete or fail naturally.`);
     }
   }
 }

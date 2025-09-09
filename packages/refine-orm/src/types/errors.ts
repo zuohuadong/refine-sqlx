@@ -107,7 +107,7 @@ export abstract class RefineOrmError extends Error {
       statusCode: this.statusCode,
       context: this.context,
       suggestions: this.getSuggestions(),
-      isRecoverable: this.isRecoverable(),
+      isRecoverable: typeof this.isRecoverable === 'function' ? this.isRecoverable() : false,
       stack: this.stack,
       cause: this.cause?.message,
     };

@@ -111,8 +111,8 @@ export class SQLiteAdapter<
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
       
-      // Manually assign schema if it's missing from Drizzle client
-      if (!this.client.schema) {
+      // Ensure schema is always available
+      if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
         (this.client as any).schema = this.config.schema;
       }
     } catch (error) {
@@ -155,8 +155,8 @@ export class SQLiteAdapter<
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
       
-      // Manually assign schema if it's missing from Drizzle client
-      if (!this.client.schema) {
+      // Ensure schema is always available
+      if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
         (this.client as any).schema = this.config.schema;
       }
     } catch (error) {
@@ -203,6 +203,11 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
+      
+      // Ensure schema is always available
+      if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
+        (this.client as any).schema = this.config.schema;
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to initialize Cloudflare D1 connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -396,24 +401,93 @@ export class SQLiteAdapter<
    * Begin database transaction
    */
   async beginTransaction(): Promise<void> {
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active SQLite connection');
+    }
+
+    try {
+      if (this.runtimeConfig.driver === 'better-sqlite3') {
+        // For better-sqlite3, transactions are synchronous
+        if (this.connection.prepare) {
+          this.connection.prepare('BEGIN TRANSACTION').run();
+        }
+      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+        // For bun:sqlite, use the transaction method if available
+        if (typeof this.connection.run === 'function') {
+          this.connection.run('BEGIN TRANSACTION');
+        }
+      } else {
+        // For other drivers, use executeRaw
+        await this.executeRaw('BEGIN TRANSACTION');
+      }
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to begin SQLite transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Commit database transaction
    */
   async commitTransaction(): Promise<void> {
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active SQLite connection');
+    }
+
+    try {
+      if (this.runtimeConfig.driver === 'better-sqlite3') {
+        // For better-sqlite3, transactions are synchronous
+        if (this.connection.prepare) {
+          this.connection.prepare('COMMIT').run();
+        }
+      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+        // For bun:sqlite, use the transaction method if available
+        if (typeof this.connection.run === 'function') {
+          this.connection.run('COMMIT');
+        }
+      } else {
+        // For other drivers, use executeRaw
+        await this.executeRaw('COMMIT');
+      }
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to commit SQLite transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Rollback database transaction
    */
   async rollbackTransaction(): Promise<void> {
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
+    if (!this.connection) {
+      throw new ConnectionError('No active SQLite connection');
+    }
+
+    try {
+      if (this.runtimeConfig.driver === 'better-sqlite3') {
+        // For better-sqlite3, transactions are synchronous
+        if (this.connection.prepare) {
+          this.connection.prepare('ROLLBACK').run();
+        }
+      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+        // For bun:sqlite, use the transaction method if available
+        if (typeof this.connection.run === 'function') {
+          this.connection.run('ROLLBACK');
+        }
+      } else {
+        // For other drivers, use executeRaw
+        await this.executeRaw('ROLLBACK');
+      }
+    } catch (error) {
+      throw new ConnectionError(
+        `Failed to rollback SQLite transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
@@ -491,7 +565,7 @@ export async function createSQLiteProvider<
   } else {
     // Separate parameters signature
     if (!schema) {
-      throw new Error('Schema is required when using separate parameters');
+      throw new ConfigurationError('Schema is required when using separate parameters');
     }
     connection = configOrConnection as string | ConnectionOptions | { d1Database: any };
     finalSchema = schema;
