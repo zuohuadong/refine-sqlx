@@ -198,6 +198,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         // Check for empty array filters that should return no results
         if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+          // Check for empty arrays in 'in' operator
           const hasEmptyArrayFilter = normalizedParams.filters.some(filter => 
             filter && 
             typeof filter === 'object' && 
@@ -212,6 +213,46 @@ export function createProvider<TSchema extends Record<string, Table>>(
               data: [],
               total: 0,
             };
+          }
+
+          // Validate filter values for complex types
+          for (const filter of normalizedParams.filters) {
+            if (filter && typeof filter === 'object' && 'value' in filter) {
+              // Check for nested arrays
+              if (Array.isArray(filter.value)) {
+                const hasNestedArray = filter.value.some(item => Array.isArray(item));
+                if (hasNestedArray) {
+                  throw new ValidationError('Nested arrays are not supported in filter values');
+                }
+              }
+              
+              // Check for circular references (more thorough check)
+              if (filter.value && typeof filter.value === 'object') {
+                try {
+                  JSON.stringify(filter.value);
+                } catch (error) {
+                  throw new ValidationError('Circular references detected in filter value');
+                }
+              }
+            }
+            
+            // Also check the filter itself for circular references
+            if (filter && typeof filter === 'object') {
+              try {
+                JSON.stringify(filter);
+              } catch (error) {
+                throw new ValidationError('Circular references detected in filter configuration');
+              }
+            }
+          }
+
+          // Validate sorting parameters
+          if ('sorting' in normalizedParams && normalizedParams.sorting && Array.isArray(normalizedParams.sorting)) {
+            for (const sort of normalizedParams.sorting) {
+              if (!sort || typeof sort !== 'object' || !sort.field) {
+                throw new ValidationError('Invalid sort configuration: missing field');
+              }
+            }
           }
         }
 
