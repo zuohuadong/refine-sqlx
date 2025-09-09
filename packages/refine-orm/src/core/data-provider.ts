@@ -42,7 +42,7 @@ import {
   createUpdateChain,
   createDeleteChain,
 } from './native-query-builders.js';
-import { QueryError } from '../types/errors.js';
+import { QueryError, ValidationError } from '../types/errors.js';
 
 /**
  * Build default relationship configurations based on relation names
@@ -153,6 +153,17 @@ export function createProvider<TSchema extends Record<string, Table>>(
       const startTime = Date.now();
 
       try {
+        // Validate pagination parameters
+        if (params.pagination) {
+          const { current, pageSize } = params.pagination;
+          if (current !== undefined && current < 1) {
+            throw new ValidationError('Page number must be greater than 0');
+          }
+          if (pageSize !== undefined && pageSize < 1) {
+            throw new ValidationError('Page size must be greater than 0');
+          }
+        }
+
         const client = adapter.getClient();
         const table = client.schema[params.resource];
 
@@ -160,6 +171,18 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(
             `Table '${params.resource}' not found in schema`
           );
+        }
+
+        // Handle raw query meta option
+        if (params.meta?.rawQuery) {
+          const rawResults = await adapter.executeRaw<InferSelectModel<TSchema[TTable]>>(
+            `SELECT * FROM ${params.resource}`,
+            []
+          );
+          return {
+            data: rawResults,
+            total: rawResults.length,
+          };
         }
 
         // Build the query using query builder
@@ -195,7 +218,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         };
       } catch (error) {
         // Re-throw ValidationError directly without wrapping
-        if (error instanceof Error && (error as any)?.code === 'VALIDATION_ERROR') {
+        if (error instanceof ValidationError) {
           throw error;
         }
         throw new QueryError(
@@ -322,6 +345,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         return { data: result[0] as InferSelectModel<TSchema[TTable]> };
       } catch (error) {
+        // Re-throw ValidationError directly without wrapping
+        if (error instanceof ValidationError) {
+          throw error;
+        }
         throw new QueryError(
           `Failed to create record in '${params.resource}': ${error instanceof Error ? error.message : 'Unknown error'}`,
           undefined,

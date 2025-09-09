@@ -8,6 +8,7 @@ import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { DrizzleClient } from '../../types/client.js';
 import { BaseDatabaseAdapter } from '../../adapters/base.js';
 import type { DatabaseConfig } from '../../types/config.js';
+import { ValidationError } from '../../types/errors.js';
 
 /**
  * Creates a comprehensive mock DrizzleClient for testing
@@ -20,10 +21,14 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   const createQueryChain = (tableName: string, data: any[] = []) => {
     let limitValue: number | undefined;
     let offsetValue: number | undefined;
+    let whereConditions: any[] = [];
     
     const chain = {
       from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
+      where: vi.fn().mockImplementation((condition: any) => {
+        whereConditions.push(condition);
+        return chain;
+      }),
       orderBy: vi.fn().mockReturnThis(),
       limit: vi.fn().mockImplementation((value: number) => {
         limitValue = value;
@@ -42,6 +47,18 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       distinct: vi.fn().mockReturnThis(),
       execute: vi.fn().mockImplementation(() => {
         let result = data;
+        
+        // Apply basic filtering (simplified)
+        if (whereConditions.length > 0) {
+          // For empty arrays in filters, return empty result
+          const hasEmptyArrayFilter = whereConditions.some(condition => 
+            condition && Array.isArray(condition.value) && condition.value.length === 0
+          );
+          if (hasEmptyArrayFilter) {
+            result = [];
+          }
+        }
+        
         // Apply offset
         if (offsetValue !== undefined) {
           result = result.slice(offsetValue);
@@ -54,6 +71,18 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       }),
       then: vi.fn().mockImplementation(resolve => {
         let result = data;
+        
+        // Apply basic filtering (simplified)
+        if (whereConditions.length > 0) {
+          // For empty arrays in filters, return empty result
+          const hasEmptyArrayFilter = whereConditions.some(condition => 
+            condition && Array.isArray(condition.value) && condition.value.length === 0
+          );
+          if (hasEmptyArrayFilter) {
+            result = [];
+          }
+        }
+        
         // Apply offset
         if (offsetValue !== undefined) {
           result = result.slice(offsetValue);
@@ -80,7 +109,31 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         if (tableName === 'users') {
           for (const data of dataArray) {
             if (!data.name || !data.email) {
-              throw new Error(`Missing required fields for ${tableName}`);
+              throw new ValidationError(`Missing required fields for ${tableName}`);
+            }
+            
+            // Validate empty strings
+            if (data.name === '' || data.email === '') {
+              throw new ValidationError(`Empty string not allowed for required fields`);
+            }
+            
+            // Validate NaN and Infinity values
+            if (data.age !== undefined && data.age !== null) {
+              if (typeof data.age === 'number' && (isNaN(data.age) || !isFinite(data.age))) {
+                throw new ValidationError(`Invalid numeric value for age`);
+              }
+            }
+            
+            // Validate invalid dates
+            if (data.createdAt && data.createdAt instanceof Date && isNaN(data.createdAt.getTime())) {
+              throw new ValidationError(`Invalid date value`);
+            }
+            
+            // Validate nested arrays (should not be allowed in simple fields)
+            for (const [key, value] of Object.entries(data)) {
+              if (Array.isArray(value)) {
+                throw new ValidationError(`Nested arrays not supported in field ${key}`);
+              }
             }
           }
         }
