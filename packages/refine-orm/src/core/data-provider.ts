@@ -153,14 +153,25 @@ export function createProvider<TSchema extends Record<string, Table>>(
       const startTime = Date.now();
 
       try {
-        // Validate pagination parameters
+        // Normalize pagination parameters gracefully
+        let normalizedParams = { ...params };
         if (params.pagination) {
           const { current, pageSize } = params.pagination;
-          if (current !== undefined && current < 1) {
-            throw new ValidationError('Page number must be greater than 0');
-          }
+          
+          // Only throw ValidationError for truly invalid page size (0 or negative)
           if (pageSize !== undefined && pageSize < 1) {
             throw new ValidationError('Page size must be greater than 0');
+          }
+          
+          // For invalid page numbers, normalize to page 1 instead of throwing error
+          if (current !== undefined && current < 1) {
+            normalizedParams = {
+              ...params,
+              pagination: {
+                ...params.pagination,
+                current: 1
+              }
+            };
           }
         }
 
@@ -174,9 +185,9 @@ export function createProvider<TSchema extends Record<string, Table>>(
         }
 
         // Handle raw query meta option
-        if (params.meta?.rawQuery) {
+        if (normalizedParams.meta?.rawQuery) {
           const rawResults = await adapter.executeRaw<InferSelectModel<TSchema[TTable]>>(
-            `SELECT * FROM ${params.resource}`,
+            `SELECT * FROM ${normalizedParams.resource}`,
             []
           );
           return {
@@ -185,12 +196,31 @@ export function createProvider<TSchema extends Record<string, Table>>(
           };
         }
 
+        // Check for empty array filters that should return no results
+        if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+          const hasEmptyArrayFilter = normalizedParams.filters.some(filter => 
+            filter && 
+            typeof filter === 'object' && 
+            'operator' in filter &&
+            filter.operator === 'in' && 
+            Array.isArray(filter.value) && 
+            filter.value.length === 0
+          );
+          
+          if (hasEmptyArrayFilter) {
+            return {
+              data: [],
+              total: 0,
+            };
+          }
+        }
+
         // Build the query using query builder
-        const query = queryBuilder.buildListQuery(client, table, params);
+        const query = queryBuilder.buildListQuery(client, table, normalizedParams);
         const countQuery = queryBuilder.buildCountQuery(
           client,
           table,
-          params.filters
+          normalizedParams.filters
         );
 
         // Execute queries

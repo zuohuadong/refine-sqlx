@@ -58,6 +58,16 @@ vi.mock('../utils/runtime-detection.js', () => ({
     version: '18.0.0',
     platform: 'linux',
   })),
+  getRuntimeConfig: vi.fn(() => ({
+    runtime: 'node',
+    version: '18.0.0',
+    platform: 'linux',
+    supports: {
+      fs: true,
+      crypto: true,
+      streams: true,
+    },
+  })),
   getRecommendedDriver: vi.fn((dbType: string) => {
     const drivers: Record<string, string> = {
       postgresql: 'postgres',
@@ -66,6 +76,7 @@ vi.mock('../utils/runtime-detection.js', () => ({
     };
     return drivers[dbType] || 'unknown';
   }),
+  checkDriverAvailability: vi.fn(() => ({ available: true, reason: null })),
   detectBunSqlSupport: vi.fn(() => false),
 }));
 

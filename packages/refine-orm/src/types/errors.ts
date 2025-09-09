@@ -33,7 +33,7 @@ function StatusCode(statusCode: number) {
 
 function Recoverable(recoverable: boolean = true) {
   return function (target: any) {
-    target.prototype.isRecoverable = recoverable;
+    target.prototype.isRecoverable = function() { return recoverable; };
     return target;
   };
 }
@@ -62,6 +62,13 @@ export abstract class RefineOrmError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }
+  }
+
+  /**
+   * Check if the error is recoverable (can be retried or fixed by user action)
+   */
+  isRecoverable(): boolean {
+    return false; // Default to not recoverable
   }
 
   /**
