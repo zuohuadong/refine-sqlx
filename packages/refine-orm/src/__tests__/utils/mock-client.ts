@@ -18,12 +18,21 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 ): DrizzleClient<TSchema> {
   // Create chainable query mock
   const createQueryChain = (tableName: string, data: any[] = []) => {
+    let limitValue: number | undefined;
+    let offsetValue: number | undefined;
+    
     const chain = {
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
       orderBy: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      offset: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockImplementation((value: number) => {
+        limitValue = value;
+        return chain;
+      }),
+      offset: vi.fn().mockImplementation((value: number) => {
+        offsetValue = value;
+        return chain;
+      }),
       groupBy: vi.fn().mockReturnThis(),
       having: vi.fn().mockReturnThis(),
       leftJoin: vi.fn().mockReturnThis(),
@@ -31,8 +40,30 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       innerJoin: vi.fn().mockReturnThis(),
       fullJoin: vi.fn().mockReturnThis(),
       distinct: vi.fn().mockReturnThis(),
-      execute: vi.fn().mockResolvedValue(data),
-      then: vi.fn().mockImplementation(resolve => resolve(data)),
+      execute: vi.fn().mockImplementation(() => {
+        let result = data;
+        // Apply offset
+        if (offsetValue !== undefined) {
+          result = result.slice(offsetValue);
+        }
+        // Apply limit
+        if (limitValue !== undefined) {
+          result = result.slice(0, limitValue);
+        }
+        return Promise.resolve(result);
+      }),
+      then: vi.fn().mockImplementation(resolve => {
+        let result = data;
+        // Apply offset
+        if (offsetValue !== undefined) {
+          result = result.slice(offsetValue);
+        }
+        // Apply limit
+        if (limitValue !== undefined) {
+          result = result.slice(0, limitValue);
+        }
+        return resolve(result);
+      }),
     };
     return chain;
   };
@@ -44,10 +75,20 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       .mockImplementation((values) => {
         // Handle both single and multiple inserts
         const dataArray = Array.isArray(values) ? values : [values];
+        
+        // Basic validation for users table
+        if (tableName === 'users') {
+          for (const data of dataArray) {
+            if (!data.name || !data.email) {
+              throw new Error(`Missing required fields for ${tableName}`);
+            }
+          }
+        }
+        
         const resultData = dataArray.map((data, index) => ({
           id: index + 1,
-          ...data,
-          ...(mockData[tableName]?.[index] || {}),
+          createdAt: new Date(),
+          ...data, // Use actual input data instead of default mock data
         }));
         
         return {

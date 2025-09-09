@@ -36,7 +36,7 @@ describe('Data Provider', () => {
 
   beforeEach(() => {
     adapter = new MockDatabaseAdapter(schema, {
-      users: TestDataGenerators.users(3),
+      users: TestDataGenerators.users(5), // Increased from 3 to 5 for pagination tests
       posts: TestDataGenerators.posts(5),
     });
     dataProvider = createProvider(adapter);
