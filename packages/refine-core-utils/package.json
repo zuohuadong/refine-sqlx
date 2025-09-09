@@ -31,7 +31,7 @@
     "@refinedev/core": "^4.0.0"
   },
   "devDependencies": {
-    "@refinedev/core": "4.57.11",
+    "@refinedev/core": "5.0.1",
     "typescript": "^5.6.0",
     "unbuild": "3.6.1"
   },
