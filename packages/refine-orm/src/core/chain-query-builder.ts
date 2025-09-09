@@ -243,6 +243,12 @@ export class ChainQueryBuilder<
    * Set pagination
    */
   paginate(page: number, pageSize: number = 10): this {
+    if (page < 1) {
+      throw new Error('Page number must be greater than 0');
+    }
+    if (pageSize < 1) {
+      throw new Error('Page size must be greater than 0');
+    }
     this.limitValue = pageSize;
     this.offsetValue = (page - 1) * pageSize;
     return this;
@@ -499,7 +505,7 @@ export class ChainQueryBuilder<
    */
   async get(): Promise<InferSelectModel<TSchema[keyof TSchema]>[]> {
     const query = this.buildQuery();
-    const results = await query;
+    const results = await (query.execute ? query.execute() : query);
 
     // Load relationships if configured
     if (
@@ -532,12 +538,12 @@ export class ChainQueryBuilder<
     this.limitValue = 1;
 
     const query = this.buildQuery();
-    const results = await query;
+    const results = await (query.execute ? query.execute() : query);
 
     // Restore original limit
     this.limitValue = originalLimit;
 
-    if (results.length === 0) {
+    if (!results || results.length === 0) {
       return null;
     }
 

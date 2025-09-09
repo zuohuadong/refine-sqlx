@@ -41,39 +41,39 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   const createInsertChain = (tableName: string) => ({
     values: vi
       .fn()
-      .mockReturnValue({
-        returning: vi
-          .fn()
-          .mockReturnValue({
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
-          }),
-        onConflictDoNothing: vi
-          .fn()
-          .mockReturnValue({
-            returning: vi
-              .fn()
-              .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
-          }),
-        onConflictDoUpdate: vi
-          .fn()
-          .mockReturnValue({
-            returning: vi
-              .fn()
-              .mockReturnValue({
-                execute: vi
-                  .fn()
-                  .mockResolvedValue([
-                    { id: 1, ...(mockData[tableName]?.[0] || {}) },
-                  ]),
-              }),
-          }),
-        execute: vi
-          .fn()
-          .mockResolvedValue([{ id: 1, ...(mockData[tableName]?.[0] || {}) }]),
+      .mockImplementation((values) => {
+        // Handle both single and multiple inserts
+        const dataArray = Array.isArray(values) ? values : [values];
+        const resultData = dataArray.map((data, index) => ({
+          id: index + 1,
+          ...data,
+          ...(mockData[tableName]?.[index] || {}),
+        }));
+        
+        return {
+          returning: vi
+            .fn()
+            .mockReturnValue({
+              execute: vi.fn().mockResolvedValue(resultData),
+            }),
+          onConflictDoNothing: vi
+            .fn()
+            .mockReturnValue({
+              returning: vi
+                .fn()
+                .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
+            }),
+          onConflictDoUpdate: vi
+            .fn()
+            .mockReturnValue({
+              returning: vi
+                .fn()
+                .mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(resultData),
+                }),
+            }),
+          execute: vi.fn().mockResolvedValue(resultData),
+        };
       }),
   });
 
