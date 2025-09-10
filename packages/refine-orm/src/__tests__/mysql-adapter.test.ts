@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 import {
   MySQLAdapter,
   createMySQLProvider,
   testMySQLConnection,
-} from '../adapters/mysql.js';
-import type { DatabaseConfig } from '../types/config.js';
+} from '../adapters/mysql';
+import type { DatabaseConfig } from '../types/config';
 import {
   ConnectionError,
   ConfigurationError,
   QueryError,
-} from '../types/errors.js';
+} from '../types/errors';
 import {
   mysqlTable,
   serial,
@@ -45,6 +45,24 @@ vi.mock('drizzle-orm/mysql2', () => ({ drizzle: vi.fn() }));
 describe('MySQL Adapter', () => {
   let mockConnection: any;
   let mockPool: any;
+  let originalSetTimeout: typeof setTimeout;
+
+  beforeAll(() => {
+    // Speed up retry delays for testing by mocking setTimeout
+    originalSetTimeout = global.setTimeout;
+    global.setTimeout = ((fn: Function, delay?: number) => {
+      // Call the function immediately instead of with delay
+      if (typeof fn === 'function') {
+        fn();
+      }
+      return 0 as any;
+    }) as any;
+  });
+
+  afterAll(() => {
+    // Restore original setTimeout
+    global.setTimeout = originalSetTimeout;
+  });
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -178,18 +196,30 @@ describe('MySQL Adapter', () => {
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
 
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
+
       const isHealthy = await adapter.healthCheck();
       expect(isHealthy).toBe(true);
     });
 
     it('should handle connection errors', async () => {
       const mysql2 = await import('mysql2/promise');
-      vi.mocked(mysql2.default.createConnection).mockRejectedValue(
-        new Error('Connection refused')
-      );
-      vi.mocked(mysql2.createConnection).mockRejectedValue(
-        new Error('Connection refused')
-      );
+      const connectionError = new Error('Connection refused');
+      
+      // Mock both pool and connection creation to throw error
+      vi.mocked(mysql2.default.createConnection).mockImplementation(() => {
+        throw connectionError;
+      });
+      vi.mocked(mysql2.createConnection).mockImplementation(() => {
+        throw connectionError;
+      });
+      vi.mocked(mysql2.default.createPool).mockImplementation(() => {
+        throw connectionError;
+      });
+      vi.mocked(mysql2.createPool).mockImplementation(() => {
+        throw connectionError;
+      });
 
       const config: DatabaseConfig<typeof schema> = {
         type: 'mysql',
@@ -217,6 +247,9 @@ describe('MySQL Adapter', () => {
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
 
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
+
       const result = await adapter.executeRaw(
         'SELECT * FROM users WHERE id = ?',
         [1]
@@ -239,6 +272,9 @@ describe('MySQL Adapter', () => {
 
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
+
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
 
       await adapter.beginTransaction();
       expect(mockConnection.beginTransaction).toHaveBeenCalled();
@@ -392,12 +428,29 @@ describe('MySQL Adapter', () => {
 
   describe('testMySQLConnection utility', () => {
     it('should test connection successfully', async () => {
+      // Mock successful connection
+      const mysql2 = await import('mysql2/promise');
+      const mockConnection = {
+        execute: vi.fn().mockResolvedValue([
+          [{ version: '8.0.28', now: new Date() }]
+        ]),
+        end: vi.fn().mockResolvedValue(undefined)
+      };
+      
+      vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+        mockConnection as any
+      );
+      vi.mocked(mysql2.createConnection).mockResolvedValue(
+        mockConnection as any
+      );
+
       const result = await testMySQLConnection(
         'mysql://user:pass@localhost:3306/testdb'
       );
 
       expect(result.success).toBe(true);
       expect(result.error).toBeUndefined();
+      expect(result.info).toBeDefined();
     });
 
     it('should handle connection test failures', async () => {
@@ -418,12 +471,30 @@ describe('MySQL Adapter', () => {
     });
 
     it('should provide connection info', async () => {
+      // Mock successful connection
+      const mysql2 = await import('mysql2/promise');
+      const mockConnection = {
+        execute: vi.fn().mockResolvedValue([
+          [{ version: '8.0.28', now: new Date() }]
+        ]),
+        end: vi.fn().mockResolvedValue(undefined)
+      };
+      
+      vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+        mockConnection as any
+      );
+      vi.mocked(mysql2.createConnection).mockResolvedValue(
+        mockConnection as any
+      );
+
       const result = await testMySQLConnection(
         'mysql://user:pass@localhost:3306/testdb'
       );
 
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('info');
+      expect(result.success).toBe(true);
+      expect(result.info).toBeDefined();
     });
   });
 
@@ -441,6 +512,9 @@ describe('MySQL Adapter', () => {
 
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
+
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
 
       await expect(
         adapter.executeRaw('SELECT * FROM nonexistent_table')
@@ -461,17 +535,23 @@ describe('MySQL Adapter', () => {
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
 
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
+
       await expect(adapter.beginTransaction()).rejects.toThrow();
     });
 
     it('should handle connection pool errors', async () => {
       const mysql2 = await import('mysql2/promise');
-      vi.mocked(mysql2.default.createPool).mockRejectedValue(
-        new Error('Pool creation failed')
-      );
-      vi.mocked(mysql2.createPool).mockRejectedValue(
-        new Error('Pool creation failed')
-      );
+      
+      // Mock createPool to throw error
+      const poolError = new Error('Pool creation failed');
+      vi.mocked(mysql2.default.createPool).mockImplementation(() => {
+        throw poolError;
+      });
+      vi.mocked(mysql2.createPool).mockImplementation(() => {
+        throw poolError;
+      });
 
       const config: DatabaseConfig<typeof schema> = {
         type: 'mysql',
@@ -517,6 +597,9 @@ describe('MySQL Adapter', () => {
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
 
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
+
       const queries = Array.from({ length: 10 }, (_, i) =>
         adapter.executeRaw('SELECT * FROM users WHERE id = ?', [i + 1])
       );
@@ -552,6 +635,9 @@ describe('MySQL Adapter', () => {
 
       const adapter = new MySQLAdapter(config);
       await adapter.connect();
+
+      // Inject the mocked connection after connect()
+      (adapter as any).connection = mockConnection;
 
       const result = await adapter.executeRaw(
         'SELECT * FROM users WHERE id = ?',

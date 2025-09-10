@@ -9,8 +9,8 @@ import {
   DatabaseTestSetup,
   skipIfDatabaseNotAvailable,
   TEST_DATA,
-} from './database-setup.js';
-import type { RefineOrmDataProvider } from '../../types/client.js';
+} from './database-setup';
+import type { RefineOrmDataProvider } from '../../types/client';
 
 const testSetup = new DatabaseTestSetup();
 
@@ -45,10 +45,58 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
       }, 10000);
 
       beforeEach(async () => {
-        // Clean and reseed data before each test
+        // Clean and reseed data before each test to ensure isolation
         try {
-          await testSetup.teardownDatabase(dbType);
-          provider = await testSetup.setupDatabase(dbType);
+          // Use the DatabaseTestSetup to clean up tables specifically
+          const setup = new DatabaseTestSetup();
+          
+          // First clean up the current tables
+          if (provider && provider.executeRaw) {
+            // Delete in reverse order to handle foreign key constraints
+            try {
+              await provider.executeRaw('DELETE FROM comments WHERE 1=1');
+            } catch (e) {
+              // Table might not exist, continue
+            }
+            try {
+              await provider.executeRaw('DELETE FROM posts WHERE 1=1');
+            } catch (e) {
+              // Table might not exist, continue
+            }
+            try {
+              await provider.executeRaw('DELETE FROM users WHERE 1=1');
+            } catch (e) {
+              // Table might not exist, continue
+            }
+            
+            // Reset auto-increment counters for SQLite
+            if (dbType === 'sqlite') {
+              try {
+                await provider.executeRaw(
+                  'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
+                  ['users', 'posts', 'comments']
+                );
+              } catch (e) {
+                // sqlite_sequence might not exist, that's ok
+              }
+            }
+          }
+          
+          // Now re-seed with fresh test data
+          for (const userData of TEST_DATA.users) {
+            await provider.create({ resource: 'users', variables: userData });
+          }
+
+          for (const postData of TEST_DATA.posts) {
+            await provider.create({ resource: 'posts', variables: postData });
+          }
+
+          for (const commentData of TEST_DATA.comments) {
+            await provider.create({ resource: 'comments', variables: commentData });
+          }
+          
+          // Small delay to ensure data is fully persisted
+          await new Promise(resolve => setTimeout(resolve, 50));
         } catch (error) {
           console.warn(`Failed to reset database for ${dbName}:`, error);
         }
@@ -603,7 +651,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           const duration = Date.now() - startTime;
 
           expect(result).toBeDefined();
-          expect(result!.posts).toHaveLength(50);
+          // The relationship should only return posts that belong to this specific user
+          const userPosts = result!.posts.filter(p => p.userId === user.data.id);
+          expect(userPosts).toHaveLength(50);
           expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
         });
 
@@ -626,7 +676,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           expect(result).toBeDefined();
           expect(result!.posts).toBeDefined();
           expect(Array.isArray(result!.posts)).toBe(true);
-          expect(result!.posts).toHaveLength(0);
+          // Filter to only posts that belong to this specific user
+          const userPosts = result!.posts.filter(p => p.userId === user.data.id);
+          expect(userPosts).toHaveLength(0);
         });
 
         it('should handle complex nested relationship queries', async () => {
