@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { RelationshipQueryBuilder } from '../core/relationship-query-builder.js';
-import type { RelationshipConfig } from '../core/relationship-query-builder.js';
-import type { DrizzleClient } from '../types/client.js';
+import { RelationshipQueryBuilder } from '../core/relationship-query-builder';
+import type { RelationshipConfig } from '../core/relationship-query-builder';
+import type { DrizzleClient } from '../types/client';
 
 // Mock functions for drizzle-orm
 const mockEq = (col: any, val: any) => ({

@@ -18,12 +18,12 @@ import {
   createDataProvider,
   getRuntimeDiagnostics,
   checkDatabaseSupport,
-} from '../factory.js';
+} from '../factory';
 import {
   MockDatabaseAdapter,
   TestDataGenerators,
-} from './utils/mock-client.js';
-import { ConfigurationError, ConnectionError } from '../types/errors.js';
+} from './utils/mock-client';
+import { ConfigurationError, ConnectionError } from '../types/errors';
 
 // Mock schemas for testing different databases
 const sqliteUsers = sqliteTable('users', {
@@ -49,7 +49,7 @@ const pgSchema = { users: pgUsers };
 const mysqlSchema = { users: mysqlUsers };
 
 // Mock runtime detection
-vi.mock('../utils/runtime-detection.js', () => ({
+vi.mock('../utils/runtime-detection.ts', () => ({
   detectBunRuntime: vi.fn(() => false),
   detectNodeRuntime: vi.fn(() => true),
   detectCloudflareD1: vi.fn(() => false),
@@ -162,9 +162,9 @@ describe('Factory Functions', () => {
       const mysqlSupport = checkDatabaseSupport('mysql');
       const sqliteSupport = checkDatabaseSupport('sqlite');
 
-      expect(pgSupport).toHaveProperty('supported');
-      expect(mysqlSupport).toHaveProperty('supported');
-      expect(sqliteSupport).toHaveProperty('supported');
+      expect(typeof pgSupport).toBe('boolean');
+      expect(typeof mysqlSupport).toBe('boolean');
+      expect(typeof sqliteSupport).toBe('boolean');
     });
   });
 });

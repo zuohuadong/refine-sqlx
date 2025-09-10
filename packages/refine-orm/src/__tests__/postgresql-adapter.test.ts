@@ -3,11 +3,11 @@ import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import {
   createPostgreSQLProviderWithPostgresJs,
   PostgreSQLAdapter,
-} from '../adapters/postgresql.js';
+} from '../adapters/postgresql';
 import {
   getRuntimeConfig,
   detectBunRuntime,
-} from '../utils/runtime-detection.js';
+} from '../utils/runtime-detection';
 
 // Test schema
 const users = pgTable('users', {

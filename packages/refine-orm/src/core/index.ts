@@ -1,6 +1,6 @@
 // Core functionality for refine-orm
-export * from './data-provider.js';
-export * from './query-builder.js';
-export * from './chain-query-builder.js';
-export * from './native-query-builders.js';
-export * from './transaction-manager.js';
+export * from './data-provider';
+export * from './query-builder';
+export * from './chain-query-builder';
+export * from './native-query-builders';
+export * from './transaction-manager';

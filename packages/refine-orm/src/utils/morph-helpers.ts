@@ -6,8 +6,8 @@ import type {
   TypedMorphResult,
   ManyToManyMorphResult,
   MorphRelationUnion,
-} from '../types/client.js';
-import { ConfigurationError, SchemaError } from '../types/errors.js';
+} from '../types/client';
+import { ConfigurationError, SchemaError } from '../types/errors';
 
 /**
  * Type-safe helper to create morph configuration

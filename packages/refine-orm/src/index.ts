@@ -2,17 +2,17 @@
 // Built on top of drizzle-orm with support for PostgreSQL, MySQL, and SQLite
 
 // Export essential types
-export type * from './types/client.js';
-export type * from './types/operations.js';
-export type * from './types/config.js';
+export type * from './types/client';
+export type * from './types/operations';
+export type * from './types/config';
 
 // Export core functionality
-export { createProvider } from './core/data-provider.js';
-export { RefineQueryBuilder as QueryBuilder } from './core/query-builder.js';
-export { TransactionManager } from './core/transaction-manager.js';
+export { createProvider } from './core/data-provider';
+export { RefineQueryBuilder as QueryBuilder } from './core/query-builder';
+export { TransactionManager } from './core/transaction-manager';
 
 // Export adapters
-export * from './adapters/index.js';
+export * from './adapters/index';
 
 // Main factory functions (recommended for most users)
 export {
@@ -22,4 +22,4 @@ export {
   createDataProvider,
   getRuntimeDiagnostics,
   checkDatabaseSupport,
-} from './factory.js';
+} from './factory';

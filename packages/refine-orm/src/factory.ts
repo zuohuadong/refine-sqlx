@@ -4,21 +4,21 @@
  */
 
 import type { Table } from 'drizzle-orm';
-import type { RefineOrmDataProvider } from './types/client.js';
+import type { RefineOrmDataProvider } from './types/client';
 import type {
   RefineOrmOptions,
   PostgreSQLOptions,
   MySQLOptions,
   SQLiteOptions,
   ConnectionOptions,
-} from './types/config.js';
-import { ConfigurationError } from './types/errors.js';
+} from './types/config';
+import { ConfigurationError } from './types/errors';
 import {
   createPostgreSQLProvider as createPostgreSQLAdapter,
   createMySQLProvider as createMySQLAdapter,
   createSQLiteProvider as createSQLiteAdapter,
-} from './adapters/index.js';
-import { createProvider as createProviderCore } from './core/data-provider.js';
+} from './adapters/index';
+import { createProvider as createProviderCore } from './core/data-provider';
 import {
   detectBunRuntime,
   detectNodeRuntime,
@@ -26,7 +26,7 @@ import {
   getRuntimeInfo,
   getRecommendedDriver,
   detectBunSqlSupport,
-} from './utils/runtime-detection.js';
+} from './utils/runtime-detection';
 
 /**
  * Configuration for the universal createProvider function

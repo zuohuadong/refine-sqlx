@@ -29,8 +29,8 @@ import type {
   PerformanceStats,
 } from '@refine-orm/core-utils';
 
-import type { DrizzleClient } from './client.js';
-import type { RefineOrmOptions } from './config.js';
+import type { DrizzleClient } from './client';
+import type { RefineOrmOptions } from './config';
 
 // Drizzle-specific schema type that extends BaseSchema
 export interface DrizzleSchema extends BaseSchema {

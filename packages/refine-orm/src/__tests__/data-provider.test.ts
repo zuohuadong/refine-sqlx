@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
-import { createProvider } from '../core/data-provider.js';
+import { createProvider } from '../core/data-provider';
 import {
   MockDatabaseAdapter,
   TestDataGenerators,
   TestAssertions,
-} from './utils/mock-client.js';
-import { CrudTestPatterns } from './utils/test-patterns.js';
-// import { ConnectionError, QueryError, ValidationError } from '../types/errors.js';
+} from './utils/mock-client';
+import { CrudTestPatterns } from './utils/test-patterns';
+// import { ConnectionError, QueryError, ValidationError } from '../types/errors';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Test schema

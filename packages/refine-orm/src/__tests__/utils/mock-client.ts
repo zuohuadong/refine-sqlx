@@ -5,10 +5,10 @@
 
 import { vi, expect } from 'vitest';
 import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import type { DrizzleClient } from '../../types/client.js';
-import { BaseDatabaseAdapter } from '../../adapters/base.js';
-import type { DatabaseConfig } from '../../types/config.js';
-import { ValidationError } from '../../types/errors.js';
+import type { DrizzleClient } from '../../types/client';
+import { BaseDatabaseAdapter } from '../../adapters/base';
+import type { DatabaseConfig } from '../../types/config';
+import { ValidationError, ConnectionError, QueryError } from '../../types/errors';
 
 /**
  * Creates a comprehensive mock DrizzleClient for testing
@@ -17,6 +17,9 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   schema: TSchema,
   mockData: Record<string, any[]> = {}
 ): DrizzleClient<TSchema> {
+  // Registry to track created records by table
+  const createdRecords: Record<string, any[]> = {};
+  
   // Create chainable query mock
   const createQueryChain = (tableName: string, data: any[] = []) => {
     let limitValue: number | undefined;
@@ -138,11 +141,29 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           }
         }
         
-        const resultData = dataArray.map((data, index) => ({
-          id: index + 1,
-          createdAt: new Date(),
-          ...data, // Use actual input data instead of default mock data
-        }));
+        const resultData = dataArray.map((data, index) => {
+          // Apply defaults and handle null vs undefined for optional fields
+          const baseData = {
+            id: index + 1,
+            createdAt: new Date(),
+            isActive: true, // Default value from schema
+            age: null, // Optional field defaults to null if not provided
+            ...data, // Use actual input data, overriding defaults
+          };
+          
+          // Ensure optional fields that weren't provided are null, not undefined
+          if (!('age' in data)) {
+            baseData.age = null;
+          }
+          
+          return baseData;
+        });
+        
+        // Store created records for later updates
+        if (!createdRecords[tableName]) {
+          createdRecords[tableName] = [];
+        }
+        createdRecords[tableName].push(...resultData);
         
         return {
           returning: vi
@@ -172,42 +193,71 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   });
 
   // Create update chain mock
-  const createUpdateChain = (tableName: string) => ({
-    set: vi
-      .fn()
-      .mockReturnValue({
-        where: vi
-          .fn()
-          .mockReturnValue({
+  const createUpdateChain = (tableName: string) => {
+    let updateValues = {};
+    
+    return {
+      set: vi
+        .fn()
+        .mockImplementation((values) => {
+          updateValues = values;
+          return {
+            where: vi
+              .fn()
+              .mockImplementation((condition) => {
+                // Try to find the record to update from created records first, then fallback to mock data
+                const allRecords = [...(createdRecords[tableName] || []), ...(mockData[tableName] || [])];
+                const baseRecord = allRecords[0] || {};
+                
+                return {
+                  returning: vi
+                    .fn()
+                    .mockReturnValue({
+                      execute: vi
+                        .fn()
+                        .mockResolvedValue([
+                          { 
+                            ...baseRecord,
+                            ...updateValues 
+                          },
+                        ]),
+                    }),
+                  execute: vi
+                    .fn()
+                    .mockResolvedValue([
+                      { 
+                        ...baseRecord,
+                        ...updateValues 
+                      },
+                    ]),
+                };
+              }),
             returning: vi
               .fn()
               .mockReturnValue({
                 execute: vi
                   .fn()
                   .mockResolvedValue([
-                    { id: 1, ...(mockData[tableName]?.[0] || {}) },
+                    { 
+                      id: 1, 
+                      ...(mockData[tableName]?.[0] || {}), 
+                      ...updateValues 
+                    },
                   ]),
               }),
             execute: vi
               .fn()
               .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
+                { 
+                  id: 1, 
+                  ...(mockData[tableName]?.[0] || {}), 
+                  ...updateValues 
+                }
               ]),
-          }),
-        returning: vi
-          .fn()
-          .mockReturnValue({
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
-          }),
-        execute: vi
-          .fn()
-          .mockResolvedValue([{ id: 1, ...(mockData[tableName]?.[0] || {}) }]),
-      }),
-  });
+          };
+        })
+    };
+  };
 
   // Create delete chain mock
   const createDeleteChain = (tableName: string) => ({
@@ -295,9 +345,17 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       return createDeleteChain(tableName);
     }),
     execute: vi.fn().mockResolvedValue([]),
-    transaction: vi.fn().mockImplementation(async callback => {
+    transaction: vi.fn().mockImplementation(async (callback: (tx: any) => Promise<any>) => {
       const txClient = createMockDrizzleClient(schema, mockData);
-      return await callback(txClient);
+      
+      try {
+        const result = await callback(txClient);
+        return result;
+      } catch (error) {
+        // Simulate transaction rollback on error
+        console.debug('Transaction rolled back due to error:', error);
+        throw error;
+      }
     }),
   } as unknown as DrizzleClient<TSchema>;
 }
@@ -368,14 +426,41 @@ export class MockDatabaseAdapter<
   simulateConnectionError(): void {
     this.isConnected = false;
     (this.mockClient.select as any).mockImplementation(() => {
-      throw new Error('Connection lost');
+      throw new ConnectionError('Connection lost');
+    });
+    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+      throw new ConnectionError('Connection lost');
     });
   }
 
   simulateQueryError(): void {
     (this.mockClient.select as any).mockImplementation(() => {
-      throw new Error('SQL syntax error');
+      throw new QueryError('SQL syntax error');
     });
+    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+      throw new QueryError('SQL syntax error'); 
+    });
+  }
+
+  simulateTimeout(ms: number = 5000): void {
+    (this.mockClient.select as any).mockImplementation(() => {
+      return new Promise((_, reject) => {
+        setTimeout(() => reject(new QueryError('Query timeout')), ms);
+      });
+    });
+    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+      return new Promise((_, reject) => {
+        setTimeout(() => reject(new QueryError('Query timeout')), ms);
+      });
+    });
+  }
+
+  simulateValidationError(): void {
+    (this.mockClient.insert as any).mockImplementation(() => ({
+      values: vi.fn().mockImplementation(() => {
+        throw new ValidationError('Invalid data');
+      })
+    }));
   }
 
   resetMocks(): void {
@@ -402,6 +487,7 @@ export const TestDataGenerators = {
       name: `User ${i + 1}`,
       email: `user${i + 1}@example.com`,
       age: 20 + i * 5,
+      isActive: true, // Default value from schema
       createdAt: new Date(Date.now() - i * 86400000), // i days ago
     })),
 
@@ -437,35 +523,25 @@ export const TestDataGenerators = {
  */
 export const MockErrorScenarios = {
   connectionError: () => {
-    const error = new Error('ECONNREFUSED: Connection refused');
-    error.name = 'ConnectionError';
-    return error;
+    return new ConnectionError('ECONNREFUSED: Connection refused');
   },
 
   queryError: () => {
-    const error = new Error('syntax error at or near "SELCT"');
-    error.name = 'QueryError';
-    return error;
+    return new QueryError('syntax error at or near "SELCT"');
   },
 
   constraintError: () => {
-    const error = new Error(
+    return new ValidationError(
       'duplicate key value violates unique constraint "users_email_unique"'
     );
-    error.name = 'ConstraintViolationError';
-    return error;
   },
 
   timeoutError: () => {
-    const error = new Error('Query timeout');
-    error.name = 'TimeoutError';
-    return error;
+    return new QueryError('Query timeout');
   },
 
   validationError: () => {
-    const error = new Error('Invalid email format');
-    error.name = 'ValidationError';
-    return error;
+    return new ValidationError('Invalid email format');
   },
 };
 

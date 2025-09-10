@@ -1,7 +1,7 @@
 import type { Table } from 'drizzle-orm';
-import type { DrizzleClient } from '../types/client.js';
-import type { TransactionOptions } from '../types/config.js';
-import { TransactionError } from '../types/errors.js';
+import type { DrizzleClient } from '../types/client';
+import type { TransactionOptions } from '../types/config';
+import { TransactionError } from '../types/errors';
 
 /**
  * Transaction context that provides the same interface as the main data provider

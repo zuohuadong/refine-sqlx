@@ -6,13 +6,13 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
-import { DatabaseTestSetup, TEST_DATA, skipIfDatabaseNotAvailable } from './integration/database-setup.js';
-import type { RefineOrmDataProvider } from '../types/client.js';
+import { DatabaseTestSetup, TEST_DATA, skipIfDatabaseNotAvailable } from './integration/database-setup';
+import type { RefineOrmDataProvider } from '../types/client';
 import {
   pgUsers,
   mysqlUsers,
   sqliteUsers,
-} from './integration/database-setup.js';
+} from './integration/database-setup';
 
 const testSetup = new DatabaseTestSetup();
 

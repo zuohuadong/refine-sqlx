@@ -25,13 +25,13 @@ import {
   tinyint,
   datetime,
 } from 'drizzle-orm/mysql-core';
-import { createProvider } from '../core/data-provider.js';
+import { createProvider } from '../core/data-provider';
 import {
   MockDatabaseAdapter,
   TestDataGenerators,
   TestAssertions,
-} from './utils/mock-client.js';
-import { ValidationError, SchemaError } from '../types/errors.js';
+} from './utils/mock-client';
+import { ValidationError, SchemaError } from '../types/errors';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 // Test schemas for different databases

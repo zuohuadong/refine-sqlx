@@ -367,7 +367,7 @@ export interface DeleteChain<
 }
 
 // Re-export RefineOrmOptions from config
-export type { RefineOrmOptions } from './config.js';
+export type { RefineOrmOptions } from './config';
 
 // Main RefineOrmDataProvider interface
 export interface RefineOrmDataProvider<

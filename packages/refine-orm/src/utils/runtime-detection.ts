@@ -1,5 +1,5 @@
-import type { RuntimeConfig } from '../types/config.js';
-import { ConfigurationError } from '../types/errors.js';
+import type { RuntimeConfig } from '../types/config';
+import { ConfigurationError } from '../types/errors';
 
 /**
  * Detect if running in Bun runtime environment

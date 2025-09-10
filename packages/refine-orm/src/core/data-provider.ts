@@ -21,17 +21,17 @@ import type {
   DeleteManyResponse,
 } from '@refinedev/core';
 
-import type { RefineOrmDataProvider } from '../types/client.js';
-import type { RefineOrmOptions } from '../types/config.js';
-import { BaseDatabaseAdapter } from '../adapters/base.js';
-import { RefineQueryBuilder } from './query-builder.js';
-import { ChainQuery } from './chain-query-builder.js';
-import { MorphQueryBuilder } from './morph-query.js';
+import type { RefineOrmDataProvider } from '../types/client';
+import type { RefineOrmOptions } from '../types/config';
+import { BaseDatabaseAdapter } from '../adapters/base';
+import { RefineQueryBuilder } from './query-builder';
+import { ChainQuery } from './chain-query-builder';
+import { MorphQueryBuilder } from './morph-query';
 import {
   RelationshipQueryBuilder,
   type RelationshipConfig,
-} from './relationship-query-builder.js';
-import { createPerformanceMonitor } from './performance-monitor.js';
+} from './relationship-query-builder';
+import { createPerformanceMonitor } from './performance-monitor';
 import {
   SelectChain,
   InsertChain,
@@ -41,8 +41,8 @@ import {
   createInsertChain,
   createUpdateChain,
   createDeleteChain,
-} from './native-query-builders.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+} from './native-query-builders';
+import { QueryError, ValidationError, ConfigurationError } from '../types/errors';
 
 /**
  * Build default relationship configurations based on relation names
@@ -179,9 +179,89 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
+        }
+        
+        // Validate field names early - before query building
+        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+          for (const sort of normalizedParams.sorters) {
+            if (sort && sort.field) {
+              const column = queryBuilder.getTableColumn(table, sort.field);
+              if (!column) {
+                throw new ValidationError(`Invalid sort field: column '${sort.field}' not found in table '${normalizedParams.resource}'`);
+              }
+            }
+          }
+        }
+        
+        if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+          // Check for circular references in filters
+          const visited = new WeakSet();
+          const checkCircularReference = (obj: any): void => {
+            if (obj !== null && typeof obj === 'object') {
+              if (visited.has(obj)) {
+                throw new ValidationError('Circular reference detected in filters');
+              }
+              visited.add(obj);
+              
+              if (Array.isArray(obj)) {
+                obj.forEach(checkCircularReference);
+              } else {
+                Object.values(obj).forEach(checkCircularReference);
+              }
+            }
+          };
+          
+          try {
+            checkCircularReference(normalizedParams.filters);
+          } catch (error) {
+            if (error instanceof ValidationError) {
+              throw error;
+            }
+            // If checking for circular references fails for other reasons, also treat as validation error
+            throw new ValidationError('Invalid filter structure detected');
+          }
+
+          const validateFilterField = (filter: any) => {
+            if (filter && typeof filter === 'object' && 'field' in filter && filter.field && typeof filter.field === 'string') {
+              const column = queryBuilder.getTableColumn(table, filter.field);
+              if (!column) {
+                throw new ValidationError(`Invalid filter field: column '${filter.field}' not found in table '${normalizedParams.resource}'`);
+              }
+            } else if (filter && typeof filter === 'object' && 'value' in filter && Array.isArray(filter.value)) {
+              // Recursively validate nested logical filters
+              for (const subFilter of filter.value) {
+                validateFilterField(subFilter);
+              }
+            }
+          };
+          
+          for (const filter of normalizedParams.filters) {
+            validateFilterField(filter);
+          }
+        }
+
+        // Validate sorting parameters
+        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+          for (const sort of normalizedParams.sorters) {
+            if (!sort || typeof sort !== 'object' || !sort.field) {
+              throw new ValidationError('Invalid sort configuration: missing field');
+            }
+            if (!sort.order || sort.order === '' || (sort.order !== 'asc' && sort.order !== 'desc')) {
+              throw new ValidationError('Invalid sort order: must be "asc" or "desc"');
+            }
+          }
+        }
+        
+        // Legacy sorting validation
+        if (normalizedParams.sorting && Array.isArray(normalizedParams.sorting)) {
+          for (const sort of normalizedParams.sorting) {
+            if (!sort || typeof sort !== 'object' || !sort.field) {
+              throw new ValidationError('Invalid sort configuration: missing field');
+            }
+          }
         }
 
         // Handle raw query meta option
@@ -198,6 +278,38 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         // Check for empty array filters that should return no results
         if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+          // First, check for circular references in all filters before processing
+          const checkCircularReference = (obj: any, visited = new WeakSet()): boolean => {
+            if (obj === null || typeof obj !== 'object') {
+              return false;
+            }
+            
+            if (visited.has(obj)) {
+              return true; // Circular reference found
+            }
+            
+            visited.add(obj);
+            
+            for (const key in obj) {
+              if (obj.hasOwnProperty(key)) {
+                if (checkCircularReference(obj[key], visited)) {
+                  return true;
+                }
+              }
+            }
+            
+            visited.delete(obj);
+            return false;
+          };
+          
+          for (const filter of normalizedParams.filters) {
+            if (filter && typeof filter === 'object') {
+              if (checkCircularReference(filter)) {
+                throw new ValidationError('Circular references detected in filter configuration');
+              }
+            }
+          }
+          
           // Check for empty arrays in 'in' operator
           const hasEmptyArrayFilter = normalizedParams.filters.some(filter => 
             filter && 
@@ -217,12 +329,47 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
           // Validate filter values for complex types
           for (const filter of normalizedParams.filters) {
+            // Basic filter structure validation
+            if (filter === null || filter === undefined) {
+              throw new ValidationError('Filter cannot be null or undefined');
+            }
+            
+            if (typeof filter !== 'object') {
+              throw new ValidationError('Filter must be an object');
+            }
+            
+            // Check for required filter properties - logical operators don't need 'field'
+            if (!('operator' in filter) || !('value' in filter)) {
+              throw new ValidationError('Filter must have operator and value properties');
+            }
+            
+            // Regular filters need 'field', logical operators don't
+            if (filter.operator !== 'or' && filter.operator !== 'and' && !('field' in filter)) {
+              throw new ValidationError('Regular filters must have field property');
+            }
+            
             if (filter && typeof filter === 'object' && 'value' in filter) {
               // Check for nested arrays
               if (Array.isArray(filter.value)) {
                 const hasNestedArray = filter.value.some(item => Array.isArray(item));
                 if (hasNestedArray) {
                   throw new ValidationError('Nested arrays are not supported in filter values');
+                }
+              }
+              
+              // Validate between operator
+              if ('operator' in filter && filter.operator === 'between') {
+                if (!Array.isArray(filter.value)) {
+                  throw new ValidationError('Between operator requires array value');
+                }
+                if (filter.value.length !== 2) {
+                  throw new ValidationError('Between operator requires exactly 2 values');
+                }
+                if (filter.value.length === 0) {
+                  throw new ValidationError('Between operator cannot have empty array');
+                }
+                if (filter.value[0] > filter.value[1]) {
+                  throw new ValidationError('Between operator requires values in ascending order');
                 }
               }
               
@@ -242,15 +389,6 @@ export function createProvider<TSchema extends Record<string, Table>>(
                 JSON.stringify(filter);
               } catch (error) {
                 throw new ValidationError('Circular references detected in filter configuration');
-              }
-            }
-          }
-
-          // Validate sorting parameters
-          if ('sorting' in normalizedParams && normalizedParams.sorting && Array.isArray(normalizedParams.sorting)) {
-            for (const sort of normalizedParams.sorting) {
-              if (!sort || typeof sort !== 'object' || !sort.field) {
-                throw new ValidationError('Invalid sort configuration: missing field');
               }
             }
           }
@@ -310,7 +448,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -344,7 +482,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -441,7 +579,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -501,7 +639,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -566,7 +704,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -685,7 +823,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }
@@ -755,7 +893,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         const table = client.schema[params.resource];
 
         if (!table) {
-          throw new QueryError(
+          throw new ValidationError(
             `Table '${params.resource}' not found in schema`
           );
         }

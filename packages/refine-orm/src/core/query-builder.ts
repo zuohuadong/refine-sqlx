@@ -21,7 +21,8 @@ import {
   sql,
 } from 'drizzle-orm';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
-import type { DrizzleClient } from '../types/client.js';
+import type { DrizzleClient } from '../types/client';
+import { ValidationError, SchemaError } from '../types/errors';
 // Temporary local implementation to avoid import issues during testing
 type TransformationContext = { schema?: any; table?: any; dialect?: string };
 
@@ -42,6 +43,33 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
       return { isEmpty: true, result: undefined };
     }
 
+    // Check for circular references
+    const visited = new WeakSet();
+    const checkCircularReference = (obj: any): void => {
+      if (obj !== null && typeof obj === 'object') {
+        if (visited.has(obj)) {
+          throw new ValidationError('Circular reference detected in filters');
+        }
+        visited.add(obj);
+        
+        if (Array.isArray(obj)) {
+          obj.forEach(checkCircularReference);
+        } else {
+          Object.values(obj).forEach(checkCircularReference);
+        }
+      }
+    };
+    
+    try {
+      checkCircularReference(filters);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+      // If checking for circular references fails for other reasons, also treat as validation error
+      throw new ValidationError('Invalid filter structure detected');
+    }
+
     try {
       const conditions = filters.map(filter => {
         if ('operator' in filter && 'field' in filter && 'value' in filter) {
@@ -60,9 +88,10 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
               // Re-throw validation errors immediately
               throw error;
             }
-            // Schema errors (missing columns) should be thrown as ValidationError for consistency
+            // Schema errors (missing columns) should be handled gracefully at query builder level
             if (error instanceof Error && error.message.includes('Column') && error.message.includes('not found')) {
-              throw new ValidationError(error.message);
+              console.warn('Schema error in filter transform:', error);
+              return null;
             }
             console.warn('Schema error in filter transform:', error);
             return null;
@@ -88,9 +117,10 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
                     // Re-throw validation errors immediately
                     throw error;
                   }
-                  // Schema errors (missing columns) should be thrown as ValidationError for consistency
+                  // Schema errors (missing columns) should be handled gracefully at query builder level
                   if (error instanceof Error && error.message.includes('Column') && error.message.includes('not found')) {
-                    throw new ValidationError(error.message);
+                    console.warn('Schema error in subfilter transform:', error);
+                    return null;
                   }
                   console.warn('Schema error in subfilter transform:', error);
                   return null;
@@ -140,7 +170,8 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
       const sortConditions = sorting.map(sort => {
         const column = queryBuilder.getTableColumn(table, sort.field);
         if (!column) {
-          throw new ValidationError(`Column '${sort.field}' not found in table for sorting`);
+          console.warn(`Column '${sort.field}' not found in table for sorting - skipping`);
+          return null;
         }
         
         return sort.order === 'desc' ? desc(column) : asc(column);
@@ -169,7 +200,6 @@ const validateFieldName = (field: string) => {
   }
   return field;
 };
-import { ValidationError, SchemaError } from '../types/errors.js';
 
 /**
  * Query builder for converting Refine filters to Drizzle queries using shared transformation logic
@@ -292,7 +322,12 @@ export class RefineQueryBuilder<
           (error as any)?.code === 'VALIDATION_ERROR')) {
         throw error;
       }
-      console.warn('Failed to transform filters:', error);
+      // Log schema errors but handle them gracefully
+      if (error instanceof Error && (error as any)?.code === 'SCHEMA_ERROR') {
+        console.warn('Schema error in filter transform:', error);
+      } else {
+        console.warn('Failed to transform filters:', error);
+      }
       return undefined;
     }
   }

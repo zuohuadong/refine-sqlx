@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { MySQLAdapter, createMySQLProvider } from '../adapters/mysql.js';
-import { createProvider } from '../core/data-provider.js';
-import type { DatabaseConfig } from '../types/config.js';
+import { MySQLAdapter, createMySQLProvider } from '../adapters/mysql';
+import { createProvider } from '../core/data-provider';
+import type { DatabaseConfig } from '../types/config';
 
 // Mock drizzle-orm/mysql2 to avoid actual database connection
 vi.mock('drizzle-orm/mysql2', () => ({

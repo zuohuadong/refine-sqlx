@@ -9,8 +9,8 @@ import {
   createMockDrizzleClient,
   MockDatabaseAdapter,
   TestDataGenerators,
-} from '../utils/mock-client.js';
-import { createProvider } from '../../core/data-provider.js';
+} from '../utils/mock-client';
+import { createProvider } from '../../core/data-provider';
 import {
   pgTable,
   serial,

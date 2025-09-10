@@ -1,8 +1,8 @@
 import type { Table } from 'drizzle-orm';
-import type { DrizzleClient } from '../types/client.js';
-import type { DatabaseConfig, QueryContext } from '../types/config.js';
-import { ConfigurationError } from '../types/errors.js';
-import { performanceManager, QueryOptimizer } from '../utils/performance.js';
+import type { DrizzleClient } from '../types/client';
+import type { DatabaseConfig, QueryContext } from '../types/config';
+import { ConfigurationError } from '../types/errors';
+import { performanceManager, QueryOptimizer } from '../utils/performance';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // TypeScript 5.0 Decorators for database adapters

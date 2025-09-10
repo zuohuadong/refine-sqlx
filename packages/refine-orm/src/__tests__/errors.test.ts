@@ -20,7 +20,7 @@ import {
   ErrorContext,
   ErrorFactory,
   ERROR_CODES,
-} from '../types/errors.js';
+} from '../types/errors';
 
 describe('Error Types', () => {
   describe('Base RefineOrmError', () => {

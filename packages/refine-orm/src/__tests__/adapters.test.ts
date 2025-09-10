@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { BaseDatabaseAdapter } from '../adapters/base.js';
-import type { DatabaseConfig } from '../types/config.js';
-import { ConnectionError, ConfigurationError } from '../types/errors.js';
+import { BaseDatabaseAdapter } from '../adapters/base';
+import type { DatabaseConfig } from '../types/config';
+import { ConnectionError, ConfigurationError } from '../types/errors';
 
 // Test schema
 const users = pgTable('users', {

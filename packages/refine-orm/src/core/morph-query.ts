@@ -11,6 +11,12 @@ import {
   like,
   inArray,
   sql,
+  asc,
+  desc,
+  ilike,
+  isNull,
+  isNotNull,
+  notInArray,
 } from 'drizzle-orm';
 import type {
   DrizzleClient,
@@ -18,8 +24,8 @@ import type {
   MorphResult,
   MorphQuery,
   FilterOperator,
-} from '../types/client.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+} from '../types/client';
+import { QueryError, ValidationError } from '../types/errors';
 
 /**
  * Polymorphic relationship query builder
@@ -152,8 +158,7 @@ export class MorphQueryBuilder<
       );
     }
 
-    // Import asc/desc dynamically to avoid circular imports
-    const { asc, desc } = require('drizzle-orm');
+    // Use asc/desc from imports
     const orderCondition =
       direction === 'desc' ? desc(tableColumn) : asc(tableColumn);
     this.orderByConditions.push(orderCondition);
@@ -429,33 +434,33 @@ export class MorphQueryBuilder<
       case 'eq':
         return eq(column, value);
       case 'ne':
-        return require('drizzle-orm').ne(column, value);
+        return ne(column, value);
       case 'gt':
-        return require('drizzle-orm').gt(column, value);
+        return gt(column, value);
       case 'gte':
-        return require('drizzle-orm').gte(column, value);
+        return gte(column, value);
       case 'lt':
-        return require('drizzle-orm').lt(column, value);
+        return lt(column, value);
       case 'lte':
-        return require('drizzle-orm').lte(column, value);
+        return lte(column, value);
       case 'like':
-        return require('drizzle-orm').like(column, `%${value}%`);
+        return like(column, `%${value}%`);
       case 'ilike':
-        return require('drizzle-orm').ilike(column, `%${value}%`);
+        return ilike(column, `%${value}%`);
       case 'notLike':
         return and(ne(column, null), like(column, `%${value}%`));
       case 'isNull':
-        return require('drizzle-orm').isNull(column);
+        return isNull(column);
       case 'isNotNull':
-        return require('drizzle-orm').isNotNull(column);
+        return isNotNull(column);
       case 'in':
         return Array.isArray(value) ?
             inArray(column, value)
           : eq(column, value);
       case 'notIn':
         return Array.isArray(value) ?
-            require('drizzle-orm').notInArray(column, value)
-          : require('drizzle-orm').ne(column, value);
+            notInArray(column, value)
+          : ne(column, value);
       case 'between':
         if (Array.isArray(value) && value.length === 2) {
           return and(gte(column, value[0]), lte(column, value[1]));

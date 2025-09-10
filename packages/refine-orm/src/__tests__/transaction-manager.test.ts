@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { TransactionManager } from '../core/transaction-manager.js';
-import type { DrizzleClient } from '../types/client.js';
-import type { TransactionOptions } from '../types/config.js';
-import { TransactionError } from '../types/errors.js';
+import { TransactionManager } from '../core/transaction-manager';
+import type { DrizzleClient } from '../types/client';
+import type { TransactionOptions } from '../types/config';
+import { TransactionError } from '../types/errors';
 
 // Test schema
 const users = pgTable('users', {

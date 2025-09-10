@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { isTestEnvironmentReady } from './database-setup.js';
+import { isTestEnvironmentReady } from './database-setup';
 
 describe('Integration Test Environment', () => {
   describe('Database Availability', () => {
@@ -42,11 +42,11 @@ describe('Integration Test Environment', () => {
     it('should have access to required dependencies', async () => {
       // Test that we can import all required modules
       const modules = [
-        () => import('../../adapters/postgresql.js'),
-        () => import('../../adapters/mysql.js'),
-        () => import('../../adapters/sqlite.js'),
-        () => import('../../core/data-provider.js'),
-        () => import('../../index.js'),
+        () => import('../../adapters/postgresql'),
+        () => import('../../adapters/mysql'),
+        () => import('../../adapters/sqlite'),
+        () => import('../../core/data-provider'),
+        () => import('../../index'),
       ];
 
       const results = await Promise.allSettled(modules.map(m => m()));
@@ -62,7 +62,7 @@ describe('Integration Test Environment', () => {
 
   describe('Test Data Validation', () => {
     it('should have valid test data structure', async () => {
-      const { TEST_DATA } = await import('./database-setup.js');
+      const { TEST_DATA } = await import('./database-setup');
 
       expect(TEST_DATA.users).toBeDefined();
       expect(Array.isArray(TEST_DATA.users)).toBe(true);
@@ -78,7 +78,7 @@ describe('Integration Test Environment', () => {
     });
 
     it('should have consistent test data relationships', async () => {
-      const { TEST_DATA } = await import('./database-setup.js');
+      const { TEST_DATA } = await import('./database-setup');
 
       // Check that post userIds reference valid users
       TEST_DATA.posts.forEach(post => {
@@ -100,6 +100,6 @@ describe('Integration Test Environment', () => {
 });
 
 // Re-export test suites for easier importing
-export * from './crud-operations.test.js';
-export * from './transaction.test.js';
-export * from './relationship-queries.test.js';
+export * from './crud-operations.test';
+export * from './transaction.test';
+export * from './relationship-queries.test';

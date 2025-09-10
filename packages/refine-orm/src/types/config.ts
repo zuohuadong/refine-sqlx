@@ -92,7 +92,7 @@ export interface RuntimeConfig {
 }
 
 // Re-export SchemaConfig from schema
-export type { SchemaConfig } from './schema.js';
+export type { SchemaConfig } from './schema';
 
 // Query context for debugging and logging
 export interface QueryContext {

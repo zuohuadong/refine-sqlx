@@ -4,12 +4,12 @@ import {
   MorphQueryBuilder,
   createMorphQuery,
   EnhancedMorphQueryBuilder,
-} from '../core/morph-query.js';
+} from '../core/morph-query';
 import type {
   DrizzleClient,
   MorphConfig,
   EnhancedMorphConfig,
-} from '../types/client.js';
+} from '../types/client';
 import {
   createMorphConfig,
   createEnhancedMorphConfig,
@@ -17,7 +17,7 @@ import {
   validateEnhancedMorphConfig,
   getMorphTypeNames,
   isValidMorphType,
-} from '../utils/morph-helpers.js';
+} from '../utils/morph-helpers';
 
 // Test schema for polymorphic relationships
 const comments = pgTable('comments', {

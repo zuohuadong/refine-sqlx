@@ -11,21 +11,21 @@ import {
   BaseDatabaseAdapter,
   LogDatabaseOperation,
   RetryOnFailure,
-} from './base.js';
+} from './base';
 import type {
   DatabaseConfig,
   PostgreSQLOptions,
   ConnectionOptions,
-} from '../types/config.js';
-import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
-import { ConnectionError, ConfigurationError } from '../types/errors.js';
-import { createProvider } from '../core/data-provider.js';
+} from '../types/config';
+import type { DrizzleClient, RefineOrmDataProvider } from '../types/client';
+import { ConnectionError, ConfigurationError } from '../types/errors';
+import { createProvider } from '../core/data-provider';
 import {
   detectBunRuntime,
   detectBunSqlSupport,
   getRuntimeConfig,
   checkDriverAvailability,
-} from '../utils/runtime-detection.js';
+} from '../utils/runtime-detection';
 
 /**
  * PostgreSQL database adapter with runtime detection

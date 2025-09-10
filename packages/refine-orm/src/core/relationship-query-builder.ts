@@ -1,7 +1,7 @@
 import type { Table, InferSelectModel, SQL, Column } from 'drizzle-orm';
 import { eq, inArray, and } from 'drizzle-orm';
-import type { DrizzleClient } from '../types/client.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+import type { DrizzleClient } from '../types/client';
+import { QueryError, ValidationError } from '../types/errors';
 
 /**
  * Configuration for database relationships

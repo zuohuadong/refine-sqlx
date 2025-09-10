@@ -26,8 +26,8 @@ import type {
   DrizzleClient,
   FilterOperator,
   RelationshipConfig,
-} from '../types/client.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+} from '../types/client';
+import { QueryError, ValidationError } from '../types/errors';
 
 /**
  * Chainable query builder for more fluent API

@@ -9,8 +9,8 @@ import {
   createInsertChain,
   createUpdateChain,
   createDeleteChain,
-} from '../core/native-query-builders.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+} from '../core/native-query-builders';
+import { QueryError, ValidationError } from '../types/errors';
 
 // Mock drizzle client and table
 const mockTable = {

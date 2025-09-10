@@ -16,9 +16,9 @@ import {
   asc,
   desc,
 } from 'drizzle-orm';
-import { RefineQueryBuilder } from '../core/query-builder.js';
+import { RefineQueryBuilder } from '../core/query-builder';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
-import type { DrizzleClient } from '../types/client.js';
+import type { DrizzleClient } from '../types/client';
 
 // Test schema
 const users = pgTable('users', {

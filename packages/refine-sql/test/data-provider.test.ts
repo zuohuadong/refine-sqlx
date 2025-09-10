@@ -84,6 +84,15 @@ describe('Data Provider Integration', () => {
       { changes: 1, lastInsertId: 1 },
       { changes: 1, lastInsertId: 2 },
     ]);
+    
+    // Mock the query method for getMany which gets called after batch insert
+    (mockClient.query as any).mockResolvedValue({
+      columnNames: ['id', 'name'],
+      rows: [
+        [1, 'John'],
+        [2, 'Jane'],
+      ],
+    });
 
     const dataProvider = createRefineSQL(mockClient);
 
@@ -96,6 +105,7 @@ describe('Data Provider Integration', () => {
 
     expect(mockClient.batch).toHaveBeenCalled();
     expect(result?.data).toBeDefined();
+    expect(result?.data).toHaveLength(2);
   });
 
   it('should handle update operations', async () => {

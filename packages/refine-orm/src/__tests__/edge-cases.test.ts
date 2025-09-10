@@ -13,13 +13,13 @@ import {
   integer,
   boolean,
 } from 'drizzle-orm/pg-core';
-import { createProvider } from '../core/data-provider.js';
+import { createProvider } from '../core/data-provider';
 import {
   MockDatabaseAdapter,
   TestDataGenerators,
   MockErrorScenarios,
-} from './utils/mock-client.js';
-import { ValidationError, ConnectionError } from '../types/errors.js';
+} from './utils/mock-client';
+import { ValidationError, ConnectionError } from '../types/errors';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Test schema

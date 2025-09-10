@@ -27,8 +27,8 @@ import {
   sum,
   avg,
 } from 'drizzle-orm';
-import type { DrizzleClient, FilterOperator } from '../types/client.js';
-import { QueryError, ValidationError } from '../types/errors.js';
+import type { DrizzleClient, FilterOperator } from '../types/client';
+import { QueryError, ValidationError } from '../types/errors';
 
 /**
  * Native SELECT query builder with advanced features

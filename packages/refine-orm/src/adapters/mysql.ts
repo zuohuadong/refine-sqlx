@@ -7,20 +7,20 @@ import {
   BaseDatabaseAdapter,
   LogDatabaseOperation,
   RetryOnFailure,
-} from './base.js';
+} from './base';
 import type {
   DatabaseConfig,
   MySQLOptions,
   ConnectionOptions,
-} from '../types/config.js';
-import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
-import { ConnectionError, ConfigurationError } from '../types/errors.js';
-import { createProvider } from '../core/data-provider.js';
+} from '../types/config';
+import type { DrizzleClient, RefineOrmDataProvider } from '../types/client';
+import { ConnectionError, ConfigurationError, QueryError } from '../types/errors';
+import { createProvider } from '../core/data-provider';
 import {
   detectBunRuntime,
   getRuntimeConfig,
   checkDriverAvailability,
-} from '../utils/runtime-detection.js';
+} from '../utils/runtime-detection';
 
 /**
  * MySQL database adapter with runtime detection
@@ -149,8 +149,7 @@ export class MySQLAdapter<
         this.connection = createPool({
           ...connectionConfig,
           connectionLimit: poolConfig.connectionLimit,
-          connectTimeout: poolConfig.timeout,
-          acquireTimeout: poolConfig.timeout, // Keep for backwards compatibility
+          connectTimeout: poolConfig.timeout, // Use connectTimeout for pool config
           waitForConnections: true,
           queueLimit: poolConfig.queueLimit,
           // MySQL-specific optimizations
@@ -453,7 +452,7 @@ export class MySQLAdapter<
       const [rows] = await this.connection.execute(sql, params || []);
       return rows as T[];
     } catch (error) {
-      throw new ConnectionError(
+      throw new QueryError(
         `Failed to execute raw MySQL query: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error : undefined
       );

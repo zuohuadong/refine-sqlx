@@ -30,8 +30,8 @@ import {
   createPostgreSQLProvider,
   createMySQLProvider,
   createSQLiteProvider,
-} from '../../index.js';
-import type { RefineOrmDataProvider } from '../../types/client.js';
+} from '../../index';
+import type { RefineOrmDataProvider } from '../../types/client';
 
 // PostgreSQL Schema
 export const pgUsers = pgTable('users', {
@@ -145,6 +145,22 @@ export const sqliteSchema = {
   comments: sqliteComments,
 };
 
+/**
+ * Check if a specific database type is available for testing
+ */
+export function isTestEnvironmentReady(dbType: 'postgresql' | 'mysql' | 'sqlite'): boolean {
+  switch (dbType) {
+    case 'postgresql':
+      return !!process.env.POSTGRES_URL;
+    case 'mysql':
+      return !!process.env.MYSQL_URL;
+    case 'sqlite':
+      return true; // SQLite is always available in memory
+    default:
+      return false;
+  }
+}
+
 // Database connection configurations
 export const DATABASE_CONFIGS = {
   postgresql: {
@@ -249,17 +265,37 @@ export class DatabaseTestSetup {
     dbType: 'postgresql' | 'mysql' | 'sqlite'
   ): Promise<RefineOrmDataProvider<any>> {
     try {
+      // Check if database is available first
+      if (!this.isDatabaseAvailable(dbType)) {
+        throw new Error(`${dbType.toUpperCase()} database is not available. Set ${dbType.toUpperCase()}_URL environment variable.`);
+      }
+
       const provider = await createTestProvider(dbType);
       this.providers.set(dbType, provider);
 
       // Create tables and seed data
       await this.createTables(provider, dbType);
+      // Add small delay between table creation and seeding
+      await new Promise(resolve => setTimeout(resolve, 100));
       await this.seedData(provider, dbType);
 
       return provider;
     } catch (error) {
       console.warn(`Failed to setup ${dbType} database:`, error);
       throw error;
+    }
+  }
+
+  private isDatabaseAvailable(dbType: 'postgresql' | 'mysql' | 'sqlite'): boolean {
+    switch (dbType) {
+      case 'postgresql':
+        return !!process.env.POSTGRES_URL;
+      case 'mysql':
+        return !!process.env.MYSQL_URL;
+      case 'sqlite':
+        return true; // SQLite is always available in memory
+      default:
+        return false;
     }
   }
 
@@ -270,12 +306,16 @@ export class DatabaseTestSetup {
     if (provider) {
       try {
         await this.cleanupTables(provider, dbType);
+        // Add small delay to ensure cleanup completes before disconnect
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
         // Disconnect if method exists
-        // if ('disconnect' in provider && typeof provider.disconnect === 'function') {
-        //   await provider.disconnect();
-        // }
+        if ('disconnect' in provider && typeof provider.disconnect === 'function') {
+          await provider.disconnect();
+        }
       } catch (error) {
         console.warn(`Failed to teardown ${dbType} database:`, error);
+        // Don't rethrow here - we want to clean up the provider reference
       }
       this.providers.delete(dbType);
     }
@@ -432,22 +472,6 @@ export class DatabaseTestSetup {
       console.warn(`Failed to cleanup tables for ${dbType}:`, error);
       // Don't throw here as cleanup failures shouldn't fail tests
     }
-  }
-}
-
-// Test environment detection
-export function isTestEnvironmentReady(
-  dbType: 'postgresql' | 'mysql' | 'sqlite'
-): boolean {
-  switch (dbType) {
-    case 'postgresql':
-      return !!process.env.POSTGRES_URL;
-    case 'mysql':
-      return !!process.env.MYSQL_URL;
-    case 'sqlite':
-      return true; // SQLite always available (in-memory)
-    default:
-      return false;
   }
 }
 

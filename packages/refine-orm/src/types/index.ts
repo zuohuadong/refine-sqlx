@@ -1,9 +1,9 @@
 // Type definitions for refine-orm
-export * from './client.js';
-export * from './operations.js';
-export * from './errors.js';
-export * from './config.js';
-export * from './schema.js';
+export * from './client';
+export * from './operations';
+export * from './errors';
+export * from './config';
+export * from './schema';
 
 // Unified type system
-export * from './unified-client.js';
+export * from './unified-client';

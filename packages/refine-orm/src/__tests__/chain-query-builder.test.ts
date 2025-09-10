@@ -3,14 +3,14 @@ import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   ChainQueryBuilder,
   createChainQuery,
-} from '../core/chain-query-builder.js';
+} from '../core/chain-query-builder';
 import {
   createMockDrizzleClient,
   TestDataGenerators,
   TestAssertions,
-} from './utils/mock-client.js';
-import { QueryError, ValidationError } from '../types/errors.js';
-import type { DrizzleClient } from '../types/client.js';
+} from './utils/mock-client';
+import { QueryError, ValidationError } from '../types/errors';
+import type { DrizzleClient } from '../types/client';
 
 // Test schema
 const users = pgTable('users', {
