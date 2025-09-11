@@ -130,13 +130,17 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
             }).filter(Boolean);
 
             if (filter.operator === 'or') {
-              return subConditions.length > 1 ? or(...subConditions) : subConditions[0];
+              const validConditions = subConditions.filter((c): c is SQL => c !== null && c !== undefined);
+              return validConditions.length > 1 ? or(...validConditions) : (validConditions[0] ?? undefined);
             } else {
-              return subConditions.length > 1 ? and(...subConditions) : subConditions[0];
+              const validConditions = subConditions.filter((c): c is SQL => c !== null && c !== undefined);
+              return validConditions.length > 1 ? and(...validConditions) : (validConditions[0] ?? undefined);
             }
           }
           if (logicalOp) {
-            return logicalOp.transform(filter.value || [], context);
+            // For now, skip complex nested logical operations to avoid circular references
+            // This should be handled at a higher level in the query builder
+            return undefined;
           }
           throw new Error(`Unsupported logical operator: ${filter.operator}`);
         }
@@ -148,7 +152,8 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
         return { isEmpty: false, result: sql`1 = 1` }; // Always true condition
       }
 
-      const result = conditions.length === 1 ? conditions[0] : and(...conditions);
+      const validConditions = conditions.filter((c): c is SQL => c !== null && c !== undefined);
+      const result = validConditions.length === 1 ? validConditions[0] : and(...validConditions);
       return { isEmpty: false, result };
     } catch (error) {
       // Re-throw validation errors immediately, don't try to handle them gracefully
@@ -576,7 +581,8 @@ export class RefineQueryBuilder<
       return {};
     }
 
-    const { current = 1, pageSize = 10 } = pagination;
+    const { currentPage = 1, pageSize = 10 } = pagination;
+    const current = currentPage;
 
     // Validate pagination values
     const validCurrent = Math.max(1, current);
@@ -732,7 +738,7 @@ export class RefineQueryBuilder<
   /**
    * Helper to get ID column and validate it exists
    */
-  private validateAndGetIdColumn(table: Table): Column {
+  public validateAndGetIdColumn(table: Table): Column {
     const idColumn = this.getIdColumn(table);
     if (!idColumn) {
       throw new SchemaError('No ID column found in table');

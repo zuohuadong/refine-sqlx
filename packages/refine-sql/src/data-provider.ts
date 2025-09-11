@@ -231,7 +231,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
     const results = await getList({
       resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     return results.data[0] || null;
@@ -266,7 +266,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
         const emailResults = await getList({
           resource,
           filters: [{ field: 'email', operator: 'eq', value: variables.email }],
-          pagination: { current: 1, pageSize: 1, mode: 'server' },
+          pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
         });
         if (emailResults.data.length > 0) {
           return { data: emailResults.data[0] as T };
@@ -560,7 +560,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
               const relatedRecords = await getList({
                 resource: relation,
                 filters: [{ field: foreignKey, operator: 'eq', value: id }],
-                pagination: { current: 1, pageSize: 1000, mode: 'server' },
+                pagination: { currentPage: 1, pageSize: 1000, mode: 'server' },
               });
               recordWithRelations[relation] = relatedRecords.data;
             } else {

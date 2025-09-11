@@ -379,7 +379,7 @@ describe('RefineQueryBuilder', () => {
 
     it('should build pagination with current and pageSize', () => {
       const pagination: Pagination = {
-        current: 2,
+        currentPage: 2,
         pageSize: 10,
         mode: 'server',
       };
@@ -391,7 +391,7 @@ describe('RefineQueryBuilder', () => {
 
     it('should handle first page correctly', () => {
       const pagination: Pagination = {
-        current: 1,
+        currentPage: 1,
         pageSize: 20,
         mode: 'server',
       };
@@ -403,7 +403,7 @@ describe('RefineQueryBuilder', () => {
 
     it('should calculate offset correctly for subsequent pages', () => {
       const pagination: Pagination = {
-        current: 3,
+        currentPage: 3,
         pageSize: 15,
         mode: 'server',
       };
@@ -427,7 +427,7 @@ describe('RefineQueryBuilder', () => {
         table: users,
         filters: [{ field: 'age', operator: 'gte', value: 18 }] as CrudFilters,
         sorters: [{ field: 'name', order: 'asc' }] as CrudSorting,
-        pagination: { current: 1, pageSize: 10, mode: 'server' } as Pagination,
+        pagination: { currentPage: 1, pageSize: 10, mode: 'server' } as Pagination,
       };
 
       const result = queryBuilder.buildComplexQuery(mockClient, options);
@@ -459,7 +459,7 @@ describe('RefineQueryBuilder', () => {
     it('should build query with only pagination', () => {
       const options = {
         table: users,
-        pagination: { current: 2, pageSize: 5, mode: 'server' } as Pagination,
+        pagination: { currentPage: 2, pageSize: 5, mode: 'server' } as Pagination,
       };
 
       const result = queryBuilder.buildComplexQuery(mockClient, options);
@@ -479,7 +479,7 @@ describe('RefineQueryBuilder', () => {
       const params = {
         filters: [{ field: 'age', operator: 'gte', value: 18 }] as CrudFilters,
         sorters: [{ field: 'name', order: 'asc' }] as CrudSorting,
-        pagination: { current: 1, pageSize: 10, mode: 'server' } as Pagination,
+        pagination: { currentPage: 1, pageSize: 10, mode: 'server' } as Pagination,
       };
 
       const result = queryBuilder.buildListQuery(mockClient, users, params);
@@ -585,7 +585,7 @@ describe('RefineQueryBuilder', () => {
 
     it('should handle invalid pagination values', () => {
       const invalidPagination = {
-        current: -1,
+        currentPage: -1,
         pageSize: 0,
         mode: 'server',
       } as Pagination;

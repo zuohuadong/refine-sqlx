@@ -156,7 +156,8 @@ export function createProvider<TSchema extends Record<string, Table>>(
         // Normalize pagination parameters gracefully
         let normalizedParams = { ...params };
         if (params.pagination) {
-          const { current, pageSize } = params.pagination;
+          const { currentPage, pageSize } = params.pagination;
+          const current = currentPage;
           
           // Only throw ValidationError for truly invalid page size (0 or negative)
           if (pageSize !== undefined && pageSize < 1) {
@@ -169,7 +170,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
               ...params,
               pagination: {
                 ...params.pagination,
-                current: 1
+                currentPage: 1
               }
             };
           }
@@ -249,15 +250,16 @@ export function createProvider<TSchema extends Record<string, Table>>(
             if (!sort || typeof sort !== 'object' || !sort.field) {
               throw new ValidationError('Invalid sort configuration: missing field');
             }
-            if (!sort.order || sort.order === '' || (sort.order !== 'asc' && sort.order !== 'desc')) {
+            if (!sort.order || (sort.order !== 'asc' && sort.order !== 'desc')) {
               throw new ValidationError('Invalid sort order: must be "asc" or "desc"');
             }
           }
         }
         
-        // Legacy sorting validation
-        if (normalizedParams.sorting && Array.isArray(normalizedParams.sorting)) {
-          for (const sort of normalizedParams.sorting) {
+        // Legacy sorting validation (using sorters instead of deprecated sorting)
+        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+          // Additional validation for edge cases
+          for (const sort of normalizedParams.sorters) {
             if (!sort || typeof sort !== 'object' || !sort.field) {
               throw new ValidationError('Invalid sort configuration: missing field');
             }
@@ -364,9 +366,6 @@ export function createProvider<TSchema extends Record<string, Table>>(
                 }
                 if (filter.value.length !== 2) {
                   throw new ValidationError('Between operator requires exactly 2 values');
-                }
-                if (filter.value.length === 0) {
-                  throw new ValidationError('Between operator cannot have empty array');
                 }
                 if (filter.value[0] > filter.value[1]) {
                   throw new ValidationError('Between operator requires values in ascending order');
@@ -522,11 +521,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
           client,
           table,
           params.variables,
-          adapter.config.type
+          adapter.getDatabaseType()
         );
         
         let result;
-        if (adapter.config.type === 'mysql') {
+        if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
           const insertResult = await query.execute();
           if (!insertResult || !insertResult.insertId) {
@@ -589,11 +588,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
           table,
           params.id,
           params.variables,
-          adapter.config.type
+          adapter.getDatabaseType()
         );
         
         let result;
-        if (adapter.config.type === 'mysql') {
+        if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
           const updateResult = await query.execute();
           if (!updateResult || updateResult.affectedRows === 0) {
@@ -644,10 +643,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
           );
         }
 
-        const query = queryBuilder.buildDeleteQuery(client, table, params.id, adapter.config.type);
+        const query = queryBuilder.buildDeleteQuery(client, table, params.id, adapter.getDatabaseType());
         
         let result;
-        if (adapter.config.type === 'mysql') {
+        if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to fetch the record first
           const idColumn = queryBuilder.validateAndGetIdColumn(table);
           result = await client
@@ -721,10 +720,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
               client,
               table,
               batch,
-              adapter.config.type
+              adapter.getDatabaseType()
             );
             
-            if (adapter.config.type === 'mysql') {
+            if (adapter.getDatabaseType() === 'mysql') {
               // MySQL doesn't support RETURNING, handle it differently
               const insertResult = await query.execute();
               if (!insertResult || !insertResult.insertId) {
@@ -755,10 +754,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
             client,
             table,
             params.variables,
-            adapter.config.type
+            adapter.getDatabaseType()
           );
           
-          if (adapter.config.type === 'mysql') {
+          if (adapter.getDatabaseType() === 'mysql') {
             // MySQL doesn't support RETURNING, handle it differently
             const insertResult = await query.execute();
             if (!insertResult || !insertResult.insertId) {

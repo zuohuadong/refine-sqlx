@@ -415,7 +415,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
         describe('Pagination', () => {
           it('should paginate results correctly', async () => {
-            const pagination: Pagination = { current: 1, pageSize: 2 };
+            const pagination: Pagination = { currentPage: 1, pageSize: 2 };
 
             const result = await provider.getList({
               resource: 'users',

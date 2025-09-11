@@ -315,7 +315,8 @@ export class ChainQueryBuilder<
       return this;
     }
 
-    const { current = 1, pageSize = 10 } = pagination;
+    const { currentPage = 1, pageSize = 10 } = pagination;
+    const current = currentPage;
     return this.paginate(current, pageSize);
   }
 

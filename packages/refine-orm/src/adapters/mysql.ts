@@ -454,6 +454,8 @@ export class MySQLAdapter<
     } catch (error) {
       throw new QueryError(
         `Failed to execute raw MySQL query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        sql,
+        params,
         error instanceof Error ? error : undefined
       );
     }

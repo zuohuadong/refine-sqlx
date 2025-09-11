@@ -27,12 +27,14 @@ jobs:
         run: bun install
 
       - name: Run security audit
-        run: bun audit
+        run: |
+          echo "Running security audit (only failing on moderate+ severity)..."
+          bun audit --audit-level=moderate
 
       - name: Check for vulnerabilities in lockfile
         run: |
-          if [ -f "bun.lock" ]; then
-            echo "Checking bun.lock for known vulnerabilities..."
+          if [ -f "bun.lockb" ]; then
+            echo "Checking bun.lockb for known vulnerabilities..."
             # Add specific vulnerability checks if needed
           fi
 

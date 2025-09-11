@@ -151,6 +151,13 @@ export abstract class BaseDatabaseAdapter<
   }
 
   /**
+   * Get the database type
+   */
+  getDatabaseType(): string {
+    return this.config.type;
+  }
+
+  /**
    * Execute a query with error handling, logging, and performance tracking
    */
   protected async executeWithLogging<T>(

@@ -14,7 +14,8 @@ export function calculatePagination(pagination?: Pagination): {
     return { current: 1, pageSize: 10 };
   }
 
-  const { current = 1, pageSize = 10 } = pagination;
+  const { currentPage = 1, pageSize = 10 } = pagination;
+  const current = currentPage;
   const limit = pageSize;
   const offset = (current - 1) * pageSize;
 

@@ -100,11 +100,6 @@ export abstract class RefineOrmError extends Error {
    */
   abstract getSuggestions(): string[];
 
-  /**
-   * Check if this error is recoverable
-   */
-  abstract isRecoverable(): boolean;
-
   toJSON() {
     return {
       name: this.name,
