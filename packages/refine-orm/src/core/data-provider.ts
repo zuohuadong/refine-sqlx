@@ -42,7 +42,11 @@ import {
   createUpdateChain,
   createDeleteChain,
 } from './native-query-builders';
-import { QueryError, ValidationError, ConfigurationError } from '../types/errors';
+import {
+  QueryError,
+  ValidationError,
+  ConfigurationError,
+} from '../types/errors';
 
 /**
  * Build default relationship configurations based on relation names
@@ -158,20 +162,17 @@ export function createProvider<TSchema extends Record<string, Table>>(
         if (params.pagination) {
           const { currentPage, pageSize } = params.pagination;
           const current = currentPage;
-          
+
           // Only throw ValidationError for truly invalid page size (0 or negative)
           if (pageSize !== undefined && pageSize < 1) {
             throw new ValidationError('Page size must be greater than 0');
           }
-          
+
           // For invalid page numbers, normalize to page 1 instead of throwing error
           if (current !== undefined && current < 1) {
             normalizedParams = {
               ...params,
-              pagination: {
-                ...params.pagination,
-                currentPage: 1
-              }
+              pagination: { ...params.pagination, currentPage: 1 },
             };
           }
         }
@@ -184,29 +185,39 @@ export function createProvider<TSchema extends Record<string, Table>>(
             `Table '${params.resource}' not found in schema`
           );
         }
-        
+
         // Validate field names early - before query building
-        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+        if (
+          normalizedParams.sorters &&
+          Array.isArray(normalizedParams.sorters)
+        ) {
           for (const sort of normalizedParams.sorters) {
             if (sort && sort.field) {
               const column = queryBuilder.getTableColumn(table, sort.field);
               if (!column) {
-                throw new ValidationError(`Invalid sort field: column '${sort.field}' not found in table '${normalizedParams.resource}'`);
+                throw new ValidationError(
+                  `Invalid sort field: column '${sort.field}' not found in table '${normalizedParams.resource}'`
+                );
               }
             }
           }
         }
-        
-        if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+
+        if (
+          normalizedParams.filters &&
+          Array.isArray(normalizedParams.filters)
+        ) {
           // Check for circular references in filters
           const visited = new WeakSet();
           const checkCircularReference = (obj: any): void => {
             if (obj !== null && typeof obj === 'object') {
               if (visited.has(obj)) {
-                throw new ValidationError('Circular reference detected in filters');
+                throw new ValidationError(
+                  'Circular reference detected in filters'
+                );
               }
               visited.add(obj);
-              
+
               if (Array.isArray(obj)) {
                 obj.forEach(checkCircularReference);
               } else {
@@ -214,7 +225,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
               }
             }
           };
-          
+
           try {
             checkCircularReference(normalizedParams.filters);
           } catch (error) {
@@ -226,72 +237,102 @@ export function createProvider<TSchema extends Record<string, Table>>(
           }
 
           const validateFilterField = (filter: any) => {
-            if (filter && typeof filter === 'object' && 'field' in filter && filter.field && typeof filter.field === 'string') {
+            if (
+              filter &&
+              typeof filter === 'object' &&
+              'field' in filter &&
+              filter.field &&
+              typeof filter.field === 'string'
+            ) {
               const column = queryBuilder.getTableColumn(table, filter.field);
               if (!column) {
-                throw new ValidationError(`Invalid filter field: column '${filter.field}' not found in table '${normalizedParams.resource}'`);
+                throw new ValidationError(
+                  `Invalid filter field: column '${filter.field}' not found in table '${normalizedParams.resource}'`
+                );
               }
-            } else if (filter && typeof filter === 'object' && 'value' in filter && Array.isArray(filter.value)) {
+            } else if (
+              filter &&
+              typeof filter === 'object' &&
+              'value' in filter &&
+              Array.isArray(filter.value)
+            ) {
               // Recursively validate nested logical filters
               for (const subFilter of filter.value) {
                 validateFilterField(subFilter);
               }
             }
           };
-          
+
           for (const filter of normalizedParams.filters) {
             validateFilterField(filter);
           }
         }
 
         // Validate sorting parameters
-        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+        if (
+          normalizedParams.sorters &&
+          Array.isArray(normalizedParams.sorters)
+        ) {
           for (const sort of normalizedParams.sorters) {
             if (!sort || typeof sort !== 'object' || !sort.field) {
-              throw new ValidationError('Invalid sort configuration: missing field');
+              throw new ValidationError(
+                'Invalid sort configuration: missing field'
+              );
             }
-            if (!sort.order || (sort.order !== 'asc' && sort.order !== 'desc')) {
-              throw new ValidationError('Invalid sort order: must be "asc" or "desc"');
+            if (
+              !sort.order ||
+              (sort.order !== 'asc' && sort.order !== 'desc')
+            ) {
+              throw new ValidationError(
+                'Invalid sort order: must be "asc" or "desc"'
+              );
             }
           }
         }
-        
+
         // Legacy sorting validation (using sorters instead of deprecated sorting)
-        if (normalizedParams.sorters && Array.isArray(normalizedParams.sorters)) {
+        if (
+          normalizedParams.sorters &&
+          Array.isArray(normalizedParams.sorters)
+        ) {
           // Additional validation for edge cases
           for (const sort of normalizedParams.sorters) {
             if (!sort || typeof sort !== 'object' || !sort.field) {
-              throw new ValidationError('Invalid sort configuration: missing field');
+              throw new ValidationError(
+                'Invalid sort configuration: missing field'
+              );
             }
           }
         }
 
         // Handle raw query meta option
         if (normalizedParams.meta?.rawQuery) {
-          const rawResults = await adapter.executeRaw<InferSelectModel<TSchema[TTable]>>(
-            `SELECT * FROM ${normalizedParams.resource}`,
-            []
-          );
-          return {
-            data: rawResults,
-            total: rawResults.length,
-          };
+          const rawResults = await adapter.executeRaw<
+            InferSelectModel<TSchema[TTable]>
+          >(`SELECT * FROM ${normalizedParams.resource}`, []);
+          return { data: rawResults, total: rawResults.length };
         }
 
         // Check for empty array filters that should return no results
-        if (normalizedParams.filters && Array.isArray(normalizedParams.filters)) {
+        if (
+          normalizedParams.filters &&
+          Array.isArray(normalizedParams.filters)
+        ) {
           // First, check for circular references in all filters before processing
-          const checkCircularReference = (obj: any, visited = new WeakSet()): boolean => {
+          const checkCircularReference = (
+            obj: any,
+            visited = new WeakSet()
+          ): boolean => {
             if (obj === null || typeof obj !== 'object') {
               return false;
             }
-            
+
             if (visited.has(obj)) {
               return true; // Circular reference found
             }
-            
+
             visited.add(obj);
-            
+
             for (const key in obj) {
               if (obj.hasOwnProperty(key)) {
                 if (checkCircularReference(obj[key], visited)) {
@@ -299,34 +340,34 @@ export function createProvider<TSchema extends Record<string, Table>>(
                 }
               }
             }
-            
+
             visited.delete(obj);
             return false;
           };
-          
+
           for (const filter of normalizedParams.filters) {
             if (filter && typeof filter === 'object') {
               if (checkCircularReference(filter)) {
-                throw new ValidationError('Circular references detected in filter configuration');
+                throw new ValidationError(
+                  'Circular references detected in filter configuration'
+                );
               }
             }
           }
-          
+
           // Check for empty arrays in 'in' operator
-          const hasEmptyArrayFilter = normalizedParams.filters.some(filter => 
-            filter && 
-            typeof filter === 'object' && 
-            'operator' in filter &&
-            filter.operator === 'in' && 
-            Array.isArray(filter.value) && 
-            filter.value.length === 0
+          const hasEmptyArrayFilter = normalizedParams.filters.some(
+            filter =>
+              filter &&
+              typeof filter === 'object' &&
+              'operator' in filter &&
+              filter.operator === 'in' &&
+              Array.isArray(filter.value) &&
+              filter.value.length === 0
           );
-          
+
           if (hasEmptyArrayFilter) {
-            return {
-              data: [],
-              total: 0,
-            };
+            return { data: [], total: 0 };
           }
 
           // Validate filter values for complex types
@@ -335,66 +376,92 @@ export function createProvider<TSchema extends Record<string, Table>>(
             if (filter === null || filter === undefined) {
               throw new ValidationError('Filter cannot be null or undefined');
             }
-            
+
             if (typeof filter !== 'object') {
               throw new ValidationError('Filter must be an object');
             }
-            
+
             // Check for required filter properties - logical operators don't need 'field'
             if (!('operator' in filter) || !('value' in filter)) {
-              throw new ValidationError('Filter must have operator and value properties');
+              throw new ValidationError(
+                'Filter must have operator and value properties'
+              );
             }
-            
+
             // Regular filters need 'field', logical operators don't
-            if (filter.operator !== 'or' && filter.operator !== 'and' && !('field' in filter)) {
-              throw new ValidationError('Regular filters must have field property');
+            if (
+              filter.operator !== 'or' &&
+              filter.operator !== 'and' &&
+              !('field' in filter)
+            ) {
+              throw new ValidationError(
+                'Regular filters must have field property'
+              );
             }
-            
+
             if (filter && typeof filter === 'object' && 'value' in filter) {
               // Check for nested arrays
               if (Array.isArray(filter.value)) {
-                const hasNestedArray = filter.value.some(item => Array.isArray(item));
+                const hasNestedArray = filter.value.some(item =>
+                  Array.isArray(item)
+                );
                 if (hasNestedArray) {
-                  throw new ValidationError('Nested arrays are not supported in filter values');
+                  throw new ValidationError(
+                    'Nested arrays are not supported in filter values'
+                  );
                 }
               }
-              
+
               // Validate between operator
               if ('operator' in filter && filter.operator === 'between') {
                 if (!Array.isArray(filter.value)) {
-                  throw new ValidationError('Between operator requires array value');
+                  throw new ValidationError(
+                    'Between operator requires array value'
+                  );
                 }
                 if (filter.value.length !== 2) {
-                  throw new ValidationError('Between operator requires exactly 2 values');
+                  throw new ValidationError(
+                    'Between operator requires exactly 2 values'
+                  );
                 }
                 if (filter.value[0] > filter.value[1]) {
-                  throw new ValidationError('Between operator requires values in ascending order');
+                  throw new ValidationError(
+                    'Between operator requires values in ascending order'
+                  );
                 }
               }
-              
+
               // Check for circular references (more thorough check)
               if (filter.value && typeof filter.value === 'object') {
                 try {
                   JSON.stringify(filter.value);
                 } catch (error) {
-                  throw new ValidationError('Circular references detected in filter value');
+                  throw new ValidationError(
+                    'Circular references detected in filter value'
+                  );
                 }
               }
             }
-            
+
             // Also check the filter itself for circular references
             if (filter && typeof filter === 'object') {
               try {
                 JSON.stringify(filter);
               } catch (error) {
-                throw new ValidationError('Circular references detected in filter configuration');
+                throw new ValidationError(
+                  'Circular references detected in filter configuration'
+                );
               }
             }
           }
         }
 
         // Build the query using query builder
-        const query = queryBuilder.buildListQuery(client, table, normalizedParams);
+        const query = queryBuilder.buildListQuery(
+          client,
+          table,
+          normalizedParams
+        );
         const countQuery = queryBuilder.buildCountQuery(
           client,
           table,
@@ -523,7 +590,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
           params.variables,
           adapter.getDatabaseType()
         );
-        
+
         let result;
         if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
@@ -533,7 +600,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
               `Failed to create record in '${params.resource}' - no insertId returned`
             );
           }
-          
+
           // Fetch the inserted record by ID
           const idColumn = queryBuilder.validateAndGetIdColumn(table);
           result = await client
@@ -590,7 +657,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
           params.variables,
           adapter.getDatabaseType()
         );
-        
+
         let result;
         if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
@@ -600,7 +667,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
               `Record with id '${params.id}' not found in '${params.resource}'`
             );
           }
-          
+
           // Fetch the updated record by ID
           const idColumn = queryBuilder.validateAndGetIdColumn(table);
           result = await client
@@ -643,8 +710,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
           );
         }
 
-        const query = queryBuilder.buildDeleteQuery(client, table, params.id, adapter.getDatabaseType());
-        
+        const query = queryBuilder.buildDeleteQuery(
+          client,
+          table,
+          params.id,
+          adapter.getDatabaseType()
+        );
+
         let result;
         if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to fetch the record first
@@ -654,13 +726,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
             .from(table)
             .where(eq(idColumn, params.id))
             .execute();
-          
+
           if (!result || result.length === 0) {
             throw new QueryError(
               `Record with id '${params.id}' not found in '${params.resource}'`
             );
           }
-          
+
           // Now delete the record
           const deleteResult = await query.execute();
           if (!deleteResult || deleteResult.affectedRows === 0) {
@@ -722,7 +794,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
               batch,
               adapter.getDatabaseType()
             );
-            
+
             if (adapter.getDatabaseType() === 'mysql') {
               // MySQL doesn't support RETURNING, handle it differently
               const insertResult = await query.execute();
@@ -731,22 +803,28 @@ export function createProvider<TSchema extends Record<string, Table>>(
                   `Failed to create batch records in '${params.resource}' - no insertId returned`
                 );
               }
-              
+
               // For MySQL, we need to fetch the inserted records
               const idColumn = queryBuilder.validateAndGetIdColumn(table);
               const startId = insertResult.insertId;
               const endId = startId + batch.length - 1;
-              
+
               const batchResult = await client
                 .select()
                 .from(table)
                 .where(and(gte(idColumn, startId), lte(idColumn, endId)))
                 .execute();
-              
-              results.push(...(batchResult as InferSelectModel<TSchema[TTable]>[]));
+
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
             } else {
-              const batchResult = await (query.execute ? query.execute() : query);
-              results.push(...(batchResult as InferSelectModel<TSchema[TTable]>[]));
+              const batchResult = await (query.execute ?
+                query.execute()
+              : query);
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
             }
           }
         } else {
@@ -756,7 +834,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
             params.variables,
             adapter.getDatabaseType()
           );
-          
+
           if (adapter.getDatabaseType() === 'mysql') {
             // MySQL doesn't support RETURNING, handle it differently
             const insertResult = await query.execute();
@@ -765,22 +843,26 @@ export function createProvider<TSchema extends Record<string, Table>>(
                 `Failed to create records in '${params.resource}' - no insertId returned`
               );
             }
-            
+
             // For MySQL, we need to fetch the inserted records
             const idColumn = queryBuilder.validateAndGetIdColumn(table);
             const startId = insertResult.insertId;
             const endId = startId + params.variables.length - 1;
-            
+
             const queryResult = await client
               .select()
               .from(table)
               .where(and(gte(idColumn, startId), lte(idColumn, endId)))
               .execute();
-            
-            results.push(...(queryResult as InferSelectModel<TSchema[TTable]>[]));
+
+            results.push(
+              ...(queryResult as InferSelectModel<TSchema[TTable]>[])
+            );
           } else {
             const queryResult = await (query.execute ? query.execute() : query);
-            results.push(...(queryResult as InferSelectModel<TSchema[TTable]>[]));
+            results.push(
+              ...(queryResult as InferSelectModel<TSchema[TTable]>[])
+            );
           }
         }
 
@@ -1121,17 +1203,17 @@ export function createProvider<TSchema extends Record<string, Table>>(
       try {
         // Begin transaction
         await adapter.beginTransaction();
-        
+
         // Create a transaction-aware data provider
         const txDataProvider = createProvider(adapter, options);
-        
+
         try {
           // Execute the transaction function
           const result = await fn(txDataProvider);
-          
+
           // Commit the transaction
           await adapter.commitTransaction();
-          
+
           return result;
         } catch (error) {
           // Rollback the transaction on error

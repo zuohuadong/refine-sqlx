@@ -117,7 +117,7 @@ export class PostgreSQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Manually assign schema if it's missing from Drizzle client
       if (!this.client.schema) {
         (this.client as any).schema = this.config.schema;
@@ -176,7 +176,7 @@ export class PostgreSQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Manually assign schema if it's missing from Drizzle client
       if (!this.client.schema) {
         (this.client as any).schema = this.config.schema;

@@ -148,7 +148,9 @@ export const sqliteSchema = {
 /**
  * Check if a specific database type is available for testing
  */
-export function isTestEnvironmentReady(dbType: 'postgresql' | 'mysql' | 'sqlite'): boolean {
+export function isTestEnvironmentReady(
+  dbType: 'postgresql' | 'mysql' | 'sqlite'
+): boolean {
   switch (dbType) {
     case 'postgresql':
       return !!process.env.POSTGRES_URL;
@@ -267,7 +269,9 @@ export class DatabaseTestSetup {
     try {
       // Check if database is available first
       if (!this.isDatabaseAvailable(dbType)) {
-        throw new Error(`${dbType.toUpperCase()} database is not available. Set ${dbType.toUpperCase()}_URL environment variable.`);
+        throw new Error(
+          `${dbType.toUpperCase()} database is not available. Set ${dbType.toUpperCase()}_URL environment variable.`
+        );
       }
 
       const provider = await createTestProvider(dbType);
@@ -286,7 +290,9 @@ export class DatabaseTestSetup {
     }
   }
 
-  private isDatabaseAvailable(dbType: 'postgresql' | 'mysql' | 'sqlite'): boolean {
+  private isDatabaseAvailable(
+    dbType: 'postgresql' | 'mysql' | 'sqlite'
+  ): boolean {
     switch (dbType) {
       case 'postgresql':
         return !!process.env.POSTGRES_URL;
@@ -308,9 +314,12 @@ export class DatabaseTestSetup {
         await this.cleanupTables(provider, dbType);
         // Add small delay to ensure cleanup completes before disconnect
         await new Promise(resolve => setTimeout(resolve, 200));
-        
+
         // Disconnect if method exists
-        if ('disconnect' in provider && typeof provider.disconnect === 'function') {
+        if (
+          'disconnect' in provider &&
+          typeof provider.disconnect === 'function'
+        ) {
           await provider.disconnect();
         }
       } catch (error) {
@@ -439,7 +448,7 @@ export class DatabaseTestSetup {
           // Table might not exist, that's ok
           console.debug('Users table does not exist or is empty');
         }
-        
+
         // Reset auto-increment counters if needed
         try {
           await provider.executeRaw(
@@ -461,8 +470,12 @@ export class DatabaseTestSetup {
           await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
           await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
         } else if (dbType === 'postgresql') {
-          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+          await provider.executeRaw(
+            'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+          );
+          await provider.executeRaw(
+            'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+          );
           await provider.executeRaw(
             'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
           );

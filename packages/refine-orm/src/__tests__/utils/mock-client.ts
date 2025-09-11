@@ -8,7 +8,11 @@ import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { DrizzleClient } from '../../types/client';
 import { BaseDatabaseAdapter } from '../../adapters/base';
 import type { DatabaseConfig } from '../../types/config';
-import { ValidationError, ConnectionError, QueryError } from '../../types/errors';
+import {
+  ValidationError,
+  ConnectionError,
+  QueryError,
+} from '../../types/errors';
 
 /**
  * Creates a comprehensive mock DrizzleClient for testing
@@ -19,13 +23,13 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 ): DrizzleClient<TSchema> {
   // Registry to track created records by table
   const createdRecords: Record<string, any[]> = {};
-  
+
   // Create chainable query mock
   const createQueryChain = (tableName: string, data: any[] = []) => {
     let limitValue: number | undefined;
     let offsetValue: number | undefined;
     let whereConditions: any[] = [];
-    
+
     const chain = {
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockImplementation((condition: any) => {
@@ -50,18 +54,21 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       distinct: vi.fn().mockReturnThis(),
       execute: vi.fn().mockImplementation(() => {
         let result = data;
-        
+
         // Apply basic filtering (simplified)
         if (whereConditions.length > 0) {
           // For empty arrays in filters, return empty result
-          const hasEmptyArrayFilter = whereConditions.some(condition => 
-            condition && Array.isArray(condition.value) && condition.value.length === 0
+          const hasEmptyArrayFilter = whereConditions.some(
+            condition =>
+              condition &&
+              Array.isArray(condition.value) &&
+              condition.value.length === 0
           );
           if (hasEmptyArrayFilter) {
             result = [];
           }
         }
-        
+
         // Apply offset
         if (offsetValue !== undefined) {
           result = result.slice(offsetValue);
@@ -74,18 +81,21 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       }),
       then: vi.fn().mockImplementation(resolve => {
         let result = data;
-        
+
         // Apply basic filtering (simplified)
         if (whereConditions.length > 0) {
           // For empty arrays in filters, return empty result
-          const hasEmptyArrayFilter = whereConditions.some(condition => 
-            condition && Array.isArray(condition.value) && condition.value.length === 0
+          const hasEmptyArrayFilter = whereConditions.some(
+            condition =>
+              condition &&
+              Array.isArray(condition.value) &&
+              condition.value.length === 0
           );
           if (hasEmptyArrayFilter) {
             result = [];
           }
         }
-        
+
         // Apply offset
         if (offsetValue !== undefined) {
           result = result.slice(offsetValue);
@@ -102,160 +112,154 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
   // Create insert chain mock
   const createInsertChain = (tableName: string) => ({
-    values: vi
-      .fn()
-      .mockImplementation((values) => {
-        // Handle both single and multiple inserts
-        const dataArray = Array.isArray(values) ? values : [values];
-        
-        // Basic validation for users table
-        if (tableName === 'users') {
-          for (const data of dataArray) {
-            if (!data.name || !data.email) {
-              throw new ValidationError(`Missing required fields for ${tableName}`);
+    values: vi.fn().mockImplementation(values => {
+      // Handle both single and multiple inserts
+      const dataArray = Array.isArray(values) ? values : [values];
+
+      // Basic validation for users table
+      if (tableName === 'users') {
+        for (const data of dataArray) {
+          if (!data.name || !data.email) {
+            throw new ValidationError(
+              `Missing required fields for ${tableName}`
+            );
+          }
+
+          // Validate empty strings
+          if (data.name === '' || data.email === '') {
+            throw new ValidationError(
+              `Empty string not allowed for required fields`
+            );
+          }
+
+          // Validate NaN and Infinity values
+          if (data.age !== undefined && data.age !== null) {
+            if (
+              typeof data.age === 'number' &&
+              (isNaN(data.age) || !isFinite(data.age))
+            ) {
+              throw new ValidationError(`Invalid numeric value for age`);
             }
-            
-            // Validate empty strings
-            if (data.name === '' || data.email === '') {
-              throw new ValidationError(`Empty string not allowed for required fields`);
-            }
-            
-            // Validate NaN and Infinity values
-            if (data.age !== undefined && data.age !== null) {
-              if (typeof data.age === 'number' && (isNaN(data.age) || !isFinite(data.age))) {
-                throw new ValidationError(`Invalid numeric value for age`);
-              }
-            }
-            
-            // Validate invalid dates
-            if (data.createdAt && data.createdAt instanceof Date && isNaN(data.createdAt.getTime())) {
-              throw new ValidationError(`Invalid date value`);
-            }
-            
-            // Validate nested arrays (should not be allowed in simple fields)
-            for (const [key, value] of Object.entries(data)) {
-              if (Array.isArray(value)) {
-                throw new ValidationError(`Nested arrays not supported in field ${key}`);
-              }
+          }
+
+          // Validate invalid dates
+          if (
+            data.createdAt &&
+            data.createdAt instanceof Date &&
+            isNaN(data.createdAt.getTime())
+          ) {
+            throw new ValidationError(`Invalid date value`);
+          }
+
+          // Validate nested arrays (should not be allowed in simple fields)
+          for (const [key, value] of Object.entries(data)) {
+            if (Array.isArray(value)) {
+              throw new ValidationError(
+                `Nested arrays not supported in field ${key}`
+              );
             }
           }
         }
-        
-        const resultData = dataArray.map((data, index) => {
-          // Apply defaults and handle null vs undefined for optional fields
-          const baseData = {
-            id: index + 1,
-            createdAt: new Date(),
-            isActive: true, // Default value from schema
-            age: null, // Optional field defaults to null if not provided
-            ...data, // Use actual input data, overriding defaults
-          };
-          
-          // Ensure optional fields that weren't provided are null, not undefined
-          if (!('age' in data)) {
-            baseData.age = null;
-          }
-          
-          return baseData;
-        });
-        
-        // Store created records for later updates
-        if (!createdRecords[tableName]) {
-          createdRecords[tableName] = [];
-        }
-        createdRecords[tableName].push(...resultData);
-        
-        return {
-          returning: vi
-            .fn()
-            .mockReturnValue({
-              execute: vi.fn().mockResolvedValue(resultData),
-            }),
-          onConflictDoNothing: vi
-            .fn()
-            .mockReturnValue({
-              returning: vi
-                .fn()
-                .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
-            }),
-          onConflictDoUpdate: vi
-            .fn()
-            .mockReturnValue({
-              returning: vi
-                .fn()
-                .mockReturnValue({
-                  execute: vi.fn().mockResolvedValue(resultData),
-                }),
-            }),
-          execute: vi.fn().mockResolvedValue(resultData),
+      }
+
+      const resultData = dataArray.map((data, index) => {
+        // Apply defaults and handle null vs undefined for optional fields
+        const baseData = {
+          id: index + 1,
+          createdAt: new Date(),
+          isActive: true, // Default value from schema
+          age: null, // Optional field defaults to null if not provided
+          ...data, // Use actual input data, overriding defaults
         };
-      }),
+
+        // Ensure optional fields that weren't provided are null, not undefined
+        if (!('age' in data)) {
+          baseData.age = null;
+        }
+
+        return baseData;
+      });
+
+      // Store created records for later updates
+      if (!createdRecords[tableName]) {
+        createdRecords[tableName] = [];
+      }
+      createdRecords[tableName].push(...resultData);
+
+      return {
+        returning: vi
+          .fn()
+          .mockReturnValue({ execute: vi.fn().mockResolvedValue(resultData) }),
+        onConflictDoNothing: vi
+          .fn()
+          .mockReturnValue({
+            returning: vi
+              .fn()
+              .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
+          }),
+        onConflictDoUpdate: vi
+          .fn()
+          .mockReturnValue({
+            returning: vi
+              .fn()
+              .mockReturnValue({
+                execute: vi.fn().mockResolvedValue(resultData),
+              }),
+          }),
+        execute: vi.fn().mockResolvedValue(resultData),
+      };
+    }),
   });
 
   // Create update chain mock
   const createUpdateChain = (tableName: string) => {
     let updateValues = {};
-    
+
     return {
-      set: vi
-        .fn()
-        .mockImplementation((values) => {
-          updateValues = values;
-          return {
-            where: vi
-              .fn()
-              .mockImplementation((condition) => {
-                // Try to find the record to update from created records first, then fallback to mock data
-                const allRecords = [...(createdRecords[tableName] || []), ...(mockData[tableName] || [])];
-                const baseRecord = allRecords[0] || {};
-                
-                return {
-                  returning: vi
-                    .fn()
-                    .mockReturnValue({
-                      execute: vi
-                        .fn()
-                        .mockResolvedValue([
-                          { 
-                            ...baseRecord,
-                            ...updateValues 
-                          },
-                        ]),
-                    }),
+      set: vi.fn().mockImplementation(values => {
+        updateValues = values;
+        return {
+          where: vi.fn().mockImplementation(condition => {
+            // Try to find the record to update from created records first, then fallback to mock data
+            const allRecords = [
+              ...(createdRecords[tableName] || []),
+              ...(mockData[tableName] || []),
+            ];
+            const baseRecord = allRecords[0] || {};
+
+            return {
+              returning: vi
+                .fn()
+                .mockReturnValue({
                   execute: vi
                     .fn()
-                    .mockResolvedValue([
-                      { 
-                        ...baseRecord,
-                        ...updateValues 
-                      },
-                    ]),
-                };
-              }),
-            returning: vi
-              .fn()
-              .mockReturnValue({
-                execute: vi
-                  .fn()
-                  .mockResolvedValue([
-                    { 
-                      id: 1, 
-                      ...(mockData[tableName]?.[0] || {}), 
-                      ...updateValues 
-                    },
-                  ]),
-              }),
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { 
-                  id: 1, 
-                  ...(mockData[tableName]?.[0] || {}), 
-                  ...updateValues 
-                }
-              ]),
-          };
-        })
+                    .mockResolvedValue([{ ...baseRecord, ...updateValues }]),
+                }),
+              execute: vi
+                .fn()
+                .mockResolvedValue([{ ...baseRecord, ...updateValues }]),
+            };
+          }),
+          returning: vi
+            .fn()
+            .mockReturnValue({
+              execute: vi
+                .fn()
+                .mockResolvedValue([
+                  {
+                    id: 1,
+                    ...(mockData[tableName]?.[0] || {}),
+                    ...updateValues,
+                  },
+                ]),
+            }),
+          execute: vi
+            .fn()
+            .mockResolvedValue([
+              { id: 1, ...(mockData[tableName]?.[0] || {}), ...updateValues },
+            ]),
+        };
+      }),
     };
   };
 
@@ -345,18 +349,20 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       return createDeleteChain(tableName);
     }),
     execute: vi.fn().mockResolvedValue([]),
-    transaction: vi.fn().mockImplementation(async (callback: (tx: any) => Promise<any>) => {
-      const txClient = createMockDrizzleClient(schema, mockData);
-      
-      try {
-        const result = await callback(txClient);
-        return result;
-      } catch (error) {
-        // Simulate transaction rollback on error
-        console.debug('Transaction rolled back due to error:', error);
-        throw error;
-      }
-    }),
+    transaction: vi
+      .fn()
+      .mockImplementation(async (callback: (tx: any) => Promise<any>) => {
+        const txClient = createMockDrizzleClient(schema, mockData);
+
+        try {
+          const result = await callback(txClient);
+          return result;
+        } catch (error) {
+          // Simulate transaction rollback on error
+          console.debug('Transaction rolled back due to error:', error);
+          throw error;
+        }
+      }),
   } as unknown as DrizzleClient<TSchema>;
 }
 
@@ -438,7 +444,7 @@ export class MockDatabaseAdapter<
       throw new QueryError('SQL syntax error');
     });
     (this.executeRaw as any) = vi.fn().mockImplementation(() => {
-      throw new QueryError('SQL syntax error'); 
+      throw new QueryError('SQL syntax error');
     });
   }
 
@@ -459,7 +465,7 @@ export class MockDatabaseAdapter<
     (this.mockClient.insert as any).mockImplementation(() => ({
       values: vi.fn().mockImplementation(() => {
         throw new ValidationError('Invalid data');
-      })
+      }),
     }));
   }
 

@@ -6,12 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['packages/*/src/**/*.test.ts', 'packages/*/test/**/*.test.ts'],
-    exclude: [
-      'node_modules',
-      'dist',
-      '**/node_modules/**',
-      '**/dist/**',
-    ],
+    exclude: ['node_modules', 'dist', '**/node_modules/**', '**/dist/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -29,9 +24,12 @@ export default defineConfig({
     teardownTimeout: 10000,
     retry: 1,
   },
-    resolve: {
-      alias: {
-        '@refine-orm/core-utils': path.resolve(__dirname, 'packages/refine-core-utils/src/index.ts'),
-      },
+  resolve: {
+    alias: {
+      '@refine-orm/core-utils': path.resolve(
+        __dirname,
+        'packages/refine-core-utils/src/index.ts'
+      ),
     },
+  },
 });

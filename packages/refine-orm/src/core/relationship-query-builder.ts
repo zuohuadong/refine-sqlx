@@ -231,7 +231,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
       console.warn(
         `Related table '${String(config.relatedTable)}' not found in schema for relation '${relationName}', returning null`
       );
-      return config.type === 'hasMany' || config.type === 'belongsToMany' ? [] : null;
+      return config.type === 'hasMany' || config.type === 'belongsToMany' ?
+          []
+        : null;
     }
 
     switch (config.type) {
@@ -252,8 +254,8 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         console.warn(
           `Unsupported relationship type: ${config.type} for relation ${relationName}`
         );
-        return config.type === 'hasMany' || config.type === 'belongsToMany' 
-          ? [] 
+        return config.type === 'hasMany' || config.type === 'belongsToMany' ?
+            []
           : null;
     }
   }

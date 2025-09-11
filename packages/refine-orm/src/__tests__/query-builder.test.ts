@@ -427,7 +427,11 @@ describe('RefineQueryBuilder', () => {
         table: users,
         filters: [{ field: 'age', operator: 'gte', value: 18 }] as CrudFilters,
         sorters: [{ field: 'name', order: 'asc' }] as CrudSorting,
-        pagination: { currentPage: 1, pageSize: 10, mode: 'server' } as Pagination,
+        pagination: {
+          currentPage: 1,
+          pageSize: 10,
+          mode: 'server',
+        } as Pagination,
       };
 
       const result = queryBuilder.buildComplexQuery(mockClient, options);
@@ -459,7 +463,11 @@ describe('RefineQueryBuilder', () => {
     it('should build query with only pagination', () => {
       const options = {
         table: users,
-        pagination: { currentPage: 2, pageSize: 5, mode: 'server' } as Pagination,
+        pagination: {
+          currentPage: 2,
+          pageSize: 5,
+          mode: 'server',
+        } as Pagination,
       };
 
       const result = queryBuilder.buildComplexQuery(mockClient, options);
@@ -479,7 +487,11 @@ describe('RefineQueryBuilder', () => {
       const params = {
         filters: [{ field: 'age', operator: 'gte', value: 18 }] as CrudFilters,
         sorters: [{ field: 'name', order: 'asc' }] as CrudSorting,
-        pagination: { currentPage: 1, pageSize: 10, mode: 'server' } as Pagination,
+        pagination: {
+          currentPage: 1,
+          pageSize: 10,
+          mode: 'server',
+        } as Pagination,
       };
 
       const result = queryBuilder.buildListQuery(mockClient, users, params);

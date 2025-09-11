@@ -26,10 +26,7 @@ import {
   integer as sqliteInteger,
 } from 'drizzle-orm/sqlite-core';
 import { createProvider } from '../core/data-provider';
-import {
-  MockDatabaseAdapter,
-  TestDataGenerators,
-} from './utils/mock-client';
+import { MockDatabaseAdapter, TestDataGenerators } from './utils/mock-client';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 // Test schemas for type inference

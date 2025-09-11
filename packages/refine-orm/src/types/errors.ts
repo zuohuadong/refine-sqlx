@@ -33,7 +33,9 @@ function StatusCode(statusCode: number) {
 
 function Recoverable(recoverable: boolean = true) {
   return function (target: any) {
-    target.prototype.isRecoverable = function() { return recoverable; };
+    target.prototype.isRecoverable = function () {
+      return recoverable;
+    };
     return target;
   };
 }
@@ -109,7 +111,8 @@ export abstract class RefineOrmError extends Error {
       statusCode: this.statusCode,
       context: this.context,
       suggestions: this.getSuggestions(),
-      isRecoverable: typeof this.isRecoverable === 'function' ? this.isRecoverable() : false,
+      isRecoverable:
+        typeof this.isRecoverable === 'function' ? this.isRecoverable() : false,
       stack: this.stack,
       cause: this.cause?.message,
     };

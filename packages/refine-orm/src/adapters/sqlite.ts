@@ -110,7 +110,7 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Ensure schema is always available
       if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
         (this.client as any).schema = this.config.schema;
@@ -154,7 +154,7 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Ensure schema is always available
       if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
         (this.client as any).schema = this.config.schema;
@@ -203,7 +203,7 @@ export class SQLiteAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Ensure schema is always available
       if (!this.client.schema || Object.keys(this.client.schema).length === 0) {
         (this.client as any).schema = this.config.schema;
@@ -508,7 +508,7 @@ export class SQLiteAdapter<
       isConnected: this.isConnected,
     };
   }
-} 
+}
 
 /**
  * Factory function to create SQLite data provider
@@ -516,13 +516,11 @@ export class SQLiteAdapter<
  */
 export async function createSQLiteProvider<
   TSchema extends Record<string, Table>,
->(
-  config: {
-    connection: string | ConnectionOptions | { d1Database: any };
-    schema: TSchema;
-    options?: SQLiteOptions;
-  }
-): Promise<RefineOrmDataProvider<TSchema>>;
+>(config: {
+  connection: string | ConnectionOptions | { d1Database: any };
+  schema: TSchema;
+  options?: SQLiteOptions;
+}): Promise<RefineOrmDataProvider<TSchema>>;
 
 export async function createSQLiteProvider<
   TSchema extends Record<string, Table>,
@@ -565,9 +563,14 @@ export async function createSQLiteProvider<
   } else {
     // Separate parameters signature
     if (!schema) {
-      throw new ConfigurationError('Schema is required when using separate parameters');
+      throw new ConfigurationError(
+        'Schema is required when using separate parameters'
+      );
     }
-    connection = configOrConnection as string | ConnectionOptions | { d1Database: any };
+    connection = configOrConnection as
+      | string
+      | ConnectionOptions
+      | { d1Database: any };
     finalSchema = schema;
     finalOptions = options;
   }

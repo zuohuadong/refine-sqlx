@@ -4,10 +4,7 @@ import {
   createPostgreSQLProviderWithPostgresJs,
   PostgreSQLAdapter,
 } from '../adapters/postgresql';
-import {
-  getRuntimeConfig,
-  detectBunRuntime,
-} from '../utils/runtime-detection';
+import { getRuntimeConfig, detectBunRuntime } from '../utils/runtime-detection';
 
 // Test schema
 const users = pgTable('users', {

@@ -19,10 +19,7 @@ import {
   getRuntimeDiagnostics,
   checkDatabaseSupport,
 } from '../factory';
-import {
-  MockDatabaseAdapter,
-  TestDataGenerators,
-} from './utils/mock-client';
+import { MockDatabaseAdapter, TestDataGenerators } from './utils/mock-client';
 import { ConfigurationError, ConnectionError } from '../types/errors';
 
 // Mock schemas for testing different databases
@@ -62,11 +59,7 @@ vi.mock('../utils/runtime-detection.ts', () => ({
     runtime: 'node',
     version: '18.0.0',
     platform: 'linux',
-    supports: {
-      fs: true,
-      crypto: true,
-      streams: true,
-    },
+    supports: { fs: true, crypto: true, streams: true },
   })),
   getRecommendedDriver: vi.fn((dbType: string) => {
     const drivers: Record<string, string> = {

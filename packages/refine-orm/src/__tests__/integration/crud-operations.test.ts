@@ -208,19 +208,22 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
                 resource: 'posts',
                 filters: [{ field: 'userId', operator: 'eq', value: 1 }],
               });
-              
+
               for (const post of userPosts.data) {
                 await provider.deleteOne({ resource: 'posts', id: post.id });
               }
-              
+
               // Delete comments by user 1
               const userComments = await provider.getList({
                 resource: 'comments',
                 filters: [{ field: 'userId', operator: 'eq', value: 1 }],
               });
-              
+
               for (const comment of userComments.data) {
-                await provider.deleteOne({ resource: 'comments', id: comment.id });
+                await provider.deleteOne({
+                  resource: 'comments',
+                  id: comment.id,
+                });
               }
             } catch (error) {
               // Dependencies might not exist, that's ok
@@ -247,19 +250,22 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
                 resource: 'posts',
                 filters: [{ field: 'userId', operator: 'in', value: [1, 2] }],
               });
-              
+
               for (const post of userPosts.data) {
                 await provider.deleteOne({ resource: 'posts', id: post.id });
               }
-              
+
               // Delete comments by users 1 and 2
               const userComments = await provider.getList({
                 resource: 'comments',
                 filters: [{ field: 'userId', operator: 'in', value: [1, 2] }],
               });
-              
+
               for (const comment of userComments.data) {
-                await provider.deleteOne({ resource: 'comments', id: comment.id });
+                await provider.deleteOne({
+                  resource: 'comments',
+                  id: comment.id,
+                });
               }
             } catch (error) {
               // Dependencies might not exist, that's ok

@@ -37,7 +37,12 @@ type LogicalOperatorConfig<T> = {
 };
 
 // Implement proper drizzle transformer that returns SQL conditions
-const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[], logicalOperators: LogicalOperatorConfig<SQL>[], queryBuilder: RefineQueryBuilder<any>) => ({
+const createDrizzleTransformer = (
+  table: Table,
+  operators: OperatorConfig<SQL>[],
+  logicalOperators: LogicalOperatorConfig<SQL>[],
+  queryBuilder: RefineQueryBuilder<any>
+) => ({
   transformFilters: (filters: CrudFilters, context?: TransformationContext) => {
     if (!filters || filters.length === 0) {
       return { isEmpty: true, result: undefined };
@@ -51,7 +56,7 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
           throw new ValidationError('Circular reference detected in filters');
         }
         visited.add(obj);
-        
+
         if (Array.isArray(obj)) {
           obj.forEach(checkCircularReference);
         } else {
@@ -59,7 +64,7 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
         }
       }
     };
-    
+
     try {
       checkCircularReference(filters);
     } catch (error) {
@@ -71,95 +76,153 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
     }
 
     try {
-      const conditions = filters.map(filter => {
-        if ('operator' in filter && 'field' in filter && 'value' in filter) {
-          // Regular filter
-          const operator = operators.find(op => op.operator === filter.operator);
-          if (!operator) {
-            throw new Error(`Unsupported filter operator: ${filter.operator}`);
-          }
-          try {
-            return operator.transform(filter.field, filter.value, context);
-          } catch (error) {
-            // Check if it's a validation error (should be thrown) or schema error (should be converted to ValidationError)
-            if (error instanceof Error && (error.message.includes('requires array') || 
-                error.message.includes('exactly 2 values') ||
-                (error as any)?.code === 'VALIDATION_ERROR')) {
-              // Re-throw validation errors immediately
-              throw error;
+      const conditions = filters
+        .map(filter => {
+          if ('operator' in filter && 'field' in filter && 'value' in filter) {
+            // Regular filter
+            const operator = operators.find(
+              op => op.operator === filter.operator
+            );
+            if (!operator) {
+              throw new Error(
+                `Unsupported filter operator: ${filter.operator}`
+              );
             }
-            // Schema errors (missing columns) should be handled gracefully at query builder level
-            if (error instanceof Error && error.message.includes('Column') && error.message.includes('not found')) {
+            try {
+              return operator.transform(filter.field, filter.value, context);
+            } catch (error) {
+              // Check if it's a validation error (should be thrown) or schema error (should be converted to ValidationError)
+              if (
+                error instanceof Error &&
+                (error.message.includes('requires array') ||
+                  error.message.includes('exactly 2 values') ||
+                  (error as any)?.code === 'VALIDATION_ERROR')
+              ) {
+                // Re-throw validation errors immediately
+                throw error;
+              }
+              // Schema errors (missing columns) should be handled gracefully at query builder level
+              if (
+                error instanceof Error &&
+                error.message.includes('Column') &&
+                error.message.includes('not found')
+              ) {
+                console.warn('Schema error in filter transform:', error);
+                return null;
+              }
               console.warn('Schema error in filter transform:', error);
               return null;
             }
-            console.warn('Schema error in filter transform:', error);
-            return null;
-          }
-        } else if ('operator' in filter && 'value' in filter) {
-          // Logical filter
-          const logicalOp = logicalOperators.find(op => op.operator === filter.operator);
-          if (!logicalOp && filter.value && Array.isArray(filter.value)) {
-            // Handle logical operators like 'or', 'and'
-            const subConditions = filter.value.map((subFilter: any) => {
-              if ('operator' in subFilter && 'field' in subFilter && 'value' in subFilter) {
-                const operator = operators.find(op => op.operator === subFilter.operator);
-                if (!operator) {
-                  throw new Error(`Unsupported filter operator: ${subFilter.operator}`);
-                }
-                try {
-                  return operator.transform(subFilter.field, subFilter.value, context);
-                } catch (error) {
-                  // Check if it's a validation error (should be thrown) or schema error (should be handled gracefully)  
-                  if (error instanceof Error && (error.message.includes('requires array') || 
-                      error.message.includes('exactly 2 values') ||
-                      (error as any)?.code === 'VALIDATION_ERROR')) {
-                    // Re-throw validation errors immediately
-                    throw error;
+          } else if ('operator' in filter && 'value' in filter) {
+            // Logical filter
+            const logicalOp = logicalOperators.find(
+              op => op.operator === filter.operator
+            );
+            if (!logicalOp && filter.value && Array.isArray(filter.value)) {
+              // Handle logical operators like 'or', 'and'
+              const subConditions = filter.value
+                .map((subFilter: any) => {
+                  if (
+                    'operator' in subFilter &&
+                    'field' in subFilter &&
+                    'value' in subFilter
+                  ) {
+                    const operator = operators.find(
+                      op => op.operator === subFilter.operator
+                    );
+                    if (!operator) {
+                      throw new Error(
+                        `Unsupported filter operator: ${subFilter.operator}`
+                      );
+                    }
+                    try {
+                      return operator.transform(
+                        subFilter.field,
+                        subFilter.value,
+                        context
+                      );
+                    } catch (error) {
+                      // Check if it's a validation error (should be thrown) or schema error (should be handled gracefully)
+                      if (
+                        error instanceof Error &&
+                        (error.message.includes('requires array') ||
+                          error.message.includes('exactly 2 values') ||
+                          (error as any)?.code === 'VALIDATION_ERROR')
+                      ) {
+                        // Re-throw validation errors immediately
+                        throw error;
+                      }
+                      // Schema errors (missing columns) should be handled gracefully at query builder level
+                      if (
+                        error instanceof Error &&
+                        error.message.includes('Column') &&
+                        error.message.includes('not found')
+                      ) {
+                        console.warn(
+                          'Schema error in subfilter transform:',
+                          error
+                        );
+                        return null;
+                      }
+                      console.warn(
+                        'Schema error in subfilter transform:',
+                        error
+                      );
+                      return null;
+                    }
                   }
-                  // Schema errors (missing columns) should be handled gracefully at query builder level
-                  if (error instanceof Error && error.message.includes('Column') && error.message.includes('not found')) {
-                    console.warn('Schema error in subfilter transform:', error);
-                    return null;
-                  }
-                  console.warn('Schema error in subfilter transform:', error);
                   return null;
-                }
-              }
-              return null;
-            }).filter(Boolean);
+                })
+                .filter(Boolean);
 
-            if (filter.operator === 'or') {
-              const validConditions = subConditions.filter((c): c is SQL => c !== null && c !== undefined);
-              return validConditions.length > 1 ? or(...validConditions) : (validConditions[0] ?? undefined);
-            } else {
-              const validConditions = subConditions.filter((c): c is SQL => c !== null && c !== undefined);
-              return validConditions.length > 1 ? and(...validConditions) : (validConditions[0] ?? undefined);
+              if (filter.operator === 'or') {
+                const validConditions = subConditions.filter(
+                  (c): c is SQL => c !== null && c !== undefined
+                );
+                return validConditions.length > 1 ?
+                    or(...validConditions)
+                  : (validConditions[0] ?? undefined);
+              } else {
+                const validConditions = subConditions.filter(
+                  (c): c is SQL => c !== null && c !== undefined
+                );
+                return validConditions.length > 1 ?
+                    and(...validConditions)
+                  : (validConditions[0] ?? undefined);
+              }
             }
+            if (logicalOp) {
+              // For now, skip complex nested logical operations to avoid circular references
+              // This should be handled at a higher level in the query builder
+              return undefined;
+            }
+            throw new Error(`Unsupported logical operator: ${filter.operator}`);
           }
-          if (logicalOp) {
-            // For now, skip complex nested logical operations to avoid circular references
-            // This should be handled at a higher level in the query builder
-            return undefined;
-          }
-          throw new Error(`Unsupported logical operator: ${filter.operator}`);
-        }
-        return null;
-      }).filter(Boolean);
+          return null;
+        })
+        .filter(Boolean);
 
       if (conditions.length === 0) {
         // Even if no valid conditions found, return an empty SQL condition to indicate graceful handling
         return { isEmpty: false, result: sql`1 = 1` }; // Always true condition
       }
 
-      const validConditions = conditions.filter((c): c is SQL => c !== null && c !== undefined);
-      const result = validConditions.length === 1 ? validConditions[0] : and(...validConditions);
+      const validConditions = conditions.filter(
+        (c): c is SQL => c !== null && c !== undefined
+      );
+      const result =
+        validConditions.length === 1 ?
+          validConditions[0]
+        : and(...validConditions);
       return { isEmpty: false, result };
     } catch (error) {
       // Re-throw validation errors immediately, don't try to handle them gracefully
-      if (error instanceof Error && (error.message.includes('requires array') || 
+      if (
+        error instanceof Error &&
+        (error.message.includes('requires array') ||
           error.message.includes('exactly 2 values') ||
-          (error as any)?.code === 'VALIDATION_ERROR')) {
+          (error as any)?.code === 'VALIDATION_ERROR')
+      ) {
         throw error;
       }
       console.warn('Error transforming filters:', error);
@@ -172,15 +235,19 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
     }
 
     try {
-      const sortConditions = sorting.map(sort => {
-        const column = queryBuilder.getTableColumn(table, sort.field);
-        if (!column) {
-          console.warn(`Column '${sort.field}' not found in table for sorting - skipping`);
-          return null;
-        }
-        
-        return sort.order === 'desc' ? desc(column) : asc(column);
-      }).filter(Boolean);
+      const sortConditions = sorting
+        .map(sort => {
+          const column = queryBuilder.getTableColumn(table, sort.field);
+          if (!column) {
+            console.warn(
+              `Column '${sort.field}' not found in table for sorting - skipping`
+            );
+            return null;
+          }
+
+          return sort.order === 'desc' ? desc(column) : asc(column);
+        })
+        .filter(Boolean);
 
       if (sortConditions.length === 0) {
         return { isEmpty: true, result: [] };
@@ -189,7 +256,10 @@ const createDrizzleTransformer = (table: Table, operators: OperatorConfig<SQL>[]
       return { isEmpty: false, result: sortConditions };
     } catch (error) {
       // Re-throw validation errors immediately
-      if (error instanceof Error && ((error as any)?.code === 'VALIDATION_ERROR')) {
+      if (
+        error instanceof Error &&
+        (error as any)?.code === 'VALIDATION_ERROR'
+      ) {
         throw error;
       }
       console.warn('Error transforming sorting:', error);
@@ -298,7 +368,12 @@ export class RefineQueryBuilder<
     const filterOperators = this.createDrizzleFilterOperators(table);
     const logicalOperators = this.createDrizzleLogicalOperators();
 
-    const transformer = createDrizzleTransformer(table, filterOperators, logicalOperators, this);
+    const transformer = createDrizzleTransformer(
+      table,
+      filterOperators,
+      logicalOperators,
+      this
+    );
 
     this.transformerCache.set(table, transformer);
     return transformer;
@@ -322,9 +397,12 @@ export class RefineQueryBuilder<
       return result.isEmpty ? undefined : result.result;
     } catch (error) {
       // Re-throw validation errors immediately
-      if (error instanceof Error && (error.message.includes('requires array') || 
+      if (
+        error instanceof Error &&
+        (error.message.includes('requires array') ||
           error.message.includes('exactly 2 values') ||
-          (error as any)?.code === 'VALIDATION_ERROR')) {
+          (error as any)?.code === 'VALIDATION_ERROR')
+      ) {
         throw error;
       }
       // Log schema errors but handle them gracefully
@@ -551,7 +629,10 @@ export class RefineQueryBuilder<
       return result.isEmpty ? [] : result.result || [];
     } catch (error) {
       // Re-throw validation errors immediately
-      if (error instanceof Error && ((error as any)?.code === 'VALIDATION_ERROR')) {
+      if (
+        error instanceof Error &&
+        (error as any)?.code === 'VALIDATION_ERROR'
+      ) {
         throw error;
       }
       console.warn('Failed to transform sorting:', error);
@@ -765,14 +846,19 @@ export class RefineQueryBuilder<
   /**
    * Build create query
    */
-  buildCreateQuery(client: DrizzleClient<TSchema>, table: Table, data: any, dbType?: string) {
+  buildCreateQuery(
+    client: DrizzleClient<TSchema>,
+    table: Table,
+    data: any,
+    dbType?: string
+  ) {
     const insertQuery = client.insert(table).values(data);
-    
+
     // MySQL doesn't support RETURNING clause
     if (dbType === 'mysql') {
       return insertQuery;
     }
-    
+
     // PostgreSQL and SQLite support RETURNING
     return insertQuery.returning();
   }
@@ -789,12 +875,12 @@ export class RefineQueryBuilder<
   ) {
     const idColumn = this.validateAndGetIdColumn(table);
     const updateQuery = client.update(table).set(data).where(eq(idColumn, id));
-    
+
     // MySQL doesn't support RETURNING clause
     if (dbType === 'mysql') {
       return updateQuery;
     }
-    
+
     // PostgreSQL and SQLite support RETURNING
     return updateQuery.returning();
   }
@@ -802,15 +888,20 @@ export class RefineQueryBuilder<
   /**
    * Build delete query
    */
-  buildDeleteQuery(client: DrizzleClient<TSchema>, table: Table, id: any, dbType?: string) {
+  buildDeleteQuery(
+    client: DrizzleClient<TSchema>,
+    table: Table,
+    id: any,
+    dbType?: string
+  ) {
     const idColumn = this.validateAndGetIdColumn(table);
     const deleteQuery = client.delete(table).where(eq(idColumn, id));
-    
+
     // MySQL doesn't support RETURNING clause
     if (dbType === 'mysql') {
       return deleteQuery;
     }
-    
+
     // PostgreSQL and SQLite support RETURNING
     return deleteQuery.returning();
   }
@@ -825,12 +916,12 @@ export class RefineQueryBuilder<
     dbType?: string
   ) {
     const insertQuery = client.insert(table).values(data);
-    
+
     // MySQL doesn't support RETURNING clause
     if (dbType === 'mysql') {
       return insertQuery;
     }
-    
+
     // PostgreSQL and SQLite support RETURNING
     return insertQuery.returning();
   }

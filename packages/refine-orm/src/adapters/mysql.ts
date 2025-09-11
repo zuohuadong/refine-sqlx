@@ -14,7 +14,11 @@ import type {
   ConnectionOptions,
 } from '../types/config';
 import type { DrizzleClient, RefineOrmDataProvider } from '../types/client';
-import { ConnectionError, ConfigurationError, QueryError } from '../types/errors';
+import {
+  ConnectionError,
+  ConfigurationError,
+  QueryError,
+} from '../types/errors';
 import { createProvider } from '../core/data-provider';
 import {
   detectBunRuntime,
@@ -101,7 +105,7 @@ export class MySQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Manually assign schema if it's missing from Drizzle client
       if (!this.client.schema) {
         (this.client as any).schema = this.config.schema;
@@ -131,7 +135,8 @@ export class MySQLAdapter<
 
     try {
       const mysql = await import('mysql2/promise');
-      const createConnection = mysql.default?.createConnection || mysql.createConnection;
+      const createConnection =
+        mysql.default?.createConnection || mysql.createConnection;
       const createPool = mysql.default?.createPool || mysql.createPool;
 
       // Dynamic import for drizzle-orm/mysql2
@@ -179,7 +184,7 @@ export class MySQLAdapter<
         logger: this.config.debug,
         casing: 'snake_case',
       }) as DrizzleClient<TSchema>;
-      
+
       // Manually assign schema if it's missing from Drizzle client
       if (!this.client.schema) {
         (this.client as any).schema = this.config.schema;
@@ -240,10 +245,12 @@ export class MySQLAdapter<
       config.user = url.username;
       config.password = url.password;
       config.database = url.pathname.slice(1); // Remove leading slash
-      
+
       // Handle SSL parameter from query string
       if (url.searchParams.get('ssl') !== null) {
-        config.ssl = url.searchParams.get('ssl') === 'true' || url.searchParams.get('ssl') === '1';
+        config.ssl =
+          url.searchParams.get('ssl') === 'true' ||
+          url.searchParams.get('ssl') === '1';
       }
     } else if (typeof this.config.connection === 'object') {
       const connOptions = this.config.connection as ConnectionOptions;
@@ -400,11 +407,18 @@ export class MySQLAdapter<
       const conn = this.config.connection;
       // Check if it's a regular connection options object (not D1 database)
       if ('host' in conn || 'user' in conn || 'database' in conn) {
-        const requiredFields = ['host', 'user', 'password', 'database'] as const;
-        
+        const requiredFields = [
+          'host',
+          'user',
+          'password',
+          'database',
+        ] as const;
+
         for (const field of requiredFields) {
           if (!(field in conn) || !conn[field as keyof typeof conn]) {
-            throw new ConfigurationError(`Missing required connection field: ${field}`);
+            throw new ConfigurationError(
+              `Missing required connection field: ${field}`
+            );
           }
         }
       }
@@ -649,7 +663,8 @@ export async function testMySQLConnection(
 ): Promise<{ success: boolean; error?: string; info?: any }> {
   try {
     const mysql = await import('mysql2/promise');
-    const createConnection = mysql.default?.createConnection || mysql.createConnection;
+    const createConnection =
+      mysql.default?.createConnection || mysql.createConnection;
 
     let connectionConfig: any;
     if (typeof connection === 'string') {

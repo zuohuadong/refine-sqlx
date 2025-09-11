@@ -468,7 +468,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         it('should maintain data consistency during concurrent operations', async () => {
           // Skip this test for SQLite as it doesn't support concurrent transactions
           if (dbName.toLowerCase().includes('sqlite')) {
-            console.warn('Skipping concurrent transaction test for SQLite - not supported');
+            console.warn(
+              'Skipping concurrent transaction test for SQLite - not supported'
+            );
             return;
           }
 

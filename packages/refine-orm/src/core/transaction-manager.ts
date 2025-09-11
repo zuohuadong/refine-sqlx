@@ -50,7 +50,9 @@ export class TransactionManager<
         if (options?.isolationLevel && this.adapterType !== 'sqlite') {
           const isolationLevel = this.mapIsolationLevel(options.isolationLevel);
           if (isolationLevel) {
-            await tx.execute(`SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`);
+            await tx.execute(
+              `SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`
+            );
           }
         }
 
@@ -84,7 +86,10 @@ export class TransactionManager<
       this.activeTransactions.delete(transactionId);
 
       // Handle TransactionError specially to preserve rollback semantics
-      if (error instanceof TransactionError && error.message === 'Transaction rolled back') {
+      if (
+        error instanceof TransactionError &&
+        error.message === 'Transaction rolled back'
+      ) {
         throw error;
       }
 
@@ -149,9 +154,11 @@ export class TransactionManager<
     // For drizzle transactions, we can't force rollback externally
     // Just clear the tracking and let transactions complete naturally
     this.activeTransactions.clear();
-    
+
     if (transactionIds.length > 0) {
-      console.warn(`Cleared tracking for ${transactionIds.length} active transactions. They will complete or fail naturally.`);
+      console.warn(
+        `Cleared tracking for ${transactionIds.length} active transactions. They will complete or fail naturally.`
+      );
     }
   }
 }

@@ -4,10 +4,7 @@
  */
 
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
-import {
-  PerformanceManager,
-  type BatchExecutor,
-} from '../utils/performance';
+import { PerformanceManager, type BatchExecutor } from '../utils/performance';
 
 /**
  * Performance monitor for RefineORM operations

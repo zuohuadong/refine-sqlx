@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  beforeAll,
+  afterAll,
+} from 'vitest';
 import {
   MySQLAdapter,
   createMySQLProvider,
@@ -31,10 +39,7 @@ const schema = { users };
 
 // Mock mysql2 module
 vi.mock('mysql2/promise', () => ({
-  default: {
-    createConnection: vi.fn(),
-    createPool: vi.fn(),
-  },
+  default: { createConnection: vi.fn(), createPool: vi.fn() },
   createConnection: vi.fn(),
   createPool: vi.fn(),
 }));
@@ -85,7 +90,9 @@ describe('MySQL Adapter', () => {
     };
 
     const mysql2 = await import('mysql2/promise');
-    vi.mocked(mysql2.default.createConnection).mockResolvedValue(mockConnection);
+    vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+      mockConnection
+    );
     vi.mocked(mysql2.default.createPool).mockResolvedValue(mockPool);
     vi.mocked(mysql2.createConnection).mockResolvedValue(mockConnection);
     vi.mocked(mysql2.createPool).mockResolvedValue(mockPool);
@@ -206,7 +213,7 @@ describe('MySQL Adapter', () => {
     it('should handle connection errors', async () => {
       const mysql2 = await import('mysql2/promise');
       const connectionError = new Error('Connection refused');
-      
+
       // Mock both pool and connection creation to throw error
       vi.mocked(mysql2.default.createConnection).mockImplementation(() => {
         throw connectionError;
@@ -431,12 +438,12 @@ describe('MySQL Adapter', () => {
       // Mock successful connection
       const mysql2 = await import('mysql2/promise');
       const mockConnection = {
-        execute: vi.fn().mockResolvedValue([
-          [{ version: '8.0.28', now: new Date() }]
-        ]),
-        end: vi.fn().mockResolvedValue(undefined)
+        execute: vi
+          .fn()
+          .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
+        end: vi.fn().mockResolvedValue(undefined),
       };
-      
+
       vi.mocked(mysql2.default.createConnection).mockResolvedValue(
         mockConnection as any
       );
@@ -474,12 +481,12 @@ describe('MySQL Adapter', () => {
       // Mock successful connection
       const mysql2 = await import('mysql2/promise');
       const mockConnection = {
-        execute: vi.fn().mockResolvedValue([
-          [{ version: '8.0.28', now: new Date() }]
-        ]),
-        end: vi.fn().mockResolvedValue(undefined)
+        execute: vi
+          .fn()
+          .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
+        end: vi.fn().mockResolvedValue(undefined),
       };
-      
+
       vi.mocked(mysql2.default.createConnection).mockResolvedValue(
         mockConnection as any
       );
@@ -543,7 +550,7 @@ describe('MySQL Adapter', () => {
 
     it('should handle connection pool errors', async () => {
       const mysql2 = await import('mysql2/promise');
-      
+
       // Mock createPool to throw error
       const poolError = new Error('Pool creation failed');
       vi.mocked(mysql2.default.createPool).mockImplementation(() => {

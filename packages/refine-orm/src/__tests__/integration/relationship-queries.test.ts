@@ -49,7 +49,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         try {
           // Use the DatabaseTestSetup to clean up tables specifically
           const setup = new DatabaseTestSetup();
-          
+
           // First clean up the current tables
           if (provider && provider.executeRaw) {
             // Delete in reverse order to handle foreign key constraints
@@ -68,7 +68,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             } catch (e) {
               // Table might not exist, continue
             }
-            
+
             // Reset auto-increment counters for SQLite
             if (dbType === 'sqlite') {
               try {
@@ -81,7 +81,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               }
             }
           }
-          
+
           // Now re-seed with fresh test data
           for (const userData of TEST_DATA.users) {
             await provider.create({ resource: 'users', variables: userData });
@@ -92,9 +92,12 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           }
 
           for (const commentData of TEST_DATA.comments) {
-            await provider.create({ resource: 'comments', variables: commentData });
+            await provider.create({
+              resource: 'comments',
+              variables: commentData,
+            });
           }
-          
+
           // Small delay to ensure data is fully persisted
           await new Promise(resolve => setTimeout(resolve, 50));
         } catch (error) {
@@ -652,7 +655,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
           expect(result).toBeDefined();
           // The relationship should only return posts that belong to this specific user
-          const userPosts = result!.posts.filter(p => p.userId === user.data.id);
+          const userPosts = result!.posts.filter(
+            p => p.userId === user.data.id
+          );
           expect(userPosts).toHaveLength(50);
           expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
         });
@@ -677,7 +682,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           expect(result!.posts).toBeDefined();
           expect(Array.isArray(result!.posts)).toBe(true);
           // Filter to only posts that belong to this specific user
-          const userPosts = result!.posts.filter(p => p.userId === user.data.id);
+          const userPosts = result!.posts.filter(
+            p => p.userId === user.data.id
+          );
           expect(userPosts).toHaveLength(0);
         });
 
