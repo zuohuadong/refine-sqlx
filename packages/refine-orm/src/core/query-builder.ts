@@ -43,7 +43,14 @@ const createDrizzleTransformer = (
   logicalOperators: LogicalOperatorConfig<SQL>[],
   queryBuilder: RefineQueryBuilder<any>
 ) => ({
-  transformFilters: (filters: CrudFilters, context?: TransformationContext) => {
+  transformFilters: (filters: CrudFilters, context?: TransformationContext, depth: number = 0) => {
+    // Add depth limit to prevent infinite recursion
+    const MAX_DEPTH = 10;
+    if (depth > MAX_DEPTH) {
+      console.warn(`Filter depth exceeded ${MAX_DEPTH}, skipping nested filters`);
+      return { isEmpty: true, result: undefined };
+    }
+    
     if (!filters || filters.length === 0) {
       return { isEmpty: true, result: undefined };
     }
@@ -120,6 +127,24 @@ const createDrizzleTransformer = (
             );
             if (!logicalOp && filter.value && Array.isArray(filter.value)) {
               // Handle logical operators like 'or', 'and'
+              // For nested logical filters, recursively transform them
+              const nestedResult = queryBuilder.getTransformer(table).transformFilters(
+                filter.value as CrudFilters,
+                context,
+                depth + 1
+              );
+              
+              if (!nestedResult.isEmpty && nestedResult.result) {
+                if (filter.operator === 'or') {
+                  // Wrap in OR if needed
+                  return nestedResult.result;
+                } else {
+                  // Default to AND behavior
+                  return nestedResult.result;
+                }
+              }
+              
+              // Fallback to simple handling if recursive call fails
               const subConditions = filter.value
                 .map((subFilter: any) => {
                   if (
@@ -360,7 +385,7 @@ export class RefineQueryBuilder<
   /**
    * Get or create transformer for a specific table
    */
-  private getTransformer(table: Table) {
+  public getTransformer(table: Table) {
     if (this.transformerCache.has(table)) {
       return this.transformerCache.get(table);
     }
@@ -393,7 +418,7 @@ export class RefineQueryBuilder<
 
     try {
       const transformer = this.getTransformer(table);
-      const result = transformer.transformFilters(filters, context);
+      const result = transformer.transformFilters(filters, context, 0);
       return result.isEmpty ? undefined : result.result;
     } catch (error) {
       // Re-throw validation errors immediately
