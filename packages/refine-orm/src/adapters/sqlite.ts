@@ -499,6 +499,9 @@ export class SQLiteAdapter<
     driver: string;
     supportsNativeDriver: boolean;
     isConnected: boolean;
+    futureSupport: {
+      bunSql: boolean;
+    };
   } {
     return {
       type: 'sqlite',
@@ -506,6 +509,9 @@ export class SQLiteAdapter<
       driver: this.runtimeConfig.driver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
+      futureSupport: {
+        bunSql: this.runtimeConfig.runtime === 'bun',
+      },
     };
   }
 }

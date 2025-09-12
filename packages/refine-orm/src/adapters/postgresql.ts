@@ -423,6 +423,9 @@ export class PostgreSQLAdapter<
     driver: string;
     supportsNativeDriver: boolean;
     isConnected: boolean;
+    futureSupport: {
+      bunSql: boolean;
+    };
   } {
     return {
       type: 'postgresql',
@@ -430,6 +433,9 @@ export class PostgreSQLAdapter<
       driver: this.runtimeConfig.driver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
+      futureSupport: {
+        bunSql: this.runtimeConfig.runtime === 'bun',
+      },
     };
   }
 }

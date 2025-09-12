@@ -484,8 +484,10 @@ export interface RefineOrmDataProvider<
   // Adapter information
   getAdapterInfo(): {
     type: string;
+    runtime: string;
     driver: string;
+    supportsNativeDriver: boolean;
+    isConnected: boolean;
     futureSupport: { bunSql: boolean };
-    runtime: 'bun' | 'node';
   };
 }
