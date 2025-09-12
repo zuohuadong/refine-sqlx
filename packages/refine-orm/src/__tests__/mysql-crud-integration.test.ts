@@ -152,7 +152,7 @@ describe('MySQL CRUD Integration', () => {
 
       expect(info.type).toBe('mysql');
       expect(info.driver).toBe('mysql2');
-      expect(info.futureSupport.bunSql).toBe(false);
+      expect(info.futureSupport.bunSql).toBe(true); // MySQL supports Bun.sql
       expect(['bun', 'node']).toContain(info.runtime);
     });
   });

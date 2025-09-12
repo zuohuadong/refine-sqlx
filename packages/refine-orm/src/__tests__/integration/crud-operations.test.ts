@@ -462,7 +462,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             });
 
             if (page1.total > 1) {
-              expect(page1.data[0].id).not.toBe(page2.data[0].id);
+              // When there are multiple users, pages should have different data
+              expect(page1.data[0].id).not.toBe(page2.data[0]?.id);
+            } else {
+              // When there's only 1 user, page 2 should be empty
+              expect(page2.data.length).toBe(0);
             }
           });
         });

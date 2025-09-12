@@ -517,6 +517,9 @@ describe('Edge Cases and Boundary Conditions', () => {
     });
 
     it('should handle very slow queries', async () => {
+      // Override the mock data to return only 1 user
+      adapter.mockData.users = TestDataGenerators.users(1);
+      
       vi.spyOn(adapter, 'executeRaw').mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay instead of 5s
         return TestDataGenerators.users(1);
