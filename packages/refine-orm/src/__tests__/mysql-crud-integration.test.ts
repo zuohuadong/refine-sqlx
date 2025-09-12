@@ -91,14 +91,20 @@ describe('MySQL CRUD Integration', () => {
 
   describe('Data Provider Integration', () => {
     it('should create data provider with MySQL adapter', async () => {
-      const dataProvider = await createMySQLProvider(testConfig.connection, testSchema);
+      const dataProvider = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       expect(dataProvider).toBeDefined();
       expect(dataProvider.schema).toBe(testSchema);
     });
 
     it('should have all required CRUD methods', async () => {
-      const dataProvider = await createMySQLProvider(testConfig.connection, testSchema);
+      const dataProvider = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       // Check that all required methods exist
       expect(typeof dataProvider.getList).toBe('function');
@@ -132,21 +138,30 @@ describe('MySQL CRUD Integration', () => {
 
   describe('MySQL Adapter CRUD Operations', () => {
     it('should support raw query execution', async () => {
-      const dataProvider = await createMySQLProvider(testConfig.connection, testSchema);
+      const dataProvider = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       // Test executeRaw method exists and works
       expect(typeof dataProvider.executeRaw).toBe('function');
     });
 
     it('should support transaction operations', async () => {
-      const dataProvider = await createMySQLProvider(testConfig.connection, testSchema);
+      const dataProvider = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       // Test transaction method exists
       expect(typeof dataProvider.transaction).toBe('function');
     });
 
     it('should provide adapter information', async () => {
-      const adapter = await createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       const info = adapter.getAdapterInfo();
 

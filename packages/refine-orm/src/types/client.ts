@@ -480,7 +480,7 @@ export interface RefineOrmDataProvider<
   transaction<T>(
     fn: (tx: RefineOrmDataProvider<TSchema>) => Promise<T>
   ): Promise<T>;
-  
+
   // Adapter information
   getAdapterInfo(): {
     type: string;

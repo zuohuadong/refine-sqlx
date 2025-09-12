@@ -1237,7 +1237,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
     // Additional DataProvider methods
     getApiUrl: () => '',
     custom: async () => ({ data: {} as any }),
-    
+
     // Expose adapter info
     getAdapterInfo: () => adapter.getAdapterInfo(),
   };
