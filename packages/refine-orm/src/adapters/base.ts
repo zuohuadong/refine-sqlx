@@ -301,6 +301,7 @@ export abstract class BaseDatabaseAdapter<
     driver: string;
     supportsNativeDriver: boolean;
     isConnected: boolean;
+    futureSupport: { bunSql: boolean };
   } {
     return {
       type: 'unknown',
@@ -308,6 +309,7 @@ export abstract class BaseDatabaseAdapter<
       driver: 'unknown',
       supportsNativeDriver: false,
       isConnected: this.isConnected,
+      futureSupport: { bunSql: false },
     };
   }
 }

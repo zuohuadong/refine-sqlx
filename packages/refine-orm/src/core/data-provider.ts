@@ -46,6 +46,7 @@ import {
   QueryError,
   ValidationError,
   ConfigurationError,
+  ConnectionError,
 } from '../types/errors';
 
 /**
@@ -492,8 +493,11 @@ export function createProvider<TSchema extends Record<string, Table>>(
           total: totalResult[0]?.count || 0,
         };
       } catch (error) {
-        // Re-throw ValidationError directly without wrapping
+        // Re-throw ValidationError and ConnectionError directly without wrapping
         if (error instanceof ValidationError) {
+          throw error;
+        }
+        if (error instanceof ConnectionError) {
           throw error;
         }
         throw new QueryError(
@@ -1233,5 +1237,8 @@ export function createProvider<TSchema extends Record<string, Table>>(
     // Additional DataProvider methods
     getApiUrl: () => '',
     custom: async () => ({ data: {} as any }),
+    
+    // Expose adapter info
+    getAdapterInfo: () => adapter.getAdapterInfo(),
   };
 }

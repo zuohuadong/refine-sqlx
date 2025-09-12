@@ -430,8 +430,18 @@ export class MockDatabaseAdapter<
   }
 
   simulateConnectionError(): void {
-    this.isConnected = false;
+    // Don't set isConnected = false to avoid ConfigurationError in getClient()
+    // Instead, just mock the client methods to throw ConnectionError
     (this.mockClient.select as any).mockImplementation(() => {
+      throw new ConnectionError('Connection lost');
+    });
+    (this.mockClient.insert as any).mockImplementation(() => {
+      throw new ConnectionError('Connection lost');
+    });
+    (this.mockClient.update as any).mockImplementation(() => {
+      throw new ConnectionError('Connection lost');
+    });
+    (this.mockClient.delete as any).mockImplementation(() => {
       throw new ConnectionError('Connection lost');
     });
     (this.executeRaw as any) = vi.fn().mockImplementation(() => {
