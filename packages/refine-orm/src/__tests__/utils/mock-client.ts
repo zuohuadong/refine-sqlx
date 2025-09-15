@@ -33,7 +33,22 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     const chain = {
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockImplementation((condition: any) => {
-        whereConditions.push(condition);
+        // Store simplified conditions for filtering
+        // Try to extract the actual filtering criteria from drizzle conditions
+        if (condition) {
+          // For simple equality checks, store the id value
+          const condStr = String(condition);
+          const idMatch = condStr.match(/id\s*=\s*(\d+)/i);
+          if (idMatch) {
+            whereConditions.push({ field: 'id', op: 'eq', value: parseInt(idMatch[1]) });
+          } else if (condition.values && Array.isArray(condition.values)) {
+            // For inArray conditions
+            whereConditions.push({ field: 'id', op: 'in', value: condition.values });
+          } else {
+            // Store raw condition for later processing
+            whereConditions.push(condition);
+          }
+        }
         return chain;
       }),
       orderBy: vi.fn().mockReturnThis(),
@@ -55,7 +70,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       execute: vi.fn().mockImplementation(() => {
         let result = data;
 
-        // Apply basic filtering (simplified)
+        // Apply basic filtering
         if (whereConditions.length > 0) {
           // For empty arrays in filters, return empty result
           const hasEmptyArrayFilter = whereConditions.some(
@@ -66,6 +81,37 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           );
           if (hasEmptyArrayFilter) {
             result = [];
+          } else {
+            // Apply actual filtering for conditions
+            result = result.filter(record => {
+              return whereConditions.every(condition => {
+                // Handle simplified conditions
+                if (condition && condition.field && condition.op) {
+                  const fieldValue = record[condition.field];
+                  
+                  if (condition.op === 'eq') {
+                    return fieldValue === condition.value;
+                  } else if (condition.op === 'in' && Array.isArray(condition.value)) {
+                    return condition.value.includes(fieldValue);
+                  }
+                }
+                
+                // For raw conditions, try basic pattern matching
+                if (condition) {
+                  const condStr = String(condition);
+                  // Check for ID equality in the condition string
+                  if (condStr.includes('id') && record.id !== undefined) {
+                    const match = condStr.match(/(\d+)/);
+                    if (match) {
+                      return record.id === parseInt(match[1]);
+                    }
+                  }
+                }
+                
+                // Default to true for unhandled conditions
+                return true;
+              });
+            });
           }
         }
 
@@ -82,7 +128,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       then: vi.fn().mockImplementation(resolve => {
         let result = data;
 
-        // Apply basic filtering (simplified)
+        // Apply basic filtering
         if (whereConditions.length > 0) {
           // For empty arrays in filters, return empty result
           const hasEmptyArrayFilter = whereConditions.some(
@@ -93,6 +139,37 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           );
           if (hasEmptyArrayFilter) {
             result = [];
+          } else {
+            // Apply actual filtering for conditions
+            result = result.filter(record => {
+              return whereConditions.every(condition => {
+                // Handle simplified conditions
+                if (condition && condition.field && condition.op) {
+                  const fieldValue = record[condition.field];
+                  
+                  if (condition.op === 'eq') {
+                    return fieldValue === condition.value;
+                  } else if (condition.op === 'in' && Array.isArray(condition.value)) {
+                    return condition.value.includes(fieldValue);
+                  }
+                }
+                
+                // For raw conditions, try basic pattern matching
+                if (condition) {
+                  const condStr = String(condition);
+                  // Check for ID equality in the condition string
+                  if (condStr.includes('id') && record.id !== undefined) {
+                    const match = condStr.match(/(\d+)/);
+                    if (match) {
+                      return record.id === parseInt(match[1]);
+                    }
+                  }
+                }
+                
+                // Default to true for unhandled conditions
+                return true;
+              });
+            });
           }
         }
 
@@ -163,9 +240,18 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       }
 
       const resultData = dataArray.map((data, index) => {
+        // Calculate next ID based on existing records
+        const existingRecords = [
+          ...(mockData[tableName] || []),
+          ...(createdRecords[tableName] || [])
+        ];
+        const maxId = existingRecords.reduce((max, record) => {
+          return Math.max(max, record.id || 0);
+        }, 0);
+        
         // Apply defaults and handle null vs undefined for optional fields
         const baseData = {
-          id: index + 1,
+          id: maxId + index + 1,
           createdAt: new Date(),
           isActive: true, // Default value from schema
           age: null, // Optional field defaults to null if not provided
@@ -331,7 +417,12 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
       }
 
-      return createQueryChain(tableName, mockData[tableName] || []);
+      // Combine mock data with created records
+      const allData = [
+        ...(mockData[tableName] || []),
+        ...(createdRecords[tableName] || [])
+      ];
+      return createQueryChain(tableName, allData);
     }),
     insert: vi.fn().mockImplementation(table => {
       const tableName =

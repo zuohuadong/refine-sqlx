@@ -136,7 +136,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           it('should get a list of records with pagination', async () => {
             const result = await provider.getList({
               resource: 'users',
-              pagination: { current: 1, pageSize: 2 },
+              pagination: { currentPage: 1, pageSize: 2 },
             });
 
             expect(result.data).toHaveLength(2);
@@ -435,12 +435,12 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           it('should handle different page sizes', async () => {
             const smallPage = await provider.getList({
               resource: 'users',
-              pagination: { current: 1, pageSize: 1 },
+              pagination: { currentPage: 1, pageSize: 1 },
             });
 
             const largePage = await provider.getList({
               resource: 'users',
-              pagination: { current: 1, pageSize: 10 },
+              pagination: { currentPage: 1, pageSize: 10 },
             });
 
             expect(smallPage.data.length).toBeLessThanOrEqual(1);
@@ -453,12 +453,12 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           it('should handle page navigation', async () => {
             const page1 = await provider.getList({
               resource: 'users',
-              pagination: { current: 1, pageSize: 1 },
+              pagination: { currentPage: 1, pageSize: 1 },
             });
 
             const page2 = await provider.getList({
               resource: 'users',
-              pagination: { current: 2, pageSize: 1 },
+              pagination: { currentPage: 2, pageSize: 1 },
             });
 
             if (page1.total > 1) {
@@ -477,7 +477,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               resource: 'users',
               filters: [{ field: 'isActive', operator: 'eq', value: true }],
               sorters: [{ field: 'age', order: 'desc' }],
-              pagination: { current: 1, pageSize: 2 },
+              pagination: { currentPage: 1, pageSize: 2 },
             });
 
             expect(result.data.length).toBeLessThanOrEqual(2);
@@ -566,7 +566,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           const startTime = Date.now();
           const result = await provider.getList({
             resource: 'users',
-            pagination: { current: 1, pageSize: 100 },
+            pagination: { currentPage: 1, pageSize: 100 },
           });
           const duration = Date.now() - startTime;
 
