@@ -514,6 +514,19 @@ export function createProvider<TSchema extends Record<string, Table>>(
       params: GetOneParams & { resource: TTable }
     ): Promise<GetOneResponse<InferSelectModel<TSchema[TTable]>>> {
       try {
+        // Validate ID type/format
+        if (params.id === undefined || params.id === null) {
+          throw new ValidationError('ID is required');
+        }
+
+        // Check if ID is a valid type (number or string)
+        if (typeof params.id !== 'number' && typeof params.id !== 'string') {
+          throw new ValidationError(
+            `Invalid ID type: expected number or string, got ${typeof params.id}`,
+            'id'
+          );
+        }
+
         const client = adapter.getClient();
         const table = client.schema[params.resource];
 
@@ -534,6 +547,10 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         return { data: result[0] as InferSelectModel<TSchema[TTable]> };
       } catch (error) {
+        // Re-throw ValidationError as-is
+        if (error instanceof ValidationError) {
+          throw error;
+        }
         throw new QueryError(
           `Failed to get record from '${params.resource}': ${error instanceof Error ? error.message : 'Unknown error'}`,
           undefined,

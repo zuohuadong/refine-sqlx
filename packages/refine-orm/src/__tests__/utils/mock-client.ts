@@ -40,34 +40,50 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           if (condition.queryChunks && Array.isArray(condition.queryChunks)) {
             // Remove debug logging
             // console.log('IN condition chunks:', condition.queryChunks.length);
-            
+
             // Look for pattern: [column, operator, value]
             // Usually: chunk[1] = column, chunk[2] = operator, chunk[3] = value
             if (condition.queryChunks.length >= 4) {
               const columnChunk = condition.queryChunks[1];
               const operatorChunk = condition.queryChunks[2];
               const valueChunk = condition.queryChunks[3];
-              
+
               if (columnChunk && columnChunk.name) {
                 const fieldName = columnChunk.name;
-                
+
                 // Check if it's an array of Param objects (for IN operator)
                 if (Array.isArray(valueChunk)) {
                   // Extract values from array of Param objects
-                  const values = valueChunk.map((param: any) => 
+                  const values = valueChunk.map((param: any) =>
                     param && param.value !== undefined ? param.value : param
                   );
-                  whereConditions.push({ field: fieldName, op: 'in', value: values });
+                  whereConditions.push({
+                    field: fieldName,
+                    op: 'in',
+                    value: values,
+                  });
                 } else if (valueChunk && valueChunk.value !== undefined) {
                   const value = valueChunk.value;
-                  
+
                   // Check operator type
-                  if (operatorChunk && operatorChunk.value && operatorChunk.value[0]) {
+                  if (
+                    operatorChunk &&
+                    operatorChunk.value &&
+                    operatorChunk.value[0]
+                  ) {
                     const op = operatorChunk.value[0].trim();
                     if (op === '=') {
-                      whereConditions.push({ field: fieldName, op: 'eq', value });
+                      whereConditions.push({
+                        field: fieldName,
+                        op: 'eq',
+                        value,
+                      });
                     } else if (op === 'IN' || op === 'in') {
-                      whereConditions.push({ field: fieldName, op: 'in', value });
+                      whereConditions.push({
+                        field: fieldName,
+                        op: 'in',
+                        value,
+                      });
                     }
                   }
                 }
@@ -76,24 +92,41 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             // Also check for inArray pattern with Placeholder
             else if (condition.queryChunks.length >= 3) {
               const columnChunk = condition.queryChunks[1];
-              const placeholderChunk = condition.queryChunks[condition.queryChunks.length - 2];
-              
-              if (columnChunk && columnChunk.name === 'id' && 
-                  placeholderChunk && placeholderChunk.name === 'id' && 
-                  Array.isArray(placeholderChunk.value)) {
+              const placeholderChunk =
+                condition.queryChunks[condition.queryChunks.length - 2];
+
+              if (
+                columnChunk &&
+                columnChunk.name === 'id' &&
+                placeholderChunk &&
+                placeholderChunk.name === 'id' &&
+                Array.isArray(placeholderChunk.value)
+              ) {
                 // This is an inArray with values embedded in the Placeholder
-                whereConditions.push({ field: 'id', op: 'in', value: placeholderChunk.value });
+                whereConditions.push({
+                  field: 'id',
+                  op: 'in',
+                  value: placeholderChunk.value,
+                });
               }
             }
           } else if (condition.values && Array.isArray(condition.values)) {
             // For inArray conditions
-            whereConditions.push({ field: 'id', op: 'in', value: condition.values });
+            whereConditions.push({
+              field: 'id',
+              op: 'in',
+              value: condition.values,
+            });
           } else {
             // Fallback: try string matching
             const condStr = String(condition);
             const idMatch = condStr.match(/id\s*=\s*(\d+)/i);
             if (idMatch) {
-              whereConditions.push({ field: 'id', op: 'eq', value: parseInt(idMatch[1]) });
+              whereConditions.push({
+                field: 'id',
+                op: 'eq',
+                value: parseInt(idMatch[1]),
+              });
             } else {
               // Store raw condition for later processing
               whereConditions.push(condition);
@@ -139,14 +172,17 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                 // Handle simplified conditions
                 if (condition && condition.field && condition.op) {
                   const fieldValue = record[condition.field];
-                  
+
                   if (condition.op === 'eq') {
                     return fieldValue === condition.value;
-                  } else if (condition.op === 'in' && Array.isArray(condition.value)) {
+                  } else if (
+                    condition.op === 'in' &&
+                    Array.isArray(condition.value)
+                  ) {
                     return condition.value.includes(fieldValue);
                   }
                 }
-                
+
                 // For raw conditions, try basic pattern matching
                 if (condition) {
                   const condStr = String(condition);
@@ -158,7 +194,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                     }
                   }
                 }
-                
+
                 // Default to true for unhandled conditions
                 return true;
               });
@@ -197,14 +233,17 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                 // Handle simplified conditions
                 if (condition && condition.field && condition.op) {
                   const fieldValue = record[condition.field];
-                  
+
                   if (condition.op === 'eq') {
                     return fieldValue === condition.value;
-                  } else if (condition.op === 'in' && Array.isArray(condition.value)) {
+                  } else if (
+                    condition.op === 'in' &&
+                    Array.isArray(condition.value)
+                  ) {
                     return condition.value.includes(fieldValue);
                   }
                 }
-                
+
                 // For raw conditions, try basic pattern matching
                 if (condition) {
                   const condStr = String(condition);
@@ -216,7 +255,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                     }
                   }
                 }
-                
+
                 // Default to true for unhandled conditions
                 return true;
               });
@@ -294,12 +333,12 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         // Calculate next ID based on existing records
         const existingRecords = [
           ...(mockData[tableName] || []),
-          ...(createdRecords[tableName] || [])
+          ...(createdRecords[tableName] || []),
         ];
         const maxId = existingRecords.reduce((max, record) => {
           return Math.max(max, record.id || 0);
         }, 0);
-        
+
         // Apply defaults and handle null vs undefined for optional fields
         const baseData = {
           id: maxId + index + 1,
@@ -351,18 +390,50 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   // Create update chain mock
   const createUpdateChain = (tableName: string) => {
     let updateValues = {};
+    let updateConditions: any[] = [];
 
     return {
       set: vi.fn().mockImplementation(values => {
         updateValues = values;
         return {
-          where: vi.fn().mockImplementation(condition => {
-            // Try to find the record to update from created records first, then fallback to mock data
-            const allRecords = [
-              ...(createdRecords[tableName] || []),
+          where: vi.fn().mockImplementation((condition: any) => {
+            // Extract IDs to update from the condition
+            if (
+              condition &&
+              condition.queryChunks &&
+              Array.isArray(condition.queryChunks)
+            ) {
+              if (condition.queryChunks.length >= 4) {
+                const columnChunk = condition.queryChunks[1];
+                const valueChunk = condition.queryChunks[3];
+
+                if (columnChunk && columnChunk.name === 'id') {
+                  // Check if it's an array of Param objects (for IN operator)
+                  if (Array.isArray(valueChunk)) {
+                    // Extract values from array of Param objects
+                    const ids = valueChunk.map((param: any) =>
+                      param && param.value !== undefined ? param.value : param
+                    );
+                    updateConditions = ids;
+                  } else if (valueChunk && valueChunk.value !== undefined) {
+                    updateConditions = [valueChunk.value];
+                  }
+                }
+              }
+            }
+
+            // Find and update the records
+            const allData = [
               ...(mockData[tableName] || []),
+              ...(createdRecords[tableName] || []),
             ];
-            const baseRecord = allRecords[0] || {};
+
+            const updatedRecords =
+              updateConditions.length > 0 ?
+                allData
+                  .filter(record => updateConditions.includes(record.id))
+                  .map(record => ({ ...record, ...updateValues }))
+              : [{ ...allData[0], ...updateValues }];
 
             return {
               returning: vi
@@ -370,11 +441,19 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                 .mockReturnValue({
                   execute: vi
                     .fn()
-                    .mockResolvedValue([{ ...baseRecord, ...updateValues }]),
+                    .mockResolvedValue(
+                      updatedRecords.length > 0 ?
+                        updatedRecords
+                      : [{ id: updateConditions[0] || 1, ...updateValues }]
+                    ),
                 }),
               execute: vi
                 .fn()
-                .mockResolvedValue([{ ...baseRecord, ...updateValues }]),
+                .mockResolvedValue(
+                  updatedRecords.length > 0 ?
+                    updatedRecords
+                  : [{ id: updateConditions[0] || 1, ...updateValues }]
+                ),
             };
           }),
           returning: vi
@@ -402,20 +481,44 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
   // Create delete chain mock
   const createDeleteChain = (tableName: string) => {
-    let deleteConditions: any[] = [];
-    
+    const deleteConditions: any[] = [];
+
     const chain = {
       where: vi.fn().mockImplementation((condition: any) => {
-        // Extract the ID to delete from the condition
-        if (condition && condition.queryChunks && Array.isArray(condition.queryChunks)) {
+        // Extract the ID(s) to delete from the condition
+        if (
+          condition &&
+          condition.queryChunks &&
+          Array.isArray(condition.queryChunks)
+        ) {
+          // Handle single ID condition (id = value)
           if (condition.queryChunks.length >= 4) {
             const columnChunk = condition.queryChunks[1];
             const valueChunk = condition.queryChunks[3];
-            
-            if (columnChunk && columnChunk.name === 'id' && valueChunk && valueChunk.value !== undefined) {
+
+            if (
+              columnChunk &&
+              columnChunk.name === 'id' &&
+              valueChunk &&
+              valueChunk.value !== undefined
+            ) {
               deleteConditions.push(valueChunk.value);
             }
           }
+          // Handle inArray condition with Placeholder
+          else if (condition.queryChunks.length >= 2) {
+            // Check all chunks for placeholder with array value
+            for (const chunk of condition.queryChunks) {
+              if (chunk && chunk.value && Array.isArray(chunk.value)) {
+                deleteConditions.push(...chunk.value);
+                break;
+              }
+            }
+          }
+        }
+        // Also check for direct values array (for inArray)
+        else if (condition && condition.values && Array.isArray(condition.values)) {
+          deleteConditions.push(...condition.values);
         }
         return chain;
       }),
@@ -424,32 +527,42 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           // Find and return the record(s) to be deleted
           const allData = [
             ...(mockData[tableName] || []),
-            ...(createdRecords[tableName] || [])
+            ...(createdRecords[tableName] || []),
           ];
-          
-          const deletedRecords = allData.filter(record => 
+
+          const deletedRecords = allData.filter(record =>
             deleteConditions.includes(record.id)
           );
-          
+
           // Return the deleted records (before actually removing them)
-          return Promise.resolve(deletedRecords.length > 0 ? deletedRecords : [{ id: deleteConditions[0] }]);
-        })
+          return Promise.resolve(
+            deletedRecords.length > 0 ?
+              deletedRecords
+            : deleteConditions.length > 0 ?
+              deleteConditions.map(id => ({ id }))
+            : [{ id: undefined }]
+          );
+        }),
       })),
       execute: vi.fn().mockImplementation(() => {
         // Find and return the record(s) to be deleted
         const allData = [
           ...(mockData[tableName] || []),
-          ...(createdRecords[tableName] || [])
+          ...(createdRecords[tableName] || []),
         ];
-        
-        const deletedRecords = allData.filter(record => 
+
+        const deletedRecords = allData.filter(record =>
           deleteConditions.includes(record.id)
         );
-        
-        return Promise.resolve(deletedRecords.length > 0 ? deletedRecords : [{ id: deleteConditions[0] }]);
-      })
+
+        return Promise.resolve(
+          deletedRecords.length > 0 ?
+            deletedRecords
+          : [{ id: deleteConditions[0] }]
+        );
+      }),
     };
-    
+
     return chain;
   };
 
@@ -494,7 +607,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       // Combine mock data with created records
       const allData = [
         ...(mockData[tableName] || []),
-        ...(createdRecords[tableName] || [])
+        ...(createdRecords[tableName] || []),
       ];
       return createQueryChain(tableName, allData);
     }),
