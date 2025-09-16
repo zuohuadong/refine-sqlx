@@ -393,7 +393,7 @@ describe('Type Safety and Schema Validation', () => {
       try {
         await pgDataProvider.getOne({
           resource: 'users',
-          id: 'invalid' as any,
+          id: { invalid: true } as any, // Pass an object to trigger ValidationError
         });
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
@@ -401,7 +401,7 @@ describe('Type Safety and Schema Validation', () => {
         if (error instanceof ValidationError) {
           expect(error.code).toBe('VALIDATION_ERROR');
           expect(error.statusCode).toBe(422);
-          expect(typeof error.field).toBe('string');
+          expect(error.field).toBe('id');
         }
       }
     });
