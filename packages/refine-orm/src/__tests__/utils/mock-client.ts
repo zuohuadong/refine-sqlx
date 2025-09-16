@@ -517,7 +517,11 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           }
         }
         // Also check for direct values array (for inArray)
-        else if (condition && condition.values && Array.isArray(condition.values)) {
+        else if (
+          condition &&
+          condition.values &&
+          Array.isArray(condition.values)
+        ) {
           deleteConditions.push(...condition.values);
         }
         return chain;
@@ -536,10 +540,8 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
           // Return the deleted records (before actually removing them)
           return Promise.resolve(
-            deletedRecords.length > 0 ?
-              deletedRecords
-            : deleteConditions.length > 0 ?
-              deleteConditions.map(id => ({ id }))
+            deletedRecords.length > 0 ? deletedRecords
+            : deleteConditions.length > 0 ? deleteConditions.map(id => ({ id }))
             : [{ id: undefined }]
           );
         }),
