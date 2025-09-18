@@ -278,7 +278,10 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   };
 
   // Create insert chain mock
-  const createInsertChain = (tableName: string) => ({
+  const createInsertChain = (tableName: string) => {
+    let storedResultData: any[] = [];
+
+    const insertChain = {
     values: vi.fn().mockImplementation(values => {
       // Handle both single and multiple inserts
       const dataArray = Array.isArray(values) ? values : [values];
@@ -362,6 +365,9 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       }
       createdRecords[tableName].push(...resultData);
 
+      // Store result data for returning() method
+      storedResultData = resultData;
+
       return {
         returning: vi
           .fn()
@@ -385,7 +391,14 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         execute: vi.fn().mockResolvedValue(resultData),
       };
     }),
-  });
+      // Add returning method at the top level for when it's called directly
+      returning: vi.fn().mockImplementation(() => ({
+        execute: vi.fn().mockResolvedValue(storedResultData),
+      })),
+    };
+
+    return insertChain;
+  };
 
   // Create update chain mock
   const createUpdateChain = (tableName: string) => {
@@ -485,6 +498,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
     const chain = {
       where: vi.fn().mockImplementation((condition: any) => {
+
         // Extract the ID(s) to delete from the condition
         if (
           condition &&
@@ -499,10 +513,23 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             if (
               columnChunk &&
               columnChunk.name === 'id' &&
-              valueChunk &&
-              valueChunk.value !== undefined
+              valueChunk
             ) {
-              deleteConditions.push(valueChunk.value);
+              // Handle array of values (for inArray)
+              if (Array.isArray(valueChunk)) {
+                // Extract values from Param objects
+                for (const param of valueChunk) {
+                  if (param && param.value !== undefined) {
+                    deleteConditions.push(param.value);
+                  } else if (typeof param === 'number' || typeof param === 'string') {
+                    deleteConditions.push(param);
+                  }
+                }
+              }
+              // Handle single value
+              else if (valueChunk.value !== undefined) {
+                deleteConditions.push(valueChunk.value);
+              }
             }
           }
           // Handle inArray condition with Placeholder
