@@ -399,8 +399,8 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For pg/node-postgres, use the BEGIN command
-      await this.connection.query('BEGIN');
+      // For postgres-js, execute BEGIN command using sql template
+      await this.connection`BEGIN`;
     } catch (error) {
       throw new ConnectionError(
         `Failed to begin PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -418,8 +418,8 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For pg/node-postgres, use the COMMIT command
-      await this.connection.query('COMMIT');
+      // For postgres-js, execute COMMIT command using sql template
+      await this.connection`COMMIT`;
     } catch (error) {
       throw new ConnectionError(
         `Failed to commit PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -437,8 +437,8 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For pg/node-postgres, use the ROLLBACK command
-      await this.connection.query('ROLLBACK');
+      // For postgres-js, execute ROLLBACK command using sql template
+      await this.connection`ROLLBACK`;
     } catch (error) {
       throw new ConnectionError(
         `Failed to rollback PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
