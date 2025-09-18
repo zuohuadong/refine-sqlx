@@ -65,9 +65,45 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
       beforeEach(async () => {
         // Clean and reseed data before each test
+        // Don't recreate the connection - just clean and reseed the data
         try {
-          await testSetup.teardownDatabase(dbType);
-          provider = await testSetup.setupDatabase(dbType);
+          if (provider && provider.executeRaw) {
+            // Clean tables in reverse order due to foreign keys
+            await provider.executeRaw('DELETE FROM comments');
+            await provider.executeRaw('DELETE FROM posts');
+            await provider.executeRaw('DELETE FROM users');
+
+            // Reset sequences based on database type
+            if (dbType === 'postgresql') {
+              await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+              await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+              await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+            } else if (dbType === 'mysql') {
+              await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
+              await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
+              await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
+            } else if (dbType === 'sqlite') {
+              try {
+                await provider.executeRaw(
+                  'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
+                  ['users', 'posts', 'comments']
+                );
+              } catch (e) {
+                // sqlite_sequence might not exist, that's ok
+              }
+            }
+
+            // Re-seed test data
+            for (const userData of TEST_DATA.users) {
+              await provider.create({ resource: 'users', variables: userData });
+            }
+            for (const postData of TEST_DATA.posts) {
+              await provider.create({ resource: 'posts', variables: postData });
+            }
+            for (const commentData of TEST_DATA.comments) {
+              await provider.create({ resource: 'comments', variables: commentData });
+            }
+          }
         } catch (error) {
           console.warn(`Failed to reset database for ${dbName}:`, error);
         }
