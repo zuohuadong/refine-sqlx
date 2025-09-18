@@ -99,18 +99,30 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             } else if (dbType === 'mysql') {
               // Reset auto-increment counters for MySQL
               try {
-                await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
-                await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-                await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
+                await provider.executeRaw(
+                  'ALTER TABLE users AUTO_INCREMENT = 1'
+                );
+                await provider.executeRaw(
+                  'ALTER TABLE posts AUTO_INCREMENT = 1'
+                );
+                await provider.executeRaw(
+                  'ALTER TABLE comments AUTO_INCREMENT = 1'
+                );
               } catch (e) {
                 // Table might not exist, continue
               }
             } else if (dbType === 'postgresql') {
               // Reset sequences for PostgreSQL
               try {
-                await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-                await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-                await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+                await provider.executeRaw(
+                  'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+                );
+                await provider.executeRaw(
+                  'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+                );
+                await provider.executeRaw(
+                  'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+                );
               } catch (e) {
                 // Sequence might not exist, continue
               }
