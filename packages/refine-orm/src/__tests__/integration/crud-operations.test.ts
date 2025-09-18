@@ -9,17 +9,29 @@ import {
   DatabaseTestSetup,
   skipIfDatabaseNotAvailable,
   TEST_DATA,
+  isTestEnvironmentReady,
 } from './database-setup';
 import type { RefineOrmDataProvider } from '../../types/client';
 
 const testSetup = new DatabaseTestSetup();
 
-// Test databases to run against
+// Test databases to run against - filter based on environment
 const TEST_DATABASES = [
   { type: 'sqlite' as const, name: 'SQLite' },
   { type: 'postgresql' as const, name: 'PostgreSQL' },
   { type: 'mysql' as const, name: 'MySQL' },
-] as const;
+].filter(db => {
+  // In CI, only run tests for the database that's configured
+  if (process.env.CI) {
+    if (process.env.POSTGRES_URL && db.type === 'postgresql') return true;
+    if (process.env.MYSQL_URL && db.type === 'mysql') return true;
+    // Only run SQLite if no other database is configured
+    if (!process.env.POSTGRES_URL && !process.env.MYSQL_URL && db.type === 'sqlite') return true;
+    return false;
+  }
+  // In local development, run all available databases
+  return isTestEnvironmentReady(db.type);
+}) as const;
 
 // Run tests for each database type
 TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
