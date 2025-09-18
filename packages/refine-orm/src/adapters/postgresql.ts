@@ -18,7 +18,11 @@ import type {
   ConnectionOptions,
 } from '../types/config';
 import type { DrizzleClient, RefineOrmDataProvider } from '../types/client';
-import { ConnectionError, ConfigurationError } from '../types/errors';
+import {
+  ConnectionError,
+  ConfigurationError,
+  QueryError,
+} from '../types/errors';
 import { createProvider } from '../core/data-provider';
 import {
   detectBunRuntime,
@@ -373,12 +377,15 @@ export class PostgreSQLAdapter<
       }
 
       // For other drivers (fallback)
-      throw new Error(`executeRaw not implemented for driver: ${this.runtimeConfig.driver}`);
+      throw new Error(
+        `executeRaw not implemented for driver: ${this.runtimeConfig.driver}`
+      );
     } catch (error) {
       throw new QueryError(
         `Failed to execute raw SQL: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined,
-        { query: sql, params }
+        sql,
+        params,
+        error instanceof Error ? error : undefined
       );
     }
   }
