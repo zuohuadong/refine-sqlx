@@ -380,9 +380,81 @@ export class DatabaseTestSetup {
         `);
 
         console.log(`Created SQLite tables for ${dbType}`);
+      } else if (dbType === 'postgresql') {
+        // Create PostgreSQL tables
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            age INTEGER,
+            is_active BOOLEAN DEFAULT true,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS posts (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            content TEXT,
+            user_id INTEGER REFERENCES users(id),
+            published BOOLEAN DEFAULT false,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS comments (
+            id SERIAL PRIMARY KEY,
+            content TEXT NOT NULL,
+            commentable_type TEXT NOT NULL,
+            commentable_id INTEGER NOT NULL,
+            user_id INTEGER REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        console.log(`Created PostgreSQL tables for ${dbType}`);
+      } else if (dbType === 'mysql') {
+        // Create MySQL tables
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            age INT,
+            is_active TINYINT(1) DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS posts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            content TEXT,
+            user_id INT,
+            published TINYINT(1) DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        await provider.executeRaw(`
+          CREATE TABLE IF NOT EXISTS comments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            content TEXT NOT NULL,
+            commentable_type VARCHAR(50) NOT NULL,
+            commentable_id INT NOT NULL,
+            user_id INT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        console.log(`Created MySQL tables for ${dbType}`);
       } else {
-        // For PostgreSQL and MySQL, we assume tables are already created
-        // In a real scenario, you would run migrations here
         console.log(`Tables assumed to exist for ${dbType}`);
       }
     } catch (error) {
