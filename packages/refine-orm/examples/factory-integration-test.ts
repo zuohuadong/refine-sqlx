@@ -9,7 +9,7 @@ import {
   createSQLiteProvider,
   createDataProvider,
   getRuntimeDiagnostics,
-  checkDatabaseSupport
+  checkDatabaseSupport,
 } from '../src/factory.js';
 
 // Test schema
@@ -38,12 +38,18 @@ async function testFactoryFunctions() {
       database: 'sqlite',
       connection: ':memory:',
       schema,
-      options: { debug: true }
+      options: { debug: true },
     });
     console.log('✓ Universal factory function works');
     console.log('  Provider created successfully');
-    console.log('  Provider has getList:', typeof provider1.getList === 'function');
-    console.log('  Provider has create:', typeof provider1.create === 'function');
+    console.log(
+      '  Provider has getList:',
+      typeof provider1.getList === 'function'
+    );
+    console.log(
+      '  Provider has create:',
+      typeof provider1.create === 'function'
+    );
     console.log();
 
     // Test 2: Database-specific factory function
@@ -51,7 +57,7 @@ async function testFactoryFunctions() {
     const provider2 = createSQLiteProvider({
       connection: ':memory:',
       schema,
-      options: { debug: false }
+      options: { debug: false },
     });
     console.log('✓ SQLite-specific factory function works');
     console.log('  Provider created successfully');
@@ -62,7 +68,7 @@ async function testFactoryFunctions() {
     const provider3 = createDataProvider({
       connection: ':memory:',
       schema,
-      options: { debug: false }
+      options: { debug: false },
     });
     console.log('✓ Auto-detection factory function works');
     console.log('  Provider created successfully');
@@ -74,7 +80,10 @@ async function testFactoryFunctions() {
     console.log('✓ Runtime diagnostics work');
     console.log('  Current runtime:', diagnostics.runtime);
     console.log('  Runtime version:', diagnostics.version);
-    console.log('  Recommended SQLite driver:', diagnostics.recommendedDrivers.sqlite);
+    console.log(
+      '  Recommended SQLite driver:',
+      diagnostics.recommendedDrivers.sqlite
+    );
     console.log('  Bun SQLite support:', diagnostics.features.bunSqlite);
     console.log('  Node.js environment:', diagnostics.environment.isNode);
     console.log('  Bun environment:', diagnostics.environment.isBun);
@@ -84,7 +93,10 @@ async function testFactoryFunctions() {
     console.log('5. Testing database support checking...');
     const sqliteSupport = checkDatabaseSupport('sqlite');
     const bunSqliteSupport = checkDatabaseSupport('sqlite', 'bun:sqlite');
-    const betterSqlite3Support = checkDatabaseSupport('sqlite', 'better-sqlite3');
+    const betterSqlite3Support = checkDatabaseSupport(
+      'sqlite',
+      'better-sqlite3'
+    );
     console.log('✓ Database support checking works');
     console.log('  SQLite support:', sqliteSupport);
     console.log('  Bun SQLite support:', bunSqliteSupport);
@@ -97,7 +109,7 @@ async function testFactoryFunctions() {
       createProvider({
         database: 'unsupported' as any,
         connection: 'test',
-        schema
+        schema,
       });
       console.log('✗ Error handling failed - should have thrown');
     } catch (error) {
@@ -107,11 +119,10 @@ async function testFactoryFunctions() {
     console.log();
 
     try {
-      createDataProvider({
-        connection: 'invalid://connection',
-        schema
-      });
-      console.log('✗ Auto-detection error handling failed - should have thrown');
+      createDataProvider({ connection: 'invalid://connection', schema });
+      console.log(
+        '✗ Auto-detection error handling failed - should have thrown'
+      );
     } catch (error) {
       console.log('✓ Auto-detection error handling works');
       console.log('  Error message:', (error as Error).message);
@@ -125,9 +136,9 @@ async function testFactoryFunctions() {
       const testProvider = createSQLiteProvider({
         connection: ':memory:',
         schema,
-        options: { debug: false }
+        options: { debug: false },
       });
-      
+
       console.log('✓ Provider creation successful');
       console.log('  Available methods:');
       console.log('    - getList:', typeof testProvider.getList === 'function');
@@ -135,8 +146,14 @@ async function testFactoryFunctions() {
       console.log('    - create:', typeof testProvider.create === 'function');
       console.log('    - update:', typeof testProvider.update === 'function');
       console.log('    - delete:', typeof testProvider.delete === 'function');
-      console.log('    - from (chain query):', typeof testProvider.from === 'function');
-      console.log('    - transaction:', typeof testProvider.transaction === 'function');
+      console.log(
+        '    - from (chain query):',
+        typeof testProvider.from === 'function'
+      );
+      console.log(
+        '    - transaction:',
+        typeof testProvider.transaction === 'function'
+      );
     } catch (error) {
       console.log('⚠ CRUD operations test skipped (driver not available)');
       console.log('  This is expected in environments without SQLite drivers');
@@ -146,7 +163,6 @@ async function testFactoryFunctions() {
 
     console.log('=== All Factory Function Tests Completed Successfully! ===');
     return true;
-
   } catch (error) {
     console.error('❌ Factory function test failed:', error);
     return false;
@@ -156,10 +172,10 @@ async function testFactoryFunctions() {
 // Run the test if this file is executed directly
 if (import.meta.main) {
   testFactoryFunctions()
-    .then((success) => {
+    .then(success => {
       process.exit(success ? 0 : 1);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Test execution failed:', error);
       process.exit(1);
     });

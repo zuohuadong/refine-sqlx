@@ -1,16 +1,16 @@
 /**
  * Polymorphic Associations Example
- * 
+ *
  * This example demonstrates how to use polymorphic associations with refine-orm,
  * including one-to-many and many-to-many polymorphic relationships.
  */
 
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
-import { 
+import {
   createPostgreSQLProvider,
   createProvider,
   createMorphConfig,
-  createEnhancedMorphConfig
+  createEnhancedMorphConfig,
 } from '../src/index.js';
 
 // Define database schema
@@ -65,7 +65,9 @@ const schema = { posts, videos, users, comments, tags, taggables };
 
 async function polymorphicAssociationsExample() {
   // Create database connection
-  const connectionString = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/refine_orm_example';
+  const connectionString =
+    process.env.DATABASE_URL ||
+    'postgresql://user:password@localhost:5432/refine_orm_example';
   const adapter = createPostgreSQLProvider(connectionString, schema);
   const dataProvider = createProvider(adapter);
 
@@ -73,16 +75,12 @@ async function polymorphicAssociationsExample() {
 
   // Example 1: One-to-many polymorphic relationships (Comments)
   console.log('📝 Example 1: One-to-many polymorphic relationships (Comments)');
-  
+
   const commentsConfig = createMorphConfig({
     typeField: 'commentable_type',
     idField: 'commentable_id',
     relationName: 'commentable',
-    types: {
-      'post': 'posts',
-      'video': 'videos',
-      'user': 'users'
-    }
+    types: { post: 'posts', video: 'videos', user: 'users' },
   });
 
   try {
@@ -92,10 +90,14 @@ async function polymorphicAssociationsExample() {
       .limit(10)
       .get();
 
-    console.log(`Found ${commentsWithRelations.length} comments with relations:`);
+    console.log(
+      `Found ${commentsWithRelations.length} comments with relations:`
+    );
     commentsWithRelations.forEach((comment: any) => {
       console.log(`- Comment: "${comment.content}"`);
-      console.log(`  Commentable: ${comment.commentable_type} #${comment.commentable_id}`);
+      console.log(
+        `  Commentable: ${comment.commentable_type} #${comment.commentable_id}`
+      );
       if (comment.commentable) {
         console.log(`  Related data:`, comment.commentable);
       }
@@ -117,7 +119,6 @@ async function polymorphicAssociationsExample() {
       .get();
 
     console.log(`Found ${mediaComments.length} media comments\n`);
-
   } catch (error) {
     console.error('Error in one-to-many example:', error);
   }
@@ -129,21 +130,15 @@ async function polymorphicAssociationsExample() {
     typeField: 'taggable_type',
     idField: 'taggable_id',
     relationName: 'taggables',
-    types: {
-      'post': 'posts',
-      'video': 'videos',
-      'user': 'users'
-    },
+    types: { post: 'posts', video: 'videos', user: 'users' },
     pivotTable: 'taggables',
     pivotLocalKey: 'tag_id',
-    pivotForeignKey: 'taggable_id'
+    pivotForeignKey: 'taggable_id',
   });
 
   try {
     // Get all tags with their many-to-many polymorphic relationships
-    const tagsWithRelations = await dataProvider
-      .from('tags')
-      .get();
+    const tagsWithRelations = await dataProvider.from('tags').get();
 
     console.log(`Found ${tagsWithRelations.length} tags with relations:`);
     tagsWithRelations.forEach((tag: any) => {
@@ -151,12 +146,13 @@ async function polymorphicAssociationsExample() {
       if (tag.taggables && Array.isArray(tag.taggables)) {
         console.log(`  Tagged items: ${tag.taggables.length}`);
         tag.taggables.forEach((item: any) => {
-          console.log(`    - ${item._pivot?.taggable_type} #${item._pivot?.taggable_id}`);
+          console.log(
+            `    - ${item._pivot?.taggable_type} #${item._pivot?.taggable_id}`
+          );
         });
       }
       console.log('');
     });
-
   } catch (error) {
     console.error('Error in many-to-many example:', error);
   }
@@ -168,33 +164,25 @@ async function polymorphicAssociationsExample() {
     typeField: 'commentable_type',
     idField: 'commentable_id',
     relationName: 'commentable',
-    types: {
-      'post': 'posts',
-      'video': 'videos',
-      'user': 'users'
-    },
+    types: { post: 'posts', video: 'videos', user: 'users' },
     nested: true,
     nestedRelations: {
-      'tags': {
+      tags: {
         typeField: 'taggable_type',
         idField: 'taggable_id',
         relationName: 'tags',
-        types: {
-          'post': 'posts',
-          'video': 'videos',
-          'user': 'users'
-        }
-      }
-    }
+        types: { post: 'posts', video: 'videos', user: 'users' },
+      },
+    },
   });
 
   try {
     // Get comments with nested polymorphic relationships (commentable -> tags)
-    const commentsWithNested = await dataProvider
-      .from('comments')
-      .get();
+    const commentsWithNested = await dataProvider.from('comments').get();
 
-    console.log(`Found ${commentsWithNested.length} comments with nested relations:`);
+    console.log(
+      `Found ${commentsWithNested.length} comments with nested relations:`
+    );
     commentsWithNested.forEach((comment: any) => {
       console.log(`- Comment: "${comment.content}"`);
       if (comment.commentable) {
@@ -205,7 +193,6 @@ async function polymorphicAssociationsExample() {
       }
       console.log('');
     });
-
   } catch (error) {
     console.error('Error in nested example:', error);
   }
@@ -217,45 +204,40 @@ async function polymorphicAssociationsExample() {
     typeField: 'commentable_type',
     idField: 'commentable_id',
     relationName: 'commentable',
-    types: {
-      'post': 'posts',
-      'video': 'videos',
-      'user': 'users'
-    },
+    types: { post: 'posts', video: 'videos', user: 'users' },
     customLoader: async (_client, baseResults, config) => {
       // Custom logic to load relationships with additional processing
       const relationData: Record<string, any> = {};
-      
+
       for (let i = 0; i < baseResults.length; i++) {
         const result = baseResults[i];
         const morphType = result[config.typeField];
         const morphId = result[config.idField];
-        
+
         // Add custom processing logic here
         relationData[i] = {
           type: morphType,
           id: morphId,
           customField: `Custom data for ${morphType} #${morphId}`,
-          loadedAt: new Date()
+          loadedAt: new Date(),
         };
       }
-      
+
       return relationData;
-    }
+    },
   });
 
   try {
-    const commentsWithCustomLoader = await dataProvider
-      .from('comments')
-      .get();
+    const commentsWithCustomLoader = await dataProvider.from('comments').get();
 
-    console.log(`Found ${commentsWithCustomLoader.length} comments with custom loader:`);
+    console.log(
+      `Found ${commentsWithCustomLoader.length} comments with custom loader:`
+    );
     commentsWithCustomLoader.forEach((comment: any) => {
       console.log(`- Comment: "${comment.content}"`);
       console.log(`  Custom data:`, comment.commentable);
       console.log('');
     });
-
   } catch (error) {
     console.error('Error in custom loader example:', error);
   }
@@ -293,7 +275,6 @@ async function polymorphicAssociationsExample() {
     if (firstVideoComment) {
       console.log(`Latest video comment: "${firstVideoComment.content}"`);
     }
-
   } catch (error) {
     console.error('Error in filtering example:', error);
   }

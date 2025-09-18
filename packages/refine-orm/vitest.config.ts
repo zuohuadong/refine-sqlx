@@ -30,16 +30,12 @@ export default defineConfig({
       forks: {
         singleFork: true,
         // Run integration tests sequentially to avoid deadlocks
-        isolate: true
-      }
+        isolate: true,
+      },
     },
     // Run database integration tests in sequence to avoid conflicts
-    sequence: {
-      hooks: 'list',
-      setupFiles: 'list',
-      concurrent: false
-    },
-    fileParallelism: false // Disable parallel test file execution for integration tests
+    sequence: { hooks: 'list', setupFiles: 'list', concurrent: false },
+    fileParallelism: false, // Disable parallel test file execution for integration tests
   },
   resolve: {
     alias: { '@refine-orm/core-utils': '../refine-core-utils/src/index.ts' },

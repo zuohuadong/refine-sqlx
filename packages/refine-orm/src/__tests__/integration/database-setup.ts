@@ -534,19 +534,33 @@ export class DatabaseTestSetup {
       } else if (dbType === 'postgresql') {
         // For PostgreSQL, use TRUNCATE with CASCADE to handle foreign keys
         try {
-          await provider.executeRaw('TRUNCATE TABLE comments, posts, users CASCADE');
+          await provider.executeRaw(
+            'TRUNCATE TABLE comments, posts, users CASCADE'
+          );
           // Reset sequences
-          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-          await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+          await provider.executeRaw(
+            'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+          );
+          await provider.executeRaw(
+            'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+          );
+          await provider.executeRaw(
+            'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+          );
         } catch (error) {
           // Fallback to DELETE if TRUNCATE fails
           await provider.executeRaw('DELETE FROM comments');
           await provider.executeRaw('DELETE FROM posts');
           await provider.executeRaw('DELETE FROM users');
-          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-          await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+          await provider.executeRaw(
+            'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+          );
+          await provider.executeRaw(
+            'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+          );
+          await provider.executeRaw(
+            'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+          );
         }
       } else if (dbType === 'mysql') {
         // For MySQL, disable foreign key checks temporarily

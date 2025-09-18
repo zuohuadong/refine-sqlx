@@ -30,11 +30,10 @@ jobs:
           MYSQL_DATABASE: refine_orm_test
           MYSQL_USER: test
           MYSQL_PASSWORD: test
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -uroot -ppassword"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ppassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
