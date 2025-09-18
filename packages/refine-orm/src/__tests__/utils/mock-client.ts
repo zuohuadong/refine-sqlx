@@ -282,119 +282,123 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let storedResultData: any[] = [];
 
     const insertChain = {
-    values: vi.fn().mockImplementation(values => {
-      // Handle both single and multiple inserts
-      const dataArray = Array.isArray(values) ? values : [values];
+      values: vi.fn().mockImplementation(values => {
+        // Handle both single and multiple inserts
+        const dataArray = Array.isArray(values) ? values : [values];
 
-      // Basic validation for users table
-      if (tableName === 'users') {
-        for (const data of dataArray) {
-          if (!data.name || !data.email) {
-            throw new ValidationError(
-              `Missing required fields for ${tableName}`
-            );
-          }
-
-          // Validate empty strings
-          if (data.name === '' || data.email === '') {
-            throw new ValidationError(
-              `Empty string not allowed for required fields`
-            );
-          }
-
-          // Validate NaN and Infinity values
-          if (data.age !== undefined && data.age !== null) {
-            if (
-              typeof data.age === 'number' &&
-              (isNaN(data.age) || !isFinite(data.age))
-            ) {
-              throw new ValidationError(`Invalid numeric value for age`);
-            }
-          }
-
-          // Validate invalid dates
-          if (
-            data.createdAt &&
-            data.createdAt instanceof Date &&
-            isNaN(data.createdAt.getTime())
-          ) {
-            throw new ValidationError(`Invalid date value`);
-          }
-
-          // Validate nested arrays (should not be allowed in simple fields)
-          for (const [key, value] of Object.entries(data)) {
-            if (Array.isArray(value)) {
+        // Basic validation for users table
+        if (tableName === 'users') {
+          for (const data of dataArray) {
+            if (!data.name || !data.email) {
               throw new ValidationError(
-                `Nested arrays not supported in field ${key}`
+                `Missing required fields for ${tableName}`
               );
             }
+
+            // Validate empty strings
+            if (data.name === '' || data.email === '') {
+              throw new ValidationError(
+                `Empty string not allowed for required fields`
+              );
+            }
+
+            // Validate NaN and Infinity values
+            if (data.age !== undefined && data.age !== null) {
+              if (
+                typeof data.age === 'number' &&
+                (isNaN(data.age) || !isFinite(data.age))
+              ) {
+                throw new ValidationError(`Invalid numeric value for age`);
+              }
+            }
+
+            // Validate invalid dates
+            if (
+              data.createdAt &&
+              data.createdAt instanceof Date &&
+              isNaN(data.createdAt.getTime())
+            ) {
+              throw new ValidationError(`Invalid date value`);
+            }
+
+            // Validate nested arrays (should not be allowed in simple fields)
+            for (const [key, value] of Object.entries(data)) {
+              if (Array.isArray(value)) {
+                throw new ValidationError(
+                  `Nested arrays not supported in field ${key}`
+                );
+              }
+            }
           }
         }
-      }
 
-      const resultData = dataArray.map((data, index) => {
-        // Calculate next ID based on existing records
-        const existingRecords = [
-          ...(mockData[tableName] || []),
-          ...(createdRecords[tableName] || []),
-        ];
-        const maxId = existingRecords.reduce((max, record) => {
-          return Math.max(max, record.id || 0);
-        }, 0);
+        const resultData = dataArray.map((data, index) => {
+          // Calculate next ID based on existing records
+          const existingRecords = [
+            ...(mockData[tableName] || []),
+            ...(createdRecords[tableName] || []),
+          ];
+          const maxId = existingRecords.reduce((max, record) => {
+            return Math.max(max, record.id || 0);
+          }, 0);
 
-        // Apply defaults and handle null vs undefined for optional fields
-        const baseData = {
-          id: maxId + index + 1,
-          createdAt: new Date(),
-          isActive: true, // Default value from schema
-          age: null, // Optional field defaults to null if not provided
-          ...data, // Use actual input data, overriding defaults
-        };
+          // Apply defaults and handle null vs undefined for optional fields
+          const baseData = {
+            id: maxId + index + 1,
+            createdAt: new Date(),
+            isActive: true, // Default value from schema
+            age: null, // Optional field defaults to null if not provided
+            ...data, // Use actual input data, overriding defaults
+          };
 
-        // Ensure optional fields that weren't provided are null, not undefined
-        if (!('age' in data)) {
-          baseData.age = null;
+          // Ensure optional fields that weren't provided are null, not undefined
+          if (!('age' in data)) {
+            baseData.age = null;
+          }
+
+          return baseData;
+        });
+
+        // Store created records for later updates
+        if (!createdRecords[tableName]) {
+          createdRecords[tableName] = [];
         }
+        createdRecords[tableName].push(...resultData);
 
-        return baseData;
-      });
+        // Store result data for returning() method
+        storedResultData = resultData;
 
-      // Store created records for later updates
-      if (!createdRecords[tableName]) {
-        createdRecords[tableName] = [];
-      }
-      createdRecords[tableName].push(...resultData);
-
-      // Store result data for returning() method
-      storedResultData = resultData;
-
-      return {
-        returning: vi
-          .fn()
-          .mockReturnValue({ execute: vi.fn().mockResolvedValue(resultData) }),
-        onConflictDoNothing: vi
-          .fn()
-          .mockReturnValue({
-            returning: vi
-              .fn()
-              .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
-          }),
-        onConflictDoUpdate: vi
-          .fn()
-          .mockReturnValue({
-            returning: vi
-              .fn()
-              .mockReturnValue({
-                execute: vi.fn().mockResolvedValue(resultData),
-              }),
-          }),
-        execute: vi.fn().mockResolvedValue(resultData),
-      };
-    }),
+        return {
+          returning: vi
+            .fn()
+            .mockReturnValue({
+              execute: vi.fn().mockResolvedValue(resultData),
+            }),
+          onConflictDoNothing: vi
+            .fn()
+            .mockReturnValue({
+              returning: vi
+                .fn()
+                .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
+            }),
+          onConflictDoUpdate: vi
+            .fn()
+            .mockReturnValue({
+              returning: vi
+                .fn()
+                .mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(resultData),
+                }),
+            }),
+          execute: vi.fn().mockResolvedValue(resultData),
+        };
+      }),
       // Add returning method at the top level for when it's called directly
-      returning: vi.fn().mockImplementation(() => ({
-        execute: vi.fn().mockResolvedValue(storedResultData),
-      })),
+      returning: vi
+        .fn()
+        .mockImplementation(() => ({
+          execute: vi.fn().mockResolvedValue(storedResultData),
+        })),
     };
 
     return insertChain;
@@ -498,7 +502,6 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
     const chain = {
       where: vi.fn().mockImplementation((condition: any) => {
-
         // Extract the ID(s) to delete from the condition
         if (
           condition &&
@@ -510,18 +513,17 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             const columnChunk = condition.queryChunks[1];
             const valueChunk = condition.queryChunks[3];
 
-            if (
-              columnChunk &&
-              columnChunk.name === 'id' &&
-              valueChunk
-            ) {
+            if (columnChunk && columnChunk.name === 'id' && valueChunk) {
               // Handle array of values (for inArray)
               if (Array.isArray(valueChunk)) {
                 // Extract values from Param objects
                 for (const param of valueChunk) {
                   if (param && param.value !== undefined) {
                     deleteConditions.push(param.value);
-                  } else if (typeof param === 'number' || typeof param === 'string') {
+                  } else if (
+                    typeof param === 'number' ||
+                    typeof param === 'string'
+                  ) {
                     deleteConditions.push(param);
                   }
                 }

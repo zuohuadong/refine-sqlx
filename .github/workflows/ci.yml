@@ -40,7 +40,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: test
           POSTGRES_DB: refine_orm_test
           POSTGRES_USER: test
         ports:
@@ -140,12 +140,8 @@ jobs:
         if: matrix.database == 'postgresql'
         run: |
           echo "Waiting for PostgreSQL to be ready..."
-          timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do echo "PostgreSQL not ready, waiting..."; sleep 2; done'
-          echo "PostgreSQL is ready, setting up database..."
-          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE refine_orm_test;" || true
-          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "CREATE USER test WITH PASSWORD 'test';" || true
-          PGPASSWORD=password psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE refine_orm_test TO test;" || true
-          echo "Database setup complete"
+          timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U test; do echo "PostgreSQL not ready, waiting..."; sleep 2; done'
+          echo "PostgreSQL is ready"
 
       - name: Run integration tests - PostgreSQL
         if: matrix.database == 'postgresql'
