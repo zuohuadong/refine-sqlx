@@ -66,12 +66,13 @@ export default tseslint.config(
   { files: ['**/*.js', '**/*.mjs'], ...tseslint.configs.disableTypeChecked },
   {
     ignores: [
-      'dist/**',
-      'node_modules/**',
+      '**/dist/**',
+      '**/node_modules/**',
       '**/*.d.ts',
-      'coverage/**',
+      '**/coverage/**',
       '.changeset/**',
       'examples/**',
+      'packages/*/dist/**',
     ],
   }
 );
