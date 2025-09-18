@@ -350,11 +350,37 @@ export class PostgreSQLAdapter<
    * Execute raw SQL query
    */
   async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    const client = this.getClient();
+    if (!this.connection) {
+      throw new ConnectionError('No active PostgreSQL connection');
+    }
+
     console.log('Executing raw SQL:', sql, 'with params:', params);
-    // Implementation depends on the specific driver being used
-    // This is a basic implementation that should be extended
-    return [] as T[];
+
+    try {
+      // For postgres-js driver
+      if (this.runtimeConfig.driver === 'postgres') {
+        let result;
+        if (params && params.length > 0) {
+          // Use parameterized query if params are provided
+          // postgres-js doesn't support positional parameters directly,
+          // so we need to convert to template literal
+          result = await this.connection.unsafe(sql, params);
+        } else {
+          // Use template literal for queries without parameters
+          result = await this.connection.unsafe(sql);
+        }
+        return result as T[];
+      }
+
+      // For other drivers (fallback)
+      throw new Error(`executeRaw not implemented for driver: ${this.runtimeConfig.driver}`);
+    } catch (error) {
+      throw new QueryError(
+        `Failed to execute raw SQL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined,
+        { query: sql, params }
+      );
+    }
   }
 
   /**

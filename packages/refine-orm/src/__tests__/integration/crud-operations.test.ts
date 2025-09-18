@@ -26,7 +26,12 @@ const TEST_DATABASES = [
     if (process.env.POSTGRES_URL && db.type === 'postgresql') return true;
     if (process.env.MYSQL_URL && db.type === 'mysql') return true;
     // Only run SQLite if no other database is configured
-    if (!process.env.POSTGRES_URL && !process.env.MYSQL_URL && db.type === 'sqlite') return true;
+    if (
+      !process.env.POSTGRES_URL &&
+      !process.env.MYSQL_URL &&
+      db.type === 'sqlite'
+    )
+      return true;
     return false;
   }
   // In local development, run all available databases
