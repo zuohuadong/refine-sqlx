@@ -72,13 +72,21 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             // Reset sequences based on database type
             if (dbType === 'postgresql') {
-              await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-              await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-              await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+              await provider.executeRaw(
+                'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+              );
+              await provider.executeRaw(
+                'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+              );
+              await provider.executeRaw(
+                'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+              );
             } else if (dbType === 'mysql') {
               await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
               await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-              await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
+              await provider.executeRaw(
+                'ALTER TABLE comments AUTO_INCREMENT = 1'
+              );
             } else if (dbType === 'sqlite') {
               try {
                 await provider.executeRaw(
@@ -98,7 +106,10 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               await provider.create({ resource: 'posts', variables: postData });
             }
             for (const commentData of TEST_DATA.comments) {
-              await provider.create({ resource: 'comments', variables: commentData });
+              await provider.create({
+                resource: 'comments',
+                variables: commentData,
+              });
             }
           }
         } catch (error) {

@@ -20,6 +20,7 @@ jobs:
         database: [sqlite, mysql, postgresql]
     env:
       NODE_ENV: test
+      CI: true
 
     services:
       mysql:
@@ -160,6 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
+      CI: true
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -192,6 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
+      CI: true
     steps:
       - name: Checkout
         uses: actions/checkout@v5
