@@ -531,27 +531,33 @@ export class DatabaseTestSetup {
           // sqlite_sequence might not exist, that's ok
           console.debug('sqlite_sequence cleanup skipped');
         }
-      } else {
-        // For other databases, use the original approach
+      } else if (dbType === 'postgresql') {
+        // For PostgreSQL, use TRUNCATE with CASCADE to handle foreign keys
+        try {
+          await provider.executeRaw('TRUNCATE TABLE comments, posts, users CASCADE');
+          // Reset sequences
+          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+          await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+        } catch (error) {
+          // Fallback to DELETE if TRUNCATE fails
+          await provider.executeRaw('DELETE FROM comments');
+          await provider.executeRaw('DELETE FROM posts');
+          await provider.executeRaw('DELETE FROM users');
+          await provider.executeRaw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+          await provider.executeRaw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+          await provider.executeRaw('ALTER SEQUENCE comments_id_seq RESTART WITH 1');
+        }
+      } else if (dbType === 'mysql') {
+        // For MySQL, disable foreign key checks temporarily
+        await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 0');
         await provider.executeRaw('DELETE FROM comments');
         await provider.executeRaw('DELETE FROM posts');
         await provider.executeRaw('DELETE FROM users');
-
-        if (dbType === 'mysql') {
-          await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
-          await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-          await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
-        } else if (dbType === 'postgresql') {
-          await provider.executeRaw(
-            'ALTER SEQUENCE users_id_seq RESTART WITH 1'
-          );
-          await provider.executeRaw(
-            'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
-          );
-          await provider.executeRaw(
-            'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
-          );
-        }
+        await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
+        await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
+        await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
+        await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
       }
     } catch (error) {
       console.warn(`Failed to cleanup tables for ${dbType}:`, error);

@@ -26,7 +26,20 @@ export default defineConfig({
     teardownTimeout: 20000,
     retry: 1,
     pool: 'forks',
-    poolOptions: { forks: { singleFork: true } },
+    poolOptions: {
+      forks: {
+        singleFork: true,
+        // Run integration tests sequentially to avoid deadlocks
+        isolate: true
+      }
+    },
+    // Run database integration tests in sequence to avoid conflicts
+    sequence: {
+      hooks: 'list',
+      setupFiles: 'list',
+      concurrent: false
+    },
+    fileParallelism: false // Disable parallel test file execution for integration tests
   },
   resolve: {
     alias: { '@refine-orm/core-utils': '../refine-core-utils/src/index.ts' },
