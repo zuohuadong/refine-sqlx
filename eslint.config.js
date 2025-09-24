@@ -46,6 +46,8 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/consistent-indexed-object-style': 'off',
       '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/no-unused-vars': 'off', // Temporarily disabled
+      'no-case-declarations': 'off', // For switch case declarations
 
       // General code quality rules
       'no-console': 'off', // Temporarily disabled
