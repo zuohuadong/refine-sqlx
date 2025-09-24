@@ -89,3 +89,4 @@ jobs:
         with:
           fail-on-severity: moderate
           allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+        continue-on-error: true  # Allow this step to fail for public repos without Advanced Security
