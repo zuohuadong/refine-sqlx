@@ -18,7 +18,10 @@ function ErrorLogger(
 }
 
 function ErrorCode(code: string) {
-  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
+    _context: ClassDecoratorContext<T>
+  ): T {
     return class extends target {
       errorCode = code;
     } as T;
@@ -26,7 +29,10 @@ function ErrorCode(code: string) {
 }
 
 function StatusCode(statusCode: number) {
-  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
+    _context: ClassDecoratorContext<T>
+  ): T {
     return class extends target {
       httpStatusCode = statusCode;
     } as T;
@@ -34,7 +40,10 @@ function StatusCode(statusCode: number) {
 }
 
 function Recoverable(recoverable: boolean = true) {
-  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
+    _context: ClassDecoratorContext<T>
+  ): T {
     return class extends target {
       isRecoverable() {
         return recoverable;
@@ -44,7 +53,10 @@ function Recoverable(recoverable: boolean = true) {
 }
 
 function ErrorMetadata(metadata: Record<string, any>) {
-  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
+    _context: ClassDecoratorContext<T>
+  ): T {
     return class extends target {
       metadata = metadata;
     } as T;

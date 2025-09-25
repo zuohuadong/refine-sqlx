@@ -105,7 +105,14 @@ describe('MySQL Adapter', () => {
       delete: vi.fn(),
       execute: vi.fn(),
       transaction: vi.fn(),
-    });
+      mode: 'default' as const,
+      _: {},
+      query: {},
+      $with: vi.fn(),
+      with: vi.fn(),
+      schema: {},
+      $client: {} as any,
+    } as any);
   });
 
   describe('MySQLAdapter Class', () => {

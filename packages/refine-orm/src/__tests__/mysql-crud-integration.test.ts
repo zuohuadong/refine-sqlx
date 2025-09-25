@@ -118,10 +118,11 @@ describe('MySQL CRUD Integration', () => {
       expect(typeof dataProvider.deleteMany).toBe('function');
     });
 
-    it('should have additional ORM methods', () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
-
-      const dataProvider = createProvider(adapter);
+    it('should have additional ORM methods', async () => {
+      const dataProvider = await createMySQLProvider(
+        testConfig.connection,
+        testSchema
+      );
 
       // Check that additional ORM methods exist
       expect(typeof dataProvider.from).toBe('function');

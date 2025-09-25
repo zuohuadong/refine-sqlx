@@ -37,7 +37,7 @@ const TEST_DATABASES = ALL_TEST_DATABASES.filter(db => {
   }
   // In local development, run all available databases
   return isTestEnvironmentReady(db.type);
-}) as const;
+});
 
 // Run transaction tests for each database type
 TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {

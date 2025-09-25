@@ -260,12 +260,12 @@ describe('Type Safety and Schema Validation', () => {
         name: 'John',
         email: 'john@example.com',
         age: 30,
-        isActive: true,
-        createdAt: new Date(),
+        isActive: 1,
+        createdAt: '2023-01-01 00:00:00',
       };
 
-      expect(typeof sqliteUser.isActive).toBe('boolean');
-      expect(sqliteUser.createdAt).toBeInstanceOf(Date);
+      expect(typeof sqliteUser.isActive).toBe('number');
+      expect(typeof sqliteUser.createdAt).toBe('string');
     });
 
     it('should handle MySQL-specific types', () => {
@@ -276,11 +276,11 @@ describe('Type Safety and Schema Validation', () => {
         name: 'John',
         email: 'john@example.com',
         age: 30,
-        isActive: true,
+        isActive: 1,
         createdAt: new Date(),
       };
 
-      expect(typeof mysqlUser.isActive).toBe('boolean');
+      expect(typeof mysqlUser.isActive).toBe('number');
       expect(mysqlUser.createdAt).toBeInstanceOf(Date);
     });
   });
