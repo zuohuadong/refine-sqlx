@@ -135,7 +135,7 @@ describe('Data Provider', () => {
       const result = await dataProvider.getList({
         resource: 'users',
         filters,
-        pagination: { current: 1, pageSize: 10, mode: 'server' },
+        pagination: { currentPage: 1, pageSize: 10, mode: 'server' },
       });
 
       TestAssertions.isValidListResponse(result);
@@ -150,7 +150,7 @@ describe('Data Provider', () => {
       const result = await dataProvider.getList({
         resource: 'users',
         sorters,
-        pagination: { current: 1, pageSize: 10, mode: 'server' },
+        pagination: { currentPage: 1, pageSize: 10, mode: 'server' },
       });
 
       TestAssertions.isValidListResponse(result);
@@ -159,7 +159,7 @@ describe('Data Provider', () => {
     it('should handle pagination correctly', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 2, pageSize: 2, mode: 'server' },
+        pagination: { currentPage: 2, pageSize: 2, mode: 'server' },
       });
 
       TestAssertions.isValidListResponse(result);

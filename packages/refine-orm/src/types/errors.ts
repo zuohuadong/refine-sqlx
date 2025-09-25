@@ -18,32 +18,36 @@ function ErrorLogger(
 }
 
 function ErrorCode(code: string) {
-  return function (target: any) {
-    target.prototype.errorCode = code;
-    return target;
+  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+    return class extends target {
+      errorCode = code;
+    } as T;
   };
 }
 
 function StatusCode(statusCode: number) {
-  return function (target: any) {
-    target.prototype.httpStatusCode = statusCode;
-    return target;
+  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+    return class extends target {
+      httpStatusCode = statusCode;
+    } as T;
   };
 }
 
 function Recoverable(recoverable: boolean = true) {
-  return function (target: any) {
-    target.prototype.isRecoverable = function () {
-      return recoverable;
-    };
-    return target;
+  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+    return class extends target {
+      isRecoverable() {
+        return recoverable;
+      }
+    } as T;
   };
 }
 
 function ErrorMetadata(metadata: Record<string, any>) {
-  return function (target: any) {
-    target.prototype.metadata = metadata;
-    return target;
+  return function <T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
+    return class extends target {
+      metadata = metadata;
+    } as T;
   };
 }
 

@@ -1039,7 +1039,7 @@ function Debounced(delay: number = 100) {
   };
 }
 
-function Singleton<T extends new (...args: any[]) => any>(target: T): T {
+function Singleton<T extends new (...args: any[]) => any>(target: T, _context: ClassDecoratorContext<T>): T {
   let instance: any;
   return class extends target {
     constructor(...args: any[]) {
