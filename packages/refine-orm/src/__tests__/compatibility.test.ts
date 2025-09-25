@@ -10,9 +10,11 @@ import {
   DatabaseTestSetup,
   TEST_DATA,
   skipIfDatabaseNotAvailable,
+  pgUsers,
+  mysqlUsers,
+  sqliteUsers,
 } from './integration/database-setup';
 import type { RefineOrmDataProvider } from '../types/client';
-import { pgUsers, mysqlUsers, sqliteUsers } from './integration/database-setup';
 
 const testSetup = new DatabaseTestSetup();
 

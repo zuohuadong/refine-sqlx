@@ -15,14 +15,7 @@ export default tseslint.config(
     },
     rules: {
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
+      '@typescript-eslint/no-unused-vars': 'off', // Temporarily disabled
       '@typescript-eslint/no-explicit-any': 'off', // Temporarily disabled
       '@typescript-eslint/prefer-nullish-coalescing': 'warn', // Downgraded to warning
       '@typescript-eslint/prefer-optional-chain': 'warn', // Downgraded to warning
@@ -46,7 +39,6 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/consistent-indexed-object-style': 'off',
       '@typescript-eslint/array-type': 'off',
-      '@typescript-eslint/no-unused-vars': 'off', // Temporarily disabled
       'no-case-declarations': 'off', // For switch case declarations
 
       // General code quality rules
@@ -75,6 +67,26 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.js', 'scripts/**/*.mjs', '**/*script*.js'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        global: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      'no-undef': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'arrow-body-style': 'off',
     },
   },
   { files: ['**/*.js', '**/*.mjs'], ...tseslint.configs.disableTypeChecked },
