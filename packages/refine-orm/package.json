@@ -79,7 +79,7 @@
     "@types/bun": "1.2.22",
     "@types/node": "^24.5.0",
     "typescript": "^5.6.0",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
     "mysql2": "^3.14.5",
     "postgres": "^3.4.5",
     "prettier": "3.6.2",
@@ -90,7 +90,7 @@
     "@refinedev/core": "4.57.11"
   },
   "optionalDependencies": {
-    "better-sqlite3": "12.2.0",
+    "better-sqlite3": "12.4.1",
     "mysql2": "3.14.5",
     "postgres": "3.4.7"
   }
