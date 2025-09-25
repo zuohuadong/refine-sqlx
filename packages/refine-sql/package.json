@@ -105,7 +105,7 @@
     "@types/bun": "1.2.22",
     "@types/node": "^24.5.0",
     "typescript": "^5.6.0",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
     "prettier": "3.6.2",
     "unbuild": "3.6.1",
     "vitest": "3.2.4"
@@ -117,6 +117,6 @@
     "@refinedev/core": "^4.57.11"
   },
   "optionalDependencies": {
-    "better-sqlite3": "12.2.0"
+    "better-sqlite3": "12.4.1"
   }
 }
