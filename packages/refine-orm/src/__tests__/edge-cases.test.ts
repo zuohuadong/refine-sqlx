@@ -327,7 +327,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle page 0', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 0, pageSize: 10, mode: 'server' },
+        pagination: { currentPage: 0, pageSize: 10, mode: 'server' },
       });
 
       // Should treat as page 1 or handle gracefully
@@ -337,7 +337,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle negative page numbers', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: -1, pageSize: 10, mode: 'server' },
+        pagination: { currentPage: -1, pageSize: 10, mode: 'server' },
       });
 
       // Should handle gracefully
@@ -347,7 +347,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle very large page numbers', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 999999, pageSize: 10, mode: 'server' },
+        pagination: { currentPage: 999999, pageSize: 10, mode: 'server' },
       });
 
       // Should return empty results or handle gracefully
@@ -359,7 +359,7 @@ describe('Edge Cases and Boundary Conditions', () => {
       await expect(
         dataProvider.getList({
           resource: 'users',
-          pagination: { current: 1, pageSize: 0, mode: 'server' },
+          pagination: { currentPage: 1, pageSize: 0, mode: 'server' },
         })
       ).rejects.toThrow(ValidationError);
     });
@@ -367,7 +367,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle very large page sizes', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 1, pageSize: 1000000, mode: 'server' },
+        pagination: { currentPage: 1, pageSize: 1000000, mode: 'server' },
       });
 
       // Should handle gracefully, possibly with limits
@@ -518,7 +518,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle very slow queries', async () => {
       // Override the mock data to return only 1 user
-      adapter.mockData.users = TestDataGenerators.users(1);
+      adapter.setMockData('users', TestDataGenerators.users(1));
 
       vi.spyOn(adapter, 'executeRaw').mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay instead of 5s
@@ -539,7 +539,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 1, pageSize: 1000, mode: 'server' },
+        pagination: { currentPage: 1, pageSize: 1000, mode: 'server' },
       });
 
       expect(result.data).toBeDefined();

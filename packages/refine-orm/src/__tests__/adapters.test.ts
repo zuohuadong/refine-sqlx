@@ -101,6 +101,9 @@ class MockAdapter extends BaseDatabaseAdapter<typeof schema> {
       driver: 'mock-driver',
       supportsNativeDriver: true,
       isConnected: this.isConnected,
+      futureSupport: {
+        bunSql: false,
+      },
     };
   }
 

@@ -13,15 +13,15 @@ import type { CrudFilters, CrudSorting } from '@refinedev/core';
 // Test schema
 const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: text('name', { length: 255 }).notNull(),
-  email: text('email', { length: 255 }).notNull(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
   age: integer('age'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: text('title', { length: 255 }).notNull(),
+  title: text('title').notNull(),
   content: text('content'),
   userId: integer('user_id').references(() => users.id),
   published: integer('published').default(0),
@@ -280,7 +280,7 @@ describe('Data Provider', () => {
       const startTime = Date.now();
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 1, pageSize: 50, mode: 'server' },
+        pagination: { currentPage: 1, pageSize: 50, mode: 'server' },
       });
       const endTime = Date.now();
 

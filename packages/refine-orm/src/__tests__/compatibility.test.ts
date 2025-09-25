@@ -149,7 +149,7 @@ describe('Basic Compatibility Tests', () => {
           it('should handle list operations with consistent pagination', async () => {
             const result = await provider.getList({
               resource: 'users',
-              pagination: { current: 1, pageSize: 2 },
+              pagination: { currentPage: 1, pageSize: 2 },
             });
 
             // Verify consistent pagination structure
@@ -515,7 +515,7 @@ describe('Basic Compatibility Tests', () => {
                 { field: 'name', order: 'asc' },
                 { field: 'age', order: 'desc' },
               ],
-              pagination: { current: 1, pageSize: 10 },
+              pagination: { currentPage: 1, pageSize: 10 },
             });
             const duration = Date.now() - startTime;
 
