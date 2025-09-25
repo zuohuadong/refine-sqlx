@@ -16,11 +16,13 @@ import type { RefineOrmDataProvider } from '../../types/client';
 const testSetup = new DatabaseTestSetup();
 
 // Test databases to run against - filter based on environment
-const TEST_DATABASES = [
-  { type: 'sqlite' as const, name: 'SQLite' },
-  { type: 'postgresql' as const, name: 'PostgreSQL' },
-  { type: 'mysql' as const, name: 'MySQL' },
-].filter(db => {
+const ALL_TEST_DATABASES = [
+  { type: 'sqlite', name: 'SQLite' },
+  { type: 'postgresql', name: 'PostgreSQL' },
+  { type: 'mysql', name: 'MySQL' },
+] as const;
+
+const TEST_DATABASES = ALL_TEST_DATABASES.filter(db => {
   // In CI, only run tests for the database that's configured
   if (process.env.CI) {
     if (process.env.POSTGRES_URL && db.type === 'postgresql') return true;
@@ -703,7 +705,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           expect(result).toBeDefined();
           // The relationship should only return posts that belong to this specific user
           const userPosts = result!.posts.filter(
-            p => p.userId === user.data.id
+            (p: any) => p.userId === user.data.id
           );
           expect(userPosts).toHaveLength(50);
           expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
@@ -730,7 +732,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           expect(Array.isArray(result!.posts)).toBe(true);
           // Filter to only posts that belong to this specific user
           const userPosts = result!.posts.filter(
-            p => p.userId === user.data.id
+            (p: any) => p.userId === user.data.id
           );
           expect(userPosts).toHaveLength(0);
         });

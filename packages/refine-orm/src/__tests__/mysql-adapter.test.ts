@@ -99,7 +99,6 @@ describe('MySQL Adapter', () => {
 
     const drizzle = await import('drizzle-orm/mysql2');
     vi.mocked(drizzle.drizzle).mockReturnValue({
-      schema,
       select: vi.fn(),
       insert: vi.fn(),
       update: vi.fn(),
