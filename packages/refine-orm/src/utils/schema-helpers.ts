@@ -86,8 +86,8 @@ export function detectForeignKeys(
 
         // Try different table name variations
         const possibleTableNames = [
-          baseName + pattern.suffix, // user -> users
-          baseName + 'es', // box -> boxes
+          `${baseName}${pattern.suffix}`, // user -> users
+          `${baseName}es`, // box -> boxes
           baseName, // user -> user
           pluralize(baseName), // category -> categories
         ];
@@ -146,11 +146,7 @@ export function detectPolymorphicRelations(
 
         for (const idColumn of possibleIdColumns) {
           if (columns[idColumn]) {
-            morphRelations.push({
-              typeColumn: columnName,
-              idColumn: idColumn,
-              baseName: baseName,
-            });
+            morphRelations.push({ typeColumn: columnName, idColumn, baseName });
             break;
           }
         }
@@ -301,7 +297,7 @@ export function pluralize(word: string): string {
     !word.endsWith('oy') &&
     !word.endsWith('uy')
   ) {
-    return word.slice(0, -1) + 'ies';
+    return `${word.slice(0, -1)}ies`;
   }
   if (
     word.endsWith('s') ||
@@ -310,15 +306,15 @@ export function pluralize(word: string): string {
     word.endsWith('x') ||
     word.endsWith('z')
   ) {
-    return word + 'es';
+    return `${word}es`;
   }
   if (word.endsWith('f')) {
-    return word.slice(0, -1) + 'ves';
+    return `${word.slice(0, -1)}ves`;
   }
   if (word.endsWith('fe')) {
-    return word.slice(0, -2) + 'ves';
+    return `${word.slice(0, -2)}ves`;
   }
-  return word + 's';
+  return `${word}s`;
 }
 
 /**

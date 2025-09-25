@@ -52,5 +52,5 @@
     { "path": "./packages/refine-orm" },
     { "path": "./packages/refine-sql" }
   ],
-  "exclude": ["node_modules", "**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": ["node_modules", "**/dist/**"]
 }
