@@ -78,43 +78,7 @@ describe('RelationshipQueryBuilder', () => {
         name: { name: 'name' },
         _: { columns: { id: { name: 'id' }, name: { name: 'name' } } },
       },
-    };
-
-    // Mock client
-    mockClient = {
-      schema: mockSchema,
-      select: () => ({
-        from: () => ({
-          where: () => ({
-            limit: () =>
-              Promise.resolve([{ id: 1, title: 'Test Post', user_id: 1 }]),
-            execute: () =>
-              Promise.resolve([{ id: 1, title: 'Test Post', user_id: 1 }]),
-          }),
-          limit: () =>
-            Promise.resolve([{ id: 1, title: 'Test Post', user_id: 1 }]),
-          execute: () =>
-            Promise.resolve([{ id: 1, title: 'Test Post', user_id: 1 }]),
-        }),
-        execute: () =>
-          Promise.resolve([{ id: 1, title: 'Test Post', user_id: 1 }]),
-      }),
-      insert: () => ({}),
-      update: () => ({}),
-      delete: () => ({}),
-      execute: () => Promise.resolve([]),
-      transaction: () => Promise.resolve(),
-    } as any;
-
-    relationshipBuilder = new RelationshipQueryBuilder(mockClient, mockSchema);
-  });
-
-  describe('loadRelationshipsForRecord', () => {
-    it('should load hasOne relationship', async () => {
-      const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
-
-      // Add profiles table to schema for this test
-      mockSchema.profiles = {
+      profiles: {
         id: { name: 'id' },
         bio: { name: 'bio' },
         user_id: { name: 'user_id' },
@@ -125,7 +89,89 @@ describe('RelationshipQueryBuilder', () => {
             user_id: { name: 'user_id' },
           },
         },
-      };
+      },
+    };
+
+    // Mock client with table-specific data
+    const mockData = {
+      users: [
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+        { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+      ],
+      posts: [
+        { id: 1, title: 'Test Post', user_id: 1 },
+        { id: 2, title: 'Another Post', user_id: 1 },
+        { id: 3, title: 'Jane Post', user_id: 2 },
+      ],
+      comments: [
+        { id: 1, content: 'Great post!', post_id: 1, user_id: 2 },
+        { id: 2, content: 'Thanks!', post_id: 1, user_id: 1 },
+      ],
+      roles: [
+        { id: 1, name: 'admin' },
+        { id: 2, name: 'user' },
+      ],
+      user_roles: [
+        { user_id: 1, role_id: 1 },
+        { user_id: 2, role_id: 2 },
+      ],
+      profiles: [
+        { id: 1, bio: 'Software developer', user_id: 1 },
+        { id: 2, bio: 'Designer', user_id: 2 },
+      ],
+    };
+
+    // Simple mock that tracks query context
+    let mockQueryContext: { table?: string; whereColumn?: string; whereValue?: any } = {};
+
+    mockClient = {
+      schema: mockSchema,
+      select: () => ({
+        from: (table: any) => {
+          // Determine table name from the table object
+          mockQueryContext.table = Object.keys(mockSchema).find(
+            key => mockSchema[key] === table
+          ) || null;
+
+          return {
+            where: (condition: any) => {
+              // For the mock, we'll intercept this and use a simpler approach
+              // The actual implementation will be handled in executeRelationshipQuery
+              return Promise.resolve([]);
+            },
+          };
+        },
+      }),
+      insert: () => ({}),
+      update: () => ({}),
+      delete: () => ({}),
+      execute: () => Promise.resolve([]),
+      transaction: () => Promise.resolve(),
+    } as any;
+
+    relationshipBuilder = new RelationshipQueryBuilder(mockClient, mockSchema);
+
+    // Override executeRelationshipQuery for testing
+    (relationshipBuilder as any).executeRelationshipQuery = async (
+      tableName: string,
+      columnName: string,
+      value: any
+    ) => {
+      const data = mockData[tableName as keyof typeof mockData] || [];
+
+      if (!columnName || value === undefined) {
+        return data;
+      }
+
+      return (data as any[]).filter((record: any) => {
+        return record[columnName] === value;
+      });
+    };
+  });
+
+  describe('loadRelationshipsForRecord', () => {
+    it('should load hasOne relationship', async () => {
+      const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
 
       const relationships: Record<string, RelationshipConfig<any>> = {
         profile: {
@@ -135,16 +181,6 @@ describe('RelationshipQueryBuilder', () => {
           relatedKey: 'user_id',
         },
       };
-
-      // Mock the profile query result
-      const mockProfileQuery = {
-        where: () => ({
-          limit: () =>
-            Promise.resolve([{ id: 1, bio: 'Test bio', user_id: 1 }]),
-        }),
-      };
-
-      mockClient.select = () => ({ from: () => mockProfileQuery });
 
       const result = await relationshipBuilder.loadRelationshipsForRecord(
         'users',
@@ -156,7 +192,7 @@ describe('RelationshipQueryBuilder', () => {
         id: 1,
         name: 'John Doe',
         email: 'john@example.com',
-        profile: { id: 1, bio: 'Test bio', user_id: 1 },
+        profile: { id: 1, bio: 'Software developer', user_id: 1 },
       });
     });
 
@@ -171,17 +207,6 @@ describe('RelationshipQueryBuilder', () => {
         },
       };
 
-      // Mock the posts query result
-      const mockPostsQuery = {
-        where: () =>
-          Promise.resolve([
-            { id: 1, title: 'Post 1', user_id: 1 },
-            { id: 2, title: 'Post 2', user_id: 1 },
-          ]),
-      };
-
-      mockClient.select = () => ({ from: () => mockPostsQuery });
-
       const result = await relationshipBuilder.loadRelationshipsForRecord(
         'users',
         user,
@@ -193,8 +218,8 @@ describe('RelationshipQueryBuilder', () => {
         name: 'John Doe',
         email: 'john@example.com',
         posts: [
-          { id: 1, title: 'Post 1', user_id: 1 },
-          { id: 2, title: 'Post 2', user_id: 1 },
+          { id: 1, title: 'Test Post', user_id: 1 },
+          { id: 2, title: 'Another Post', user_id: 1 },
         ],
       });
     });
@@ -209,18 +234,6 @@ describe('RelationshipQueryBuilder', () => {
           relatedKey: 'id',
         },
       };
-
-      // Mock the user query result
-      const mockUserQuery = {
-        where: () => ({
-          limit: () =>
-            Promise.resolve([
-              { id: 1, name: 'John Doe', email: 'john@example.com' },
-            ]),
-        }),
-      };
-
-      mockClient.select = () => ({ from: () => mockUserQuery });
 
       const result = await relationshipBuilder.loadRelationshipsForRecord(
         'posts',

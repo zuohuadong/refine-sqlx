@@ -1059,7 +1059,7 @@ export class ErrorHandler {
   static formatForLogging(error: RefineOrmError): Record<string, any> {
     return {
       timestamp: new Date().toISOString(),
-      errorType: error.constructor.name,
+      errorType: error.constructor.name || error.code || 'UnknownError',
       code: error.code,
       message: error.message,
       detailedMessage: error.getDetailedMessage(),

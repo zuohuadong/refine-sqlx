@@ -310,6 +310,7 @@ describe('BaseDatabaseAdapter', () => {
         driver: 'mock-driver',
         supportsNativeDriver: true,
         isConnected: false,
+        futureSupport: { bunSql: false },
       });
     });
 

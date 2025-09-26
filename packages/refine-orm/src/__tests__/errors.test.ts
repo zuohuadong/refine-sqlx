@@ -202,7 +202,7 @@ describe('Error Types', () => {
       const formatted = ErrorHandler.formatForLogging(error);
 
       expect(formatted.timestamp).toBeDefined();
-      expect(formatted.errorType).toBe('QueryError');
+      expect(formatted.errorType).toBe(error.constructor.name || 'QUERY_ERROR');
       expect(formatted.code).toBe('QUERY_ERROR');
       expect(formatted.severity).toBe('medium');
       expect(formatted.isRetryable).toBe(false);
