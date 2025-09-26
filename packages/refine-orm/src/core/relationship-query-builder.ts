@@ -54,10 +54,7 @@ export type RelationshipResult<
 
 // TypeScript 5.0+ decorators for relationship queries
 function LogRelationshipQuery() {
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       const start = performance.now();
       try {
@@ -67,16 +64,23 @@ function LogRelationshipQuery() {
         if (result instanceof Promise) {
           return result.finally(() => {
             const duration = performance.now() - start;
-            console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`);
+            console.debug(
+              `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+            );
           });
         }
 
         const duration = performance.now() - start;
-        console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`);
+        console.debug(
+          `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+        );
         return result;
       } catch (error) {
         const duration = performance.now() - start;
-        console.error(`[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`, error);
+        console.error(
+          `[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`,
+          error
+        );
         throw error;
       }
     };
@@ -86,10 +90,7 @@ function LogRelationshipQuery() {
 function CacheRelationship(ttl: number = 300000) {
   const cache = new Map<string, { data: any; expires: number }>();
 
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       const cacheKey = `${String(context.name)}_${JSON.stringify(args)}`;
       const now = Date.now();
@@ -97,49 +98,60 @@ function CacheRelationship(ttl: number = 300000) {
       // Check cache
       const cached = cache.get(cacheKey);
       if (cached && cached.expires > now) {
-        console.debug(`[CacheRelationship] Cache hit for ${String(context.name)}`);
+        console.debug(
+          `[CacheRelationship] Cache hit for ${String(context.name)}`
+        );
         return Promise.resolve(cached.data);
       }
 
       const result = _originalMethod.apply(this, args);
 
       if (result instanceof Promise) {
-        return result.then((data) => {
+        return result.then(data => {
           cache.set(cacheKey, { data, expires: now + ttl });
-          console.debug(`[CacheRelationship] Cached result for ${String(context.name)}`);
+          console.debug(
+            `[CacheRelationship] Cached result for ${String(context.name)}`
+          );
           return data;
         });
       }
 
       cache.set(cacheKey, { data: result, expires: now + ttl });
-      console.debug(`[CacheRelationship] Cached result for ${String(context.name)}`);
+      console.debug(
+        `[CacheRelationship] Cached result for ${String(context.name)}`
+      );
       return result;
     };
   };
 }
 
 function ValidateRelationship() {
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       // Basic validation for relationship method arguments
       const [tableName, record, relationships] = args;
 
       if (!tableName) {
-        throw new ValidationError(`Table name is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Table name is required for ${String(context.name)}`
+        );
       }
 
       if (!record) {
-        throw new ValidationError(`Record is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Record is required for ${String(context.name)}`
+        );
       }
 
       if (!relationships || typeof relationships !== 'object') {
-        throw new ValidationError(`Relationships configuration is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Relationships configuration is required for ${String(context.name)}`
+        );
       }
 
-      console.debug(`[ValidateRelationship] Validation passed for ${String(context.name)}`);
+      console.debug(
+        `[ValidateRelationship] Validation passed for ${String(context.name)}`
+      );
       return _originalMethod.apply(this, args);
     };
   };
@@ -222,11 +234,17 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
     const table = this.schema[relatedTable];
 
     if (!table) {
-      throw new QueryError(`Related table '${String(relatedTable)}' not found in schema`);
+      throw new QueryError(
+        `Related table '${String(relatedTable)}' not found in schema`
+      );
     }
 
     let query;
-    const tableColumns = Object.keys((table as any)._.columns);
+    const tableColumns = Object.keys(table).filter(
+      key => typeof (table as any)[key] === 'object' &&
+             (table as any)[key] !== null &&
+             'name' in (table as any)[key]
+    );
     const primaryColumn = tableColumns[0]; // Assume first column is primary
 
     switch (type) {
@@ -270,7 +288,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
       case 'belongsToMany': {
         // This would require pivot table handling
         // For now, return empty array
-        console.warn(`belongsToMany relationships not fully implemented for ${relationName}`);
+        console.warn(
+          `belongsToMany relationships not fully implemented for ${relationName}`
+        );
         return [];
       }
 
@@ -290,7 +310,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
     try {
       // This is a placeholder implementation
       // In a real implementation, this would use Drizzle ORM to execute the query
-      console.debug(`Executing relationship query: ${String(tableName)}.${columnName} = ${value}`);
+      console.debug(
+        `Executing relationship query: ${String(tableName)}.${columnName} = ${value}`
+      );
 
       // For now, return empty results to prevent runtime errors
       return [];
@@ -335,9 +357,17 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
       const result: any = { ...record };
 
       // Load all relationship types
-      for (const [name, config] of [...hasOneRelations, ...hasManyRelations, ...belongsToRelations]) {
+      for (const [name, config] of [
+        ...hasOneRelations,
+        ...hasManyRelations,
+        ...belongsToRelations,
+      ]) {
         try {
-          result[name] = await this.loadSingleRelationship(record, name, config);
+          result[name] = await this.loadSingleRelationship(
+            record,
+            name,
+            config
+          );
         } catch (error) {
           console.warn(`Failed to eager load relationship '${name}':`, error);
           result[name] = config.type === 'hasMany' ? [] : null;
@@ -354,7 +384,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
 /**
  * Factory function to create a relationship query builder
  */
-export function createRelationshipQueryBuilder<TSchema extends Record<string, Table>>(
+export function createRelationshipQueryBuilder<
+  TSchema extends Record<string, Table>,
+>(
   client: DrizzleClient<TSchema>,
   schema: TSchema
 ): RelationshipQueryBuilder<TSchema> {
