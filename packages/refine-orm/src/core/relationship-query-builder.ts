@@ -241,9 +241,10 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
 
     let query;
     const tableColumns = Object.keys(table).filter(
-      key => typeof (table as any)[key] === 'object' &&
-             (table as any)[key] !== null &&
-             'name' in (table as any)[key]
+      key =>
+        typeof (table as any)[key] === 'object' &&
+        (table as any)[key] !== null &&
+        'name' in (table as any)[key]
     );
     const primaryColumn = tableColumns[0]; // Assume first column is primary
 

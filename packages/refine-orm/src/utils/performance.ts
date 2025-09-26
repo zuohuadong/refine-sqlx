@@ -1350,10 +1350,7 @@ export { QueryCache };
 
 // Additional TypeScript 5.0+ decorators for relationship queries
 function LogRelationshipQuery() {
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       const start = performance.now();
       try {
@@ -1363,16 +1360,23 @@ function LogRelationshipQuery() {
         if (result instanceof Promise) {
           return result.finally(() => {
             const duration = performance.now() - start;
-            console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`);
+            console.debug(
+              `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+            );
           });
         }
 
         const duration = performance.now() - start;
-        console.debug(`[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`);
+        console.debug(
+          `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+        );
         return result;
       } catch (error) {
         const duration = performance.now() - start;
-        console.error(`[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`, error);
+        console.error(
+          `[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`,
+          error
+        );
         throw error;
       }
     };
@@ -1382,10 +1386,7 @@ function LogRelationshipQuery() {
 function CacheRelationship(ttl: number = 300000) {
   const cache = new Map<string, { data: any; expires: number }>();
 
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       const cacheKey = `${String(context.name)}_${JSON.stringify(args)}`;
       const now = Date.now();
@@ -1393,49 +1394,60 @@ function CacheRelationship(ttl: number = 300000) {
       // Check cache
       const cached = cache.get(cacheKey);
       if (cached && cached.expires > now) {
-        console.debug(`[CacheRelationship] Cache hit for ${String(context.name)}`);
+        console.debug(
+          `[CacheRelationship] Cache hit for ${String(context.name)}`
+        );
         return Promise.resolve(cached.data);
       }
 
       const result = _originalMethod.apply(this, args);
 
       if (result instanceof Promise) {
-        return result.then((data) => {
+        return result.then(data => {
           cache.set(cacheKey, { data, expires: now + ttl });
-          console.debug(`[CacheRelationship] Cached result for ${String(context.name)}`);
+          console.debug(
+            `[CacheRelationship] Cached result for ${String(context.name)}`
+          );
           return data;
         });
       }
 
       cache.set(cacheKey, { data: result, expires: now + ttl });
-      console.debug(`[CacheRelationship] Cached result for ${String(context.name)}`);
+      console.debug(
+        `[CacheRelationship] Cached result for ${String(context.name)}`
+      );
       return result;
     };
   };
 }
 
 function ValidateRelationship() {
-  return function (
-    _originalMethod: any,
-    context: ClassMethodDecoratorContext
-  ) {
+  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
     return function (this: any, ...args: any[]) {
       // Basic validation for relationship method arguments
       const [tableName, record, relationships] = args;
 
       if (!tableName) {
-        throw new ValidationError(`Table name is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Table name is required for ${String(context.name)}`
+        );
       }
 
       if (!record) {
-        throw new ValidationError(`Record is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Record is required for ${String(context.name)}`
+        );
       }
 
       if (!relationships || typeof relationships !== 'object') {
-        throw new ValidationError(`Relationships configuration is required for ${String(context.name)}`);
+        throw new ValidationError(
+          `Relationships configuration is required for ${String(context.name)}`
+        );
       }
 
-      console.debug(`[ValidateRelationship] Validation passed for ${String(context.name)}`);
+      console.debug(
+        `[ValidateRelationship] Validation passed for ${String(context.name)}`
+      );
       return _originalMethod.apply(this, args);
     };
   };
