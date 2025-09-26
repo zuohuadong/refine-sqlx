@@ -182,6 +182,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
     for (const [relationName, config] of Object.entries(relationships)) {
       try {
         const relationData = await this.loadSingleRelationship(
+          _tableName,
           record,
           relationName,
           config
@@ -226,6 +227,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
    * Load a single relationship for a record
    */
   private async loadSingleRelationship(
+    tableName: keyof TSchema,
     record: any,
     relationName: string,
     config: RelationshipConfig<TSchema>
@@ -278,7 +280,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
         let foreignValue = record[foreignCol];
         if (foreignValue === undefined) {
           // Convert snake_case to camelCase
-          const camelCaseKey = foreignCol.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          const camelCaseKey = foreignCol.replace(/_([a-z])/g, (_, letter) =>
+            letter.toUpperCase()
+          );
           foreignValue = record[camelCaseKey];
         }
 
@@ -335,21 +339,28 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
           let column = (table as any)[columnName];
           if (!column) {
             // Convert snake_case to camelCase
-            const camelCaseKey = columnName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+            const camelCaseKey = columnName.replace(/_([a-z])/g, (_, letter) =>
+              letter.toUpperCase()
+            );
             column = (table as any)[camelCaseKey];
           }
 
           if (column) {
             query = query.where(eq(column, value)) as any;
           } else {
-            console.warn(`Column ${columnName} not found in table ${String(tableName)} (tried both snake_case and camelCase)`);
+            console.warn(
+              `Column ${columnName} not found in table ${String(tableName)} (tried both snake_case and camelCase)`
+            );
           }
         }
 
         const results = await query;
         return results || [];
       } catch (dbError) {
-        console.warn(`Database query failed, returning empty results:`, dbError);
+        console.warn(
+          `Database query failed, returning empty results:`,
+          dbError
+        );
         return [];
       }
     } catch (error) {
@@ -400,6 +411,7 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
       ]) {
         try {
           result[name] = await this.loadSingleRelationship(
+            tableName,
             record,
             name,
             config

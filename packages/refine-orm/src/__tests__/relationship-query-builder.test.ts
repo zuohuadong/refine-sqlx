@@ -122,7 +122,11 @@ describe('RelationshipQueryBuilder', () => {
     };
 
     // Simple mock that tracks query context
-    let mockQueryContext: { table?: string; whereColumn?: string; whereValue?: any } = {};
+    let mockQueryContext: {
+      table?: string;
+      whereColumn?: string;
+      whereValue?: any;
+    } = {};
 
     mockClient = {
       schema: mockSchema,
@@ -131,7 +135,7 @@ describe('RelationshipQueryBuilder', () => {
           // Determine table name from the table object
           mockQueryContext.table = Object.keys(mockSchema).find(
             key => mockSchema[key] === table
-          ) || null;
+          );
 
           return {
             where: (condition: any) => {
