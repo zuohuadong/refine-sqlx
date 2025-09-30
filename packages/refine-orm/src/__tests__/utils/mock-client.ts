@@ -212,7 +212,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
         return Promise.resolve(result);
       }),
-      then: jest.fn().mockImplementation(resolve => {
+      then: jest.fn().mockImplementation((resolve: any) => {
         let result = data;
 
         // Apply basic filtering
@@ -282,7 +282,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let storedResultData: any[] = [];
 
     const insertChain = {
-      values: jest.fn().mockImplementation(values => {
+      values: jest.fn().mockImplementation((values: any) => {
         // Handle both single and multiple inserts
         const dataArray = Array.isArray(values) ? values : [values];
 
@@ -410,7 +410,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let updateConditions: any[] = [];
 
     return {
-      set: jest.fn().mockImplementation(values => {
+      set: jest.fn().mockImplementation((values: any) => {
         updateValues = values;
         return {
           where: jest.fn().mockImplementation((condition: any) => {
@@ -615,7 +615,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
   return {
     schema,
-    select: jest.fn().mockImplementation(fields => {
+    select: jest.fn().mockImplementation((fields: any) => {
       // Determine which table is being queried based on the context
       const tableName = Object.keys(schema)[0]; // Default to first table
 
@@ -642,17 +642,17 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       ];
       return createQueryChain(tableName, allData);
     }),
-    insert: jest.fn().mockImplementation(table => {
+    insert: jest.fn().mockImplementation((table: any) => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createInsertChain(tableName);
     }),
-    update: jest.fn().mockImplementation(table => {
+    update: jest.fn().mockImplementation((table: any) => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createUpdateChain(tableName);
     }),
-    delete: jest.fn().mockImplementation(table => {
+    delete: jest.fn().mockImplementation((table: any) => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createDeleteChain(tableName);

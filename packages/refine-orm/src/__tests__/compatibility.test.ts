@@ -4,7 +4,14 @@
  * and verifies type inference correctness
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from './test-utils.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 import {
   DatabaseTestSetup,

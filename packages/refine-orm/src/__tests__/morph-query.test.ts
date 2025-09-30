@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+  jest,
+  test,
+} from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   MorphQueryBuilder,
@@ -78,7 +88,7 @@ const createChainableMock = (finalResult: any) => {
   };
 
   // Make all methods return the chainable object
-  Object.keys(chainable).forEach(key => {
+  Object.keys(chainable).forEach((key: string) => {
     if (key !== 'execute') {
       (chainable as any)[key].mockReturnValue(chainable);
     }
@@ -90,7 +100,7 @@ const createChainableMock = (finalResult: any) => {
 // Mock drizzle client
 const mockClient: DrizzleClient<typeof schema> = {
   schema,
-  select: jest.fn().mockImplementation(fields => {
+  select: jest.fn().mockImplementation((fields: any) => {
     if (fields && fields.count) {
       // Count query
       return createChainableMock([{ count: 2 }]);
@@ -249,14 +259,14 @@ describe('Morph Query Builder', () => {
     // Mock the related data queries
     const mockClientWithRelations = {
       ...mockClient,
-      select: jest.fn().mockImplementation(fields => {
+      select: jest.fn().mockImplementation((fields: any) => {
         if (fields && fields.count) {
           // Count query
           return createChainableMock([{ count: 2 }]);
         } else {
           // Regular select query
           return {
-            from: jest.fn().mockImplementation(table => {
+            from: jest.fn().mockImplementation((table: any) => {
               if (table === posts) {
                 // Posts query
                 return createChainableMock([
@@ -471,7 +481,7 @@ describe('Enhanced Morph Query Builder', () => {
   it('should support many-to-many polymorphic relationships', async () => {
     const manyToManyMockClient = {
       ...mockClient,
-      select: jest.fn().mockImplementation(fields => {
+      select: jest.fn().mockImplementation((fields: any) => {
         if (fields && fields.count) {
           return {
             from: jest
@@ -482,7 +492,7 @@ describe('Enhanced Morph Query Builder', () => {
           };
         } else {
           return {
-            from: jest.fn().mockImplementation(table => {
+            from: jest.fn().mockImplementation((table: any) => {
               if (table === taggables) {
                 // Pivot table query
                 return {

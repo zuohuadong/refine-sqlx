@@ -2,11 +2,11 @@ import {
   describe,
   it,
   expect,
-  vi,
+  jest,
   beforeEach,
   beforeAll,
   afterAll,
-} from 'vitest';
+} from './test-utils.js';
 import {
   MySQLAdapter,
   createMySQLProvider,
@@ -90,15 +90,13 @@ describe('MySQL Adapter', () => {
     };
 
     const mysql2 = await import('mysql2/promise');
-    mysql2.default.createConnection.mockResolvedValue(
-      mockConnection
-    );
-    mysql2.default.createPool.mockResolvedValue(mockPool);
-    mysql2.createConnection.mockResolvedValue(mockConnection);
-    mysql2.createPool.mockResolvedValue(mockPool);
+    (mysql2.default.createConnection as any).mockResolvedValue(mockConnection);
+    (mysql2.default.createPool as any).mockResolvedValue(mockPool);
+    (mysql2.createConnection as any).mockResolvedValue(mockConnection);
+    (mysql2.createPool as any).mockResolvedValue(mockPool);
 
     const drizzle = await import('drizzle-orm/mysql2');
-    drizzle.drizzle.mockReturnValue({
+    (drizzle.drizzle as any).mockReturnValue({
       select: jest.fn(),
       insert: jest.fn(),
       update: jest.fn(),
@@ -221,16 +219,16 @@ describe('MySQL Adapter', () => {
       const connectionError = new Error('Connection refused');
 
       // Mock both pool and connection creation to throw error
-      mysql2.default.createConnection.mockImplementation(() => {
+      (mysql2.default.createConnection as any).mockImplementation(() => {
         throw connectionError;
       });
-      mysql2.createConnection.mockImplementation(() => {
+      (mysql2.createConnection as any).mockImplementation(() => {
         throw connectionError;
       });
-      mysql2.default.createPool.mockImplementation(() => {
+      (mysql2.default.createPool as any).mockImplementation(() => {
         throw connectionError;
       });
-      mysql2.createPool.mockImplementation(() => {
+      (mysql2.createPool as any).mockImplementation(() => {
         throw connectionError;
       });
 
@@ -450,12 +448,8 @@ describe('MySQL Adapter', () => {
         end: jest.fn().mockResolvedValue(undefined),
       };
 
-      mysql2.default.createConnection.mockResolvedValue(
-        mockConnection as any
-      );
-      mysql2.createConnection.mockResolvedValue(
-        mockConnection as any
-      );
+      (mysql2.default.createConnection as any).mockResolvedValue(mockConnection as any);
+      (mysql2.createConnection as any).mockResolvedValue(mockConnection as any);
 
       const result = await testMySQLConnection(
         'mysql://user:pass@localhost:3306/testdb'
@@ -468,10 +462,10 @@ describe('MySQL Adapter', () => {
 
     it('should handle connection test failures', async () => {
       const mysql2 = await import('mysql2/promise');
-      mysql2.default.createConnection.mockRejectedValue(
+      (mysql2.default.createConnection as any).mockRejectedValue(
         new Error('Connection refused')
       );
-      mysql2.createConnection.mockRejectedValue(
+      (mysql2.createConnection as any).mockRejectedValue(
         new Error('Connection refused')
       );
 
@@ -493,12 +487,8 @@ describe('MySQL Adapter', () => {
         end: jest.fn().mockResolvedValue(undefined),
       };
 
-      mysql2.default.createConnection.mockResolvedValue(
-        mockConnection as any
-      );
-      mysql2.createConnection.mockResolvedValue(
-        mockConnection as any
-      );
+      (mysql2.default.createConnection as any).mockResolvedValue(mockConnection as any);
+      (mysql2.createConnection as any).mockResolvedValue(mockConnection as any);
 
       const result = await testMySQLConnection(
         'mysql://user:pass@localhost:3306/testdb'
@@ -559,10 +549,10 @@ describe('MySQL Adapter', () => {
 
       // Mock createPool to throw error
       const poolError = new Error('Pool creation failed');
-      mysql2.default.createPool.mockImplementation(() => {
+      (mysql2.default.createPool as any).mockImplementation(() => {
         throw poolError;
       });
-      mysql2.createPool.mockImplementation(() => {
+      (mysql2.createPool as any).mockImplementation(() => {
         throw poolError;
       });
 

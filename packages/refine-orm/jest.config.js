@@ -21,12 +21,7 @@ export default {
     '/docs/',
   ],
   coverageThreshold: {
-    global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60,
-    },
+    global: { branches: 60, functions: 60, lines: 60, statements: 60 },
   },
   testTimeout: 60000,
   maxWorkers: 1, // Run tests sequentially to avoid database conflicts

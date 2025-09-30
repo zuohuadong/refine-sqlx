@@ -8,11 +8,7 @@ const isBun = typeof Bun !== 'undefined';
 
 // Type definitions for mock functions
 type MockFunction = {
-  mock: {
-    calls: any[][];
-    results: any[];
-    instances: any[];
-  };
+  mock: { calls: any[][]; results: any[]; instances: any[] };
   mockImplementation: (fn: any) => MockFunction;
   mockReturnValue: (value: any) => MockFunction;
   mockResolvedValue: (value: any) => MockFunction;

@@ -4,7 +4,7 @@
  * and boundary conditions gracefully
  */
 
-import { describe, it, expect, vi, beforeEach } from './test-utils.js';
+import { describe, it, expect, beforeEach } from './test-utils.js';
 import {
   pgTable,
   serial,

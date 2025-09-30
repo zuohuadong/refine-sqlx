@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+  jest,
+  test,
+} from './test-utils.js';
 import detectSqlite from '../src/detect-sqlite';
 
 describe('Runtime Detection', () => {

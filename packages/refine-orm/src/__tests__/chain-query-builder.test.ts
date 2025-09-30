@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+  jest,
+  test,
+} from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   ChainQueryBuilder,
@@ -180,7 +190,7 @@ describe('Chain Query Builder', () => {
 
     it('should return null when no results for first()', async () => {
       // Mock empty result
-      mockClient.select.mockReturnValue({
+      (mockClient.select as any).mockReturnValue({
         from: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
@@ -260,7 +270,7 @@ describe('Chain Query Builder', () => {
 
     it('should handle empty result sets gracefully', async () => {
       // Mock empty result
-      mockClient.select.mockReturnValue({
+      (mockClient.select as any).mockReturnValue({
         from: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
@@ -280,7 +290,7 @@ describe('Chain Query Builder', () => {
 
   describe('Error Handling', () => {
     it('should handle database errors gracefully', async () => {
-      mockClient.select.mockImplementation(() => {
+      (mockClient.select as any).mockImplementation(() => {
         throw new Error('Database connection failed');
       });
 

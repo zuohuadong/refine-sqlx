@@ -1,16 +1,28 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+  jest,
+  test,
+} from './test-utils.js';
 import { MySQLAdapter, createMySQLProvider } from '../adapters/mysql';
 import { createProvider } from '../core/data-provider';
 import type { DatabaseConfig } from '../types/config';
 
 // Mock drizzle-orm/mysql2 to avoid actual database connection
 jest.mock('drizzle-orm/mysql2', () => ({
-  drizzle: jest.fn((connection, options) => ({
+  drizzle: jest.fn((connection: any, options: any) => ({
     schema: options?.schema || {},
     select: jest.fn(() => ({
       from: jest.fn(() => ({
         where: jest.fn(() => ({
-          execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
+          execute: jest.fn(() =>
+            Promise.resolve([{ id: 1, name: 'Test User' }])
+          ),
         })),
         execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
       })),
@@ -18,7 +30,9 @@ jest.mock('drizzle-orm/mysql2', () => ({
     insert: jest.fn(() => ({
       values: jest.fn(() => ({
         returning: jest.fn(() => ({
-          execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
+          execute: jest.fn(() =>
+            Promise.resolve([{ id: 1, name: 'Test User' }])
+          ),
         })),
       })),
     })),

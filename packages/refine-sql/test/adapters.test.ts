@@ -1,4 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+  jest,
+  test,
+} from './test-utils.js';
 import {
   createCloudflareD1Adapter,
   createBunSQLiteAdapter,
@@ -223,7 +233,9 @@ describe('Node SQLite Adapter', () => {
         { id: 1, name: 'John' },
         { id: 2, name: 'Jane' },
       ]),
-      columns: jest.fn().mockReturnValue([{ column: 'id' }, { column: 'name' }]),
+      columns: jest
+        .fn()
+        .mockReturnValue([{ column: 'id' }, { column: 'name' }]),
     };
     mockNodeDB.prepare.mockReturnValue(mockStmt);
 

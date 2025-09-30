@@ -2,7 +2,7 @@
  * Tests for user-friendly factory functions
  */
 
-import { describe, it, expect, beforeEach, vi } from './test-utils.js';
+import { describe, it, expect, beforeEach } from './test-utils.js';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { pgTable, serial, text as pgText } from 'drizzle-orm/pg-core';
 import {

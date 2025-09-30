@@ -4,7 +4,8 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@refine-orm/core-utils$': '<rootDir>/packages/refine-core-utils/src/index.ts',
+    '^@refine-orm/core-utils$':
+      '<rootDir>/packages/refine-core-utils/src/index.ts',
   },
   testMatch: [
     '<rootDir>/packages/*/src/**/*.test.ts',
@@ -37,9 +38,5 @@ export default {
       },
     ],
   },
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
+  globals: { 'ts-jest': { useESM: true } },
 };
