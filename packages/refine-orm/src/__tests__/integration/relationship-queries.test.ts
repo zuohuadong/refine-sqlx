@@ -3,7 +3,7 @@
  * Tests relationship loading, chain queries, and morphic relationships across all databases
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from './test-utils.js';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from '../test-utils.js';
 import { sql } from 'drizzle-orm';
 import {
   DatabaseTestSetup,

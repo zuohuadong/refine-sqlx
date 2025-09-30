@@ -35,7 +35,7 @@ if (isBun) {
 
 // Export unified test API
 export const {
-  describe,
+  describe: baseDescribe,
   it,
   test,
   expect,
@@ -44,6 +44,22 @@ export const {
   beforeEach,
   afterEach,
 } = testFramework;
+
+// Create a compatible describe with skipIf support
+const createDescribeWithSkipIf = () => {
+  const desc: any = baseDescribe;
+
+  // Add skipIf for jest compatibility
+  if (!isBun) {
+    desc.skipIf = (condition: boolean) => {
+      return condition ? baseDescribe.skip : baseDescribe;
+    };
+  }
+
+  return desc;
+};
+
+export const describe = createDescribeWithSkipIf();
 
 // Export jest or mock from the framework
 export const jest = testFramework.jest || testFramework;
