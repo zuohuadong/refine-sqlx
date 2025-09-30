@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { sql } from 'drizzle-orm';
 import {
   SelectChain,
@@ -33,35 +33,35 @@ const mockTable = {
   // Add required Table interface properties
   $inferSelect: {} as any,
   $inferInsert: {} as any,
-  getSQL: vi.fn(),
+  getSQL: jest.fn(),
 } as any;
 
 const mockSchema = { users: mockTable, posts: mockTable } as any;
 
 const mockClient = {
   schema: mockSchema,
-  select: vi.fn().mockReturnThis(),
-  insert: vi.fn().mockReturnThis(),
-  update: vi.fn().mockReturnThis(),
-  delete: vi.fn().mockReturnThis(),
-  from: vi.fn().mockReturnThis(),
-  where: vi.fn().mockReturnThis(),
-  orderBy: vi.fn().mockReturnThis(),
-  groupBy: vi.fn().mockReturnThis(),
-  having: vi.fn().mockReturnThis(),
-  limit: vi.fn().mockReturnThis(),
-  offset: vi.fn().mockReturnThis(),
-  values: vi.fn().mockReturnThis(),
-  set: vi.fn().mockReturnThis(),
-  returning: vi.fn().mockReturnThis(),
-  onConflictDoNothing: vi.fn().mockReturnThis(),
-  onConflictDoUpdate: vi.fn().mockReturnThis(),
-  execute: vi.fn(),
+  select: jest.fn().mockReturnThis(),
+  insert: jest.fn().mockReturnThis(),
+  update: jest.fn().mockReturnThis(),
+  delete: jest.fn().mockReturnThis(),
+  from: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  having: jest.fn().mockReturnThis(),
+  limit: jest.fn().mockReturnThis(),
+  offset: jest.fn().mockReturnThis(),
+  values: jest.fn().mockReturnThis(),
+  set: jest.fn().mockReturnThis(),
+  returning: jest.fn().mockReturnThis(),
+  onConflictDoNothing: jest.fn().mockReturnThis(),
+  onConflictDoUpdate: jest.fn().mockReturnThis(),
+  execute: jest.fn(),
 };
 
 describe('Native Query Builders', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockClient.execute.mockResolvedValue([]);
   });
 

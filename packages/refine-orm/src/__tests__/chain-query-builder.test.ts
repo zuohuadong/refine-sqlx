@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   ChainQueryBuilder,
@@ -180,13 +180,13 @@ describe('Chain Query Builder', () => {
 
     it('should return null when no results for first()', async () => {
       // Mock empty result
-      vi.mocked(mockClient.select).mockReturnValue({
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        offset: vi.fn().mockReturnThis(),
-        execute: vi.fn().mockResolvedValue([]),
+      mockClient.select.mockReturnValue({
+        from: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        offset: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue([]),
       } as any);
 
       const result = await chainQuery.first();
@@ -260,13 +260,13 @@ describe('Chain Query Builder', () => {
 
     it('should handle empty result sets gracefully', async () => {
       // Mock empty result
-      vi.mocked(mockClient.select).mockReturnValue({
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        offset: vi.fn().mockReturnThis(),
-        execute: vi.fn().mockResolvedValue([]),
+      mockClient.select.mockReturnValue({
+        from: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        offset: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue([]),
       } as any);
 
       const result = await chainQuery
@@ -280,7 +280,7 @@ describe('Chain Query Builder', () => {
 
   describe('Error Handling', () => {
     it('should handle database errors gracefully', async () => {
-      vi.mocked(mockClient.select).mockImplementation(() => {
+      mockClient.select.mockImplementation(() => {
         throw new Error('Database connection failed');
       });
 

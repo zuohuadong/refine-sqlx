@@ -2,7 +2,7 @@
  * Tests for user-friendly factory functions
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from './test-utils.js';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { pgTable, serial, text as pgText } from 'drizzle-orm/pg-core';
 import {
@@ -46,22 +46,22 @@ const pgSchema = { users: pgUsers };
 const mysqlSchema = { users: mysqlUsers };
 
 // Mock runtime detection
-vi.mock('../utils/runtime-detection.ts', () => ({
-  detectBunRuntime: vi.fn(() => false),
-  detectNodeRuntime: vi.fn(() => true),
-  detectCloudflareD1: vi.fn(() => false),
-  getRuntimeInfo: vi.fn(() => ({
+jest.mock('../utils/runtime-detection.ts', () => ({
+  detectBunRuntime: jest.fn(() => false),
+  detectNodeRuntime: jest.fn(() => true),
+  detectCloudflareD1: jest.fn(() => false),
+  getRuntimeInfo: jest.fn(() => ({
     runtime: 'node',
     version: '18.0.0',
     platform: 'linux',
   })),
-  getRuntimeConfig: vi.fn(() => ({
+  getRuntimeConfig: jest.fn(() => ({
     runtime: 'node',
     version: '18.0.0',
     platform: 'linux',
     supports: { fs: true, crypto: true, streams: true },
   })),
-  getRecommendedDriver: vi.fn((dbType: string) => {
+  getRecommendedDriver: jest.fn((dbType: string) => {
     const drivers: Record<string, string> = {
       postgresql: 'postgres',
       mysql: 'mysql2',
@@ -69,13 +69,13 @@ vi.mock('../utils/runtime-detection.ts', () => ({
     };
     return drivers[dbType] || 'unknown';
   }),
-  checkDriverAvailability: vi.fn(() => ({ available: true, reason: null })),
-  detectBunSqlSupport: vi.fn(() => false),
+  checkDriverAvailability: jest.fn(() => ({ available: true, reason: null })),
+  detectBunSqlSupport: jest.fn(() => false),
 }));
 
 describe('Factory Functions', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('Universal createProvider', () => {

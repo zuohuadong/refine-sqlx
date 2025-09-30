@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   eq,
@@ -42,12 +42,12 @@ const schema = { users, posts };
 // Mock client
 const createMockClient = () => {
   const mockQuery = {
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockReturnThis(),
-    execute: vi
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    offset: jest.fn().mockReturnThis(),
+    execute: jest
       .fn()
       .mockResolvedValue([
         {
@@ -61,17 +61,17 @@ const createMockClient = () => {
   };
 
   return {
-    select: vi.fn().mockReturnValue(mockQuery),
-    insert: vi
+    select: jest.fn().mockReturnValue(mockQuery),
+    insert: jest
       .fn()
       .mockReturnValue({
-        values: vi
+        values: jest
           .fn()
           .mockReturnValue({
-            returning: vi
+            returning: jest
               .fn()
               .mockReturnValue({
-                execute: vi
+                execute: jest
                   .fn()
                   .mockResolvedValue([
                     {
@@ -85,19 +85,19 @@ const createMockClient = () => {
               }),
           }),
       }),
-    update: vi
+    update: jest
       .fn()
       .mockReturnValue({
-        set: vi
+        set: jest
           .fn()
           .mockReturnValue({
-            where: vi
+            where: jest
               .fn()
               .mockReturnValue({
-                returning: vi
+                returning: jest
                   .fn()
                   .mockReturnValue({
-                    execute: vi
+                    execute: jest
                       .fn()
                       .mockResolvedValue([
                         {
@@ -112,16 +112,16 @@ const createMockClient = () => {
               }),
           }),
       }),
-    delete: vi
+    delete: jest
       .fn()
       .mockReturnValue({
-        where: vi
+        where: jest
           .fn()
           .mockReturnValue({
-            returning: vi
+            returning: jest
               .fn()
               .mockReturnValue({
-                execute: vi
+                execute: jest
                   .fn()
                   .mockResolvedValue([
                     {
@@ -145,7 +145,7 @@ describe('RefineQueryBuilder', () => {
   beforeEach(() => {
     queryBuilder = new RefineQueryBuilder();
     mockClient = createMockClient();
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('buildWhereConditions', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { RelationshipQueryBuilder } from '../core/relationship-query-builder';
 import type { RelationshipConfig } from '../core/relationship-query-builder';
 import type { DrizzleClient } from '../types/client';

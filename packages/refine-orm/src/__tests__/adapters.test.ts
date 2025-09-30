@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { BaseDatabaseAdapter } from '../adapters/base';
 import type { DatabaseConfig } from '../types/config';
@@ -40,11 +40,11 @@ class MockAdapter extends BaseDatabaseAdapter<typeof schema> {
     // Mock client setup
     this.client = {
       schema,
-      select: vi.fn(),
-      insert: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      transaction: vi.fn(),
+      select: jest.fn(),
+      insert: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      transaction: jest.fn(),
     } as any;
   }
 
@@ -334,7 +334,7 @@ describe('BaseDatabaseAdapter', () => {
     });
 
     it('should handle custom logger function', async () => {
-      const mockLogger = vi.fn();
+      const mockLogger = jest.fn();
       const loggerConfig = { ...config, logger: mockLogger };
       const loggerAdapter = new MockAdapter(loggerConfig);
       await loggerAdapter.connect();

@@ -3,7 +3,7 @@
  * Runs all integration tests and provides environment setup validation
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll } from './test-utils.js';
 import { isTestEnvironmentReady } from './database-setup';
 
 describe('Integration Test Environment', () => {

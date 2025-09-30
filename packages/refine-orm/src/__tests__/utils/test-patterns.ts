@@ -2,7 +2,7 @@
  * Common test patterns to reduce repetition across test files
  */
 
-import { expect } from 'vitest';
+import { expect } from '../test-utils.js';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 
 /**

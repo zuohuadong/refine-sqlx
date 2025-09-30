@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import { createProvider } from '../core/data-provider';
 import {
@@ -312,7 +312,7 @@ describe('Data Provider', () => {
     });
 
     it('should pass through custom options to adapter', async () => {
-      const spy = vi.spyOn(adapter, 'executeRaw');
+      const spy = jest.spyOn(adapter, 'executeRaw');
 
       await dataProvider.getList({
         resource: 'users',

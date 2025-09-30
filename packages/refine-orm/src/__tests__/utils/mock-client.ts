@@ -3,7 +3,7 @@
  * Provides comprehensive mock implementations for database clients and adapters
  */
 
-import { vi, expect } from 'vitest';
+import { expect, jest } from '../test-utils.js';
 import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { DrizzleClient } from '../../types/client';
 import { BaseDatabaseAdapter } from '../../adapters/base';
@@ -31,8 +31,8 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let whereConditions: any[] = [];
 
     const chain = {
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockImplementation((condition: any) => {
+      from: jest.fn().mockReturnThis(),
+      where: jest.fn().mockImplementation((condition: any) => {
         // Store simplified conditions for filtering
         // Try to extract the actual filtering criteria from drizzle conditions
         if (condition) {
@@ -135,23 +135,23 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
         return chain;
       }),
-      orderBy: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockImplementation((value: number) => {
+      orderBy: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockImplementation((value: number) => {
         limitValue = value;
         return chain;
       }),
-      offset: vi.fn().mockImplementation((value: number) => {
+      offset: jest.fn().mockImplementation((value: number) => {
         offsetValue = value;
         return chain;
       }),
-      groupBy: vi.fn().mockReturnThis(),
-      having: vi.fn().mockReturnThis(),
-      leftJoin: vi.fn().mockReturnThis(),
-      rightJoin: vi.fn().mockReturnThis(),
-      innerJoin: vi.fn().mockReturnThis(),
-      fullJoin: vi.fn().mockReturnThis(),
-      distinct: vi.fn().mockReturnThis(),
-      execute: vi.fn().mockImplementation(() => {
+      groupBy: jest.fn().mockReturnThis(),
+      having: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
+      rightJoin: jest.fn().mockReturnThis(),
+      innerJoin: jest.fn().mockReturnThis(),
+      fullJoin: jest.fn().mockReturnThis(),
+      distinct: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockImplementation(() => {
         let result = data;
 
         // Apply basic filtering
@@ -212,7 +212,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
         return Promise.resolve(result);
       }),
-      then: vi.fn().mockImplementation(resolve => {
+      then: jest.fn().mockImplementation(resolve => {
         let result = data;
 
         // Apply basic filtering
@@ -282,7 +282,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let storedResultData: any[] = [];
 
     const insertChain = {
-      values: vi.fn().mockImplementation(values => {
+      values: jest.fn().mockImplementation(values => {
         // Handle both single and multiple inserts
         const dataArray = Array.isArray(values) ? values : [values];
 
@@ -369,35 +369,35 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         storedResultData = resultData;
 
         return {
-          returning: vi
+          returning: jest
             .fn()
             .mockReturnValue({
-              execute: vi.fn().mockResolvedValue(resultData),
+              execute: jest.fn().mockResolvedValue(resultData),
             }),
-          onConflictDoNothing: vi
+          onConflictDoNothing: jest
             .fn()
             .mockReturnValue({
-              returning: vi
+              returning: jest
                 .fn()
-                .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
+                .mockReturnValue({ execute: jest.fn().mockResolvedValue([]) }),
             }),
-          onConflictDoUpdate: vi
+          onConflictDoUpdate: jest
             .fn()
             .mockReturnValue({
-              returning: vi
+              returning: jest
                 .fn()
                 .mockReturnValue({
-                  execute: vi.fn().mockResolvedValue(resultData),
+                  execute: jest.fn().mockResolvedValue(resultData),
                 }),
             }),
-          execute: vi.fn().mockResolvedValue(resultData),
+          execute: jest.fn().mockResolvedValue(resultData),
         };
       }),
       // Add returning method at the top level for when it's called directly
-      returning: vi
+      returning: jest
         .fn()
         .mockImplementation(() => ({
-          execute: vi.fn().mockResolvedValue(storedResultData),
+          execute: jest.fn().mockResolvedValue(storedResultData),
         })),
     };
 
@@ -410,10 +410,10 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     let updateConditions: any[] = [];
 
     return {
-      set: vi.fn().mockImplementation(values => {
+      set: jest.fn().mockImplementation(values => {
         updateValues = values;
         return {
-          where: vi.fn().mockImplementation((condition: any) => {
+          where: jest.fn().mockImplementation((condition: any) => {
             // Extract IDs to update from the condition
             if (
               condition &&
@@ -453,10 +453,10 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
               : [{ ...allData[0], ...updateValues }];
 
             return {
-              returning: vi
+              returning: jest
                 .fn()
                 .mockReturnValue({
-                  execute: vi
+                  execute: jest
                     .fn()
                     .mockResolvedValue(
                       updatedRecords.length > 0 ?
@@ -464,7 +464,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                       : [{ id: updateConditions[0] || 1, ...updateValues }]
                     ),
                 }),
-              execute: vi
+              execute: jest
                 .fn()
                 .mockResolvedValue(
                   updatedRecords.length > 0 ?
@@ -473,10 +473,10 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                 ),
             };
           }),
-          returning: vi
+          returning: jest
             .fn()
             .mockReturnValue({
-              execute: vi
+              execute: jest
                 .fn()
                 .mockResolvedValue([
                   {
@@ -486,7 +486,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
                   },
                 ]),
             }),
-          execute: vi
+          execute: jest
             .fn()
             .mockResolvedValue([
               { id: 1, ...(mockData[tableName]?.[0] || {}), ...updateValues },
@@ -501,7 +501,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
     const deleteConditions: any[] = [];
 
     const chain = {
-      where: vi.fn().mockImplementation((condition: any) => {
+      where: jest.fn().mockImplementation((condition: any) => {
         // Extract the ID(s) to delete from the condition
         if (
           condition &&
@@ -555,8 +555,8 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
         return chain;
       }),
-      returning: vi.fn().mockImplementation(() => ({
-        execute: vi.fn().mockImplementation(() => {
+      returning: jest.fn().mockImplementation(() => ({
+        execute: jest.fn().mockImplementation(() => {
           // Find and return the record(s) to be deleted
           const allData = [
             ...(mockData[tableName] || []),
@@ -575,7 +575,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           );
         }),
       })),
-      execute: vi.fn().mockImplementation(() => {
+      execute: jest.fn().mockImplementation(() => {
         // Find and return the record(s) to be deleted
         const allData = [
           ...(mockData[tableName] || []),
@@ -599,23 +599,23 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
   // Create count query mock
   const createCountQuery = (tableName: string) => ({
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    execute: vi
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    execute: jest
       .fn()
       .mockResolvedValue([{ count: mockData[tableName]?.length || 0 }]),
   });
 
   // Create aggregate query mock
   const createAggregateQuery = (tableName: string, aggregateValue: number) => ({
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    execute: vi.fn().mockResolvedValue([{ value: aggregateValue }]),
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    execute: jest.fn().mockResolvedValue([{ value: aggregateValue }]),
   });
 
   return {
     schema,
-    select: vi.fn().mockImplementation(fields => {
+    select: jest.fn().mockImplementation(fields => {
       // Determine which table is being queried based on the context
       const tableName = Object.keys(schema)[0]; // Default to first table
 
@@ -642,23 +642,23 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       ];
       return createQueryChain(tableName, allData);
     }),
-    insert: vi.fn().mockImplementation(table => {
+    insert: jest.fn().mockImplementation(table => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createInsertChain(tableName);
     }),
-    update: vi.fn().mockImplementation(table => {
+    update: jest.fn().mockImplementation(table => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createUpdateChain(tableName);
     }),
-    delete: vi.fn().mockImplementation(table => {
+    delete: jest.fn().mockImplementation(table => {
       const tableName =
         Object.keys(schema).find(key => schema[key] === table) || 'unknown';
       return createDeleteChain(tableName);
     }),
-    execute: vi.fn().mockResolvedValue([]),
-    transaction: vi
+    execute: jest.fn().mockResolvedValue([]),
+    transaction: jest
       .fn()
       .mockImplementation(async (callback: (tx: any) => Promise<any>) => {
         const txClient = createMockDrizzleClient(schema, mockData);
@@ -753,7 +753,7 @@ export class MockDatabaseAdapter<
     (this.mockClient.delete as any).mockImplementation(() => {
       throw new ConnectionError('Connection lost');
     });
-    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
       throw new ConnectionError('Connection lost');
     });
   }
@@ -762,7 +762,7 @@ export class MockDatabaseAdapter<
     (this.mockClient.select as any).mockImplementation(() => {
       throw new QueryError('SQL syntax error');
     });
-    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
       throw new QueryError('SQL syntax error');
     });
   }
@@ -773,7 +773,7 @@ export class MockDatabaseAdapter<
         setTimeout(() => reject(new QueryError('Query timeout')), ms);
       });
     });
-    (this.executeRaw as any) = vi.fn().mockImplementation(() => {
+    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
       return new Promise((_, reject) => {
         setTimeout(() => reject(new QueryError('Query timeout')), ms);
       });
@@ -782,14 +782,14 @@ export class MockDatabaseAdapter<
 
   simulateValidationError(): void {
     (this.mockClient.insert as any).mockImplementation(() => ({
-      values: vi.fn().mockImplementation(() => {
+      values: jest.fn().mockImplementation(() => {
         throw new ValidationError('Invalid data');
       }),
     }));
   }
 
   resetMocks(): void {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     this.mockClient = createMockDrizzleClient(
       this.config.schema,
       this.mockData

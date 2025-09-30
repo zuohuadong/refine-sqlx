@@ -4,7 +4,7 @@
  * and that compile-time type safety is maintained
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from './test-utils.js';
 import {
   pgTable,
   serial,

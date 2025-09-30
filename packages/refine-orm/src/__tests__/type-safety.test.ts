@@ -4,7 +4,7 @@
  * and runtime type validation
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from './test-utils.js';
 import {
   pgTable,
   serial,

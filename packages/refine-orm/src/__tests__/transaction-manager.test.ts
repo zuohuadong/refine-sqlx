@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { TransactionManager } from '../core/transaction-manager';
 import type { DrizzleClient } from '../types/client';
@@ -18,28 +18,28 @@ const schema = { users };
 // Mock client with transaction support
 const createMockClient = () => {
   const mockTx = {
-    select: vi
+    select: jest
       .fn()
       .mockReturnValue({
-        from: vi
+        from: jest
           .fn()
           .mockReturnValue({
-            where: vi
+            where: jest
               .fn()
-              .mockReturnValue({ execute: vi.fn().mockResolvedValue([]) }),
-            execute: vi.fn().mockResolvedValue([]),
+              .mockReturnValue({ execute: jest.fn().mockResolvedValue([]) }),
+            execute: jest.fn().mockResolvedValue([]),
           }),
       }),
-    insert: vi
+    insert: jest
       .fn()
       .mockReturnValue({
-        values: vi
+        values: jest
           .fn()
           .mockReturnValue({
-            returning: vi
+            returning: jest
               .fn()
               .mockReturnValue({
-                execute: vi
+                execute: jest
                   .fn()
                   .mockResolvedValue([
                     { id: 1, name: 'John', email: 'john@example.com' },
@@ -47,19 +47,19 @@ const createMockClient = () => {
               }),
           }),
       }),
-    update: vi
+    update: jest
       .fn()
       .mockReturnValue({
-        set: vi
+        set: jest
           .fn()
           .mockReturnValue({
-            where: vi
+            where: jest
               .fn()
               .mockReturnValue({
-                returning: vi
+                returning: jest
                   .fn()
                   .mockReturnValue({
-                    execute: vi
+                    execute: jest
                       .fn()
                       .mockResolvedValue([
                         {
@@ -72,30 +72,30 @@ const createMockClient = () => {
               }),
           }),
       }),
-    delete: vi
+    delete: jest
       .fn()
       .mockReturnValue({
-        where: vi
+        where: jest
           .fn()
           .mockReturnValue({
-            returning: vi
+            returning: jest
               .fn()
               .mockReturnValue({
-                execute: vi.fn().mockResolvedValue([{ id: 1 }]),
+                execute: jest.fn().mockResolvedValue([{ id: 1 }]),
               }),
           }),
       }),
-    execute: vi.fn().mockResolvedValue([]),
+    execute: jest.fn().mockResolvedValue([]),
   };
 
   return {
-    transaction: vi.fn().mockImplementation(async fn => {
+    transaction: jest.fn().mockImplementation(async fn => {
       return await fn(mockTx);
     }),
-    select: vi.fn(),
-    insert: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
+    select: jest.fn(),
+    insert: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   } as unknown as DrizzleClient<typeof schema>;
 };
 
@@ -105,7 +105,7 @@ describe('TransactionManager', () => {
 
   beforeEach(() => {
     mockClient = createMockClient();
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('PostgreSQL transactions', () => {
@@ -118,7 +118,7 @@ describe('TransactionManager', () => {
     });
 
     it('should execute transaction successfully', async () => {
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       const result = await transactionManager.transaction(mockFn);
 
@@ -129,7 +129,7 @@ describe('TransactionManager', () => {
 
     it('should provide transaction context with client and schema', async () => {
       let capturedContext: any;
-      const mockFn = vi.fn().mockImplementation(ctx => {
+      const mockFn = jest.fn().mockImplementation(ctx => {
         capturedContext = ctx;
         return Promise.resolve('success');
       });
@@ -145,7 +145,7 @@ describe('TransactionManager', () => {
 
     it('should handle transaction rollback on error', async () => {
       const error = new Error('Transaction failed');
-      const mockFn = vi.fn().mockRejectedValue(error);
+      const mockFn = jest.fn().mockRejectedValue(error);
 
       await expect(transactionManager.transaction(mockFn)).rejects.toThrow(
         TransactionError
@@ -158,7 +158,7 @@ describe('TransactionManager', () => {
         isolationLevel: 'READ_COMMITTED',
         readOnly: true,
       };
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       const result = await transactionManager.transaction(mockFn, options);
 
@@ -168,7 +168,7 @@ describe('TransactionManager', () => {
 
     it('should handle manual commit', async () => {
       let capturedContext: any;
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         capturedContext = ctx;
         await ctx.commit();
         return 'success';
@@ -182,7 +182,7 @@ describe('TransactionManager', () => {
 
     it('should handle manual rollback', async () => {
       let capturedContext: any;
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         capturedContext = ctx;
         await ctx.rollback();
         return 'rolled back';
@@ -192,7 +192,7 @@ describe('TransactionManager', () => {
     });
 
     it('should support nested transactions', async () => {
-      const outerFn = vi.fn().mockImplementation(async _ctx => {
+      const outerFn = jest.fn().mockImplementation(async _ctx => {
         return await transactionManager.transaction(async _innerCtx => {
           return 'nested success';
         });
@@ -205,8 +205,8 @@ describe('TransactionManager', () => {
     });
 
     it('should handle concurrent transactions', async () => {
-      const mockFn1 = vi.fn().mockResolvedValue('tx1');
-      const mockFn2 = vi.fn().mockResolvedValue('tx2');
+      const mockFn1 = jest.fn().mockResolvedValue('tx1');
+      const mockFn2 = jest.fn().mockResolvedValue('tx2');
 
       const [result1, result2] = await Promise.all([
         transactionManager.transaction(mockFn1),
@@ -239,7 +239,7 @@ describe('TransactionManager', () => {
     });
 
     it('should execute MySQL transaction successfully', async () => {
-      const mockFn = vi.fn().mockResolvedValue('mysql success');
+      const mockFn = jest.fn().mockResolvedValue('mysql success');
 
       const result = await transactionManager.transaction(mockFn);
 
@@ -249,7 +249,7 @@ describe('TransactionManager', () => {
 
     it('should support MySQL isolation levels', async () => {
       const options: TransactionOptions = { isolationLevel: 'REPEATABLE_READ' };
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       const result = await transactionManager.transaction(mockFn, options);
 
@@ -258,7 +258,7 @@ describe('TransactionManager', () => {
 
     it('should handle MySQL transaction errors', async () => {
       const error = new Error('MySQL constraint violation');
-      const mockFn = vi.fn().mockRejectedValue(error);
+      const mockFn = jest.fn().mockRejectedValue(error);
 
       await expect(transactionManager.transaction(mockFn)).rejects.toThrow(
         TransactionError
@@ -272,7 +272,7 @@ describe('TransactionManager', () => {
     });
 
     it('should execute SQLite transaction successfully', async () => {
-      const mockFn = vi.fn().mockResolvedValue('sqlite success');
+      const mockFn = jest.fn().mockResolvedValue('sqlite success');
 
       const result = await transactionManager.transaction(mockFn);
 
@@ -284,7 +284,7 @@ describe('TransactionManager', () => {
       const options: TransactionOptions = {
         isolationLevel: 'SERIALIZABLE', // SQLite has limited isolation level support
       };
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       const result = await transactionManager.transaction(mockFn, options);
 
@@ -293,7 +293,7 @@ describe('TransactionManager', () => {
 
     it('should handle SQLite transaction errors', async () => {
       const error = new Error('SQLite database locked');
-      const mockFn = vi.fn().mockRejectedValue(error);
+      const mockFn = jest.fn().mockRejectedValue(error);
 
       await expect(transactionManager.transaction(mockFn)).rejects.toThrow(
         TransactionError
@@ -311,7 +311,7 @@ describe('TransactionManager', () => {
     });
 
     it('should generate unique transaction IDs', async () => {
-      const mockFn = vi.fn().mockImplementation(async _ctx => {
+      const mockFn = jest.fn().mockImplementation(async _ctx => {
         // We can't directly access the transaction ID, but we can test uniqueness indirectly
         return 'success';
       });
@@ -327,7 +327,7 @@ describe('TransactionManager', () => {
     });
 
     it('should clean up after successful transaction', async () => {
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       await transactionManager.transaction(mockFn);
 
@@ -335,7 +335,7 @@ describe('TransactionManager', () => {
     });
 
     it('should clean up after failed transaction', async () => {
-      const mockFn = vi.fn().mockRejectedValue(new Error('Failed'));
+      const mockFn = jest.fn().mockRejectedValue(new Error('Failed'));
 
       await expect(transactionManager.transaction(mockFn)).rejects.toThrow();
 
@@ -367,7 +367,7 @@ describe('TransactionManager', () => {
 
     it('should wrap transaction errors in TransactionError', async () => {
       const originalError = new Error('Database connection lost');
-      const mockFn = vi.fn().mockRejectedValue(originalError);
+      const mockFn = jest.fn().mockRejectedValue(originalError);
 
       try {
         await transactionManager.transaction(mockFn);
@@ -384,7 +384,7 @@ describe('TransactionManager', () => {
     it('should handle rollback failures gracefully', async () => {
       // Mock a scenario where rollback itself fails
       const mockClient = {
-        transaction: vi.fn().mockImplementation(async _fn => {
+        transaction: jest.fn().mockImplementation(async _fn => {
           throw new Error('Transaction failed');
         }),
       } as unknown as DrizzleClient<typeof schema>;
@@ -404,7 +404,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle commit failures', async () => {
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         // Simulate commit failure by throwing in commit
         await ctx.commit();
         return 'success';
@@ -416,7 +416,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle transaction timeout scenarios', async () => {
-      const mockFn = vi.fn().mockImplementation(async _ctx => {
+      const mockFn = jest.fn().mockImplementation(async _ctx => {
         // Simulate a long-running transaction
         await new Promise(resolve => setTimeout(resolve, 100));
         return 'success';
@@ -446,7 +446,7 @@ describe('TransactionManager', () => {
 
       for (const level of testCases) {
         const options: TransactionOptions = { isolationLevel: level as any };
-        const mockFn = vi.fn().mockResolvedValue('success');
+        const mockFn = jest.fn().mockResolvedValue('success');
 
         const result = await transactionManager.transaction(mockFn, options);
         expect(result).toBe('success');
@@ -457,7 +457,7 @@ describe('TransactionManager', () => {
       const options: TransactionOptions = {
         isolationLevel: 'UNKNOWN_LEVEL' as any,
       };
-      const mockFn = vi.fn().mockResolvedValue('success');
+      const mockFn = jest.fn().mockResolvedValue('success');
 
       const result = await transactionManager.transaction(mockFn, options);
       expect(result).toBe('success');
@@ -474,7 +474,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle user creation with profile transaction', async () => {
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         // Simulate creating user
         const user = await ctx.client
           .insert(users)
@@ -498,7 +498,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle batch operations in transaction', async () => {
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         const usersList = [];
 
         // Simulate batch user creation
@@ -521,7 +521,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle conditional rollback', async () => {
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         // Simulate some business logic
         const shouldRollback = true;
 
@@ -536,7 +536,7 @@ describe('TransactionManager', () => {
     });
 
     it('should handle transaction with external API calls', async () => {
-      const mockFn = vi.fn().mockImplementation(async ctx => {
+      const mockFn = jest.fn().mockImplementation(async ctx => {
         // Simulate database operation
         const user = await ctx.client
           .insert(users)

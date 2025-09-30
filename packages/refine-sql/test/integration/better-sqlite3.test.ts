@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from '../test-utils.js';
 import { createBetterSQLite3Adapter } from '../../src/adapters';
 import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';

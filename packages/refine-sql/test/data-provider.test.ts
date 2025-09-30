@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import createRefineSQL from '../src/data-provider';
 import type { SqlClient } from '../src/client';
 import type {
@@ -10,10 +10,10 @@ import type {
 
 // Mock SQL client
 const createMockClient = (): SqlClient => ({
-  query: vi.fn(),
-  execute: vi.fn(),
-  transaction: vi.fn(),
-  batch: vi.fn(),
+  query: jest.fn(),
+  execute: jest.fn(),
+  transaction: jest.fn(),
+  batch: jest.fn(),
 });
 
 describe('Data Provider Integration', () => {
@@ -193,7 +193,7 @@ describe('Data Provider Factory', () => {
 
   it('should accept SqlClientFactory', () => {
     const mockFactory = {
-      connect: vi.fn().mockResolvedValue(createMockClient()),
+      connect: jest.fn().mockResolvedValue(createMockClient()),
     };
     const dataProvider = createRefineSQL(mockFactory);
 

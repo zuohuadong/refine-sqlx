@@ -1,0 +1,80 @@
+/**
+ * Shared test utilities for bun:test and jest compatibility
+ * This module provides a unified API that works with both test frameworks
+ */
+
+// Runtime detection
+const isBun = typeof Bun !== 'undefined';
+
+// Type definitions for mock functions
+type MockFunction = {
+  mock: {
+    calls: any[][];
+    results: any[];
+    instances: any[];
+  };
+  mockImplementation: (fn: any) => MockFunction;
+  mockReturnValue: (value: any) => MockFunction;
+  mockResolvedValue: (value: any) => MockFunction;
+  mockRejectedValue: (value: any) => MockFunction;
+  mockClear: () => void;
+  mockReset: () => void;
+  mockRestore?: () => void;
+};
+
+// Re-export test functions based on runtime
+let testFramework: any;
+
+if (isBun) {
+  // Using bun:test
+  testFramework = await import('bun:test');
+} else {
+  // Using jest - dynamic import to avoid type errors
+  testFramework = await import('@jest/globals');
+}
+
+// Export unified test API
+export const {
+  describe,
+  it,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+} = testFramework;
+
+// Export jest or mock from the framework
+export const jest = testFramework.jest || testFramework;
+export const mock = testFramework.mock;
+export const spyOn = testFramework.spyOn;
+
+// Mock function helper that works with both frameworks
+export const createMock = <T extends (...args: any[]) => any>(
+  implementation?: T
+): any => {
+  if (isBun) {
+    return testFramework.mock(implementation);
+  } else {
+    return testFramework.jest.fn(implementation);
+  }
+};
+
+// Spy function helper
+export const createSpy = <T extends object, M extends keyof T>(
+  object: T,
+  method: M
+): any => {
+  if (isBun) {
+    return testFramework.spyOn(object, method);
+  } else {
+    return testFramework.jest.spyOn(object, method);
+  }
+};
+
+// Helper to check if running in bun
+export const isRunningInBun = (): boolean => isBun;
+
+// Helper to check if running in node
+export const isRunningInNode = (): boolean => !isBun;

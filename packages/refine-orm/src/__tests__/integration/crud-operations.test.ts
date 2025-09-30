@@ -3,7 +3,7 @@
  * Tests all CRUD operations across PostgreSQL, MySQL, and SQLite databases
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from './test-utils.js';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 import {
   DatabaseTestSetup,

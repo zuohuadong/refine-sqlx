@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
 import {
   MorphQueryBuilder,
@@ -69,12 +69,12 @@ const schema = { comments, posts, videos, users, taggables, tags };
 // Create a chainable mock query object
 const createChainableMock = (finalResult: any) => {
   const chainable = {
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockReturnThis(),
-    execute: vi.fn().mockResolvedValue(finalResult),
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    offset: jest.fn().mockReturnThis(),
+    execute: jest.fn().mockResolvedValue(finalResult),
   };
 
   // Make all methods return the chainable object
@@ -90,7 +90,7 @@ const createChainableMock = (finalResult: any) => {
 // Mock drizzle client
 const mockClient: DrizzleClient<typeof schema> = {
   schema,
-  select: vi.fn().mockImplementation(fields => {
+  select: jest.fn().mockImplementation(fields => {
     if (fields && fields.count) {
       // Count query
       return createChainableMock([{ count: 2 }]);
@@ -114,11 +114,11 @@ const mockClient: DrizzleClient<typeof schema> = {
       ]);
     }
   }),
-  insert: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  execute: vi.fn(),
-  transaction: vi.fn(),
+  insert: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  execute: jest.fn(),
+  transaction: jest.fn(),
 };
 
 // Morph configuration
@@ -249,14 +249,14 @@ describe('Morph Query Builder', () => {
     // Mock the related data queries
     const mockClientWithRelations = {
       ...mockClient,
-      select: vi.fn().mockImplementation(fields => {
+      select: jest.fn().mockImplementation(fields => {
         if (fields && fields.count) {
           // Count query
           return createChainableMock([{ count: 2 }]);
         } else {
           // Regular select query
           return {
-            from: vi.fn().mockImplementation(table => {
+            from: jest.fn().mockImplementation(table => {
               if (table === posts) {
                 // Posts query
                 return createChainableMock([
@@ -337,18 +337,18 @@ describe('Morph Query Builder', () => {
     // Mock count query
     const countMockClient = {
       ...mockClient,
-      select: vi
+      select: jest
         .fn()
         .mockReturnValue({
-          from: vi
+          from: jest
             .fn()
             .mockReturnValue({
-              where: vi
+              where: jest
                 .fn()
                 .mockReturnValue({
-                  execute: vi.fn().mockResolvedValue([{ count: 5 }]),
+                  execute: jest.fn().mockResolvedValue([{ count: 5 }]),
                 }),
-              execute: vi.fn().mockResolvedValue([{ count: 5 }]),
+              execute: jest.fn().mockResolvedValue([{ count: 5 }]),
             }),
         }),
     };
@@ -369,30 +369,30 @@ describe('Morph Query Builder', () => {
   it('should handle empty results gracefully', async () => {
     const emptyMockClient = {
       ...mockClient,
-      select: vi
+      select: jest
         .fn()
         .mockReturnValue({
-          from: vi
+          from: jest
             .fn()
             .mockReturnValue({
-              where: vi
+              where: jest
                 .fn()
                 .mockReturnValue({
-                  orderBy: vi
+                  orderBy: jest
                     .fn()
                     .mockReturnValue({
-                      limit: vi
+                      limit: jest
                         .fn()
                         .mockReturnValue({
-                          offset: vi
+                          offset: jest
                             .fn()
                             .mockReturnValue({
-                              execute: vi.fn().mockResolvedValue([]),
+                              execute: jest.fn().mockResolvedValue([]),
                             }),
                         }),
                     }),
                 }),
-              execute: vi.fn().mockResolvedValue([]),
+              execute: jest.fn().mockResolvedValue([]),
             }),
         }),
     };
@@ -414,13 +414,13 @@ describe('Morph Query Builder', () => {
   it('should handle errors gracefully', async () => {
     const errorMockClient = {
       ...mockClient,
-      select: vi
+      select: jest
         .fn()
         .mockReturnValue({
-          from: vi
+          from: jest
             .fn()
             .mockReturnValue({
-              execute: vi.fn().mockRejectedValue(new Error('Database error')),
+              execute: jest.fn().mockRejectedValue(new Error('Database error')),
             }),
         }),
     };
@@ -471,23 +471,23 @@ describe('Enhanced Morph Query Builder', () => {
   it('should support many-to-many polymorphic relationships', async () => {
     const manyToManyMockClient = {
       ...mockClient,
-      select: vi.fn().mockImplementation(fields => {
+      select: jest.fn().mockImplementation(fields => {
         if (fields && fields.count) {
           return {
-            from: vi
+            from: jest
               .fn()
               .mockReturnValue({
-                execute: vi.fn().mockResolvedValue([{ count: 2 }]),
+                execute: jest.fn().mockResolvedValue([{ count: 2 }]),
               }),
           };
         } else {
           return {
-            from: vi.fn().mockImplementation(table => {
+            from: jest.fn().mockImplementation(table => {
               if (table === taggables) {
                 // Pivot table query
                 return {
-                  where: vi.fn().mockReturnValue({
-                    execute: vi.fn().mockResolvedValue([
+                  where: jest.fn().mockReturnValue({
+                    execute: jest.fn().mockResolvedValue([
                       {
                         id: 1,
                         tag_id: 1,
@@ -505,10 +505,10 @@ describe('Enhanced Morph Query Builder', () => {
                 };
               } else if (table === posts) {
                 return {
-                  where: vi
+                  where: jest
                     .fn()
                     .mockReturnValue({
-                      execute: vi
+                      execute: jest
                         .fn()
                         .mockResolvedValue([
                           {
@@ -521,10 +521,10 @@ describe('Enhanced Morph Query Builder', () => {
                 };
               } else if (table === videos) {
                 return {
-                  where: vi
+                  where: jest
                     .fn()
                     .mockReturnValue({
-                      execute: vi
+                      execute: jest
                         .fn()
                         .mockResolvedValue([
                           {
@@ -538,19 +538,19 @@ describe('Enhanced Morph Query Builder', () => {
               } else {
                 // Base query for tags
                 return {
-                  where: vi
+                  where: jest
                     .fn()
                     .mockReturnValue({
-                      orderBy: vi
+                      orderBy: jest
                         .fn()
                         .mockReturnValue({
-                          limit: vi
+                          limit: jest
                             .fn()
                             .mockReturnValue({
-                              offset: vi
+                              offset: jest
                                 .fn()
                                 .mockReturnValue({
-                                  execute: vi
+                                  execute: jest
                                     .fn()
                                     .mockResolvedValue([
                                       {
@@ -563,7 +563,7 @@ describe('Enhanced Morph Query Builder', () => {
                             }),
                         }),
                     }),
-                  execute: vi
+                  execute: jest
                     .fn()
                     .mockResolvedValue([
                       { id: 1, name: 'Technology', createdAt: new Date() },
@@ -592,25 +592,25 @@ describe('Enhanced Morph Query Builder', () => {
   it('should support nested polymorphic relationships', async () => {
     const nestedMockClient = {
       ...mockClient,
-      select: vi
+      select: jest
         .fn()
         .mockImplementation(() => ({
-          from: vi
+          from: jest
             .fn()
             .mockImplementation(() => ({
-              where: vi
+              where: jest
                 .fn()
                 .mockReturnValue({
-                  orderBy: vi
+                  orderBy: jest
                     .fn()
                     .mockReturnValue({
-                      limit: vi
+                      limit: jest
                         .fn()
                         .mockReturnValue({
-                          offset: vi
+                          offset: jest
                             .fn()
                             .mockReturnValue({
-                              execute: vi
+                              execute: jest
                                 .fn()
                                 .mockResolvedValue([
                                   {
@@ -623,7 +623,7 @@ describe('Enhanced Morph Query Builder', () => {
                         }),
                     }),
                 }),
-              execute: vi
+              execute: jest
                 .fn()
                 .mockResolvedValue([
                   {
@@ -665,13 +665,13 @@ describe('Enhanced Morph Query Builder', () => {
 
     const customLoaderMockClient = {
       ...mockClient,
-      select: vi
+      select: jest
         .fn()
         .mockReturnValue({
-          from: vi
+          from: jest
             .fn()
             .mockReturnValue({
-              execute: vi
+              execute: jest
                 .fn()
                 .mockResolvedValue([
                   { id: 1, name: 'Technology', createdAt: new Date() },

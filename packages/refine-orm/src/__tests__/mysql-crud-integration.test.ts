@@ -1,42 +1,42 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import { MySQLAdapter, createMySQLProvider } from '../adapters/mysql';
 import { createProvider } from '../core/data-provider';
 import type { DatabaseConfig } from '../types/config';
 
 // Mock drizzle-orm/mysql2 to avoid actual database connection
-vi.mock('drizzle-orm/mysql2', () => ({
-  drizzle: vi.fn((connection, options) => ({
+jest.mock('drizzle-orm/mysql2', () => ({
+  drizzle: jest.fn((connection, options) => ({
     schema: options?.schema || {},
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          execute: vi.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
+    select: jest.fn(() => ({
+      from: jest.fn(() => ({
+        where: jest.fn(() => ({
+          execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
         })),
-        execute: vi.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
+        execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
       })),
     })),
-    insert: vi.fn(() => ({
-      values: vi.fn(() => ({
-        returning: vi.fn(() => ({
-          execute: vi.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
+    insert: jest.fn(() => ({
+      values: jest.fn(() => ({
+        returning: jest.fn(() => ({
+          execute: jest.fn(() => Promise.resolve([{ id: 1, name: 'Test User' }])),
         })),
       })),
     })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(() => ({
-          returning: vi.fn(() => ({
-            execute: vi.fn(() =>
+    update: jest.fn(() => ({
+      set: jest.fn(() => ({
+        where: jest.fn(() => ({
+          returning: jest.fn(() => ({
+            execute: jest.fn(() =>
               Promise.resolve([{ id: 1, name: 'Updated User' }])
             ),
           })),
         })),
       })),
     })),
-    delete: vi.fn(() => ({
-      where: vi.fn(() => ({
-        returning: vi.fn(() => ({
-          execute: vi.fn(() =>
+    delete: jest.fn(() => ({
+      where: jest.fn(() => ({
+        returning: jest.fn(() => ({
+          execute: jest.fn(() =>
             Promise.resolve([{ id: 1, name: 'Deleted User' }])
           ),
         })),
@@ -46,27 +46,27 @@ vi.mock('drizzle-orm/mysql2', () => ({
 }));
 
 // Mock mysql2/promise to avoid actual database connection
-vi.mock('mysql2/promise', () => ({
+jest.mock('mysql2/promise', () => ({
   default: {
-    createConnection: vi.fn(() =>
+    createConnection: jest.fn(() =>
       Promise.resolve({
-        execute: vi.fn(),
-        end: vi.fn(),
-        beginTransaction: vi.fn(),
-        commit: vi.fn(),
-        rollback: vi.fn(),
+        execute: jest.fn(),
+        end: jest.fn(),
+        beginTransaction: jest.fn(),
+        commit: jest.fn(),
+        rollback: jest.fn(),
       })
     ),
-    createPool: vi.fn(() => ({
-      execute: vi.fn(),
-      end: vi.fn(),
-      getConnection: vi.fn(() =>
+    createPool: jest.fn(() => ({
+      execute: jest.fn(),
+      end: jest.fn(),
+      getConnection: jest.fn(() =>
         Promise.resolve({
-          execute: vi.fn(),
-          release: vi.fn(),
-          beginTransaction: vi.fn(),
-          commit: vi.fn(),
-          rollback: vi.fn(),
+          execute: jest.fn(),
+          release: jest.fn(),
+          beginTransaction: jest.fn(),
+          commit: jest.fn(),
+          rollback: jest.fn(),
         })
       ),
     })),

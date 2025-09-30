@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, jest, test } from './test-utils.js';
 import detectSqlite from '../src/detect-sqlite';
 
 describe('Runtime Detection', () => {
@@ -28,14 +28,14 @@ describe('SQLite Detection', () => {
   });
 
   it('should create factory for D1 database object', () => {
-    const mockD1 = { prepare: vi.fn() };
+    const mockD1 = { prepare: jest.fn() };
     const factory = detectSqlite(mockD1 as any);
     expect(factory).toBeDefined();
     expect(factory.connect).toBeInstanceOf(Function);
   });
 
   it('should create factory for database objects with prepare method', () => {
-    const mockDB = { prepare: vi.fn() };
+    const mockDB = { prepare: jest.fn() };
     const factory = detectSqlite(mockDB as any);
     expect(factory).toBeDefined();
     expect(factory.connect).toBeInstanceOf(Function);

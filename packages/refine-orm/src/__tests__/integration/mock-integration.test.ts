@@ -4,7 +4,7 @@
  * This provides comprehensive integration testing without requiring real database connections
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from './test-utils.js';
 import {
   createMockDrizzleClient,
   MockDatabaseAdapter,

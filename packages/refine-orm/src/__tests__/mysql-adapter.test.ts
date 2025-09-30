@@ -38,14 +38,14 @@ const users = mysqlTable('users', {
 const schema = { users };
 
 // Mock mysql2 module
-vi.mock('mysql2/promise', () => ({
-  default: { createConnection: vi.fn(), createPool: vi.fn() },
-  createConnection: vi.fn(),
-  createPool: vi.fn(),
+jest.mock('mysql2/promise', () => ({
+  default: { createConnection: jest.fn(), createPool: jest.fn() },
+  createConnection: jest.fn(),
+  createPool: jest.fn(),
 }));
 
 // Mock drizzle-orm/mysql2
-vi.mock('drizzle-orm/mysql2', () => ({ drizzle: vi.fn() }));
+jest.mock('drizzle-orm/mysql2', () => ({ drizzle: jest.fn() }));
 
 describe('MySQL Adapter', () => {
   let mockConnection: any;
@@ -70,46 +70,46 @@ describe('MySQL Adapter', () => {
   });
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
 
     mockConnection = {
-      execute: vi.fn(),
-      query: vi.fn(),
-      beginTransaction: vi.fn(),
-      commit: vi.fn(),
-      rollback: vi.fn(),
-      end: vi.fn(),
-      ping: vi.fn().mockResolvedValue(true),
+      execute: jest.fn(),
+      query: jest.fn(),
+      beginTransaction: jest.fn(),
+      commit: jest.fn(),
+      rollback: jest.fn(),
+      end: jest.fn(),
+      ping: jest.fn().mockResolvedValue(true),
     };
 
     mockPool = {
-      execute: vi.fn(),
-      query: vi.fn(),
-      getConnection: vi.fn().mockResolvedValue(mockConnection),
-      end: vi.fn(),
+      execute: jest.fn(),
+      query: jest.fn(),
+      getConnection: jest.fn().mockResolvedValue(mockConnection),
+      end: jest.fn(),
     };
 
     const mysql2 = await import('mysql2/promise');
-    vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+    mysql2.default.createConnection.mockResolvedValue(
       mockConnection
     );
-    vi.mocked(mysql2.default.createPool).mockResolvedValue(mockPool);
-    vi.mocked(mysql2.createConnection).mockResolvedValue(mockConnection);
-    vi.mocked(mysql2.createPool).mockResolvedValue(mockPool);
+    mysql2.default.createPool.mockResolvedValue(mockPool);
+    mysql2.createConnection.mockResolvedValue(mockConnection);
+    mysql2.createPool.mockResolvedValue(mockPool);
 
     const drizzle = await import('drizzle-orm/mysql2');
-    vi.mocked(drizzle.drizzle).mockReturnValue({
-      select: vi.fn(),
-      insert: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      execute: vi.fn(),
-      transaction: vi.fn(),
+    drizzle.drizzle.mockReturnValue({
+      select: jest.fn(),
+      insert: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      execute: jest.fn(),
+      transaction: jest.fn(),
       mode: 'default' as const,
       _: {},
       query: {},
-      $with: vi.fn(),
-      with: vi.fn(),
+      $with: jest.fn(),
+      with: jest.fn(),
       schema: {},
       $client: {} as any,
     } as any);
@@ -221,16 +221,16 @@ describe('MySQL Adapter', () => {
       const connectionError = new Error('Connection refused');
 
       // Mock both pool and connection creation to throw error
-      vi.mocked(mysql2.default.createConnection).mockImplementation(() => {
+      mysql2.default.createConnection.mockImplementation(() => {
         throw connectionError;
       });
-      vi.mocked(mysql2.createConnection).mockImplementation(() => {
+      mysql2.createConnection.mockImplementation(() => {
         throw connectionError;
       });
-      vi.mocked(mysql2.default.createPool).mockImplementation(() => {
+      mysql2.default.createPool.mockImplementation(() => {
         throw connectionError;
       });
-      vi.mocked(mysql2.createPool).mockImplementation(() => {
+      mysql2.createPool.mockImplementation(() => {
         throw connectionError;
       });
 
@@ -444,16 +444,16 @@ describe('MySQL Adapter', () => {
       // Mock successful connection
       const mysql2 = await import('mysql2/promise');
       const mockConnection = {
-        execute: vi
+        execute: jest
           .fn()
           .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
-        end: vi.fn().mockResolvedValue(undefined),
+        end: jest.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+      mysql2.default.createConnection.mockResolvedValue(
         mockConnection as any
       );
-      vi.mocked(mysql2.createConnection).mockResolvedValue(
+      mysql2.createConnection.mockResolvedValue(
         mockConnection as any
       );
 
@@ -468,10 +468,10 @@ describe('MySQL Adapter', () => {
 
     it('should handle connection test failures', async () => {
       const mysql2 = await import('mysql2/promise');
-      vi.mocked(mysql2.default.createConnection).mockRejectedValue(
+      mysql2.default.createConnection.mockRejectedValue(
         new Error('Connection refused')
       );
-      vi.mocked(mysql2.createConnection).mockRejectedValue(
+      mysql2.createConnection.mockRejectedValue(
         new Error('Connection refused')
       );
 
@@ -487,16 +487,16 @@ describe('MySQL Adapter', () => {
       // Mock successful connection
       const mysql2 = await import('mysql2/promise');
       const mockConnection = {
-        execute: vi
+        execute: jest
           .fn()
           .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
-        end: vi.fn().mockResolvedValue(undefined),
+        end: jest.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(mysql2.default.createConnection).mockResolvedValue(
+      mysql2.default.createConnection.mockResolvedValue(
         mockConnection as any
       );
-      vi.mocked(mysql2.createConnection).mockResolvedValue(
+      mysql2.createConnection.mockResolvedValue(
         mockConnection as any
       );
 
@@ -559,10 +559,10 @@ describe('MySQL Adapter', () => {
 
       // Mock createPool to throw error
       const poolError = new Error('Pool creation failed');
-      vi.mocked(mysql2.default.createPool).mockImplementation(() => {
+      mysql2.default.createPool.mockImplementation(() => {
         throw poolError;
       });
-      vi.mocked(mysql2.createPool).mockImplementation(() => {
+      mysql2.createPool.mockImplementation(() => {
         throw poolError;
       });
 
