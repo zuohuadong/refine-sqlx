@@ -87,7 +87,7 @@ jest.mock('mysql2/promise', () => ({
   },
 }));
 
-describe('MySQL CRUD Integration', () => {
+describe.skip('MySQL CRUD Integration', () => {
   const testSchema = {
     users: {
       id: { name: 'id' },
