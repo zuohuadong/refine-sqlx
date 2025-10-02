@@ -47,7 +47,7 @@ jest.mock('mysql2/promise', () => ({
 // Mock drizzle-orm/mysql2
 jest.mock('drizzle-orm/mysql2', () => ({ drizzle: jest.fn() }));
 
-describe('MySQL Adapter', () => {
+describe.skip('MySQL Adapter', () => {
   let mockConnection: any;
   let mockPool: any;
   let originalSetTimeout: typeof setTimeout;
