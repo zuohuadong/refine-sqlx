@@ -73,47 +73,47 @@ describe('MySQL Adapter', () => {
     jest.clearAllMocks();
 
     mockConnection = {
-      execute: jest.fn(),
-      query: jest.fn(),
-      beginTransaction: jest.fn(),
-      commit: jest.fn(),
-      rollback: jest.fn(),
-      end: jest.fn(),
-      ping: jest.fn().mockResolvedValue(true),
+      execute: jest.fn() as any,
+      query: jest.fn() as any,
+      beginTransaction: jest.fn() as any,
+      commit: jest.fn() as any,
+      rollback: jest.fn() as any,
+      end: jest.fn() as any,
+      ping: jest.fn().mockResolvedValue(true) as any,
     };
 
     mockPool = {
-      execute: jest.fn(),
-      query: jest.fn(),
-      getConnection: jest.fn().mockResolvedValue(mockConnection),
-      end: jest.fn(),
+      execute: jest.fn() as any,
+      query: jest.fn() as any,
+      getConnection: jest.fn().mockResolvedValue(mockConnection) as any,
+      end: jest.fn() as any,
     };
 
     const mysql2 = await import('mysql2/promise');
     const { default: mysql2Default, createConnection, createPool } = mysql2;
 
     // Mock the mysql2 functions
-    (mysql2Default.createConnection as jest.Mock).mockResolvedValue(
+    (mysql2Default.createConnection as any as jest.Mock).mockResolvedValue(
       mockConnection
     );
-    (mysql2Default.createPool as jest.Mock).mockResolvedValue(mockPool);
-    (createConnection as jest.Mock).mockResolvedValue(mockConnection);
-    (createPool as jest.Mock).mockResolvedValue(mockPool);
+    (mysql2Default.createPool as any as jest.Mock).mockResolvedValue(mockPool);
+    (createConnection as any as jest.Mock).mockResolvedValue(mockConnection);
+    (createPool as any as jest.Mock).mockResolvedValue(mockPool);
 
     // Mock drizzle
     const drizzleModule = await import('drizzle-orm/mysql2');
-    (drizzleModule.drizzle as jest.Mock).mockReturnValue({
-      select: jest.fn(),
-      insert: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      execute: jest.fn(),
-      transaction: jest.fn(),
+    (drizzleModule.drizzle as any as jest.Mock).mockReturnValue({
+      select: jest.fn() as any,
+      insert: jest.fn() as any,
+      update: jest.fn() as any,
+      delete: jest.fn() as any,
+      execute: jest.fn() as any,
+      transaction: jest.fn() as any,
       mode: 'default' as const,
       _: {},
       query: {},
-      $with: jest.fn(),
-      with: jest.fn(),
+      $with: jest.fn() as any,
+      with: jest.fn() as any,
       schema: {},
       $client: {} as any,
     } as any);
@@ -450,8 +450,10 @@ describe('MySQL Adapter', () => {
       const mockConnection = {
         execute: jest
           .fn()
-          .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
-        end: jest.fn().mockResolvedValue(undefined),
+          .mockResolvedValue([
+            [{ version: '8.0.28', now: new Date() }],
+          ]) as any,
+        end: jest.fn().mockResolvedValue(undefined) as any,
       };
 
       (mysql2.default.createConnection as any).mockResolvedValue(
@@ -491,8 +493,10 @@ describe('MySQL Adapter', () => {
       const mockConnection = {
         execute: jest
           .fn()
-          .mockResolvedValue([[{ version: '8.0.28', now: new Date() }]]),
-        end: jest.fn().mockResolvedValue(undefined),
+          .mockResolvedValue([
+            [{ version: '8.0.28', now: new Date() }],
+          ]) as any,
+        end: jest.fn().mockResolvedValue(undefined) as any,
       };
 
       (mysql2.default.createConnection as any).mockResolvedValue(
