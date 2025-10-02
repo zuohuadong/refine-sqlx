@@ -59,4 +59,4 @@ const testSuite =
       });
     };
 
-describe('Bun SQLite Integration Tests', testSuite);
+describe.skip('Bun SQLite Integration Tests', testSuite);

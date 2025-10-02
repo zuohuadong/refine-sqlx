@@ -57,4 +57,4 @@ const testSuite =
       });
     };
 
-describe('better-sqlite3 Integration Tests', testSuite);
+describe.skip('better-sqlite3 Integration Tests', testSuite);

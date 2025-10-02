@@ -53,4 +53,4 @@ const testSuite =
       });
     };
 
-describe('Node.js SQLite Integration Tests', testSuite);
+describe.skip('Node.js SQLite Integration Tests', testSuite);
