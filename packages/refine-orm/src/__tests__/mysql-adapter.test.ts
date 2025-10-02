@@ -2,11 +2,11 @@ import {
   describe,
   it,
   expect,
-  jest,
   beforeEach,
   beforeAll,
   afterAll,
 } from './test-utils.js';
+import { jest } from '@jest/globals';
 import {
   MySQLAdapter,
   createMySQLProvider,
@@ -90,13 +90,19 @@ describe('MySQL Adapter', () => {
     };
 
     const mysql2 = await import('mysql2/promise');
-    (mysql2.default.createConnection as any).mockResolvedValue(mockConnection);
-    (mysql2.default.createPool as any).mockResolvedValue(mockPool);
-    (mysql2.createConnection as any).mockResolvedValue(mockConnection);
-    (mysql2.createPool as any).mockResolvedValue(mockPool);
+    const { default: mysql2Default, createConnection, createPool } = mysql2;
 
-    const drizzle = await import('drizzle-orm/mysql2');
-    (drizzle.drizzle as any).mockReturnValue({
+    // Mock the mysql2 functions
+    (mysql2Default.createConnection as jest.Mock).mockResolvedValue(
+      mockConnection
+    );
+    (mysql2Default.createPool as jest.Mock).mockResolvedValue(mockPool);
+    (createConnection as jest.Mock).mockResolvedValue(mockConnection);
+    (createPool as jest.Mock).mockResolvedValue(mockPool);
+
+    // Mock drizzle
+    const drizzleModule = await import('drizzle-orm/mysql2');
+    (drizzleModule.drizzle as jest.Mock).mockReturnValue({
       select: jest.fn(),
       insert: jest.fn(),
       update: jest.fn(),
@@ -448,7 +454,9 @@ describe('MySQL Adapter', () => {
         end: jest.fn().mockResolvedValue(undefined),
       };
 
-      (mysql2.default.createConnection as any).mockResolvedValue(mockConnection as any);
+      (mysql2.default.createConnection as any).mockResolvedValue(
+        mockConnection as any
+      );
       (mysql2.createConnection as any).mockResolvedValue(mockConnection as any);
 
       const result = await testMySQLConnection(
@@ -487,7 +495,9 @@ describe('MySQL Adapter', () => {
         end: jest.fn().mockResolvedValue(undefined),
       };
 
-      (mysql2.default.createConnection as any).mockResolvedValue(mockConnection as any);
+      (mysql2.default.createConnection as any).mockResolvedValue(
+        mockConnection as any
+      );
       (mysql2.createConnection as any).mockResolvedValue(mockConnection as any);
 
       const result = await testMySQLConnection(

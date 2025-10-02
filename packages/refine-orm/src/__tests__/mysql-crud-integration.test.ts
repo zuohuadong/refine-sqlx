@@ -6,9 +6,9 @@ import {
   afterEach,
   beforeAll,
   afterAll,
-  jest,
   test,
 } from './test-utils.js';
+import { jest } from '@jest/globals';
 import { MySQLAdapter, createMySQLProvider } from '../adapters/mysql';
 import { createProvider } from '../core/data-provider';
 import type { DatabaseConfig } from '../types/config';
