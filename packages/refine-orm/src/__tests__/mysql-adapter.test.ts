@@ -5,8 +5,8 @@ import {
   beforeEach,
   beforeAll,
   afterAll,
+  jest,
 } from './test-utils.js';
-import { jest } from '@jest/globals';
 import {
   MySQLAdapter,
   createMySQLProvider,

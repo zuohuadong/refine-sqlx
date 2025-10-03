@@ -25,8 +25,20 @@ if (isBun) {
   // Using bun:test
   testFramework = await import('bun:test');
 } else {
-  // Using jest - dynamic import to avoid type errors
-  testFramework = await import('@jest/globals');
+  // Using jest - use globals instead of import
+  // In Jest, describe, it, test, expect, etc. are globally available
+  testFramework = {
+    describe: globalThis.describe,
+    it: globalThis.it,
+    test: globalThis.test,
+    expect: globalThis.expect,
+    beforeAll: globalThis.beforeAll,
+    afterAll: globalThis.afterAll,
+    beforeEach: globalThis.beforeEach,
+    afterEach: globalThis.afterEach,
+    jest: globalThis.jest,
+    spyOn: globalThis.jest?.spyOn,
+  };
 }
 
 // Export unified test API

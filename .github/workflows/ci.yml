@@ -88,7 +88,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests with Node.js ${{ matrix.node-version }}..."
-          npx vitest run --reporter=verbose
+          npm run test
 
       - name: Run integration tests - SQLite
         if: matrix.database == 'sqlite'
@@ -96,10 +96,10 @@ jobs:
           cd packages/refine-sql
           echo "Running Bun SQLite integration tests with Bun runtime..."
           bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests with Vitest..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
-          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
-          npx vitest run test/integration/bun.test.ts --reporter=verbose
+          echo "Running better-sqlite3 integration tests with Jest..."
+          npm run test -- test/integration/better-sqlite3.test.ts
+          echo "Running Bun SQLite integration tests with Jest (should skip)..."
+          npm run test -- test/integration/bun.test.ts
 
       - name: Install MySQL client
         if: matrix.database == 'mysql'
@@ -129,7 +129,7 @@ jobs:
           echo "MySQL connection successful, running tests..."
           echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
           cd packages/refine-orm
-          npx vitest run src/__tests__/integration --reporter=verbose
+          npm run test -- src/__tests__/integration
 
       - name: Install PostgreSQL client
         if: matrix.database == 'postgresql'
@@ -154,7 +154,7 @@ jobs:
           echo "PostgreSQL connection successful, running tests..."
           echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
           cd packages/refine-orm
-          npx vitest run src/__tests__/integration --reporter=verbose
+          npm run test -- src/__tests__/integration
 
   lint:
     name: Lint
@@ -231,17 +231,17 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests with Node.js 18..."
-          npx vitest run --reporter=verbose
+          npm run test
 
       - name: Run integration tests - SQLite
         run: |
           cd packages/refine-sql
           echo "Running Bun SQLite integration tests with Bun runtime..."
           bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests with Vitest..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
-          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
-          npx vitest run test/integration/bun.test.ts --reporter=verbose
+          echo "Running better-sqlite3 integration tests with Jest..."
+          npm run test -- test/integration/better-sqlite3.test.ts
+          echo "Running Bun SQLite integration tests with Jest (should skip)..."
+          npm run test -- test/integration/bun.test.ts
 
   build:
     name: Build
