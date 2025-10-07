@@ -27,8 +27,20 @@ if (isBun) {
 } else {
   // Using jest - use globals instead of import
   // In Jest, describe, it, test, expect, etc. are globally available
-  // Use type assertion to access jest globals on globalThis
-  const g = globalThis as any;
+  // Access them through globalThis with proper typing
+  interface JestGlobals {
+    describe: any;
+    it: any;
+    test: any;
+    expect: any;
+    beforeAll: any;
+    afterAll: any;
+    beforeEach: any;
+    afterEach: any;
+    jest: any;
+  }
+
+  const g = globalThis as typeof globalThis & JestGlobals;
   testFramework = {
     describe: g.describe,
     it: g.it,
