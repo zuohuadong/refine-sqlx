@@ -249,19 +249,19 @@ describe('BaseDatabaseAdapter', () => {
     });
 
     it('should begin transaction successfully', async () => {
-      await expect(adapter.beginTransaction()).resolves.not.toThrow();
+      await expect(adapter.beginTransaction()).resolves.toBeUndefined();
     });
 
     it('should commit transaction successfully', async () => {
       await adapter.beginTransaction();
 
-      await expect(adapter.commitTransaction()).resolves.not.toThrow();
+      await expect(adapter.commitTransaction()).resolves.toBeUndefined();
     });
 
     it('should rollback transaction successfully', async () => {
       await adapter.beginTransaction();
 
-      await expect(adapter.rollbackTransaction()).resolves.not.toThrow();
+      await expect(adapter.rollbackTransaction()).resolves.toBeUndefined();
     });
 
     it('should throw error when beginning transaction without connection', async () => {
@@ -469,7 +469,7 @@ describe('BaseDatabaseAdapter', () => {
     });
 
     it('should handle disconnect without connect', async () => {
-      await expect(adapter.disconnect()).resolves.not.toThrow();
+      await expect(adapter.disconnect()).resolves.toBeUndefined();
       expect(adapter.isConnectionActive()).toBe(false);
     });
 

@@ -71,10 +71,22 @@ export const {
 const createDescribeWithSkipIf = () => {
   const desc: any = baseDescribe;
 
-  // Add skipIf for jest compatibility
+  // Add skipIf for bun compatibility (Bun already has native skipIf)
+  // For Jest, we need to add a custom implementation
   if (!isBun) {
     desc.skipIf = (condition: boolean) => {
-      return condition ? baseDescribe.skip : baseDescribe;
+      // Return a wrapper function that accepts (name, fn) parameters
+      // This wrapper either calls describe.skip or describe based on the condition
+      const wrapper = (name: string, fn: () => void) => {
+        if (condition) {
+          return baseDescribe.skip(name, fn);
+        } else {
+          return baseDescribe(name, fn);
+        }
+      };
+
+      // Copy over any properties from describe (like .only, .skip, etc)
+      return Object.assign(wrapper, baseDescribe);
     };
   }
 
