@@ -6,32 +6,12 @@
 // Runtime detection
 const isBun = typeof Bun !== 'undefined';
 
-// Type definitions for mock functions
-type MockFunction = {
-  mock: { calls: any[][]; results: any[]; instances: any[] };
-  mockImplementation: (fn: any) => MockFunction;
-  mockReturnValue: (value: any) => MockFunction;
-  mockResolvedValue: (value: any) => MockFunction;
-  mockRejectedValue: (value: any) => MockFunction;
-  mockClear: () => void;
-  mockReset: () => void;
-  mockRestore?: () => void;
-};
+// For Jest ES module mode, import from @jest/globals
+// This import is conditional and will only be resolved when not in Bun
+import * as jestGlobalsImport from '@jest/globals';
 
-// Type definitions for Jest globals
-interface JestGlobals {
-  describe: any;
-  it: any;
-  test: any;
-  expect: any;
-  beforeAll: any;
-  afterAll: any;
-  beforeEach: any;
-  afterEach: any;
-  jest: any;
-}
-
-// Lazy loader for bun:test to avoid top-level await
+// For Bun, we need to dynamically import bun:test
+// This is lazy to avoid top-level await
 let bunTest: any = null;
 async function getBunTest() {
   if (!bunTest && isBun) {
@@ -40,11 +20,11 @@ async function getBunTest() {
   return bunTest;
 }
 
-// For Jest, directly access globals - they're set up before test modules load
-const g = globalThis as typeof globalThis & JestGlobals;
+// Select the Jest globals source based on runtime
+const jestGlobals = isBun ? null : jestGlobalsImport;
 
-// Export test functions with conditional logic
-const baseDescribe: any =
+// Export test functions
+export const describe: any =
   isBun ?
     new Proxy(
       {},
@@ -53,70 +33,45 @@ const baseDescribe: any =
           (bunTest || (async () => await getBunTest())()).describe?.[prop],
       }
     )
-  : g.describe;
+  : jestGlobals.describe;
 
-// Add skipIf support for Jest (Bun has it natively)
-if (!isBun && baseDescribe) {
-  baseDescribe.skipIf = (condition: boolean) => {
-    // Return a wrapper function that accepts (name, fn) parameters
+//  Add skipIf support for Jest (Bun has it natively)
+if (!isBun && describe) {
+  (describe as any).skipIf = (condition: boolean) => {
     return (name: string, fn: () => void) => {
       if (condition) {
-        return baseDescribe.skip(name, fn);
+        return (describe as any).skip(name, fn);
       } else {
-        return baseDescribe(name, fn);
+        return describe(name, fn);
       }
     };
   };
 }
 
-export const describe = baseDescribe;
-
-export const it: any = isBun ? bunTest?.it || g.it : g.it;
-
-export const test: any = isBun ? bunTest?.test || g.test : g.test;
-
-export const expect: any = isBun ? bunTest?.expect || g.expect : g.expect;
-
+export const it: any = isBun ? bunTest?.it : jestGlobals.it;
+export const test: any = isBun ? bunTest?.test : jestGlobals.test;
+export const expect: any = isBun ? bunTest?.expect : jestGlobals.expect;
 export const beforeAll: any =
-  isBun ? bunTest?.beforeAll || g.beforeAll : g.beforeAll;
-
-export const afterAll: any =
-  isBun ? bunTest?.afterAll || g.afterAll : g.afterAll;
-
+  isBun ? bunTest?.beforeAll : jestGlobals.beforeAll;
+export const afterAll: any = isBun ? bunTest?.beforeAll : jestGlobals.afterAll;
 export const beforeEach: any =
-  isBun ? bunTest?.beforeEach || g.beforeEach : g.beforeEach;
-
+  isBun ? bunTest?.beforeEach : jestGlobals.beforeEach;
 export const afterEach: any =
-  isBun ? bunTest?.afterEach || g.afterEach : g.afterEach;
-
-// Export jest - IMPORTANT: For Jest, this must be available synchronously
-// Use Proxy to defer access to runtime when jest globals are available
+  isBun ? bunTest?.afterEach : jestGlobals.afterEach;
 export const jest: any =
   isBun ?
     {
       get fn() {
-        return bunTest?.mock || g.jest?.fn;
+        return bunTest?.mock;
       },
       get spyOn() {
-        return bunTest?.spyOn || g.jest?.spyOn;
+        return bunTest?.spyOn;
       },
       get mock() {
-        return bunTest?.mock || g.jest?.mock;
+        return bunTest?.mock;
       },
     }
-  : new Proxy(
-      {},
-      {
-        get(target, prop) {
-          // Access jest from globalThis at runtime, not at module load time
-          const jestGlobal = (globalThis as any).jest;
-          if (jestGlobal && prop in jestGlobal) {
-            return jestGlobal[prop];
-          }
-          return undefined;
-        },
-      }
-    );
+  : jestGlobals.jest;
 
 export const mock: any = isBun ? bunTest?.mock : undefined;
 export const spyOn: any = isBun ? bunTest?.spyOn : undefined;
@@ -126,9 +81,9 @@ export const createMock = <T extends (...args: any[]) => any>(
   implementation?: T
 ): any => {
   if (isBun) {
-    return (bunTest?.mock || (globalThis as any).jest?.fn)(implementation);
+    return bunTest?.mock(implementation);
   } else {
-    return (globalThis as any).jest?.fn(implementation);
+    return jestGlobals.jest.fn(implementation);
   }
 };
 
@@ -138,9 +93,9 @@ export const createSpy = <T extends object, M extends keyof T>(
   method: M
 ): any => {
   if (isBun) {
-    return (bunTest?.spyOn || (globalThis as any).jest?.spyOn)(object, method);
+    return bunTest?.spyOn(object, method);
   } else {
-    return (globalThis as any).jest?.spyOn(object, method);
+    return jestGlobals.jest.spyOn(object, method);
   }
 };
 

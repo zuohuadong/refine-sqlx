@@ -357,7 +357,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               user.posts.forEach((post: any) => {
                 // SQLite returns 1/0 for boolean, PostgreSQL/MySQL return true/false
                 // Accept both 1 and true as truthy values
-                expect([true, 1]).toContain(post.published);
+                const published = post.published;
+                expect(published === true || published === 1).toBe(true);
               });
             });
           });
@@ -769,7 +770,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             user.posts.forEach((post: any) => {
               // SQLite returns 1/0 for boolean, PostgreSQL/MySQL return true/false
               // Accept both 1 and true as truthy values
-              expect([true, 1]).toContain(post.published);
+              const published = post.published;
+              expect(published === true || published === 1).toBe(true);
             });
           });
         });
