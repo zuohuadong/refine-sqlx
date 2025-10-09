@@ -21,7 +21,9 @@ async function getBunTest() {
 }
 
 // Select the Jest globals source based on runtime
-const jestGlobals = isBun ? null : jestGlobalsImport;
+// Use type assertion to avoid null check issues since jestGlobals is only used when !isBun
+const jestGlobals = (
+  isBun ? null : jestGlobalsImport) as typeof jestGlobalsImport;
 
 // Export test functions
 export const describe: any =
@@ -53,7 +55,7 @@ export const test: any = isBun ? bunTest?.test : jestGlobals.test;
 export const expect: any = isBun ? bunTest?.expect : jestGlobals.expect;
 export const beforeAll: any =
   isBun ? bunTest?.beforeAll : jestGlobals.beforeAll;
-export const afterAll: any = isBun ? bunTest?.beforeAll : jestGlobals.afterAll;
+export const afterAll: any = isBun ? bunTest?.afterAll : jestGlobals.afterAll;
 export const beforeEach: any =
   isBun ? bunTest?.beforeEach : jestGlobals.beforeEach;
 export const afterEach: any =
@@ -95,7 +97,7 @@ export const createSpy = <T extends object, M extends keyof T>(
   if (isBun) {
     return bunTest?.spyOn(object, method);
   } else {
-    return jestGlobals.jest.spyOn(object, method);
+    return jestGlobals.jest.spyOn(object, method as any);
   }
 };
 
