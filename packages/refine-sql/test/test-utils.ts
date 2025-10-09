@@ -18,70 +18,84 @@ type MockFunction = {
   mockRestore?: () => void;
 };
 
-// Re-export test functions based on runtime
-let testFramework: any;
-
-if (isBun) {
-  // Using bun:test
-  testFramework = await import('bun:test');
-} else {
-  // Using jest - use globals instead of import
-  // In Jest, describe, it, test, expect, etc. are globally available
-  testFramework = {
-    describe: globalThis.describe,
-    it: globalThis.it,
-    test: globalThis.test,
-    expect: globalThis.expect,
-    beforeAll: globalThis.beforeAll,
-    afterAll: globalThis.afterAll,
-    beforeEach: globalThis.beforeEach,
-    afterEach: globalThis.afterEach,
-    jest: globalThis.jest,
-    spyOn: globalThis.jest?.spyOn,
-  };
+// Type definitions for Jest globals
+interface JestGlobals {
+  describe: any;
+  it: any;
+  test: any;
+  expect: any;
+  beforeAll: any;
+  afterAll: any;
+  beforeEach: any;
+  afterEach: any;
+  jest: any;
 }
 
-// Export unified test API
-export const {
-  describe: baseDescribe,
-  it,
-  test,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  afterEach,
-} = testFramework;
-
-// Create a compatible describe with skipIf support
-const createDescribeWithSkipIf = () => {
-  const desc: any = baseDescribe;
-
-  // Add skipIf for jest compatibility
-  if (!isBun) {
-    desc.skipIf = (condition: boolean) => {
-      return condition ? baseDescribe.skip : baseDescribe;
-    };
+// Lazy loader for bun:test to avoid top-level await
+let bunTest: any = null;
+async function getBunTest() {
+  if (!bunTest && isBun) {
+    bunTest = await import('bun:test');
   }
+  return bunTest;
+}
 
-  return desc;
-};
+// For Jest, directly access globals - they're set up before test modules load
+const g = globalThis as typeof globalThis & JestGlobals;
 
-export const describe = createDescribeWithSkipIf();
+// Export test functions with conditional logic
+export const describe: any = isBun
+  ? new Proxy({}, { get: (_, prop) => (bunTest || (async () => await getBunTest())()).describe?.[prop] })
+  : g.describe;
 
-// Export jest or mock from the framework
-export const jest = testFramework.jest || testFramework;
-export const mock = testFramework.mock;
-export const spyOn = testFramework.spyOn;
+export const it: any = isBun
+  ? (bunTest?.it || g.it)
+  : g.it;
+
+export const test: any = isBun
+  ? (bunTest?.test || g.test)
+  : g.test;
+
+export const expect: any = isBun
+  ? (bunTest?.expect || g.expect)
+  : g.expect;
+
+export const beforeAll: any = isBun
+  ? (bunTest?.beforeAll || g.beforeAll)
+  : g.beforeAll;
+
+export const afterAll: any = isBun
+  ? (bunTest?.afterAll || g.afterAll)
+  : g.afterAll;
+
+export const beforeEach: any = isBun
+  ? (bunTest?.beforeEach || g.beforeEach)
+  : g.beforeEach;
+
+export const afterEach: any = isBun
+  ? (bunTest?.afterEach || g.afterEach)
+  : g.afterEach;
+
+// Export jest - IMPORTANT: For Jest, this must be available synchronously
+export const jest: any = isBun
+  ? {
+      get fn() { return bunTest?.mock || g.jest?.fn; },
+      get spyOn() { return bunTest?.spyOn || g.jest?.spyOn; },
+      get mock() { return bunTest?.mock || g.jest?.mock; },
+    }
+  : g.jest;
+
+export const mock: any = isBun ? bunTest?.mock : undefined;
+export const spyOn: any = isBun ? bunTest?.spyOn : undefined;
 
 // Mock function helper that works with both frameworks
 export const createMock = <T extends (...args: any[]) => any>(
   implementation?: T
 ): any => {
   if (isBun) {
-    return testFramework.mock(implementation);
+    return (bunTest?.mock || g.jest.fn)(implementation);
   } else {
-    return testFramework.jest.fn(implementation);
+    return g.jest.fn(implementation);
   }
 };
 
@@ -91,9 +105,9 @@ export const createSpy = <T extends object, M extends keyof T>(
   method: M
 ): any => {
   if (isBun) {
-    return testFramework.spyOn(object, method);
+    return (bunTest?.spyOn || g.jest.spyOn)(object, method);
   } else {
-    return testFramework.jest.spyOn(object, method);
+    return g.jest.spyOn(object, method);
   }
 };
 
@@ -102,3 +116,8 @@ export const isRunningInBun = (): boolean => isBun;
 
 // Helper to check if running in node
 export const isRunningInNode = (): boolean => !isBun;
+
+// Initialize bun:test on first import if in Bun
+if (isBun) {
+  getBunTest();
+}
