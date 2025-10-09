@@ -12,8 +12,8 @@ import type { TableSchema } from '../typed-methods';
 /**
  * Node.js 专用数据提供器
  */
-export interface NodeDataProvider<TSchema extends TableSchema = TableSchema>
-  extends CoreDataProvider<TSchema> {}
+export type NodeDataProvider<TSchema extends TableSchema = TableSchema> =
+  CoreDataProvider<TSchema>;
 
 /**
  * 创建 Node.js SQLite 专用提供器

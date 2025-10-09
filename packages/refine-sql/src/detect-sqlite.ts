@@ -6,27 +6,22 @@ import type {
 } from 'node:sqlite';
 import type { Database as BetterSqlite3Database } from 'better-sqlite3';
 import type { SqlClient, SqlClientFactory } from './client';
+import type { SQLiteOptions } from './types/config';
 import { withErrorHandling } from './utils';
 // Adapters will be dynamically imported to reduce bundle size
 
 // Re-export SQLiteOptions from types for consistency
 export type { SQLiteOptions } from './types/config';
 
-export default function (
-  db: ':memory:',
-  options?: import('./types/config').SQLiteOptions
-): SqlClientFactory;
-export default function (
-  db: string,
-  options?: import('./types/config').SQLiteOptions
-): SqlClientFactory;
+export default function (db: ':memory:', options?: SQLiteOptions): SqlClientFactory;
+export default function (db: string, options?: SQLiteOptions): SqlClientFactory;
 export default function (db: D1Database): SqlClientFactory;
 export default function (db: BunDatabase): SqlClientFactory;
 export default function (db: NodeDatabase): SqlClientFactory;
 export default function (db: BetterSqlite3Database): SqlClientFactory;
 export default function (
   db: string | D1Database | BunDatabase | NodeDatabase | BetterSqlite3Database,
-  options?: import('./types/config').SQLiteOptions | undefined
+  options?: SQLiteOptions | undefined
 ): SqlClientFactory {
   let client: SqlClient;
 
@@ -39,7 +34,10 @@ export default function (
         const createCloudflareD1Adapter = (
           await import('./adapters/cloudflare-d1')
         ).default;
-        return (client = createCloudflareD1Adapter(db as D1Database));
+        const connectedClient = createCloudflareD1Adapter(db as D1Database);
+        // eslint-disable-next-line require-atomic-updates
+        client = connectedClient;
+        return client;
       }
 
       throw new Error('Cloudflare D1 must provide a D1Database instance');
@@ -47,21 +45,30 @@ export default function (
       if (typeof db === 'object' && 'prepare' in db) {
         const createBunSQLiteAdapter = (await import('./adapters/bun-sqlite'))
           .default;
-        return (client = createBunSQLiteAdapter(db as BunDatabase));
+        const connectedClient = createBunSQLiteAdapter(db as BunDatabase);
+        // eslint-disable-next-line require-atomic-updates
+        client = connectedClient;
+        return client;
       }
 
       const { Database } = await import('bun:sqlite');
       const instance = new Database(db, options?.bun);
       const createBunSQLiteAdapter = (await import('./adapters/bun-sqlite'))
         .default;
-      return (client = createBunSQLiteAdapter(instance));
+      const connectedClient = createBunSQLiteAdapter(instance);
+      // eslint-disable-next-line require-atomic-updates
+      client = connectedClient;
+      return client;
     } else if (supportedRuntime === 'node') {
       try {
         if (typeof db === 'object' && 'prepare' in db) {
           const createNodeSQLiteAdapter = (
             await import('./adapters/node-sqlite')
           ).default;
-          return (client = createNodeSQLiteAdapter(db as NodeDatabase));
+          const connectedClient = createNodeSQLiteAdapter(db as NodeDatabase);
+          // eslint-disable-next-line require-atomic-updates
+          client = connectedClient;
+          return client;
         }
 
         const { DatabaseSync } = await import('node:sqlite');
@@ -71,7 +78,10 @@ export default function (
         );
         const createNodeSQLiteAdapter = (await import('./adapters/node-sqlite'))
           .default;
-        return (client = createNodeSQLiteAdapter(instance));
+        const connectedClient = createNodeSQLiteAdapter(instance);
+        // eslint-disable-next-line require-atomic-updates
+        client = connectedClient;
+        return client;
       } catch {
         // Fallback to generic SQLite client
       }
@@ -82,9 +92,12 @@ export default function (
         const createBetterSQLite3Adapter = (
           await import('./adapters/better-sqlite3')
         ).default;
-        return (client = createBetterSQLite3Adapter(
+        const connectedClient = createBetterSQLite3Adapter(
           db as BetterSqlite3Database
-        ));
+        );
+        // eslint-disable-next-line require-atomic-updates
+        client = connectedClient;
+        return client;
       }
 
       const Database = await import('better-sqlite3');
@@ -95,7 +108,10 @@ export default function (
       const createBetterSQLite3Adapter = (
         await import('./adapters/better-sqlite3')
       ).default;
-      return (client = createBetterSQLite3Adapter(instance));
+      const connectedClient = createBetterSQLite3Adapter(instance);
+      // eslint-disable-next-line require-atomic-updates
+      client = connectedClient;
+      return client;
     } catch {
       throw new Error(
         'Current runtime not supported SQLite, Please use [bun](https://bun.sh)/[Node.JS](https://nodejs.org/) >= 24 or install [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)'

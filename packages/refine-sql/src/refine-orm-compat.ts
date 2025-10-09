@@ -45,7 +45,10 @@ export interface RefineOrmCompatibleProvider<
     defaults?: Record<string, any>;
   }): Promise<{ data: TRecord; created: boolean }>;
 
-  updateOrCreate<TRecord = BaseRecord, Variables = {}>(params: {
+  updateOrCreate<
+    TRecord = BaseRecord,
+    Variables = Record<string, unknown>,
+  >(params: {
     resource: string;
     where: Record<string, any>;
     values: Variables;

@@ -81,7 +81,8 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
       typeof db === 'object' && 'connect' in db ?
         db
       : detectSqlite(db as any, options as any);
-    client = await factory.connect();
+    const connectedClient = await factory.connect();
+    client = connectedClient;
 
     return client;
   }

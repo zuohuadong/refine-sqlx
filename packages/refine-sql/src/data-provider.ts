@@ -43,6 +43,10 @@ import {
   NativeQueryBuilders,
   AdvancedUtils,
   type TransactionContext,
+  type SelectChain,
+  type InsertChain,
+  type UpdateChain,
+  type DeleteChain,
 } from './advanced-features';
 import { CompatibleChainQuery } from './compatibility-layer';
 
@@ -107,7 +111,10 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
     defaults?: Variables;
   }): Promise<{ data: T; created: boolean }>;
 
-  updateOrCreate<T extends BaseRecord = BaseRecord, Variables = {}>(params: {
+  updateOrCreate<
+    T extends BaseRecord = BaseRecord,
+    Variables = Record<string, unknown>,
+  >(params: {
     resource: string;
     where: Record<string, any>;
     values: Variables;
@@ -281,7 +288,10 @@ export default function <TSchema extends TableSchema = TableSchema>(
     return { data: result.data as T };
   };
 
-  async function create<T extends BaseRecord = BaseRecord, Variables = {}>(
+  async function create<
+    T extends BaseRecord = BaseRecord,
+    Variables = Record<string, unknown>,
+  >(
     params: CreateParams<Variables>
   ): Promise<CreateResponse<T>> {
     const client = await resolveClient();
@@ -655,7 +665,10 @@ export default function <TSchema extends TableSchema = TableSchema>(
     /**
      * Create or update record
      */
-    async upsert<T extends BaseRecord = BaseRecord, Variables = {}>(params: {
+    async upsert<
+      T extends BaseRecord = BaseRecord,
+      Variables = Record<string, unknown>,
+    >(params: {
       resource: string;
       variables: Variables;
       conflictColumns?: string[];
@@ -695,7 +708,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
      */
     async firstOrCreate<
       T extends BaseRecord = BaseRecord,
-      Variables = {},
+      Variables = Record<string, unknown>,
     >(params: {
       resource: string;
       where: Record<string, any>;
@@ -722,7 +735,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
      */
     async updateOrCreate<
       T extends BaseRecord = BaseRecord,
-      Variables = {},
+      Variables = Record<string, unknown>,
     >(params: {
       resource: string;
       where: Record<string, any>;
@@ -879,7 +892,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
       typeof db === 'object' && 'connect' in db ?
         db
       : detectSqlite(db as any, options as any);
-    client = await factory.connect();
+    const connectedClient = await factory.connect();
+    // eslint-disable-next-line require-atomic-updates
+    client = connectedClient;
 
     return client;
   }
@@ -908,10 +923,10 @@ export interface FullyCompatibleDataProvider<
 
   // Native query builders
   query: {
-    select(tableName: string): import('./advanced-features').SelectChain;
-    insert(tableName: string): import('./advanced-features').InsertChain;
-    update(tableName: string): import('./advanced-features').UpdateChain;
-    delete(tableName: string): import('./advanced-features').DeleteChain;
+    select(tableName: string): SelectChain;
+    insert(tableName: string): InsertChain;
+    update(tableName: string): UpdateChain;
+    delete(tableName: string): DeleteChain;
   };
 
   // Advanced utilities

@@ -40,7 +40,8 @@ class AutoSQLiteAdapter extends SQLiteAdapter {
           this.connection as string,
           this.config as any
         );
-        this.client = await factory.connect();
+        const connectedClient = await factory.connect();
+        this.client = connectedClient;
 
         // Detect which driver was used
         const runtime = this.detectRuntime();
