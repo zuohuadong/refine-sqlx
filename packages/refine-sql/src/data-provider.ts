@@ -389,7 +389,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
 
   // 使用函数包装器简化 updateMany 方法
   const updateMany = withErrorHandling(
-    async (params: UpdateManyParams): Promise<UpdateManyResponse<BaseRecord>> => {
+    async (
+      params: UpdateManyParams
+    ): Promise<UpdateManyResponse<BaseRecord>> => {
       const client = await resolveClient();
       if (!params.ids.length) return { data: [] };
 
@@ -414,7 +416,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
 
   // 使用函数包装器简化 createMany 方法
   const createMany = withErrorHandling(
-    async (params: CreateManyParams): Promise<CreateManyResponse<BaseRecord>> => {
+    async (
+      params: CreateManyParams
+    ): Promise<CreateManyResponse<BaseRecord>> => {
       const client = await resolveClient();
       if (!params.variables.length) return { data: [] };
 
@@ -475,7 +479,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
 
   // 使用函数包装器简化 deleteMany 方法
   const deleteMany = withErrorHandling(
-    async (params: DeleteManyParams): Promise<DeleteManyResponse<BaseRecord>> => {
+    async (
+      params: DeleteManyParams
+    ): Promise<DeleteManyResponse<BaseRecord>> => {
       const client = await resolveClient();
       if (!params.ids.length) return { data: [] };
 
