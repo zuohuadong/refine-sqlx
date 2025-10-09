@@ -662,7 +662,8 @@ describe('Enhanced Morph Query Builder', () => {
   it('should support custom loader', async () => {
     const customLoaderConfig: EnhancedMorphConfig<typeof schema> = {
       ...enhancedMorphConfig,
-      customLoader: async (client, baseResults, config) => baseResults.reduce(
+      customLoader: async (client, baseResults, config) =>
+        baseResults.reduce(
           (acc, result, index) => {
             acc[index] = { customData: `Custom data for ${result.id}` };
             return acc;

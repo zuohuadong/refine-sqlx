@@ -99,7 +99,9 @@ const createMockClient = () => {
   };
 
   return {
-    transaction: jest.fn().mockImplementation(async (fn: any) => await fn(mockTx)),
+    transaction: jest
+      .fn()
+      .mockImplementation(async (fn: any) => await fn(mockTx)),
     select: jest.fn(),
     insert: jest.fn(),
     update: jest.fn(),
@@ -200,7 +202,14 @@ describe('TransactionManager', () => {
     });
 
     it('should support nested transactions', async () => {
-      const outerFn = jest.fn().mockImplementation(async (_ctx: any) => await transactionManager.transaction(async _innerCtx => 'nested success'));
+      const outerFn = jest
+        .fn()
+        .mockImplementation(
+          async (_ctx: any) =>
+            await transactionManager.transaction(
+              async _innerCtx => 'nested success'
+            )
+        );
 
       const result = await transactionManager.transaction(outerFn);
 
@@ -315,9 +324,10 @@ describe('TransactionManager', () => {
     });
 
     it('should generate unique transaction IDs', async () => {
-      const mockFn = jest.fn().mockImplementation(async (_ctx: any) => 
-        // We can't directly access the transaction ID, but we can test uniqueness indirectly
-         'success'
+      const mockFn = jest.fn().mockImplementation(
+        async (_ctx: any) =>
+          // We can't directly access the transaction ID, but we can test uniqueness indirectly
+          'success'
       );
 
       await Promise.all([

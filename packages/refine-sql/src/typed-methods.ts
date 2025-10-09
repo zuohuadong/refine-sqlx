@@ -15,7 +15,9 @@ export type InferRecord<
   TTable extends keyof TSchema,
 > = TSchema[TTable];
 
-export interface TypedCreateParams<T> { variables: Partial<T> }
+export interface TypedCreateParams<T> {
+  variables: Partial<T>;
+}
 
 export interface TypedUpdateParams<T> {
   id: any;
@@ -23,17 +25,30 @@ export interface TypedUpdateParams<T> {
   meta?: any;
 }
 
-export interface TypedGetOneResponse<T> { data: T }
+export interface TypedGetOneResponse<T> {
+  data: T;
+}
 
-export interface TypedGetListResponse<T> { data: T[]; total: number }
+export interface TypedGetListResponse<T> {
+  data: T[];
+  total: number;
+}
 
-export interface TypedGetManyResponse<T> { data: T[] }
+export interface TypedGetManyResponse<T> {
+  data: T[];
+}
 
-export interface TypedCreateResponse<T> { data: T }
+export interface TypedCreateResponse<T> {
+  data: T;
+}
 
-export interface TypedUpdateResponse<T> { data: T }
+export interface TypedUpdateResponse<T> {
+  data: T;
+}
 
-export interface TypedDeleteOneResponse<T> { data: T }
+export interface TypedDeleteOneResponse<T> {
+  data: T;
+}
 
 // Type-safe methods class
 export class SqlxTypedMethods<TSchema extends TableSchema = TableSchema> {

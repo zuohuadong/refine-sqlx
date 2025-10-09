@@ -35,7 +35,8 @@ export const afterEach: any = isBun ? bunTest.afterEach : jestGlobals.afterEach;
 
 //  Add skipIf support for Jest (Bun has it natively)
 if (!isBun && describe) {
-  (describe as any).skipIf = (condition: boolean) => (name: string, fn: () => void) => {
+  (describe as any).skipIf =
+    (condition: boolean) => (name: string, fn: () => void) => {
       if (condition) {
         return (describe as any).skip(name, fn);
       } else {

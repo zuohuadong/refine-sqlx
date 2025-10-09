@@ -85,7 +85,7 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
     id: any,
     relations?: string[],
     relationshipConfigs?: Record<string, any>
-  ): Promise<GetOneResponse<T>>;
+  ): Promise<GetOneResponse<BaseRecord>>;
 
   // Advanced methods
   upsert<
@@ -302,171 +302,199 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }
 
   // 使用函数包装器简化 getOne 方法
-  const getOne = withErrorHandling(async (params: GetOneParams): Promise<GetOneResponse<T>> => {
-    const client = await resolveClient();
-    const idColumnName = params.meta?.idColumnName ?? 'id';
-    const query = transformer.buildSelectQuery(params.resource, {
-      filters: [{ field: idColumnName, operator: 'eq', value: params.id }],
-    });
+  const getOne = withErrorHandling(
+    async (params: GetOneParams): Promise<GetOneResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      const idColumnName = params.meta?.idColumnName ?? 'id';
+      const query = transformer.buildSelectQuery(params.resource, {
+        filters: [{ field: idColumnName, operator: 'eq', value: params.id }],
+      });
 
-    const result = await client.query(query);
-    const [data] = deserializeSqlResult(result);
+      const result = await client.query(query);
+      const [data] = deserializeSqlResult(result);
 
-    if (!data) {
-      throw new Error(
-        `Record with id "${params.id}" not found in "${params.resource}"`
-      );
-    }
+      if (!data) {
+        throw new Error(
+          `Record with id "${params.id}" not found in "${params.resource}"`
+        );
+      }
 
-    return { data: data as T };
-  }, 'Failed to get record');
+      return { data: data as BaseRecord };
+    },
+    'Failed to get record'
+  );
 
   // 使用函数包装器简化 getList 方法
-  const getList = withErrorHandling(async (params: GetListParams): Promise<GetListResponse<T>> => {
-    const client = await resolveClient();
-    const query = transformer.buildSelectQuery(params.resource, {
-      filters: params.filters,
-      sorting: params.sorters,
-      pagination: params.pagination,
-    });
+  const getList = withErrorHandling(
+    async (params: GetListParams): Promise<GetListResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      const query = transformer.buildSelectQuery(params.resource, {
+        filters: params.filters,
+        sorting: params.sorters,
+        pagination: params.pagination,
+      });
 
-    const result = await client.query(query);
-    const data = deserializeSqlResult(result);
+      const result = await client.query(query);
+      const data = deserializeSqlResult(result);
 
-    // Build count query
-    const countQuery = transformer.buildCountQuery(
-      params.resource,
-      params.filters
-    );
-    const {
-      rows: [[count]],
-    } = await client.query(countQuery);
+      // Build count query
+      const countQuery = transformer.buildCountQuery(
+        params.resource,
+        params.filters
+      );
+      const {
+        rows: [[count]],
+      } = await client.query(countQuery);
 
-    return { data: data as T[], total: count as number };
-  }, 'Failed to get list');
+      return { data: data as BaseRecord[], total: count as number };
+    },
+    'Failed to get list'
+  );
 
   // 使用函数包装器简化 getMany 方法
-  const getMany = withErrorHandling(async (params: GetManyParams): Promise<GetManyResponse<T>> => {
-    const client = await resolveClient();
-    if (!params.ids.length) return { data: [] };
+  const getMany = withErrorHandling(
+    async (params: GetManyParams): Promise<GetManyResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      if (!params.ids.length) return { data: [] };
 
-    const idColumnName = params.meta?.idColumnName ?? 'id';
-    const query = transformer.buildSelectQuery(params.resource, {
-      filters: [{ field: idColumnName, operator: 'in', value: params.ids }],
-    });
+      const idColumnName = params.meta?.idColumnName ?? 'id';
+      const query = transformer.buildSelectQuery(params.resource, {
+        filters: [{ field: idColumnName, operator: 'in', value: params.ids }],
+      });
 
-    const result = await client.query(query);
-    const data = deserializeSqlResult(result);
+      const result = await client.query(query);
+      const data = deserializeSqlResult(result);
 
-    return { data: data as T[] };
-  }, 'Failed to get records');
+      return { data: data as BaseRecord[] };
+    },
+    'Failed to get records'
+  );
 
   // 使用函数包装器简化 update 方法
-  const update = withErrorHandling(async (params: UpdateParams): Promise<UpdateResponse<T>> => {
-    const client = await resolveClient();
-    const query = transformer.buildUpdateQuery(
-      params.resource,
-      params.variables as any,
-      { field: 'id', value: params.id }
-    );
+  const update = withErrorHandling(
+    async (params: UpdateParams): Promise<UpdateResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      const query = transformer.buildUpdateQuery(
+        params.resource,
+        params.variables as any,
+        { field: 'id', value: params.id }
+      );
 
-    await client.execute(query);
-    const result = await getOne<T>(params);
-    return { data: result.data as T };
-  }, 'Failed to update record');
+      await client.execute(query);
+      const result = await getOne(params);
+      return { data: result.data };
+    },
+    'Failed to update record'
+  );
 
   // 使用函数包装器简化 updateMany 方法
-  const updateMany = withErrorHandling(async (params: UpdateManyParams): Promise<UpdateManyResponse<T>> => {
-    const client = await resolveClient();
-    if (!params.ids.length) return { data: [] };
+  const updateMany = withErrorHandling(
+    async (params: UpdateManyParams): Promise<UpdateManyResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      if (!params.ids.length) return { data: [] };
 
-    const queries = params.ids.map(id =>
-      transformer.buildUpdateQuery(params.resource, params.variables as any, {
-        field: 'id',
-        value: id,
-      })
-    );
+      const queries = params.ids.map(id =>
+        transformer.buildUpdateQuery(params.resource, params.variables as any, {
+          field: 'id',
+          value: id,
+        })
+      );
 
-    // Execute all queries in a batch
-    await Promise.all(queries.map(query => client.execute(query)));
+      // Execute all queries in a batch
+      await Promise.all(queries.map(query => client.execute(query)));
 
-    const result = await getMany<T>({
-      resource: params.resource,
-      ids: params.ids,
-    });
-    return { data: result.data as T[] };
-  }, 'Failed to update records');
+      const result = await getMany({
+        resource: params.resource,
+        ids: params.ids,
+      });
+      return { data: result.data as BaseRecord[] };
+    },
+    'Failed to update records'
+  );
 
   // 使用函数包装器简化 createMany 方法
-  const createMany = withErrorHandling(async (params: CreateManyParams): Promise<CreateManyResponse<T>> => {
-    const client = await resolveClient();
-    if (!params.variables.length) return { data: [] };
+  const createMany = withErrorHandling(
+    async (params: CreateManyParams): Promise<CreateManyResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      if (!params.variables.length) return { data: [] };
 
-    const queries = params.variables.map(variables =>
-      transformer.buildInsertQuery(params.resource, variables as any)
-    );
+      const queries = params.variables.map(variables =>
+        transformer.buildInsertQuery(params.resource, variables as any)
+      );
 
-    let results: any[];
+      let results: any[];
 
-    // Try transaction first, then batch, then fall back to Promise.all
-    if (client.transaction) {
-      results = await client.transaction!(async tx => {
-        const transactionResults = [];
-        for (const query of queries) {
-          const result = await tx.execute(query);
-          transactionResults.push(result);
-        }
-        return transactionResults;
-      });
-    } else if (client.batch) {
-      results = await client.batch!(queries);
-    } else {
-      // Execute all queries in parallel
-      results = await Promise.all(queries.map(query => client.execute(query)));
-    }
+      // Try transaction first, then batch, then fall back to Promise.all
+      if (client.transaction) {
+        results = await client.transaction!(async tx => {
+          const transactionResults = [];
+          for (const query of queries) {
+            const result = await tx.execute(query);
+            transactionResults.push(result);
+          }
+          return transactionResults;
+        });
+      } else if (client.batch) {
+        results = await client.batch!(queries);
+      } else {
+        // Execute all queries in parallel
+        results = await Promise.all(
+          queries.map(query => client.execute(query))
+        );
+      }
 
-    const ids = results
-      .map(result => result?.lastInsertId)
-      .filter((id): id is number => typeof id === 'number' && id !== undefined);
+      const ids = results
+        .map(result => result?.lastInsertId)
+        .filter(
+          (id): id is number => typeof id === 'number' && id !== undefined
+        );
 
-    const result = await getMany<T>({ resource: params.resource, ids });
-    return { data: result.data as T[] };
-  }, 'Failed to create records');
+      const result = await getMany({ resource: params.resource, ids });
+      return { data: result.data as BaseRecord[] };
+    },
+    'Failed to create records'
+  );
 
   // 使用函数包装器简化 deleteOne 方法
-  const deleteOne = withErrorHandling(async (params: DeleteOneParams): Promise<DeleteOneResponse<T>> => {
-    const client = await resolveClient();
-    const result = await getOne<T>(params);
+  const deleteOne = withErrorHandling(
+    async (params: DeleteOneParams): Promise<DeleteOneResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      const result = await getOne(params);
 
-    const idColumnName = params.meta?.idColumnName ?? 'id';
-    const query = transformer.buildDeleteQuery(params.resource, {
-      field: idColumnName,
-      value: params.id,
-    });
+      const idColumnName = params.meta?.idColumnName ?? 'id';
+      const query = transformer.buildDeleteQuery(params.resource, {
+        field: idColumnName,
+        value: params.id,
+      });
 
-    await client.execute(query);
-    return { data: result.data as T };
-  }, 'Failed to delete record');
+      await client.execute(query);
+      return { data: result.data as BaseRecord };
+    },
+    'Failed to delete record'
+  );
 
   // 使用函数包装器简化 deleteMany 方法
-  const deleteMany = withErrorHandling(async (params: DeleteManyParams): Promise<DeleteManyResponse<T>> => {
-    const client = await resolveClient();
-    if (!params.ids.length) return { data: [] };
+  const deleteMany = withErrorHandling(
+    async (params: DeleteManyParams): Promise<DeleteManyResponse<BaseRecord>> => {
+      const client = await resolveClient();
+      if (!params.ids.length) return { data: [] };
 
-    const result = await getMany<T>({
-      resource: params.resource,
-      ids: params.ids,
-    });
+      const result = await getMany({
+        resource: params.resource,
+        ids: params.ids,
+      });
 
-    const idColumnName = params.meta?.idColumnName ?? 'id';
-    const query = transformer.buildDeleteQuery(params.resource, {
-      field: idColumnName,
-      value: params.ids,
-    });
+      const idColumnName = params.meta?.idColumnName ?? 'id';
+      const query = transformer.buildDeleteQuery(params.resource, {
+        field: idColumnName,
+        value: params.ids,
+      });
 
-    await client.execute(query);
-    return { data: result.data as T[] };
-  }, 'Failed to delete records');
+      await client.execute(query);
+      return { data: result.data as BaseRecord[] };
+    },
+    'Failed to delete records'
+  );
 
   return {
     get client() {
@@ -525,9 +553,9 @@ export default function <TSchema extends TableSchema = TableSchema>(
       id: any,
       relations?: string[],
       _relationshipConfigs?: Record<string, any>
-    ): Promise<GetOneResponse<T>> {
+    ): Promise<GetOneResponse<BaseRecord>> {
       // Get base record first
-      const baseRecord = await getOne<T>({ resource, id });
+      const baseRecord = await getOne({ resource, id });
 
       if (!relations?.length) return baseRecord as GetOneResponse<T>;
 
@@ -554,7 +582,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
               ];
               if (foreignKeyValue) {
                 const relatedRecord = await getOne({
-                  resource: `${relation  }s`, // Assume table name is plural
+                  resource: `${relation}s`, // Assume table name is plural
                   id: foreignKeyValue,
                 });
                 recordWithRelations[relation] = relatedRecord.data;
@@ -569,7 +597,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
         })
       );
 
-      return { data: recordWithRelations as T };
+      return { data: recordWithRelations as BaseRecord };
     },
 
     // Type-safe methods (lazy initialization)
@@ -633,16 +661,17 @@ export default function <TSchema extends TableSchema = TableSchema>(
 
       if (conflictValue) {
         try {
-          const existing = await getOne<T>({
+          const existing = await getOne({
             resource: params.resource,
             id: conflictValue,
           });
           if (existing?.data) {
-            return update<T>({
+            const updated = await update({
               resource: params.resource,
               id: conflictValue,
               variables: params.variables as any,
             });
+            return { data: updated.data as T } as UpdateResponse<T>;
           }
         } catch {
           // Record doesn't exist, continue to create
@@ -696,7 +725,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
       const existing = await findByConditions(params.resource, params.where);
 
       if (existing) {
-        const updated = await update<T>({
+        const updated = await update({
           resource: params.resource,
           id: existing.id!,
           variables: params.values as any,

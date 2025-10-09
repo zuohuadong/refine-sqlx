@@ -149,11 +149,10 @@ describe('RelationshipQueryBuilder', () => {
           );
 
           return {
-            where: (condition: any) => 
+            where: (condition: any) =>
               // For the mock, we'll intercept this and use a simpler approach
               // The actual implementation will be handled in executeRelationshipQuery
-               Promise.resolve([])
-            ,
+              Promise.resolve([]),
           };
         },
       }),
@@ -178,7 +177,9 @@ describe('RelationshipQueryBuilder', () => {
         return data;
       }
 
-      return (data as any[]).filter((record: any) => record[columnName] === value);
+      return (data as any[]).filter(
+        (record: any) => record[columnName] === value
+      );
     };
   });
 

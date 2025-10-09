@@ -177,7 +177,8 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
 
     // Dynamically create WHERE methods
     Object.entries(whereMethods).forEach(([methodName, operator]) => {
-      (this as any)[methodName] = (field: string, value: any) => this.where(field, operator as FilterOperator, value);
+      (this as any)[methodName] = (field: string, value: any) =>
+        this.where(field, operator as FilterOperator, value);
     });
 
     // Dynamically create sorting convenience methods
@@ -715,17 +716,14 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   private buildWhereClause(): string {
     if (this.filters.length === 0) return '';
     // Simplified WHERE clause building
-    return (
-      ` WHERE ${ 
-      this.filters
-        .map(f => {
-          if ('field' in f) {
-            return `${f.field} = ?`;
-          }
-          return '1=1'; // fallback for conditional filters
-        })
-        .join(' AND ')}`
-    );
+    return ` WHERE ${this.filters
+      .map(f => {
+        if ('field' in f) {
+          return `${f.field} = ?`;
+        }
+        return '1=1'; // fallback for conditional filters
+      })
+      .join(' AND ')}`;
   }
 
   /**

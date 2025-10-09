@@ -336,7 +336,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
             const foreignKeyValue = (baseRecord.data as any)[`${relation}_id`];
             if (foreignKeyValue) {
               const relatedRecord = await coreProvider.getOne({
-                resource: `${relation  }s`,
+                resource: `${relation}s`,
                 id: foreignKeyValue,
               });
               recordWithRelations[relation] = relatedRecord.data;
@@ -404,22 +404,22 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   };
 
   const getPerformanceMetrics = () => ({
-      enabled: performanceEnabled,
-      metrics: performanceMetrics,
-      summary: {
-        totalQueries: performanceMetrics.length,
-        averageDuration:
-          performanceMetrics.length > 0 ?
-            performanceMetrics.reduce((sum, m) => sum + m.duration, 0) /
-            performanceMetrics.length
-          : 0,
-        successRate:
-          performanceMetrics.length > 0 ?
-            performanceMetrics.filter(m => m.success).length /
-            performanceMetrics.length
-          : 0,
-      },
-    });
+    enabled: performanceEnabled,
+    metrics: performanceMetrics,
+    summary: {
+      totalQueries: performanceMetrics.length,
+      averageDuration:
+        performanceMetrics.length > 0 ?
+          performanceMetrics.reduce((sum, m) => sum + m.duration, 0) /
+          performanceMetrics.length
+        : 0,
+      successRate:
+        performanceMetrics.length > 0 ?
+          performanceMetrics.filter(m => m.success).length /
+          performanceMetrics.length
+        : 0,
+    },
+  });
 
   // 创建兼容性提供器
   const compatProvider: CompatDataProvider<TSchema> = {

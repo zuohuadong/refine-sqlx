@@ -24,7 +24,11 @@ import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 import type { DrizzleClient } from '../types/client';
 import { ValidationError, SchemaError } from '../types/errors';
 // Temporary local implementation to avoid import issues during testing
-interface TransformationContext { schema?: any; table?: any; dialect?: string }
+interface TransformationContext {
+  schema?: any;
+  table?: any;
+  dialect?: string;
+}
 
 interface OperatorConfig<T> {
   operator: string;
@@ -637,11 +641,10 @@ export class RefineQueryBuilder<
    * Create sorting combiner for Drizzle ORM
    */
   private createDrizzleSortingCombiner() {
-    return (sortItems: SQL[]): SQL => 
+    return (sortItems: SQL[]): SQL =>
       // For Drizzle ORM, we don't need to combine sort items into a single SQL
       // Instead, we return the first item or a dummy SQL if empty
-       sortItems.length > 0 ? sortItems[0]! : asc({} as Column)
-    ;
+      sortItems.length > 0 ? sortItems[0]! : asc({} as Column);
   }
 
   /**
@@ -677,11 +680,10 @@ export class RefineQueryBuilder<
    * Create pagination transformer for Drizzle ORM
    */
   private createDrizzlePaginationTransformer() {
-    return (limit?: number, offset?: number): SQL => 
+    return (limit?: number, offset?: number): SQL =>
       // For Drizzle ORM, pagination is handled at the query level, not as SQL
       // Return a dummy SQL that represents the pagination info
-       eq({} as Column, { limit, offset } as any)
-    ;
+      eq({} as Column, { limit, offset } as any);
   }
 
   /**
