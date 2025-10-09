@@ -90,6 +90,7 @@ export const afterEach: any =
   isBun ? bunTest?.afterEach || g.afterEach : g.afterEach;
 
 // Export jest - IMPORTANT: For Jest, this must be available synchronously
+// Use Proxy to defer access to runtime when jest globals are available
 export const jest: any =
   isBun ?
     {
@@ -103,7 +104,19 @@ export const jest: any =
         return bunTest?.mock || g.jest?.mock;
       },
     }
-  : g.jest;
+  : new Proxy(
+      {},
+      {
+        get(target, prop) {
+          // Access jest from globalThis at runtime, not at module load time
+          const jestGlobal = (globalThis as any).jest;
+          if (jestGlobal && prop in jestGlobal) {
+            return jestGlobal[prop];
+          }
+          return undefined;
+        },
+      }
+    );
 
 export const mock: any = isBun ? bunTest?.mock : undefined;
 export const spyOn: any = isBun ? bunTest?.spyOn : undefined;
@@ -113,9 +126,9 @@ export const createMock = <T extends (...args: any[]) => any>(
   implementation?: T
 ): any => {
   if (isBun) {
-    return (bunTest?.mock || g.jest.fn)(implementation);
+    return (bunTest?.mock || (globalThis as any).jest?.fn)(implementation);
   } else {
-    return g.jest.fn(implementation);
+    return (globalThis as any).jest?.fn(implementation);
   }
 };
 
@@ -125,9 +138,9 @@ export const createSpy = <T extends object, M extends keyof T>(
   method: M
 ): any => {
   if (isBun) {
-    return (bunTest?.spyOn || g.jest.spyOn)(object, method);
+    return (bunTest?.spyOn || (globalThis as any).jest?.spyOn)(object, method);
   } else {
-    return g.jest.spyOn(object, method);
+    return (globalThis as any).jest?.spyOn(object, method);
   }
 };
 
