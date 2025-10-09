@@ -10,14 +10,11 @@ const isBun = typeof Bun !== 'undefined';
 // This import is conditional and will only be resolved when not in Bun
 import * as jestGlobalsImport from '@jest/globals';
 
-// For Bun, we need to dynamically import bun:test
-// This is lazy to avoid top-level await
+// For Bun, we use top-level await to load bun:test
+// Top-level await is supported in ES modules
 let bunTest: any = null;
-async function getBunTest() {
-  if (!bunTest && isBun) {
-    bunTest = await import('bun:test');
-  }
-  return bunTest;
+if (isBun) {
+  bunTest = await import('bun:test');
 }
 
 // Select the Jest globals source based on runtime
@@ -26,16 +23,15 @@ const jestGlobals = (
   isBun ? null : jestGlobalsImport) as typeof jestGlobalsImport;
 
 // Export test functions
-export const describe: any =
-  isBun ?
-    new Proxy(
-      {},
-      {
-        get: (_, prop) =>
-          (bunTest || (async () => await getBunTest())()).describe?.[prop],
-      }
-    )
-  : jestGlobals.describe;
+export const describe: any = isBun ? bunTest.describe : jestGlobals.describe;
+export const it: any = isBun ? bunTest.it : jestGlobals.it;
+export const test: any = isBun ? bunTest.test : jestGlobals.test;
+export const expect: any = isBun ? bunTest.expect : jestGlobals.expect;
+export const beforeAll: any = isBun ? bunTest.beforeAll : jestGlobals.beforeAll;
+export const afterAll: any = isBun ? bunTest.afterAll : jestGlobals.afterAll;
+export const beforeEach: any =
+  isBun ? bunTest.beforeEach : jestGlobals.beforeEach;
+export const afterEach: any = isBun ? bunTest.afterEach : jestGlobals.afterEach;
 
 //  Add skipIf support for Jest (Bun has it natively)
 if (!isBun && describe) {
@@ -50,40 +46,24 @@ if (!isBun && describe) {
   };
 }
 
-export const it: any = isBun ? bunTest?.it : jestGlobals.it;
-export const test: any = isBun ? bunTest?.test : jestGlobals.test;
-export const expect: any = isBun ? bunTest?.expect : jestGlobals.expect;
-export const beforeAll: any =
-  isBun ? bunTest?.beforeAll : jestGlobals.beforeAll;
-export const afterAll: any = isBun ? bunTest?.afterAll : jestGlobals.afterAll;
-export const beforeEach: any =
-  isBun ? bunTest?.beforeEach : jestGlobals.beforeEach;
-export const afterEach: any =
-  isBun ? bunTest?.afterEach : jestGlobals.afterEach;
 export const jest: any =
   isBun ?
     {
-      get fn() {
-        return bunTest?.mock;
-      },
-      get spyOn() {
-        return bunTest?.spyOn;
-      },
-      get mock() {
-        return bunTest?.mock;
-      },
+      fn: bunTest.mock,
+      spyOn: bunTest.spyOn,
+      mock: bunTest.mock,
     }
   : jestGlobals.jest;
 
-export const mock: any = isBun ? bunTest?.mock : undefined;
-export const spyOn: any = isBun ? bunTest?.spyOn : undefined;
+export const mock: any = isBun ? bunTest.mock : undefined;
+export const spyOn: any = isBun ? bunTest.spyOn : undefined;
 
 // Mock function helper that works with both frameworks
 export const createMock = <T extends (...args: any[]) => any>(
   implementation?: T
 ): any => {
   if (isBun) {
-    return bunTest?.mock(implementation);
+    return bunTest.mock(implementation);
   } else {
     return jestGlobals.jest.fn(implementation);
   }
@@ -95,7 +75,7 @@ export const createSpy = <T extends object, M extends keyof T>(
   method: M
 ): any => {
   if (isBun) {
-    return bunTest?.spyOn(object, method);
+    return bunTest.spyOn(object, method);
   } else {
     return jestGlobals.jest.spyOn(object, method as any);
   }
@@ -106,8 +86,3 @@ export const isRunningInBun = (): boolean => isBun;
 
 // Helper to check if running in node
 export const isRunningInNode = (): boolean => !isBun;
-
-// Initialize bun:test on first import if in Bun
-if (isBun) {
-  getBunTest();
-}
