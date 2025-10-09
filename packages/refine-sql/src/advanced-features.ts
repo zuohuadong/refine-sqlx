@@ -346,27 +346,27 @@ export class SelectChain {
 
     // Add JOINs
     if (this.joinClauses.length > 0) {
-      sql += ' ' + this.joinClauses.join(' ');
+      sql += ` ${  this.joinClauses.join(' ')}`;
     }
 
     // Add WHERE
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.whereConditions.join(' AND ');
+      sql += ` WHERE ${  this.whereConditions.join(' AND ')}`;
     }
 
     // Add GROUP BY
     if (this.groupByColumns.length > 0) {
-      sql += ' GROUP BY ' + this.groupByColumns.join(', ');
+      sql += ` GROUP BY ${  this.groupByColumns.join(', ')}`;
     }
 
     // Add HAVING
     if (this.havingConditions.length > 0) {
-      sql += ' HAVING ' + this.havingConditions.join(' AND ');
+      sql += ` HAVING ${  this.havingConditions.join(' AND ')}`;
     }
 
     // Add ORDER BY
     if (this.orderByConditions.length > 0) {
-      sql += ' ORDER BY ' + this.orderByConditions.join(', ');
+      sql += ` ORDER BY ${  this.orderByConditions.join(', ')}`;
     }
 
     // Add LIMIT
@@ -387,22 +387,22 @@ export class SelectChain {
 
     // Add JOINs
     if (this.joinClauses.length > 0) {
-      sql += ' ' + this.joinClauses.join(' ');
+      sql += ` ${  this.joinClauses.join(' ')}`;
     }
 
     // Add WHERE
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.whereConditions.join(' AND ');
+      sql += ` WHERE ${  this.whereConditions.join(' AND ')}`;
     }
 
     // Add GROUP BY
     if (this.groupByColumns.length > 0) {
-      sql += ' GROUP BY ' + this.groupByColumns.join(', ');
+      sql += ` GROUP BY ${  this.groupByColumns.join(', ')}`;
     }
 
     // Add HAVING
     if (this.havingConditions.length > 0) {
-      sql += ' HAVING ' + this.havingConditions.join(' AND ');
+      sql += ` HAVING ${  this.havingConditions.join(' AND ')}`;
     }
 
     return { sql, args: [...this.whereArgs, ...this.havingArgs] };
@@ -631,7 +631,7 @@ export class UpdateChain {
 
     // Add WHERE
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.whereConditions.join(' AND ');
+      sql += ` WHERE ${  this.whereConditions.join(' AND ')}`;
     }
 
     // Add RETURNING clause
@@ -740,7 +740,7 @@ export class DeleteChain {
 
     // Add WHERE
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.whereConditions.join(' AND ');
+      sql += ` WHERE ${  this.whereConditions.join(' AND ')}`;
     }
 
     // Add RETURNING clause

@@ -352,7 +352,7 @@ export class MorphUtils {
       const type = this.extractPolymorphicType(record, config);
       const id = this.extractPolymorphicId(record, config);
 
-      if (type && id && relationData[type] && relationData[type][id]) {
+      if (type && id && relationData[type]?.[id]) {
         return this.createPolymorphicRelation(
           record,
           relationData[type][id],

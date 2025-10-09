@@ -101,7 +101,7 @@ const createChainableMock = (finalResult: any) => {
 const mockClient: DrizzleClient<typeof schema> = {
   schema,
   select: jest.fn().mockImplementation((fields: any) => {
-    if (fields && fields.count) {
+    if (fields?.count) {
       // Count query
       return createChainableMock([{ count: 2 }]);
     } else {
@@ -260,7 +260,7 @@ describe('Morph Query Builder', () => {
     const mockClientWithRelations = {
       ...mockClient,
       select: jest.fn().mockImplementation((fields: any) => {
-        if (fields && fields.count) {
+        if (fields?.count) {
           // Count query
           return createChainableMock([{ count: 2 }]);
         } else {
@@ -482,7 +482,7 @@ describe('Enhanced Morph Query Builder', () => {
     const manyToManyMockClient = {
       ...mockClient,
       select: jest.fn().mockImplementation((fields: any) => {
-        if (fields && fields.count) {
+        if (fields?.count) {
           return {
             from: jest
               .fn()
@@ -662,15 +662,13 @@ describe('Enhanced Morph Query Builder', () => {
   it('should support custom loader', async () => {
     const customLoaderConfig: EnhancedMorphConfig<typeof schema> = {
       ...enhancedMorphConfig,
-      customLoader: async (client, baseResults, config) => {
-        return baseResults.reduce(
+      customLoader: async (client, baseResults, config) => baseResults.reduce(
           (acc, result, index) => {
             acc[index] = { customData: `Custom data for ${result.id}` };
             return acc;
           },
           {} as Record<string, any>
-        );
-      },
+        ),
     };
 
     const customLoaderMockClient = {

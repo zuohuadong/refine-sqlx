@@ -807,7 +807,7 @@ export class ChainQueryBuilder<
       }
 
       // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 

@@ -221,7 +221,7 @@ export class SqlTransformer {
     parts.push(`FROM ${this.escapeIdentifier(options.from)}`);
 
     // WHERE clause
-    if (options.where && options.where.trim()) {
+    if (options.where?.trim()) {
       parts.push(
         options.where.startsWith('WHERE') ?
           options.where

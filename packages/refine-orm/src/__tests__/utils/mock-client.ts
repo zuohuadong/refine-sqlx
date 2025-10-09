@@ -28,7 +28,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   const createQueryChain = (tableName: string, data: any[] = []) => {
     let limitValue: number | undefined;
     let offsetValue: number | undefined;
-    let whereConditions: any[] = [];
+    const whereConditions: any[] = [];
 
     const chain = {
       from: jest.fn().mockReturnThis(),
@@ -48,7 +48,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
               const operatorChunk = condition.queryChunks[2];
               const valueChunk = condition.queryChunks[3];
 
-              if (columnChunk && columnChunk.name) {
+              if (columnChunk?.name) {
                 const fieldName = columnChunk.name;
 
                 // Check if it's an array of Param objects (for IN operator)
@@ -67,9 +67,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
                   // Check operator type
                   if (
-                    operatorChunk &&
-                    operatorChunk.value &&
-                    operatorChunk.value[0]
+                    operatorChunk?.value?.[0]
                   ) {
                     const op = operatorChunk.value[0].trim();
                     if (op === '=') {
@@ -167,10 +165,9 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             result = [];
           } else {
             // Apply actual filtering for conditions
-            result = result.filter(record => {
-              return whereConditions.every(condition => {
+            result = result.filter(record => whereConditions.every(condition => {
                 // Handle simplified conditions
-                if (condition && condition.field && condition.op) {
+                if (condition?.field && condition.op) {
                   const fieldValue = record[condition.field];
 
                   if (condition.op === 'eq') {
@@ -197,8 +194,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
                 // Default to true for unhandled conditions
                 return true;
-              });
-            });
+              }));
           }
         }
 
@@ -228,10 +224,9 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             result = [];
           } else {
             // Apply actual filtering for conditions
-            result = result.filter(record => {
-              return whereConditions.every(condition => {
+            result = result.filter(record => whereConditions.every(condition => {
                 // Handle simplified conditions
-                if (condition && condition.field && condition.op) {
+                if (condition?.field && condition.op) {
                   const fieldValue = record[condition.field];
 
                   if (condition.op === 'eq') {
@@ -258,8 +253,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
 
                 // Default to true for unhandled conditions
                 return true;
-              });
-            });
+              }));
           }
         }
 
@@ -338,9 +332,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
             ...(mockData[tableName] || []),
             ...(createdRecords[tableName] || []),
           ];
-          const maxId = existingRecords.reduce((max, record) => {
-            return Math.max(max, record.id || 0);
-          }, 0);
+          const maxId = existingRecords.reduce((max, record) => Math.max(max, record.id || 0), 0);
 
           // Apply defaults and handle null vs undefined for optional fields
           const baseData = {
@@ -416,8 +408,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           where: jest.fn().mockImplementation((condition: any) => {
             // Extract IDs to update from the condition
             if (
-              condition &&
-              condition.queryChunks &&
+              condition?.queryChunks &&
               Array.isArray(condition.queryChunks)
             ) {
               if (condition.queryChunks.length >= 4) {
@@ -504,8 +495,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       where: jest.fn().mockImplementation((condition: any) => {
         // Extract the ID(s) to delete from the condition
         if (
-          condition &&
-          condition.queryChunks &&
+          condition?.queryChunks &&
           Array.isArray(condition.queryChunks)
         ) {
           // Handle single ID condition (id = value)
@@ -538,7 +528,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           else if (condition.queryChunks.length >= 2) {
             // Check all chunks for placeholder with array value
             for (const chunk of condition.queryChunks) {
-              if (chunk && chunk.value && Array.isArray(chunk.value)) {
+              if (chunk?.value && Array.isArray(chunk.value)) {
                 deleteConditions.push(...chunk.value);
                 break;
               }
@@ -547,8 +537,7 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
         }
         // Also check for direct values array (for inArray)
         else if (
-          condition &&
-          condition.values &&
+          condition?.values &&
           Array.isArray(condition.values)
         ) {
           deleteConditions.push(...condition.values);
@@ -768,16 +757,12 @@ export class MockDatabaseAdapter<
   }
 
   simulateTimeout(ms: number = 5000): void {
-    (this.mockClient.select as any).mockImplementation(() => {
-      return new Promise((_, reject) => {
+    (this.mockClient.select as any).mockImplementation(() => new Promise((_, reject) => {
         setTimeout(() => reject(new QueryError('Query timeout')), ms);
-      });
-    });
-    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
-      return new Promise((_, reject) => {
+      }));
+    (this.executeRaw as any) = jest.fn().mockImplementation(() => new Promise((_, reject) => {
         setTimeout(() => reject(new QueryError('Query timeout')), ms);
-      });
-    });
+      }));
   }
 
   simulateValidationError(): void {
@@ -847,27 +832,17 @@ export const TestDataGenerators = {
  * Mock error scenarios for testing error handling
  */
 export const MockErrorScenarios = {
-  connectionError: () => {
-    return new ConnectionError('ECONNREFUSED: Connection refused');
-  },
+  connectionError: () => new ConnectionError('ECONNREFUSED: Connection refused'),
 
-  queryError: () => {
-    return new QueryError('syntax error at or near "SELCT"');
-  },
+  queryError: () => new QueryError('syntax error at or near "SELCT"'),
 
-  constraintError: () => {
-    return new ValidationError(
+  constraintError: () => new ValidationError(
       'duplicate key value violates unique constraint "users_email_unique"'
-    );
-  },
+    ),
 
-  timeoutError: () => {
-    return new QueryError('Query timeout');
-  },
+  timeoutError: () => new QueryError('Query timeout'),
 
-  validationError: () => {
-    return new ValidationError('Invalid email format');
-  },
+  validationError: () => new ValidationError('Invalid email format'),
 };
 
 /**

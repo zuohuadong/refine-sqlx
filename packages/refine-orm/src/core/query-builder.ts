@@ -24,17 +24,17 @@ import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
 import type { DrizzleClient } from '../types/client';
 import { ValidationError, SchemaError } from '../types/errors';
 // Temporary local implementation to avoid import issues during testing
-type TransformationContext = { schema?: any; table?: any; dialect?: string };
+interface TransformationContext { schema?: any; table?: any; dialect?: string }
 
-type OperatorConfig<T> = {
+interface OperatorConfig<T> {
   operator: string;
   transform: (field: string, value: any, context?: TransformationContext) => T;
-};
+}
 
-type LogicalOperatorConfig<T> = {
+interface LogicalOperatorConfig<T> {
   operator: string;
   transform: (conditions: T[], context?: TransformationContext) => T;
-};
+}
 
 // Implement proper drizzle transformer that returns SQL conditions
 const createDrizzleTransformer = (
@@ -637,11 +637,11 @@ export class RefineQueryBuilder<
    * Create sorting combiner for Drizzle ORM
    */
   private createDrizzleSortingCombiner() {
-    return (sortItems: SQL[]): SQL => {
+    return (sortItems: SQL[]): SQL => 
       // For Drizzle ORM, we don't need to combine sort items into a single SQL
       // Instead, we return the first item or a dummy SQL if empty
-      return sortItems.length > 0 ? sortItems[0]! : asc({} as Column);
-    };
+       sortItems.length > 0 ? sortItems[0]! : asc({} as Column)
+    ;
   }
 
   /**
@@ -677,11 +677,11 @@ export class RefineQueryBuilder<
    * Create pagination transformer for Drizzle ORM
    */
   private createDrizzlePaginationTransformer() {
-    return (limit?: number, offset?: number): SQL => {
+    return (limit?: number, offset?: number): SQL => 
       // For Drizzle ORM, pagination is handled at the query level, not as SQL
       // Return a dummy SQL that represents the pagination info
-      return eq({} as Column, { limit, offset } as any);
-    };
+       eq({} as Column, { limit, offset } as any)
+    ;
   }
 
   /**
@@ -719,13 +719,13 @@ export class RefineQueryBuilder<
       }
 
       // Method 2: Through columns property
-      if (tableAny._ && tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._?.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 
       // Method 3: Through symbol
       const columnsSymbol = Symbol.for('drizzle:Columns');
-      if (tableAny[columnsSymbol] && tableAny[columnsSymbol][fieldName]) {
+      if (tableAny[columnsSymbol]?.[fieldName]) {
         return tableAny[columnsSymbol][fieldName];
       }
 
@@ -845,7 +845,7 @@ export class RefineQueryBuilder<
       pagination?: Pagination;
     }
   ) {
-    let query = client.select().from(table);
+    const query = client.select().from(table);
     return this.applyQueryModifiers(query, table, params);
   }
 

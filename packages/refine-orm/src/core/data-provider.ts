@@ -23,7 +23,7 @@ import type {
 
 import type { RefineOrmDataProvider } from '../types/client';
 import type { RefineOrmOptions } from '../types/config';
-import { BaseDatabaseAdapter } from '../adapters/base';
+import { type BaseDatabaseAdapter } from '../adapters/base';
 import { RefineQueryBuilder } from './query-builder';
 import { ChainQuery } from './chain-query-builder';
 import { MorphQueryBuilder } from './morph-query';
@@ -34,9 +34,9 @@ import {
 import { createPerformanceMonitor } from './performance-monitor';
 import {
   SelectChain,
-  InsertChain,
-  UpdateChain,
-  DeleteChain,
+  type InsertChain,
+  type UpdateChain,
+  type DeleteChain,
   createSelectChain,
   createInsertChain,
   createUpdateChain,
@@ -616,7 +616,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
         if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
           const insertResult = await query.execute();
-          if (!insertResult || !insertResult.insertId) {
+          if (!insertResult?.insertId) {
             throw new QueryError(
               `Failed to create record in '${params.resource}' - no insertId returned`
             );
@@ -819,7 +819,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
             if (adapter.getDatabaseType() === 'mysql') {
               // MySQL doesn't support RETURNING, handle it differently
               const insertResult = await query.execute();
-              if (!insertResult || !insertResult.insertId) {
+              if (!insertResult?.insertId) {
                 throw new QueryError(
                   `Failed to create batch records in '${params.resource}' - no insertId returned`
                 );
@@ -859,7 +859,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
           if (adapter.getDatabaseType() === 'mysql') {
             // MySQL doesn't support RETURNING, handle it differently
             const insertResult = await query.execute();
-            if (!insertResult || !insertResult.insertId) {
+            if (!insertResult?.insertId) {
               throw new QueryError(
                 `Failed to create records in '${params.resource}' - no insertId returned`
               );

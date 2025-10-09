@@ -177,9 +177,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
 
     // Dynamically create WHERE methods
     Object.entries(whereMethods).forEach(([methodName, operator]) => {
-      (this as any)[methodName] = (field: string, value: any) => {
-        return this.where(field, operator as FilterOperator, value);
-      };
+      (this as any)[methodName] = (field: string, value: any) => this.where(field, operator as FilterOperator, value);
     });
 
     // Dynamically create sorting convenience methods
@@ -718,7 +716,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
     if (this.filters.length === 0) return '';
     // Simplified WHERE clause building
     return (
-      ' WHERE ' +
+      ` WHERE ${ 
       this.filters
         .map(f => {
           if ('field' in f) {
@@ -726,7 +724,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
           }
           return '1=1'; // fallback for conditional filters
         })
-        .join(' AND ')
+        .join(' AND ')}`
     );
   }
 
@@ -768,9 +766,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
   }
 
   private createCountMethod() {
-    return async () => {
-      return await this.executeAggregate('COUNT');
-    };
+    return async () => await this.executeAggregate('COUNT');
   }
 
   /**

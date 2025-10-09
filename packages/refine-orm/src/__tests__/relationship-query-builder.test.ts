@@ -133,7 +133,7 @@ describe('RelationshipQueryBuilder', () => {
     };
 
     // Simple mock that tracks query context
-    let mockQueryContext: {
+    const mockQueryContext: {
       table?: string;
       whereColumn?: string;
       whereValue?: any;
@@ -149,11 +149,11 @@ describe('RelationshipQueryBuilder', () => {
           );
 
           return {
-            where: (condition: any) => {
+            where: (condition: any) => 
               // For the mock, we'll intercept this and use a simpler approach
               // The actual implementation will be handled in executeRelationshipQuery
-              return Promise.resolve([]);
-            },
+               Promise.resolve([])
+            ,
           };
         },
       }),
@@ -178,9 +178,7 @@ describe('RelationshipQueryBuilder', () => {
         return data;
       }
 
-      return (data as any[]).filter((record: any) => {
-        return record[columnName] === value;
-      });
+      return (data as any[]).filter((record: any) => record[columnName] === value);
     };
   });
 

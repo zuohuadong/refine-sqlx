@@ -302,9 +302,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }
 
   // 使用函数包装器简化 getOne 方法
-  const getOne = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: GetOneParams): Promise<GetOneResponse<T>> {
+  const getOne = withErrorHandling(async (params: GetOneParams): Promise<GetOneResponse<T>> => {
     const client = await resolveClient();
     const idColumnName = params.meta?.idColumnName ?? 'id';
     const query = transformer.buildSelectQuery(params.resource, {
@@ -324,9 +322,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to get record');
 
   // 使用函数包装器简化 getList 方法
-  const getList = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: GetListParams): Promise<GetListResponse<T>> {
+  const getList = withErrorHandling(async (params: GetListParams): Promise<GetListResponse<T>> => {
     const client = await resolveClient();
     const query = transformer.buildSelectQuery(params.resource, {
       filters: params.filters,
@@ -350,9 +346,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to get list');
 
   // 使用函数包装器简化 getMany 方法
-  const getMany = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: GetManyParams): Promise<GetManyResponse<T>> {
+  const getMany = withErrorHandling(async (params: GetManyParams): Promise<GetManyResponse<T>> => {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
@@ -368,9 +362,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to get records');
 
   // 使用函数包装器简化 update 方法
-  const update = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: UpdateParams): Promise<UpdateResponse<T>> {
+  const update = withErrorHandling(async (params: UpdateParams): Promise<UpdateResponse<T>> => {
     const client = await resolveClient();
     const query = transformer.buildUpdateQuery(
       params.resource,
@@ -384,9 +376,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to update record');
 
   // 使用函数包装器简化 updateMany 方法
-  const updateMany = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: UpdateManyParams): Promise<UpdateManyResponse<T>> {
+  const updateMany = withErrorHandling(async (params: UpdateManyParams): Promise<UpdateManyResponse<T>> => {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
@@ -408,9 +398,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to update records');
 
   // 使用函数包装器简化 createMany 方法
-  const createMany = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: CreateManyParams): Promise<CreateManyResponse<T>> {
+  const createMany = withErrorHandling(async (params: CreateManyParams): Promise<CreateManyResponse<T>> => {
     const client = await resolveClient();
     if (!params.variables.length) return { data: [] };
 
@@ -446,9 +434,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to create records');
 
   // 使用函数包装器简化 deleteOne 方法
-  const deleteOne = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: DeleteOneParams): Promise<DeleteOneResponse<T>> {
+  const deleteOne = withErrorHandling(async (params: DeleteOneParams): Promise<DeleteOneResponse<T>> => {
     const client = await resolveClient();
     const result = await getOne<T>(params);
 
@@ -463,9 +449,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   }, 'Failed to delete record');
 
   // 使用函数包装器简化 deleteMany 方法
-  const deleteMany = withErrorHandling(async function <
-    T extends BaseRecord = BaseRecord,
-  >(params: DeleteManyParams): Promise<DeleteManyResponse<T>> {
+  const deleteMany = withErrorHandling(async (params: DeleteManyParams): Promise<DeleteManyResponse<T>> => {
     const client = await resolveClient();
     if (!params.ids.length) return { data: [] };
 
@@ -570,7 +554,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
               ];
               if (foreignKeyValue) {
                 const relatedRecord = await getOne({
-                  resource: relation + 's', // Assume table name is plural
+                  resource: `${relation  }s`, // Assume table name is plural
                   id: foreignKeyValue,
                 });
                 recordWithRelations[relation] = relatedRecord.data;
@@ -771,7 +755,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
      */
     async raw<T = any>(sql: string, bindings?: any[]): Promise<T[]> {
       const resolvedClient = await resolveClient();
-      const query = { sql: sql, args: bindings || [] };
+      const query = { sql, args: bindings || [] };
       const result = await resolvedClient.query(query);
       return deserializeSqlResult(result) as T[];
     },

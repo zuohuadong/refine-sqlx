@@ -721,7 +721,7 @@ export class SelectChain<
       }
 
       // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 
@@ -879,7 +879,7 @@ export class InsertChain<
       }
 
       // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 
@@ -1161,7 +1161,7 @@ export class UpdateChain<
       }
 
       // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 
@@ -1430,7 +1430,7 @@ export class DeleteChain<
       }
 
       // Try through columns property
-      if (tableAny._.columns && tableAny._.columns[fieldName]) {
+      if (tableAny._.columns?.[fieldName]) {
         return tableAny._.columns[fieldName];
       }
 

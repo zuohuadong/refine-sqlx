@@ -15,7 +15,7 @@ export function extractTableColumns<TTable extends Table>(
   if (table && typeof table === 'object' && 'Symbol.toStringTag' in table) {
     // Try to access columns through Drizzle's internal structure
     const tableConfig = (table as any)[Symbol.for('drizzle:table-config')];
-    if (tableConfig && tableConfig.columns) {
+    if (tableConfig?.columns) {
       for (const [name, column] of Object.entries(tableConfig.columns)) {
         columns[name] = column;
       }
