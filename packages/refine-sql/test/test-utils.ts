@@ -52,6 +52,10 @@ export const jest: any =
       fn: bunTest.mock,
       spyOn: bunTest.spyOn,
       mock: bunTest.mock,
+      clearAllMocks: () => {
+        // Bun doesn't have a built-in clearAllMocks, so this is a no-op
+        // In Bun, mocks are automatically cleared between tests
+      },
     }
   : jestGlobals.jest;
 
