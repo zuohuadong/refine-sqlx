@@ -44,44 +44,64 @@ async function getBunTest() {
 const g = globalThis as typeof globalThis & JestGlobals;
 
 // Export test functions with conditional logic
-export const describe: any = isBun
-  ? new Proxy({}, { get: (_, prop) => (bunTest || (async () => await getBunTest())()).describe?.[prop] })
+const baseDescribe: any =
+  isBun ?
+    new Proxy(
+      {},
+      {
+        get: (_, prop) =>
+          (bunTest || (async () => await getBunTest())()).describe?.[prop],
+      }
+    )
   : g.describe;
 
-export const it: any = isBun
-  ? (bunTest?.it || g.it)
-  : g.it;
+// Add skipIf support for Jest (Bun has it natively)
+if (!isBun && baseDescribe) {
+  baseDescribe.skipIf = (condition: boolean) => {
+    // Return a wrapper function that accepts (name, fn) parameters
+    return (name: string, fn: () => void) => {
+      if (condition) {
+        return baseDescribe.skip(name, fn);
+      } else {
+        return baseDescribe(name, fn);
+      }
+    };
+  };
+}
 
-export const test: any = isBun
-  ? (bunTest?.test || g.test)
-  : g.test;
+export const describe = baseDescribe;
 
-export const expect: any = isBun
-  ? (bunTest?.expect || g.expect)
-  : g.expect;
+export const it: any = isBun ? bunTest?.it || g.it : g.it;
 
-export const beforeAll: any = isBun
-  ? (bunTest?.beforeAll || g.beforeAll)
-  : g.beforeAll;
+export const test: any = isBun ? bunTest?.test || g.test : g.test;
 
-export const afterAll: any = isBun
-  ? (bunTest?.afterAll || g.afterAll)
-  : g.afterAll;
+export const expect: any = isBun ? bunTest?.expect || g.expect : g.expect;
 
-export const beforeEach: any = isBun
-  ? (bunTest?.beforeEach || g.beforeEach)
-  : g.beforeEach;
+export const beforeAll: any =
+  isBun ? bunTest?.beforeAll || g.beforeAll : g.beforeAll;
 
-export const afterEach: any = isBun
-  ? (bunTest?.afterEach || g.afterEach)
-  : g.afterEach;
+export const afterAll: any =
+  isBun ? bunTest?.afterAll || g.afterAll : g.afterAll;
+
+export const beforeEach: any =
+  isBun ? bunTest?.beforeEach || g.beforeEach : g.beforeEach;
+
+export const afterEach: any =
+  isBun ? bunTest?.afterEach || g.afterEach : g.afterEach;
 
 // Export jest - IMPORTANT: For Jest, this must be available synchronously
-export const jest: any = isBun
-  ? {
-      get fn() { return bunTest?.mock || g.jest?.fn; },
-      get spyOn() { return bunTest?.spyOn || g.jest?.spyOn; },
-      get mock() { return bunTest?.mock || g.jest?.mock; },
+export const jest: any =
+  isBun ?
+    {
+      get fn() {
+        return bunTest?.mock || g.jest?.fn;
+      },
+      get spyOn() {
+        return bunTest?.spyOn || g.jest?.spyOn;
+      },
+      get mock() {
+        return bunTest?.mock || g.jest?.mock;
+      },
     }
   : g.jest;
 
