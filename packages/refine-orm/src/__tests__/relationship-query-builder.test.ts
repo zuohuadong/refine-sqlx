@@ -118,11 +118,12 @@ describe('RelationshipQueryBuilder', () => {
         { id: 2, content: 'Thanks!', post_id: 1, user_id: 1 },
       ],
       roles: [
-        { id: 1, name: 'admin' },
-        { id: 2, name: 'user' },
+        { id: 1, name: 'Admin' },
+        { id: 2, name: 'User' },
       ],
       user_roles: [
         { user_id: 1, role_id: 1 },
+        { user_id: 1, role_id: 2 },
         { user_id: 2, role_id: 2 },
       ],
       profiles: [
@@ -337,18 +338,6 @@ describe('RelationshipQueryBuilder', () => {
         },
       };
 
-      // Mock the posts query result
-      const mockPostsQuery = {
-        where: () =>
-          Promise.resolve([
-            { id: 1, title: 'Post 1', user_id: 1 },
-            { id: 2, title: 'Post 2', user_id: 1 },
-            { id: 3, title: 'Post 3', user_id: 2 },
-          ]),
-      };
-
-      mockClient.select = () => ({ from: () => mockPostsQuery });
-
       const results = await relationshipBuilder.loadRelationshipsForRecords(
         'users',
         users,
@@ -361,15 +350,15 @@ describe('RelationshipQueryBuilder', () => {
           name: 'John Doe',
           email: 'john@example.com',
           posts: [
-            { id: 1, title: 'Post 1', user_id: 1 },
-            { id: 2, title: 'Post 2', user_id: 1 },
+            { id: 1, title: 'Test Post', user_id: 1 },
+            { id: 2, title: 'Another Post', user_id: 1 },
           ],
         },
         {
           id: 2,
           name: 'Jane Smith',
           email: 'jane@example.com',
-          posts: [{ id: 3, title: 'Post 3', user_id: 2 }],
+          posts: [{ id: 3, title: 'Jane Post', user_id: 2 }],
         },
       ]);
     });
@@ -394,7 +383,7 @@ describe('RelationshipQueryBuilder', () => {
     });
 
     it('should handle failed relationship loading gracefully', async () => {
-      const users = [{ id: 1, name: 'John Doe', email: 'john@example.com' }];
+      const users = [{ id: 3, name: 'Test User', email: 'test@example.com' }];
 
       const relationships: Record<string, RelationshipConfig<any>> = {
         posts: {
@@ -405,14 +394,12 @@ describe('RelationshipQueryBuilder', () => {
         },
       };
 
-      // Mock query to throw error
-      mockClient.select = () => ({
-        from: () => ({
-          where: () => Promise.reject(new Error('Database error')),
-        }),
-      });
+      // Create a new relationshipBuilder instance with error-throwing executeRelationshipQuery
+      const errorBuilder = new RelationshipQueryBuilder(mockClient, mockSchema);
+      (errorBuilder as any).executeRelationshipQuery = () =>
+        Promise.reject(new Error('Database error'));
 
-      const results = await relationshipBuilder.loadRelationshipsForRecords(
+      const results = await errorBuilder.loadRelationshipsForRecords(
         'users',
         users,
         relationships
@@ -420,9 +407,9 @@ describe('RelationshipQueryBuilder', () => {
 
       expect(results).toEqual([
         {
-          id: 1,
-          name: 'John Doe',
-          email: 'john@example.com',
+          id: 3,
+          name: 'Test User',
+          email: 'test@example.com',
           posts: [], // Should default to empty array for hasMany
         },
       ]);

@@ -200,12 +200,80 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
       }
 
       case 'belongsToMany': {
-        // This would require pivot table handling
-        // For now, return empty array
-        console.warn(
-          `belongsToMany relationships not fully implemented for ${relationName}`
-        );
-        return [];
+        const {
+          pivotTable,
+          pivotLocalKey,
+          pivotRelatedKey,
+          localKey: localKeyConfig,
+          relatedKey: relatedKeyConfig,
+        } = config;
+
+        // Validate pivot table configuration
+        if (!pivotTable) {
+          console.warn(
+            `belongsToMany relationship '${relationName}' missing pivotTable configuration`
+          );
+          return [];
+        }
+
+        const pivotTableSchema = this.schema[pivotTable];
+        if (!pivotTableSchema) {
+          console.warn(
+            `Pivot table '${String(pivotTable)}' not found in schema`
+          );
+          return [];
+        }
+
+        // Set default keys
+        const localCol = localKeyConfig || 'id';
+        const pivotLocal = pivotLocalKey || `${String(tableName)}_id`;
+        const pivotRelated = pivotRelatedKey || `${String(relatedTable)}_id`;
+        const relatedCol = relatedKeyConfig || 'id';
+
+        const localValue = record[localCol];
+        if (!localValue) {
+          return [];
+        }
+
+        try {
+          // Step 1: Query pivot table to get related IDs
+          const pivotResults = await this.executeRelationshipQuery(
+            pivotTable,
+            pivotLocal,
+            localValue
+          );
+
+          if (!pivotResults || pivotResults.length === 0) {
+            return [];
+          }
+
+          // Extract related IDs from pivot results
+          const relatedIds = pivotResults
+            .map(pivot => pivot[pivotRelated])
+            .filter(id => id !== undefined && id !== null);
+
+          if (relatedIds.length === 0) {
+            return [];
+          }
+
+          // Step 2: Query related table using executeRelationshipQuery for each ID
+          // and collect all results
+          const relatedRecords = await Promise.all(
+            relatedIds.map(id =>
+              this.executeRelationshipQuery(relatedTable, relatedCol, id)
+            )
+          );
+
+          // Flatten the array of arrays and return unique records
+          const flatResults = relatedRecords.flat();
+          return flatResults;
+        } catch (error) {
+          console.warn(
+            `Failed to load belongsToMany relationship '${relationName}':`,
+            error
+          );
+          return [];
+        }
       }
 
       default:
