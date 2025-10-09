@@ -81,7 +81,7 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^24.6.0",
     "typescript": "^5.6.0",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
     "jest": "^29.7.0",
     "mysql2": "^3.15.2",
     "postgres": "^3.4.5",
@@ -93,7 +93,7 @@
     "@refinedev/core": "4.57.11"
   },
   "optionalDependencies": {
-    "better-sqlite3": "12.2.0",
+    "better-sqlite3": "12.4.1",
     "mysql2": "3.15.2",
     "postgres": "3.4.7"
   }
