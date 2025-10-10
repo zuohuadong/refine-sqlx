@@ -11,22 +11,18 @@ export default defineBuildConfig({
   failOnWarn: false,
   rollup: {
     esbuild: {
-      minify: true,
+      minify: false, // Disable minification to fix CJS compatibility
       target: 'es2022',
-      format: 'esm',
       // 启用新标准装饰器支持
-      supported: { decorators: true },
-      drop: ['console', 'debugger'],
-      mangleProps: /^_/,
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: false,
+          useDefineForClassFields: false,
+        },
+      },
       treeShaking: true,
-      legalComments: 'none',
     },
     emitCJS: true,
-    output: {
-      compact: true,
-      minifyInternalExports: true,
-      generatedCode: 'es2015',
-    },
   },
   externals: [
     'drizzle-orm',

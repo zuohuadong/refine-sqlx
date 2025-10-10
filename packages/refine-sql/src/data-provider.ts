@@ -291,9 +291,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
   async function create<
     T extends BaseRecord = BaseRecord,
     Variables = Record<string, unknown>,
-  >(
-    params: CreateParams<Variables>
-  ): Promise<CreateResponse<T>> {
+  >(params: CreateParams<Variables>): Promise<CreateResponse<T>> {
     const client = await resolveClient();
     const query = transformer.buildInsertQuery(
       params.resource,

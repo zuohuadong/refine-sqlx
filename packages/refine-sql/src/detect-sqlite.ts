@@ -13,7 +13,10 @@ import { withErrorHandling } from './utils';
 // Re-export SQLiteOptions from types for consistency
 export type { SQLiteOptions } from './types/config';
 
-export default function (db: ':memory:', options?: SQLiteOptions): SqlClientFactory;
+export default function (
+  db: ':memory:',
+  options?: SQLiteOptions
+): SqlClientFactory;
 export default function (db: string, options?: SQLiteOptions): SqlClientFactory;
 export default function (db: D1Database): SqlClientFactory;
 export default function (db: BunDatabase): SqlClientFactory;
