@@ -1,11 +1,9 @@
-import type {
-  Table,
-  SQL,
-  Column,
-  InferSelectModel,
-  InferInsertModel,
-} from 'drizzle-orm';
 import {
+  type Table,
+  type SQL,
+  type Column,
+  type InferSelectModel,
+  type InferInsertModel,
   and,
   or,
   eq,

@@ -1,5 +1,8 @@
-import type { Table, SQL, Column, InferSelectModel } from 'drizzle-orm';
 import {
+  type Table,
+  type SQL,
+  type Column,
+  type InferSelectModel,
   and,
   or,
   eq,
@@ -916,7 +919,7 @@ export class ChainQuery<
   // Relationship configuration methods
   withRelation<TRelation extends keyof TSchema>(
     relationName: string,
-    config: import('../types/client.js').RelationshipConfig<TSchema>
+    config: RelationshipConfig<TSchema>
   ): this {
     return super.withRelation(relationName, config);
   }

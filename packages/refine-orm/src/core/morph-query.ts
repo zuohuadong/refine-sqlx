@@ -1,5 +1,6 @@
-import type { Table, InferSelectModel } from 'drizzle-orm';
 import {
+  type Table,
+  type InferSelectModel,
   and,
   or,
   eq,

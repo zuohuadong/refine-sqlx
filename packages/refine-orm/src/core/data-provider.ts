@@ -1,5 +1,13 @@
-import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql, eq, and, gte, lte } from 'drizzle-orm';
+import {
+  type Table,
+  type InferSelectModel,
+  type InferInsertModel,
+  sql,
+  eq,
+  and,
+  gte,
+  lte,
+} from 'drizzle-orm';
 import type {
   GetListParams,
   GetListResponse,
@@ -42,6 +50,7 @@ import {
   createUpdateChain,
   createDeleteChain,
 } from './native-query-builders';
+import type { MorphConfig, MorphQuery } from '../types/client';
 import {
   QueryError,
   ValidationError,
@@ -335,7 +344,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
             visited.add(obj);
 
             for (const key in obj) {
-              if (obj.hasOwnProperty(key)) {
+              if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 if (checkCircularReference(obj[key], visited)) {
                   return true;
                 }
@@ -1069,8 +1078,8 @@ export function createProvider<TSchema extends Record<string, Table>>(
     // Polymorphic relationship queries
     morphTo<TTable extends keyof TSchema & string>(
       resource: TTable,
-      morphConfig: import('../types/client.js').MorphConfig<TSchema>
-    ): import('../types/client.js').MorphQuery<TSchema, TTable> {
+      morphConfig: MorphConfig<TSchema>
+    ): MorphQuery<TSchema, TTable> {
       const client = adapter.getClient();
       const table = client.schema[resource];
 
@@ -1090,7 +1099,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
     query: {
       select<TTable extends keyof TSchema & string>(
         resource: TTable
-      ): import('../types/client.js').SelectChain<TSchema, TTable> {
+      ): SelectChain<TSchema, TTable> {
         const client = adapter.getClient();
         const table = client.schema[resource];
 
