@@ -33,10 +33,11 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ppassword"
+          --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=10s
-          --health-retries=15
+          --health-retries=20
+          --health-start-period=30s
 
       postgres:
         image: postgres:15
@@ -111,21 +112,21 @@ jobs:
         if: matrix.database == 'mysql'
         run: |
           echo "Waiting for MySQL to be ready..."
-          timeout 120 bash -c 'until mysqladmin ping -h localhost -P 3306 -u root -ppassword --silent; do echo "MySQL not ready, waiting..."; sleep 2; done'
+          timeout 180 bash -c 'until mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do echo "MySQL not ready, waiting..."; sleep 3; done'
           echo "MySQL is ready, setting up database..."
-          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS refine_orm_test;"
-          mysql -h localhost -P 3306 -u root -ppassword -e "CREATE USER IF NOT EXISTS 'test'@'%' IDENTIFIED BY 'test';"
-          mysql -h localhost -P 3306 -u root -ppassword -e "GRANT ALL PRIVILEGES ON refine_orm_test.* TO 'test'@'%';"
-          mysql -h localhost -P 3306 -u root -ppassword -e "FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS refine_orm_test;"
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword -e "CREATE USER IF NOT EXISTS 'test'@'%' IDENTIFIED BY 'test';"
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword -e "GRANT ALL PRIVILEGES ON refine_orm_test.* TO 'test'@'%';"
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword -e "FLUSH PRIVILEGES;"
           echo "Database setup complete"
 
       - name: Run integration tests - MySQL
         if: matrix.database == 'mysql'
         env:
-          MYSQL_URL: mysql://test:test@localhost:3306/refine_orm_test
+          MYSQL_URL: mysql://test:test@127.0.0.1:3306/refine_orm_test
         run: |
           echo "Testing MySQL connection..."
-          mysql -h localhost -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
+          mysql -h 127.0.0.1 -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
           echo "MySQL connection successful, running tests..."
           echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
           cd packages/refine-orm
