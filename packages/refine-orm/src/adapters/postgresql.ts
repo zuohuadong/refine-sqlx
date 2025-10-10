@@ -92,7 +92,7 @@ export class PostgreSQLAdapter<
       // Dynamic import for Bun SQL
       let sql: any;
       try {
-        // @ts-ignore - Dynamic import for bun:sql
+        // @ts-expect-error - Dynamic import for bun:sql
         const bunSql = await import('bun:sql');
         sql = bunSql.sql;
       } catch {

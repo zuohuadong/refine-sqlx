@@ -66,11 +66,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           console.error(`Failed to setup ${dbName} database:`, error);
           throw error;
         }
-      }, 30000);
+      });
 
       afterAll(async () => {
         await testSetup.teardownDatabase(dbType);
-      }, 10000);
+      });
 
       beforeEach(async () => {
         // Clean and reseed data before each test
@@ -127,7 +127,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         } catch (error) {
           console.warn(`Failed to reset database for ${dbName}:`, error);
         }
-      }, 15000);
+      });
 
       describe('Basic CRUD Operations', () => {
         describe('Create Operations', () => {

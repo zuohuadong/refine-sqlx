@@ -80,7 +80,7 @@ export class MySQLAdapter<
    */
   private async connectWithBunSql(): Promise<void> {
     try {
-      // @ts-ignore - Dynamic import for bun:sql
+      // @ts-expect-error - Dynamic import for bun:sql
       const bunSql = await import('bun:sql');
       const sql = bunSql.sql;
 

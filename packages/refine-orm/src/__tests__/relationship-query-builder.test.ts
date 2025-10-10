@@ -9,8 +9,10 @@ import {
   jest,
   test,
 } from './test-utils.js';
-import { RelationshipQueryBuilder } from '../core/relationship-query-builder';
-import type { RelationshipConfig } from '../core/relationship-query-builder';
+import {
+  RelationshipQueryBuilder,
+  type RelationshipConfig,
+} from '../core/relationship-query-builder';
 import type { DrizzleClient } from '../types/client';
 
 // Mock functions for drizzle-orm
