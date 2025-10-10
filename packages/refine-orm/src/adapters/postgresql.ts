@@ -58,7 +58,17 @@ export class PostgreSQLAdapter<
         this.runtimeConfig.runtime === 'bun' &&
         this.runtimeConfig.supportsNativeDriver
       ) {
-        await this.connectWithBunSql();
+        try {
+          await this.connectWithBunSql();
+        } catch (bunSqlError) {
+          // Fallback to postgres-js if bun:sql is not available
+          if (this.config.debug) {
+            console.log(
+              '[RefineORM] Bun SQL not available, falling back to postgres-js'
+            );
+          }
+          await this.connectWithPostgresJs();
+        }
       } else {
         await this.connectWithPostgresJs();
       }

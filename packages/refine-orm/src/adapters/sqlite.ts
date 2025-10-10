@@ -58,7 +58,17 @@ export class SQLiteAdapter<
         this.runtimeConfig.runtime === 'bun' &&
         this.runtimeConfig.supportsNativeDriver
       ) {
-        await this.connectWithBunSqlite();
+        try {
+          await this.connectWithBunSqlite();
+        } catch (bunSqliteError) {
+          // Fallback to better-sqlite3 if bun:sqlite is not available
+          if (this.config.debug) {
+            console.log(
+              '[RefineORM] Bun SQLite not available, falling back to better-sqlite3'
+            );
+          }
+          await this.connectWithBetterSqlite3();
+        }
       } else {
         await this.connectWithBetterSqlite3();
       }

@@ -55,7 +55,17 @@ export class MySQLAdapter<
         this.runtimeConfig.runtime === 'bun' &&
         (await this.checkBunSqlMySQLSupport())
       ) {
-        await this.connectWithBunSql();
+        try {
+          await this.connectWithBunSql();
+        } catch (bunSqlError) {
+          // Fallback to mysql2 if bun:sql is not available
+          if (this.config.debug) {
+            console.log(
+              '[RefineORM] Bun SQL not available, falling back to mysql2'
+            );
+          }
+          await this.connectWithMySQL2();
+        }
       } else {
         await this.connectWithMySQL2();
       }
