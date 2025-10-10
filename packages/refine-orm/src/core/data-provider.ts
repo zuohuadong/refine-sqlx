@@ -628,8 +628,15 @@ export function createProvider<TSchema extends Record<string, Table>>(
         let result;
         if (adapter.getDatabaseType() === 'mysql') {
           // MySQL doesn't support RETURNING, so we need to handle it differently
-          const insertResult = await query.execute();
-          if (!insertResult?.insertId) {
+          const insertResult: any = await query.execute();
+
+          // drizzle-orm MySQL returns an array with [ResultSetHeader]
+          // where ResultSetHeader contains insertId
+          const insertId = Array.isArray(insertResult)
+            ? insertResult[0]?.insertId
+            : insertResult?.insertId;
+
+          if (!insertId) {
             throw new QueryError(
               `Failed to create record in '${params.resource}' - no insertId returned`
             );
@@ -640,7 +647,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
           result = await client
             .select()
             .from(table)
-            .where(eq(idColumn, insertResult.insertId))
+            .where(eq(idColumn, insertId))
             .execute();
         } else {
           result = await (query.execute ? query.execute() : query);
@@ -831,8 +838,15 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
             if (adapter.getDatabaseType() === 'mysql') {
               // MySQL doesn't support RETURNING, handle it differently
-              const insertResult = await query.execute();
-              if (!insertResult?.insertId) {
+              const insertResult: any = await query.execute();
+
+              // drizzle-orm MySQL returns an array with [ResultSetHeader]
+              // where ResultSetHeader contains insertId
+              const insertId = Array.isArray(insertResult)
+                ? insertResult[0]?.insertId
+                : insertResult?.insertId;
+
+              if (!insertId) {
                 throw new QueryError(
                   `Failed to create batch records in '${params.resource}' - no insertId returned`
                 );
@@ -840,7 +854,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
               // For MySQL, we need to fetch the inserted records
               const idColumn = queryBuilder.validateAndGetIdColumn(table);
-              const startId = insertResult.insertId;
+              const startId = insertId;
               const endId = startId + batch.length - 1;
 
               const batchResult = await client
@@ -871,8 +885,15 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
           if (adapter.getDatabaseType() === 'mysql') {
             // MySQL doesn't support RETURNING, handle it differently
-            const insertResult = await query.execute();
-            if (!insertResult?.insertId) {
+            const insertResult: any = await query.execute();
+
+            // drizzle-orm MySQL returns an array with [ResultSetHeader]
+            // where ResultSetHeader contains insertId
+            const insertId = Array.isArray(insertResult)
+              ? insertResult[0]?.insertId
+              : insertResult?.insertId;
+
+            if (!insertId) {
               throw new QueryError(
                 `Failed to create records in '${params.resource}' - no insertId returned`
               );
@@ -880,7 +901,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
             // For MySQL, we need to fetch the inserted records
             const idColumn = queryBuilder.validateAndGetIdColumn(table);
-            const startId = insertResult.insertId;
+            const startId = insertId;
             const endId = startId + params.variables.length - 1;
 
             const queryResult = await client
