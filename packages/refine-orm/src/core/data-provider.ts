@@ -41,7 +41,7 @@ import {
 } from './relationship-query-builder';
 import { createPerformanceMonitor } from './performance-monitor';
 import {
-  SelectChain,
+  SelectChain as SelectChainImpl,
   type InsertChain,
   type UpdateChain,
   type DeleteChain,
@@ -50,7 +50,7 @@ import {
   createUpdateChain,
   createDeleteChain,
 } from './native-query-builders';
-import type { MorphConfig, MorphQuery } from '../types/client';
+import type { MorphConfig, MorphQuery, SelectChain } from '../types/client';
 import {
   QueryError,
   ValidationError,
@@ -1107,7 +1107,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(`Table '${resource}' not found in schema`);
         }
 
-        return createSelectChain(client, table, client.schema, resource) as any;
+        return createSelectChain(client, table, client.schema, resource) as SelectChain<TSchema, TTable>;
       },
 
       insert<TTable extends keyof TSchema & string>(

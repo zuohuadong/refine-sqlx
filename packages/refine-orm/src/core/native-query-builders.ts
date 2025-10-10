@@ -585,6 +585,102 @@ export class SelectChain<
   }
 
   /**
+   * Add relationship loading to the query
+   */
+  with<TRelation extends keyof TSchema>(
+    _relation: TRelation,
+    _callback?: (query: any) => any
+  ): this {
+    // Relationship loading not supported in native SelectChain
+    // This is a no-op to satisfy the interface
+    console.warn('Relationship loading with() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Configure a specific relationship
+   */
+  withRelation<TRelation extends keyof TSchema>(
+    _relationName: string,
+    _config: any
+  ): this {
+    // Relationship configuration not supported in native SelectChain
+    console.warn('Relationship configuration withRelation() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Configure hasOne relationship
+   */
+  withHasOne<TRelation extends keyof TSchema>(
+    _relationName: string,
+    _relatedTable: TRelation,
+    _localKey?: string,
+    _relatedKey?: string
+  ): this {
+    // Relationship configuration not supported in native SelectChain
+    console.warn('hasOne relationship withHasOne() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Configure hasMany relationship
+   */
+  withHasMany<TRelation extends keyof TSchema>(
+    _relationName: string,
+    _relatedTable: TRelation,
+    _localKey?: string,
+    _relatedKey?: string
+  ): this {
+    // Relationship configuration not supported in native SelectChain
+    console.warn('hasMany relationship withHasMany() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Configure belongsTo relationship
+   */
+  withBelongsTo<TRelation extends keyof TSchema>(
+    _relationName: string,
+    _relatedTable: TRelation,
+    _foreignKey?: string,
+    _relatedKey?: string
+  ): this {
+    // Relationship configuration not supported in native SelectChain
+    console.warn('belongsTo relationship withBelongsTo() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Configure belongsToMany relationship
+   */
+  withBelongsToMany<
+    TRelation extends keyof TSchema,
+    TPivot extends keyof TSchema,
+  >(
+    _relationName: string,
+    _relatedTable: TRelation,
+    _pivotTable: TPivot,
+    _localKey?: string,
+    _relatedKey?: string,
+    _pivotLocalKey?: string,
+    _pivotRelatedKey?: string
+  ): this {
+    // Relationship configuration not supported in native SelectChain
+    console.warn('belongsToMany relationship withBelongsToMany() is not supported in native SelectChain. Use ChainQuery instead.');
+    return this;
+  }
+
+  /**
+   * Add polymorphic relationship conditions
+   */
+  morphTo(_morphField: string, _morphTypes: Record<string, keyof TSchema>): this {
+    // Polymorphic relationships not supported in native SelectChain
+    console.warn('Polymorphic relationships morphTo() is not supported in native SelectChain. Use MorphQuery instead.');
+    return this;
+  }
+
+  /**
    * Build the final query
    */
   private buildQuery() {
