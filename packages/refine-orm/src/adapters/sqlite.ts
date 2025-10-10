@@ -38,6 +38,8 @@ export class SQLiteAdapter<
 > extends BaseDatabaseAdapter<TSchema> {
   private connection: any = null;
   private runtimeConfig = getRuntimeConfig('sqlite');
+  private actualDriver: 'better-sqlite3' | 'bun:sqlite' | 'd1' =
+    'better-sqlite3'; // Track actual driver in use
 
   constructor(config: DatabaseConfig<TSchema>) {
     super(config);
@@ -54,12 +56,14 @@ export class SQLiteAdapter<
     try {
       if (this.runtimeConfig.runtime === 'cloudflare-d1') {
         await this.connectWithD1();
+        this.actualDriver = 'd1';
       } else if (
         this.runtimeConfig.runtime === 'bun' &&
         this.runtimeConfig.supportsNativeDriver
       ) {
         try {
           await this.connectWithBunSqlite();
+          this.actualDriver = 'bun:sqlite';
         } catch (bunSqliteError) {
           // Fallback to better-sqlite3 if bun:sqlite is not available
           if (this.config.debug) {
@@ -68,16 +72,18 @@ export class SQLiteAdapter<
             );
           }
           await this.connectWithBetterSqlite3();
+          this.actualDriver = 'better-sqlite3';
         }
       } else {
         await this.connectWithBetterSqlite3();
+        this.actualDriver = 'better-sqlite3';
       }
 
       this.isConnected = true;
 
       if (this.config.debug) {
         console.log(
-          `[RefineORM] Connected to SQLite using ${this.runtimeConfig.driver}`
+          `[RefineORM] Connected to SQLite using ${this.actualDriver}`
         );
       }
     } catch (error) {
@@ -269,7 +275,7 @@ export class SQLiteAdapter<
   async disconnect(): Promise<void> {
     try {
       if (this.connection) {
-        if (this.runtimeConfig.driver === 'better-sqlite3') {
+        if (this.actualDriver === 'better-sqlite3') {
           // better-sqlite3 connection
           this.connection.close();
         }
@@ -301,10 +307,10 @@ export class SQLiteAdapter<
       }
 
       // Execute a simple query to test connection
-      if (this.runtimeConfig.driver === 'bun:sqlite') {
+      if (this.actualDriver === 'bun:sqlite') {
         // For Bun SQLite, execute a simple SELECT 1
         this.connection.query('SELECT 1').get();
-      } else if (this.runtimeConfig.driver === 'd1') {
+      } else if (this.actualDriver === 'd1') {
         // For D1, execute a simple SELECT 1
         await this.connection.prepare('SELECT 1').first();
       } else {
@@ -419,12 +425,12 @@ export class SQLiteAdapter<
     }
 
     try {
-      if (this.runtimeConfig.driver === 'better-sqlite3') {
+      if (this.actualDriver === 'better-sqlite3') {
         // For better-sqlite3, transactions are synchronous
         if (this.connection.prepare) {
           this.connection.prepare('BEGIN TRANSACTION').run();
         }
-      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+      } else if (this.actualDriver === 'bun:sqlite') {
         // For bun:sqlite, use the transaction method if available
         if (typeof this.connection.run === 'function') {
           this.connection.run('BEGIN TRANSACTION');
@@ -450,12 +456,12 @@ export class SQLiteAdapter<
     }
 
     try {
-      if (this.runtimeConfig.driver === 'better-sqlite3') {
+      if (this.actualDriver === 'better-sqlite3') {
         // For better-sqlite3, transactions are synchronous
         if (this.connection.prepare) {
           this.connection.prepare('COMMIT').run();
         }
-      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+      } else if (this.actualDriver === 'bun:sqlite') {
         // For bun:sqlite, use the transaction method if available
         if (typeof this.connection.run === 'function') {
           this.connection.run('COMMIT');
@@ -481,12 +487,12 @@ export class SQLiteAdapter<
     }
 
     try {
-      if (this.runtimeConfig.driver === 'better-sqlite3') {
+      if (this.actualDriver === 'better-sqlite3') {
         // For better-sqlite3, transactions are synchronous
         if (this.connection.prepare) {
           this.connection.prepare('ROLLBACK').run();
         }
-      } else if (this.runtimeConfig.driver === 'bun:sqlite') {
+      } else if (this.actualDriver === 'bun:sqlite') {
         // For bun:sqlite, use the transaction method if available
         if (typeof this.connection.run === 'function') {
           this.connection.run('ROLLBACK');
@@ -517,7 +523,7 @@ export class SQLiteAdapter<
     return {
       type: 'sqlite',
       runtime: this.runtimeConfig.runtime,
-      driver: this.runtimeConfig.driver,
+      driver: this.actualDriver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
       futureSupport: { bunSql: this.runtimeConfig.runtime === 'bun' },

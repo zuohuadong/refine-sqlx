@@ -40,6 +40,7 @@ export class PostgreSQLAdapter<
 > extends BaseDatabaseAdapter<TSchema> {
   private connection: any = null;
   private runtimeConfig = getRuntimeConfig('postgresql');
+  private actualDriver: 'postgres' | 'bun:sql' = 'postgres'; // Track actual driver in use
 
   constructor(config: DatabaseConfig<TSchema>) {
     super(config);
@@ -60,6 +61,7 @@ export class PostgreSQLAdapter<
       ) {
         try {
           await this.connectWithBunSql();
+          this.actualDriver = 'bun:sql';
         } catch (bunSqlError) {
           // Fallback to postgres-js if bun:sql is not available
           if (this.config.debug) {
@@ -68,16 +70,18 @@ export class PostgreSQLAdapter<
             );
           }
           await this.connectWithPostgresJs();
+          this.actualDriver = 'postgres';
         }
       } else {
         await this.connectWithPostgresJs();
+        this.actualDriver = 'postgres';
       }
 
       this.isConnected = true;
 
       if (this.config.debug) {
         console.log(
-          `[RefineORM] Connected to PostgreSQL using ${this.runtimeConfig.driver}`
+          `[RefineORM] Connected to PostgreSQL using ${this.actualDriver}`
         );
       }
     } catch (error) {
@@ -264,7 +268,7 @@ export class PostgreSQLAdapter<
   async disconnect(): Promise<void> {
     try {
       if (this.connection) {
-        if (this.runtimeConfig.driver === 'postgres') {
+        if (this.actualDriver === 'postgres') {
           // postgres-js connection
           await this.connection.end();
         }
@@ -296,7 +300,7 @@ export class PostgreSQLAdapter<
       }
 
       // Execute a simple query to test connection
-      if (this.runtimeConfig.driver === 'bun:sql') {
+      if (this.actualDriver === 'bun:sql') {
         // For Bun SQL, execute a simple SELECT 1
         await this.connection.query('SELECT 1');
       } else {
@@ -375,7 +379,7 @@ export class PostgreSQLAdapter<
 
     try {
       // For postgres-js driver
-      if (this.runtimeConfig.driver === 'postgres') {
+      if (this.actualDriver === 'postgres') {
         let result;
         if (params && params.length > 0) {
           // Use parameterized query if params are provided
@@ -389,9 +393,16 @@ export class PostgreSQLAdapter<
         return result as T[];
       }
 
+      // For bun:sql driver
+      if (this.actualDriver === 'bun:sql') {
+        // Bun SQL implementation
+        const result = await this.connection.query(sql, params);
+        return result as T[];
+      }
+
       // For other drivers (fallback)
       throw new Error(
-        `executeRaw not implemented for driver: ${this.runtimeConfig.driver}`
+        `executeRaw not implemented for driver: ${this.actualDriver}`
       );
     } catch (error) {
       throw new QueryError(
@@ -474,7 +485,7 @@ export class PostgreSQLAdapter<
     return {
       type: 'postgresql',
       runtime: this.runtimeConfig.runtime,
-      driver: this.runtimeConfig.driver,
+      driver: this.actualDriver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
       futureSupport: { bunSql: this.runtimeConfig.runtime === 'bun' },

@@ -36,6 +36,7 @@ export class MySQLAdapter<
 > extends BaseDatabaseAdapter<TSchema> {
   private connection: any = null;
   private runtimeConfig = getRuntimeConfig('mysql');
+  private actualDriver: 'mysql2' | 'bun:sql' = 'mysql2'; // Track actual driver in use
 
   constructor(config: DatabaseConfig<TSchema>) {
     super(config);
@@ -57,6 +58,7 @@ export class MySQLAdapter<
       ) {
         try {
           await this.connectWithBunSql();
+          this.actualDriver = 'bun:sql';
         } catch (bunSqlError) {
           // Fallback to mysql2 if bun:sql is not available
           if (this.config.debug) {
@@ -65,16 +67,18 @@ export class MySQLAdapter<
             );
           }
           await this.connectWithMySQL2();
+          this.actualDriver = 'mysql2';
         }
       } else {
         await this.connectWithMySQL2();
+        this.actualDriver = 'mysql2';
       }
 
       this.isConnected = true;
 
       if (this.config.debug) {
         console.log(
-          `[RefineORM] Connected to MySQL using ${this.runtimeConfig.driver}`
+          `[RefineORM] Connected to MySQL using ${this.actualDriver}`
         );
       }
     } catch (error) {
@@ -456,7 +460,7 @@ export class MySQLAdapter<
     return {
       type: 'mysql',
       runtime: this.runtimeConfig.runtime,
-      driver: this.runtimeConfig.driver,
+      driver: this.actualDriver,
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
       futureSupport: {
