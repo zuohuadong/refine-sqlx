@@ -29,7 +29,7 @@ import type {
   DeleteManyResponse,
 } from '@refinedev/core';
 
-import type { RefineOrmDataProvider } from '../types/client';
+import type { RefineOrmDataProvider, MorphConfig, MorphQuery, SelectChain } from '../types/client';
 import type { RefineOrmOptions } from '../types/config';
 import { type BaseDatabaseAdapter } from '../adapters/base';
 import { RefineQueryBuilder } from './query-builder';
@@ -50,7 +50,6 @@ import {
   createUpdateChain,
   createDeleteChain,
 } from './native-query-builders';
-import type { MorphConfig, MorphQuery, SelectChain } from '../types/client';
 import {
   QueryError,
   ValidationError,

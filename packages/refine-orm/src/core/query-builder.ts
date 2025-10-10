@@ -461,7 +461,7 @@ export class RefineQueryBuilder<
     // Helper function to reduce repetition
     const createSimpleOperator = (
       operator: string,
-      drizzleFunction: Function
+      drizzleFunction: (column: Column, value: any) => SQL
     ) => ({
       operator,
       transform: (

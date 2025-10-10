@@ -82,9 +82,8 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
       typeof db === 'object' && 'connect' in db ?
         db
       : detectSqlite(db as any, options as any);
-    const connectedClient = await factory.connect();
-    // 直接返回连接的客户端，避免竞态条件
-    client = connectedClient;
+    // eslint-disable-next-line require-atomic-updates
+    client = await factory.connect();
 
     return client;
   }
@@ -184,6 +183,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
     return { data: data as T[] };
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   const create = async <T extends BaseRecord = BaseRecord, Variables = {}>(
     params: CreateParams<Variables>
   ): Promise<CreateResponse<T>> => {
