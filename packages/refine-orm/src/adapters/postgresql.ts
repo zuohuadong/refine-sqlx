@@ -221,8 +221,9 @@ export class PostgreSQLAdapter<
     const userPoolConfig = this.config.pool || {};
 
     // Default optimized values for PostgreSQL
+    // Use max: 1 to support transactions with BEGIN/COMMIT/ROLLBACK
     const defaults = {
-      max: 20,
+      max: 1,
       idle_timeout: 300, // 5 minutes
       connect_timeout: 60, // 1 minute
     };
