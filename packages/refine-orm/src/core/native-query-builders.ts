@@ -593,7 +593,9 @@ export class SelectChain<
   ): this {
     // Relationship loading not supported in native SelectChain
     // This is a no-op to satisfy the interface
-    console.warn('Relationship loading with() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'Relationship loading with() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
@@ -605,7 +607,9 @@ export class SelectChain<
     _config: any
   ): this {
     // Relationship configuration not supported in native SelectChain
-    console.warn('Relationship configuration withRelation() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'Relationship configuration withRelation() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
@@ -619,7 +623,9 @@ export class SelectChain<
     _relatedKey?: string
   ): this {
     // Relationship configuration not supported in native SelectChain
-    console.warn('hasOne relationship withHasOne() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'hasOne relationship withHasOne() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
@@ -633,7 +639,9 @@ export class SelectChain<
     _relatedKey?: string
   ): this {
     // Relationship configuration not supported in native SelectChain
-    console.warn('hasMany relationship withHasMany() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'hasMany relationship withHasMany() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
@@ -647,7 +655,9 @@ export class SelectChain<
     _relatedKey?: string
   ): this {
     // Relationship configuration not supported in native SelectChain
-    console.warn('belongsTo relationship withBelongsTo() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'belongsTo relationship withBelongsTo() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
@@ -667,16 +677,23 @@ export class SelectChain<
     _pivotRelatedKey?: string
   ): this {
     // Relationship configuration not supported in native SelectChain
-    console.warn('belongsToMany relationship withBelongsToMany() is not supported in native SelectChain. Use ChainQuery instead.');
+    console.warn(
+      'belongsToMany relationship withBelongsToMany() is not supported in native SelectChain. Use ChainQuery instead.'
+    );
     return this;
   }
 
   /**
    * Add polymorphic relationship conditions
    */
-  morphTo(_morphField: string, _morphTypes: Record<string, keyof TSchema>): this {
+  morphTo(
+    _morphField: string,
+    _morphTypes: Record<string, keyof TSchema>
+  ): this {
     // Polymorphic relationships not supported in native SelectChain
-    console.warn('Polymorphic relationships morphTo() is not supported in native SelectChain. Use MorphQuery instead.');
+    console.warn(
+      'Polymorphic relationships morphTo() is not supported in native SelectChain. Use MorphQuery instead.'
+    );
     return this;
   }
 

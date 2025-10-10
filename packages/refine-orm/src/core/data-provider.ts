@@ -29,7 +29,12 @@ import type {
   DeleteManyResponse,
 } from '@refinedev/core';
 
-import type { RefineOrmDataProvider, MorphConfig, MorphQuery, SelectChain } from '../types/client';
+import type {
+  RefineOrmDataProvider,
+  MorphConfig,
+  MorphQuery,
+  SelectChain,
+} from '../types/client';
 import type { RefineOrmOptions } from '../types/config';
 import { type BaseDatabaseAdapter } from '../adapters/base';
 import { RefineQueryBuilder } from './query-builder';
@@ -1106,7 +1111,12 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(`Table '${resource}' not found in schema`);
         }
 
-        return createSelectChain(client, table, client.schema, resource) as SelectChain<TSchema, TTable>;
+        return createSelectChain(
+          client,
+          table,
+          client.schema,
+          resource
+        ) as SelectChain<TSchema, TTable>;
       },
 
       insert<TTable extends keyof TSchema & string>(
