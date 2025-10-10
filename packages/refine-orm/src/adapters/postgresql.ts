@@ -103,12 +103,14 @@ export class PostgreSQLAdapter<
       // For Bun, fall back to using standard postgres driver
       if (!drizzlePostgres) {
         const drizzleModule = await import('drizzle-orm/postgres-js');
+        // eslint-disable-next-line require-atomic-updates
         drizzlePostgres = drizzleModule.drizzle;
       }
 
       // Import postgres driver
       if (!postgres) {
         const postgresModule = await import('postgres');
+        // eslint-disable-next-line require-atomic-updates
         postgres = postgresModule.default;
       }
 
@@ -152,6 +154,7 @@ export class PostgreSQLAdapter<
       // Dynamic import for drizzle-orm/postgres-js
       if (!drizzlePostgres) {
         const drizzleModule = await import('drizzle-orm/postgres-js');
+        // eslint-disable-next-line require-atomic-updates
         drizzlePostgres = drizzleModule.drizzle;
       }
 

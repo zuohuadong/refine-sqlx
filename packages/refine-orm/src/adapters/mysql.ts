@@ -95,6 +95,7 @@ export class MySQLAdapter<
       // Dynamic import for drizzle-orm/mysql2 (compatible with bun:sql)
       if (!drizzleMySQL) {
         const drizzleModule = await import('drizzle-orm/mysql2');
+        // eslint-disable-next-line require-atomic-updates
         drizzleMySQL = drizzleModule.drizzle;
       }
 
@@ -142,6 +143,7 @@ export class MySQLAdapter<
       // Dynamic import for drizzle-orm/mysql2
       if (!drizzleMySQL) {
         const drizzleModule = await import('drizzle-orm/mysql2');
+        // eslint-disable-next-line require-atomic-updates
         drizzleMySQL = drizzleModule.drizzle;
       }
 

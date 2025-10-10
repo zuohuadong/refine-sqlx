@@ -101,6 +101,7 @@ export class SQLiteAdapter<
       // Dynamic import for drizzle-orm/bun-sqlite
       if (!drizzleBun) {
         const drizzleModule = await import('drizzle-orm/bun-sqlite');
+        // eslint-disable-next-line require-atomic-updates
         drizzleBun = drizzleModule.drizzle;
       }
 
@@ -141,6 +142,7 @@ export class SQLiteAdapter<
       // Dynamic import for drizzle-orm/better-sqlite3
       if (!drizzleSqlite) {
         const drizzleModule = await import('drizzle-orm/better-sqlite3');
+        // eslint-disable-next-line require-atomic-updates
         drizzleSqlite = drizzleModule.drizzle;
       }
 
@@ -181,6 +183,7 @@ export class SQLiteAdapter<
       // Dynamic import for drizzle-orm/d1
       if (!drizzleD1) {
         const drizzleModule = await import('drizzle-orm/d1');
+        // eslint-disable-next-line require-atomic-updates
         drizzleD1 = drizzleModule.drizzle;
       }
 

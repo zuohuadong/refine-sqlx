@@ -55,7 +55,7 @@ describe.skip('MySQL Adapter', () => {
   beforeAll(() => {
     // Speed up retry delays for testing by mocking setTimeout
     originalSetTimeout = global.setTimeout;
-    global.setTimeout = ((fn: Function, delay?: number) => {
+    global.setTimeout = ((fn: (...args: any[]) => void, delay?: number) => {
       // Call the function immediately instead of with delay
       if (typeof fn === 'function') {
         fn();
@@ -69,10 +69,8 @@ describe.skip('MySQL Adapter', () => {
     global.setTimeout = originalSetTimeout;
   });
 
-  beforeEach(async () => {
-    // Test skipped - mock setup disabled
-    return;
-  });
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(async () => {});
 
   describe('MySQLAdapter Class', () => {
     it('should create MySQL adapter instance', () => {
