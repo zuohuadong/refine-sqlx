@@ -303,9 +303,9 @@ export class PostgreSQLAdapter<
       if (this.actualDriver === 'bun:sql') {
         // For Bun SQL, execute a simple SELECT 1
         await this.connection.query('SELECT 1');
-      } else {
-        // For postgres-js, use the connection's built-in method
-        await this.connection`SELECT 1`;
+      } else if (this.actualDriver === 'postgres') {
+        // For postgres-js, use unsafe() method
+        await this.connection.unsafe('SELECT 1');
       }
 
       return true;
@@ -423,8 +423,12 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For postgres-js, execute BEGIN command using sql template
-      await this.connection`BEGIN`;
+      // For postgres-js, execute BEGIN command using unsafe()
+      if (this.actualDriver === 'postgres') {
+        await this.connection.unsafe('BEGIN');
+      } else if (this.actualDriver === 'bun:sql') {
+        await this.connection.query('BEGIN');
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to begin PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -442,8 +446,12 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For postgres-js, execute COMMIT command using sql template
-      await this.connection`COMMIT`;
+      // For postgres-js, execute COMMIT command using unsafe()
+      if (this.actualDriver === 'postgres') {
+        await this.connection.unsafe('COMMIT');
+      } else if (this.actualDriver === 'bun:sql') {
+        await this.connection.query('COMMIT');
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to commit PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -461,8 +469,12 @@ export class PostgreSQLAdapter<
     }
 
     try {
-      // For postgres-js, execute ROLLBACK command using sql template
-      await this.connection`ROLLBACK`;
+      // For postgres-js, execute ROLLBACK command using unsafe()
+      if (this.actualDriver === 'postgres') {
+        await this.connection.unsafe('ROLLBACK');
+      } else if (this.actualDriver === 'bun:sql') {
+        await this.connection.query('ROLLBACK');
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to rollback PostgreSQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
