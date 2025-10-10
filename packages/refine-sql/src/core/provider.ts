@@ -72,7 +72,8 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
 
     // 检查是否已经是 SqlClient
     if (typeof db === 'object' && db && 'query' in db && 'execute' in db) {
-      client = db as SqlClient;
+      const resolvedClient = db as SqlClient;
+      client = resolvedClient;
       return client;
     }
 
@@ -82,6 +83,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
         db
       : detectSqlite(db as any, options as any);
     const connectedClient = await factory.connect();
+    // 直接返回连接的客户端，避免竞态条件
     client = connectedClient;
 
     return client;

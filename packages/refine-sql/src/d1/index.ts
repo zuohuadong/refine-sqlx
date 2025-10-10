@@ -11,8 +11,8 @@ import type { TableSchema } from '../typed-methods';
 /**
  * D1 专用数据提供器
  */
-export interface D1DataProvider<TSchema extends TableSchema = TableSchema>
-  extends CoreDataProvider<TSchema> {}
+export type D1DataProvider<TSchema extends TableSchema = TableSchema> =
+  CoreDataProvider<TSchema>;
 
 /**
  * 创建 D1 专用提供器

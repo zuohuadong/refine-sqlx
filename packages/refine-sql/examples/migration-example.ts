@@ -57,11 +57,13 @@ async function oldUsageExamples() {
 
 // ===== AFTER (refine-sql) =====
 
-import { 
-  createProvider, 
+import {
+  createProvider,
   createMigrationProvider,
+  CodeTransformer,
+  MigrationHelpers,
   type TableSchema,
-  type MigrationConfig 
+  type MigrationConfig
 } from 'refine-sql';
 
 // Simple TypeScript schema definition (no Drizzle needed)
@@ -233,8 +235,6 @@ async function performanceComparison() {
 }
 
 // ===== MIGRATION UTILITIES =====
-
-import { CodeTransformer, MigrationHelpers } from 'refine-sql';
 
 function migrationUtilities() {
   // Check if project is compatible

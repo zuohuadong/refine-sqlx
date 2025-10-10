@@ -1051,6 +1051,8 @@ function Singleton<T extends new (...args: any[]) => any>(
         return instance;
       }
       super(...args);
+      // Store the instance after calling super()
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       instance = this;
     }
   } as T;

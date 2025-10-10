@@ -11,8 +11,8 @@ import type { TableSchema } from '../typed-methods';
 /**
  * Bun 专用数据提供器
  */
-export interface BunDataProvider<TSchema extends TableSchema = TableSchema>
-  extends CoreDataProvider<TSchema> {}
+export type BunDataProvider<TSchema extends TableSchema = TableSchema> =
+  CoreDataProvider<TSchema>;
 
 /**
  * 创建 Bun SQLite 专用提供器
