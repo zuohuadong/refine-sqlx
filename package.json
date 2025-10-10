@@ -44,7 +44,7 @@
     "test:all-quality": "npm run test:node-versions && npm run test:compatibility && npm run test:modules && npm run test:tree-shaking",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "bun run quality:check && bun run build && changeset publish"
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.7",
