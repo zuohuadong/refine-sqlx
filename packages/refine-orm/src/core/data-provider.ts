@@ -7,6 +7,7 @@ import {
   and,
   gte,
   lte,
+  inArray,
 } from 'drizzle-orm';
 import type {
   GetListParams,
