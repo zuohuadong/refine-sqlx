@@ -449,22 +449,6 @@ export interface RefineOrmDataProvider<
     morphConfig: MorphConfig<TSchema>
   ): MorphQuery<TSchema, TTable>;
 
-  // Native query builder
-  query: {
-    select<TTable extends keyof TSchema & string>(
-      resource: TTable
-    ): SelectChain<TSchema, TTable>;
-    insert<TTable extends keyof TSchema & string>(
-      resource: TTable
-    ): InsertChain<TSchema, TTable>;
-    update<TTable extends keyof TSchema & string>(
-      resource: TTable
-    ): UpdateChain<TSchema, TTable>;
-    delete<TTable extends keyof TSchema & string>(
-      resource: TTable
-    ): DeleteChain<TSchema, TTable>;
-  };
-
   // Relationship queries
   getWithRelations<TTable extends keyof TSchema & string>(
     resource: TTable,

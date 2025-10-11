@@ -78,62 +78,61 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
           // First clean up the current tables
           if (provider && provider.executeRaw) {
-            // Delete in reverse order to handle foreign key constraints
-            try {
-              await provider.executeRaw('DELETE FROM comments WHERE 1=1');
-            } catch (e) {
-              // Table might not exist, continue
-            }
-            try {
-              await provider.executeRaw('DELETE FROM posts WHERE 1=1');
-            } catch (e) {
-              // Table might not exist, continue
-            }
-            try {
-              await provider.executeRaw('DELETE FROM users WHERE 1=1');
-            } catch (e) {
-              // Table might not exist, continue
-            }
-
-            // Reset auto-increment counters for SQLite
-            if (dbType === 'sqlite') {
+            // Clean tables based on database type
+            if (dbType === 'mysql') {
+              // For MySQL, disable foreign key checks and use TRUNCATE
+              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 0');
               try {
-                await provider.executeRaw(
-                  'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
-                  ['users', 'posts', 'comments']
-                );
-              } catch (e) {
-                // sqlite_sequence might not exist, that's ok
-              }
-            } else if (dbType === 'mysql') {
-              // Reset auto-increment counters for MySQL
-              try {
-                await provider.executeRaw(
-                  'ALTER TABLE users AUTO_INCREMENT = 1'
-                );
-                await provider.executeRaw(
-                  'ALTER TABLE posts AUTO_INCREMENT = 1'
-                );
-                await provider.executeRaw(
-                  'ALTER TABLE comments AUTO_INCREMENT = 1'
-                );
+                await provider.executeRaw('TRUNCATE TABLE comments');
+                await provider.executeRaw('TRUNCATE TABLE posts');
+                await provider.executeRaw('TRUNCATE TABLE users');
               } catch (e) {
                 // Table might not exist, continue
               }
-            } else if (dbType === 'postgresql') {
-              // Reset sequences for PostgreSQL
+              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
+            } else {
+              // Delete in reverse order to handle foreign key constraints
               try {
-                await provider.executeRaw(
-                  'ALTER SEQUENCE users_id_seq RESTART WITH 1'
-                );
-                await provider.executeRaw(
-                  'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
-                );
-                await provider.executeRaw(
-                  'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
-                );
+                await provider.executeRaw('DELETE FROM comments WHERE 1=1');
               } catch (e) {
-                // Sequence might not exist, continue
+                // Table might not exist, continue
+              }
+              try {
+                await provider.executeRaw('DELETE FROM posts WHERE 1=1');
+              } catch (e) {
+                // Table might not exist, continue
+              }
+              try {
+                await provider.executeRaw('DELETE FROM users WHERE 1=1');
+              } catch (e) {
+                // Table might not exist, continue
+              }
+
+              // Reset auto-increment counters for SQLite
+              if (dbType === 'sqlite') {
+                try {
+                  await provider.executeRaw(
+                    'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
+                    ['users', 'posts', 'comments']
+                  );
+                } catch (e) {
+                  // sqlite_sequence might not exist, that's ok
+                }
+              } else if (dbType === 'postgresql') {
+                // Reset sequences for PostgreSQL
+                try {
+                  await provider.executeRaw(
+                    'ALTER SEQUENCE users_id_seq RESTART WITH 1'
+                  );
+                  await provider.executeRaw(
+                    'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
+                  );
+                  await provider.executeRaw(
+                    'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+                  );
+                } catch (e) {
+                  // Sequence might not exist, continue
+                }
               }
             }
           }

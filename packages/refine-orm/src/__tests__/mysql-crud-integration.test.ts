@@ -144,10 +144,6 @@ describe.skip('MySQL CRUD Integration', () => {
       expect(typeof dataProvider.getWithRelations).toBe('function');
       expect(typeof dataProvider.executeRaw).toBe('function');
       expect(typeof dataProvider.transaction).toBe('function');
-      expect(typeof dataProvider.query.select).toBe('function');
-      expect(typeof dataProvider.query.insert).toBe('function');
-      expect(typeof dataProvider.query.update).toBe('function');
-      expect(typeof dataProvider.query.delete).toBe('function');
     });
   });
 

@@ -34,7 +34,6 @@ import type {
   RefineOrmDataProvider,
   MorphConfig,
   MorphQuery,
-  SelectChain,
 } from '../types/client';
 import type { RefineOrmOptions } from '../types/config';
 import { type BaseDatabaseAdapter } from '../adapters/base';
@@ -46,16 +45,6 @@ import {
   type RelationshipConfig,
 } from './relationship-query-builder';
 import { createPerformanceMonitor } from './performance-monitor';
-import {
-  SelectChain as SelectChainImpl,
-  type InsertChain,
-  type UpdateChain,
-  type DeleteChain,
-  createSelectChain,
-  createInsertChain,
-  createUpdateChain,
-  createDeleteChain,
-} from './native-query-builders';
 import {
   QueryError,
   ValidationError,
@@ -1222,84 +1211,6 @@ export function createProvider<TSchema extends Record<string, Table>>(
       );
     },
 
-    // Native query builder
-    query: {
-      select<TTable extends keyof TSchema & string>(
-        resource: TTable
-      ): SelectChain<TSchema, TTable> {
-        const client = adapter.getClient();
-        const table = client.schema[resource];
-
-        if (!table) {
-          throw new QueryError(`Table '${resource}' not found in schema`);
-        }
-
-        return createSelectChain(
-          client,
-          table,
-          client.schema,
-          resource
-        ) as SelectChain<TSchema, TTable>;
-      },
-
-      insert<TTable extends keyof TSchema & string>(
-        resource: TTable
-      ): InsertChain<TSchema, TTable> {
-        const client = adapter.getClient();
-        const table = client.schema[resource];
-
-        if (!table) {
-          throw new QueryError(`Table '${resource}' not found in schema`);
-        }
-
-        return createInsertChain(
-          client,
-          table,
-          client.schema,
-          resource,
-          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
-        );
-      },
-
-      update<TTable extends keyof TSchema & string>(
-        resource: TTable
-      ): UpdateChain<TSchema, TTable> {
-        const client = adapter.getClient();
-        const table = client.schema[resource];
-
-        if (!table) {
-          throw new QueryError(`Table '${resource}' not found in schema`);
-        }
-
-        return createUpdateChain(
-          client,
-          table,
-          client.schema,
-          resource,
-          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
-        );
-      },
-
-      delete<TTable extends keyof TSchema & string>(
-        resource: TTable
-      ): DeleteChain<TSchema, TTable> {
-        const client = adapter.getClient();
-        const table = client.schema[resource];
-
-        if (!table) {
-          throw new QueryError(`Table '${resource}' not found in schema`);
-        }
-
-        return createDeleteChain(
-          client,
-          table,
-          client.schema,
-          resource,
-          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
-        );
-      },
-    },
-
     // Relationship queries
     async getWithRelations<TTable extends keyof TSchema & string>(
       resource: TTable,
@@ -1413,6 +1324,79 @@ export function createProvider<TSchema extends Record<string, Table>>(
     // Additional DataProvider methods
     getApiUrl: () => '',
     custom: async () => ({ data: {} as any }),
+
+    // Native query builder
+    query: {
+      select<TTable extends keyof TSchema & string>(
+        resource: TTable
+      ): SelectChain<TSchema, TTable> {
+        const client = adapter.getClient();
+        const table = client.schema[resource];
+
+        if (!table) {
+          throw new QueryError(`Table '${resource}' not found in schema`);
+        }
+
+        return createSelectChain(client, table, client.schema, resource);
+      },
+
+      insert<TTable extends keyof TSchema & string>(
+        resource: TTable
+      ): InsertChain<TSchema, TTable> {
+        const client = adapter.getClient();
+        const table = client.schema[resource];
+
+        if (!table) {
+          throw new QueryError(`Table '${resource}' not found in schema`);
+        }
+
+        return createInsertChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
+      },
+
+      update<TTable extends keyof TSchema & string>(
+        resource: TTable
+      ): UpdateChain<TSchema, TTable> {
+        const client = adapter.getClient();
+        const table = client.schema[resource];
+
+        if (!table) {
+          throw new QueryError(`Table '${resource}' not found in schema`);
+        }
+
+        return createUpdateChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
+      },
+
+      delete<TTable extends keyof TSchema & string>(
+        resource: TTable
+      ): DeleteChain<TSchema, TTable> {
+        const client = adapter.getClient();
+        const table = client.schema[resource];
+
+        if (!table) {
+          throw new QueryError(`Table '${resource}' not found in schema`);
+        }
+
+        return createDeleteChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
+      },
+    },
 
     // Expose adapter info
     getAdapterInfo: () => adapter.getAdapterInfo(),

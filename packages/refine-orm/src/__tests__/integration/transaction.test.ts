@@ -96,11 +96,10 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
                 'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
               );
             } else if (dbType === 'mysql') {
-              await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
-              await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-              await provider.executeRaw(
-                'ALTER TABLE comments AUTO_INCREMENT = 1'
-              );
+              // For MySQL, TRUNCATE resets AUTO_INCREMENT more reliably
+              await provider.executeRaw('TRUNCATE TABLE comments');
+              await provider.executeRaw('TRUNCATE TABLE posts');
+              await provider.executeRaw('TRUNCATE TABLE users');
               // Re-enable foreign key checks
               await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
             } else if (dbType === 'sqlite') {
