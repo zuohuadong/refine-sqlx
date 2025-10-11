@@ -1,5 +1,5 @@
 {
-  "name": "refine-orm",
+  "name": "@zuohuadong/refine-orm",
   "version": "0.3.1",
   "description": "A Refine ORM data provider with multi-database support using drizzle-orm.",
   "type": "module",
@@ -72,7 +72,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "refine-core-utils": "workspace:*",
+    "@zuohuadong/refine-core-utils": "workspace:*",
     "drizzle-orm": "^0.44.4"
   },
   "devDependencies": {
