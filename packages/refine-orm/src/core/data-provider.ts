@@ -1252,7 +1252,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(`Table '${resource}' not found in schema`);
         }
 
-        return createInsertChain(client, table, client.schema, resource);
+        return createInsertChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
       },
 
       update<TTable extends keyof TSchema & string>(
@@ -1265,7 +1271,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(`Table '${resource}' not found in schema`);
         }
 
-        return createUpdateChain(client, table, client.schema, resource);
+        return createUpdateChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
       },
 
       delete<TTable extends keyof TSchema & string>(
@@ -1278,7 +1290,13 @@ export function createProvider<TSchema extends Record<string, Table>>(
           throw new QueryError(`Table '${resource}' not found in schema`);
         }
 
-        return createDeleteChain(client, table, client.schema, resource);
+        return createDeleteChain(
+          client,
+          table,
+          client.schema,
+          resource,
+          adapter.getDatabaseType() as 'postgresql' | 'mysql' | 'sqlite'
+        );
       },
     },
 

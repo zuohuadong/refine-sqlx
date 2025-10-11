@@ -856,13 +856,17 @@ export class InsertChain<
   private onConflictTarget?: (keyof InferSelectModel<TSchema[TTable]>)[];
   private onConflictUpdateData?: Partial<InferInsertModel<TSchema[TTable]>>;
   private returningColumns?: (keyof InferSelectModel<TSchema[TTable]>)[];
+  private databaseType?: 'postgresql' | 'mysql' | 'sqlite';
 
   constructor(
     private client: DrizzleClient<TSchema>,
     private table: TSchema[TTable],
     private schema: TSchema,
-    private tableName: TTable
-  ) {}
+    private tableName: TTable,
+    databaseType?: 'postgresql' | 'mysql' | 'sqlite'
+  ) {
+    this.databaseType = databaseType;
+  }
 
   /**
    * Set values to insert (single record)
@@ -957,21 +961,23 @@ export class InsertChain<
       }
     }
 
-    // Handle returning clause
-    if (this.returningColumns && this.returningColumns.length > 0) {
-      const returningFields: Record<string, Column> = {};
-      for (const column of this.returningColumns) {
-        const tableColumn = this.getTableColumn(column as string);
-        if (tableColumn) {
-          returningFields[column as string] = tableColumn;
+    // Handle returning clause - MySQL doesn't support RETURNING
+    if (this.databaseType !== 'mysql') {
+      if (this.returningColumns && this.returningColumns.length > 0) {
+        const returningFields: Record<string, Column> = {};
+        for (const column of this.returningColumns) {
+          const tableColumn = this.getTableColumn(column as string);
+          if (tableColumn) {
+            returningFields[column as string] = tableColumn;
+          }
         }
+        if (Object.keys(returningFields).length > 0) {
+          query = query.returning(returningFields);
+        }
+      } else {
+        // Return all columns by default for PostgreSQL and SQLite
+        query = query.returning();
       }
-      if (Object.keys(returningFields).length > 0) {
-        query = query.returning(returningFields);
-      }
-    } else {
-      // Return all columns by default
-      query = query.returning();
     }
 
     return await (query.execute ? query.execute() : query);
@@ -1013,13 +1019,17 @@ export class UpdateChain<
   private whereConditions: SQL[] = [];
   private returningColumns?: (keyof InferSelectModel<TSchema[TTable]>)[];
   private joinClauses: SQL[] = [];
+  private databaseType?: 'postgresql' | 'mysql' | 'sqlite';
 
   constructor(
     private client: DrizzleClient<TSchema>,
     private table: TSchema[TTable],
     private schema: TSchema,
-    private tableName: TTable
-  ) {}
+    private tableName: TTable,
+    databaseType?: 'postgresql' | 'mysql' | 'sqlite'
+  ) {
+    this.databaseType = databaseType;
+  }
 
   /**
    * Set data to update
@@ -1181,21 +1191,23 @@ export class UpdateChain<
       query = query.where(and(...this.whereConditions));
     }
 
-    // Handle returning clause
-    if (this.returningColumns && this.returningColumns.length > 0) {
-      const returningFields: Record<string, Column> = {};
-      for (const column of this.returningColumns) {
-        const tableColumn = this.getTableColumn(column as string);
-        if (tableColumn) {
-          returningFields[column as string] = tableColumn;
+    // Handle returning clause - MySQL doesn't support RETURNING
+    if (this.databaseType !== 'mysql') {
+      if (this.returningColumns && this.returningColumns.length > 0) {
+        const returningFields: Record<string, Column> = {};
+        for (const column of this.returningColumns) {
+          const tableColumn = this.getTableColumn(column as string);
+          if (tableColumn) {
+            returningFields[column as string] = tableColumn;
+          }
         }
+        if (Object.keys(returningFields).length > 0) {
+          query = query.returning(returningFields);
+        }
+      } else {
+        // Return all columns by default for PostgreSQL and SQLite
+        query = query.returning();
       }
-      if (Object.keys(returningFields).length > 0) {
-        query = query.returning(returningFields);
-      }
-    } else {
-      // Return all columns by default
-      query = query.returning();
     }
 
     return await (query.execute ? query.execute() : query);
@@ -1294,13 +1306,17 @@ export class DeleteChain<
   private whereConditions: SQL[] = [];
   private returningColumns?: (keyof InferSelectModel<TSchema[TTable]>)[];
   private joinClauses: SQL[] = [];
+  private databaseType?: 'postgresql' | 'mysql' | 'sqlite';
 
   constructor(
     private client: DrizzleClient<TSchema>,
     private table: TSchema[TTable],
     private schema: TSchema,
-    private tableName: TTable
-  ) {}
+    private tableName: TTable,
+    databaseType?: 'postgresql' | 'mysql' | 'sqlite'
+  ) {
+    this.databaseType = databaseType;
+  }
 
   /**
    * Add WHERE condition
@@ -1450,21 +1466,23 @@ export class DeleteChain<
       query = query.where(and(...this.whereConditions));
     }
 
-    // Handle returning clause
-    if (this.returningColumns && this.returningColumns.length > 0) {
-      const returningFields: Record<string, Column> = {};
-      for (const column of this.returningColumns) {
-        const tableColumn = this.getTableColumn(column as string);
-        if (tableColumn) {
-          returningFields[column as string] = tableColumn;
+    // Handle returning clause - MySQL doesn't support RETURNING
+    if (this.databaseType !== 'mysql') {
+      if (this.returningColumns && this.returningColumns.length > 0) {
+        const returningFields: Record<string, Column> = {};
+        for (const column of this.returningColumns) {
+          const tableColumn = this.getTableColumn(column as string);
+          if (tableColumn) {
+            returningFields[column as string] = tableColumn;
+          }
         }
+        if (Object.keys(returningFields).length > 0) {
+          query = query.returning(returningFields);
+        }
+      } else {
+        // Return all columns by default for PostgreSQL and SQLite
+        query = query.returning();
       }
-      if (Object.keys(returningFields).length > 0) {
-        query = query.returning(returningFields);
-      }
-    } else {
-      // Return all columns by default
-      query = query.returning();
     }
 
     return await (query.execute ? query.execute() : query);
@@ -1575,9 +1593,10 @@ export function createInsertChain<
   client: DrizzleClient<TSchema>,
   table: TSchema[TTable],
   schema: TSchema,
-  tableName: TTable
+  tableName: TTable,
+  databaseType?: 'postgresql' | 'mysql' | 'sqlite'
 ): InsertChain<TSchema, TTable> {
-  return new InsertChain(client, table, schema, tableName);
+  return new InsertChain(client, table, schema, tableName, databaseType);
 }
 
 export function createUpdateChain<
@@ -1587,9 +1606,10 @@ export function createUpdateChain<
   client: DrizzleClient<TSchema>,
   table: TSchema[TTable],
   schema: TSchema,
-  tableName: TTable
+  tableName: TTable,
+  databaseType?: 'postgresql' | 'mysql' | 'sqlite'
 ): UpdateChain<TSchema, TTable> {
-  return new UpdateChain(client, table, schema, tableName);
+  return new UpdateChain(client, table, schema, tableName, databaseType);
 }
 
 export function createDeleteChain<
@@ -1599,7 +1619,8 @@ export function createDeleteChain<
   client: DrizzleClient<TSchema>,
   table: TSchema[TTable],
   schema: TSchema,
-  tableName: TTable
+  tableName: TTable,
+  databaseType?: 'postgresql' | 'mysql' | 'sqlite'
 ): DeleteChain<TSchema, TTable> {
-  return new DeleteChain(client, table, schema, tableName);
+  return new DeleteChain(client, table, schema, tableName, databaseType);
 }
