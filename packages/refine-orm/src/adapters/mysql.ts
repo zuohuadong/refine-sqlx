@@ -179,7 +179,7 @@ export class MySQLAdapter<
           supportBigNumbers: true,
           bigNumberStrings: false,
           // Type casting to convert TINYINT(1) to boolean
-          typeCast (field: any, next: () => void) {
+          typeCast(field: any, next: () => void) {
             if (field.type === 'TINY' && field.length === 1) {
               return field.string() === '1'; // Convert TINYINT(1) to boolean
             }
@@ -198,7 +198,7 @@ export class MySQLAdapter<
           supportBigNumbers: true,
           bigNumberStrings: false,
           // Type casting to convert TINYINT(1) to boolean
-          typeCast (field: any, next: () => void) {
+          typeCast(field: any, next: () => void) {
             if (field.type === 'TINY' && field.length === 1) {
               return field.string() === '1'; // Convert TINYINT(1) to boolean
             }
