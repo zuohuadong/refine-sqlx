@@ -72,7 +72,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@refine-orm/core-utils": "workspace:*",
+    "refine-core-utils": "workspace:*",
     "drizzle-orm": "^0.44.4"
   },
   "devDependencies": {

@@ -21,7 +21,7 @@ import type {
   UpdateResponse,
 } from '@refinedev/core';
 import type { SqlClient, SqlClientFactory, SqlResult } from './client';
-import { SqlTransformer } from '@refine-orm/core-utils';
+import { SqlTransformer } from 'refine-core-utils';
 import {
   deserializeSqlResult,
   withClientCheck,

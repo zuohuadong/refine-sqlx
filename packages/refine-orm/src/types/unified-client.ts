@@ -27,7 +27,7 @@ import type {
   InferRecord,
   SchemaValidator,
   PerformanceStats,
-} from '@refine-orm/core-utils';
+} from 'refine-core-utils';
 
 import type { DrizzleClient } from './client';
 import type { RefineOrmOptions } from './config';
