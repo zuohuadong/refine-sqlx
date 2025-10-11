@@ -632,8 +632,9 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
           // drizzle-orm MySQL returns an array with [ResultSetHeader]
           // where ResultSetHeader contains insertId
-          const insertId = Array.isArray(insertResult)
-            ? insertResult[0]?.insertId
+          const insertId =
+            Array.isArray(insertResult) ?
+              insertResult[0]?.insertId
             : insertResult?.insertId;
 
           if (!insertId) {
@@ -842,8 +843,9 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
               // drizzle-orm MySQL returns an array with [ResultSetHeader]
               // where ResultSetHeader contains insertId
-              const insertId = Array.isArray(insertResult)
-                ? insertResult[0]?.insertId
+              const insertId =
+                Array.isArray(insertResult) ?
+                  insertResult[0]?.insertId
                 : insertResult?.insertId;
 
               if (!insertId) {
@@ -889,8 +891,9 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
             // drizzle-orm MySQL returns an array with [ResultSetHeader]
             // where ResultSetHeader contains insertId
-            const insertId = Array.isArray(insertResult)
-              ? insertResult[0]?.insertId
+            const insertId =
+              Array.isArray(insertResult) ?
+                insertResult[0]?.insertId
               : insertResult?.insertId;
 
             if (!insertId) {
@@ -976,22 +979,69 @@ export function createProvider<TSchema extends Record<string, Table>>(
               client,
               table,
               batchIds,
-              params.variables
+              params.variables,
+              adapter.getDatabaseType()
             );
-            const batchResult = await (query.execute ? query.execute() : query);
-            results.push(
-              ...(batchResult as InferSelectModel<TSchema[TTable]>[])
-            );
+
+            if (adapter.getDatabaseType() === 'mysql') {
+              // MySQL doesn't support RETURNING, handle it differently
+              const updateResult = await query.execute();
+              if (!updateResult || updateResult.affectedRows === 0) {
+                // No rows updated in this batch, skip fetching
+                continue;
+              }
+
+              // Fetch the updated records
+              const idColumn = queryBuilder.validateAndGetIdColumn(table);
+              const batchResult = await client
+                .select()
+                .from(table)
+                .where(inArray(idColumn, batchIds))
+                .execute();
+
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
+            } else {
+              const batchResult = await (query.execute ?
+                query.execute()
+              : query);
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
+            }
           }
         } else {
           const query = queryBuilder.buildUpdateManyQuery(
             client,
             table,
             params.ids,
-            params.variables
+            params.variables,
+            adapter.getDatabaseType()
           );
-          const result = await (query.execute ? query.execute() : query);
-          results.push(...(result as InferSelectModel<TSchema[TTable]>[]));
+
+          if (adapter.getDatabaseType() === 'mysql') {
+            // MySQL doesn't support RETURNING, handle it differently
+            const updateResult = await query.execute();
+            if (!updateResult || updateResult.affectedRows === 0) {
+              return { data: [] }; // No rows updated
+            }
+
+            // Fetch the updated records
+            const idColumn = queryBuilder.validateAndGetIdColumn(table);
+            const queryResult = await client
+              .select()
+              .from(table)
+              .where(inArray(idColumn, params.ids))
+              .execute();
+
+            results.push(
+              ...(queryResult as InferSelectModel<TSchema[TTable]>[])
+            );
+          } else {
+            const result = await (query.execute ? query.execute() : query);
+            results.push(...(result as InferSelectModel<TSchema[TTable]>[]));
+          }
         }
 
         // Track performance if monitoring is enabled
@@ -1042,24 +1092,75 @@ export function createProvider<TSchema extends Record<string, Table>>(
           // Process in batches for better performance and reduced lock contention
           for (let i = 0; i < params.ids.length; i += batchSize) {
             const batchIds = params.ids.slice(i, i + batchSize);
+
+            if (adapter.getDatabaseType() === 'mysql') {
+              // MySQL doesn't support RETURNING, fetch records before deleting
+              const idColumn = queryBuilder.validateAndGetIdColumn(table);
+              const batchResult = await client
+                .select()
+                .from(table)
+                .where(inArray(idColumn, batchIds))
+                .execute();
+
+              // Now delete the records
+              const query = queryBuilder.buildDeleteManyQuery(
+                client,
+                table,
+                batchIds,
+                adapter.getDatabaseType()
+              );
+              await query.execute();
+
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
+            } else {
+              const query = queryBuilder.buildDeleteManyQuery(
+                client,
+                table,
+                batchIds,
+                adapter.getDatabaseType()
+              );
+              const batchResult = await (query.execute ?
+                query.execute()
+              : query);
+              results.push(
+                ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              );
+            }
+          }
+        } else {
+          if (adapter.getDatabaseType() === 'mysql') {
+            // MySQL doesn't support RETURNING, fetch records before deleting
+            const idColumn = queryBuilder.validateAndGetIdColumn(table);
+            const queryResult = await client
+              .select()
+              .from(table)
+              .where(inArray(idColumn, params.ids))
+              .execute();
+
+            // Now delete the records
             const query = queryBuilder.buildDeleteManyQuery(
               client,
               table,
-              batchIds
+              params.ids,
+              adapter.getDatabaseType()
             );
-            const batchResult = await (query.execute ? query.execute() : query);
+            await query.execute();
+
             results.push(
-              ...(batchResult as InferSelectModel<TSchema[TTable]>[])
+              ...(queryResult as InferSelectModel<TSchema[TTable]>[])
             );
+          } else {
+            const query = queryBuilder.buildDeleteManyQuery(
+              client,
+              table,
+              params.ids,
+              adapter.getDatabaseType()
+            );
+            const result = await (query.execute ? query.execute() : query);
+            results.push(...(result as InferSelectModel<TSchema[TTable]>[]));
           }
-        } else {
-          const query = queryBuilder.buildDeleteManyQuery(
-            client,
-            table,
-            params.ids
-          );
-          const result = await (query.execute ? query.execute() : query);
-          results.push(...(result as InferSelectModel<TSchema[TTable]>[]));
         }
 
         // Track performance if monitoring is enabled

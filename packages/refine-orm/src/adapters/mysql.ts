@@ -500,7 +500,25 @@ export class MySQLAdapter<
     }
 
     try {
-      await this.connection.beginTransaction();
+      // For mysql2: if using a pool, connection.getConnection() returns a PoolConnection
+      // which has beginTransaction(). For a single connection, beginTransaction() exists directly.
+      if (
+        this.connection.query &&
+        typeof this.connection.beginTransaction === 'function'
+      ) {
+        // Single connection - call beginTransaction directly
+        await this.connection.beginTransaction();
+      } else if (this.connection.getConnection) {
+        // Pool - get a connection from the pool first
+        const poolConnection = await this.connection.getConnection();
+        await poolConnection.beginTransaction();
+        // Store the pool connection for commit/rollback
+        (this as any).transactionConnection = poolConnection;
+      } else {
+        throw new ConnectionError(
+          'MySQL connection does not support transactions'
+        );
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to begin MySQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -518,7 +536,18 @@ export class MySQLAdapter<
     }
 
     try {
-      await this.connection.commit();
+      const txConn = (this as any).transactionConnection;
+      if (txConn) {
+        // Using pool connection
+        await txConn.commit();
+        txConn.release(); // Release back to pool
+        delete (this as any).transactionConnection;
+      } else if (typeof this.connection.commit === 'function') {
+        // Single connection
+        await this.connection.commit();
+      } else {
+        throw new ConnectionError('No active transaction to commit');
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to commit MySQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -536,7 +565,18 @@ export class MySQLAdapter<
     }
 
     try {
-      await this.connection.rollback();
+      const txConn = (this as any).transactionConnection;
+      if (txConn) {
+        // Using pool connection
+        await txConn.rollback();
+        txConn.release(); // Release back to pool
+        delete (this as any).transactionConnection;
+      } else if (typeof this.connection.rollback === 'function') {
+        // Single connection
+        await this.connection.rollback();
+      } else {
+        throw new ConnectionError('No active transaction to rollback');
+      }
     } catch (error) {
       throw new ConnectionError(
         `Failed to rollback MySQL transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,

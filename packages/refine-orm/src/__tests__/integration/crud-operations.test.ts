@@ -253,7 +253,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(result.data).toHaveLength(2);
             result.data.forEach(user => {
-              expect(user.isActive).toBe(false);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeFalsy();
             });
           });
 
@@ -440,7 +441,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             result.data.forEach(user => {
               expect(user.age).toBeGreaterThanOrEqual(25);
-              expect(user.isActive).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeTruthy();
             });
           });
         });
@@ -555,7 +557,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(result.data.length).toBeLessThanOrEqual(2);
             result.data.forEach(user => {
-              expect(user.isActive).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeTruthy();
             });
 
             // Check sorting

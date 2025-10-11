@@ -171,7 +171,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(Array.isArray(users)).toBe(true);
             users.forEach(user => {
-              expect(user.isActive).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeTruthy();
             });
           });
 
@@ -184,7 +185,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(Array.isArray(users)).toBe(true);
             users.forEach(user => {
-              expect(user.isActive).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeTruthy();
               expect(user.age).toBeGreaterThanOrEqual(25);
             });
           });
@@ -273,7 +275,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(Array.isArray(posts)).toBe(true);
             posts.forEach(post => {
-              expect(post.published).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(post.published).toBeTruthy();
               expect([1, 2]).toContain(post.userId);
             });
           });
@@ -377,7 +380,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               expect(post.user).toBeDefined();
               expect(post.comments).toBeDefined();
               expect(Array.isArray(post.comments)).toBe(true);
-              expect(post.published).toBe(true);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(post.published).toBeTruthy();
             });
           });
         });
@@ -632,7 +636,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             expect(Array.isArray(result)).toBe(true);
             result.forEach(user => {
-              expect(user.isActive).toBe(false);
+              // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+              expect(user.isActive).toBeFalsy();
             });
           });
         });
@@ -763,7 +768,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
           expect(Array.isArray(result)).toBe(true);
           result.forEach(user => {
-            expect(user.isActive).toBe(true);
+            // MySQL returns 0/1 for boolean, PostgreSQL returns true/false
+            expect(user.isActive).toBeTruthy();
             expect(user.posts).toBeDefined();
             expect(Array.isArray(user.posts)).toBe(true);
             expect(user.posts.length).toBeLessThanOrEqual(5);

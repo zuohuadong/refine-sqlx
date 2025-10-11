@@ -69,7 +69,6 @@ describe.skip('MySQL Adapter', () => {
     global.setTimeout = originalSetTimeout;
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(async () => {});
 
   describe('MySQLAdapter Class', () => {

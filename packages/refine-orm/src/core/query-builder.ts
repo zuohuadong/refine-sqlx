@@ -970,14 +970,22 @@ export class RefineQueryBuilder<
     client: DrizzleClient<TSchema>,
     table: Table,
     ids: any[],
-    data: any
+    data: any,
+    dbType?: string
   ) {
     const idColumn = this.validateAndGetIdColumn(table);
-    return client
+    const updateQuery = client
       .update(table)
       .set(data)
-      .where(inArray(idColumn, ids))
-      .returning();
+      .where(inArray(idColumn, ids));
+
+    // MySQL doesn't support RETURNING clause
+    if (dbType === 'mysql') {
+      return updateQuery;
+    }
+
+    // PostgreSQL and SQLite support RETURNING
+    return updateQuery.returning();
   }
 
   /**
@@ -986,10 +994,19 @@ export class RefineQueryBuilder<
   buildDeleteManyQuery(
     client: DrizzleClient<TSchema>,
     table: Table,
-    ids: any[]
+    ids: any[],
+    dbType?: string
   ) {
     const idColumn = this.validateAndGetIdColumn(table);
-    return client.delete(table).where(inArray(idColumn, ids)).returning();
+    const deleteQuery = client.delete(table).where(inArray(idColumn, ids));
+
+    // MySQL doesn't support RETURNING clause
+    if (dbType === 'mysql') {
+      return deleteQuery;
+    }
+
+    // PostgreSQL and SQLite support RETURNING
+    return deleteQuery.returning();
   }
 
   /**
