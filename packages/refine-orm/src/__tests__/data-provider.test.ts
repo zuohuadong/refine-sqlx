@@ -322,7 +322,7 @@ describe('Data Provider', () => {
     });
 
     it('should pass through custom options to adapter', async () => {
-      const spy = jest.spyOn(adapter, 'executeRaw');
+      const spy = jest.spyOn(adapter, 'raw');
 
       await dataProvider.getList({
         resource: 'users',

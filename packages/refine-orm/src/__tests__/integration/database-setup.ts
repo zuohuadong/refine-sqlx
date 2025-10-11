@@ -344,7 +344,7 @@ export class DatabaseTestSetup {
     try {
       if (dbType === 'sqlite') {
         // Create SQLite tables since we're using in-memory database
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -355,7 +355,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
@@ -367,7 +367,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
@@ -382,7 +382,7 @@ export class DatabaseTestSetup {
         console.log(`Created SQLite tables for ${dbType}`);
       } else if (dbType === 'postgresql') {
         // Create PostgreSQL tables
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
@@ -393,7 +393,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS posts (
             id SERIAL PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
@@ -404,7 +404,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS comments (
             id SERIAL PRIMARY KEY,
             content TEXT NOT NULL,
@@ -418,7 +418,7 @@ export class DatabaseTestSetup {
         console.log(`Created PostgreSQL tables for ${dbType}`);
       } else if (dbType === 'mysql') {
         // Create MySQL tables
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
@@ -429,7 +429,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS posts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
@@ -441,7 +441,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await provider.raw(`
           CREATE TABLE IF NOT EXISTS comments (
             id INT AUTO_INCREMENT PRIMARY KEY,
             content TEXT NOT NULL,
@@ -503,19 +503,19 @@ export class DatabaseTestSetup {
       if (dbType === 'sqlite') {
         // For SQLite, we can check if tables exist before trying to delete from them
         try {
-          await provider.executeRaw('DELETE FROM comments WHERE 1=1');
+          await provider.raw('DELETE FROM comments WHERE 1=1');
         } catch (error) {
           // Table might not exist, that's ok
           console.debug('Comments table does not exist or is empty');
         }
         try {
-          await provider.executeRaw('DELETE FROM posts WHERE 1=1');
+          await provider.raw('DELETE FROM posts WHERE 1=1');
         } catch (error) {
           // Table might not exist, that's ok
           console.debug('Posts table does not exist or is empty');
         }
         try {
-          await provider.executeRaw('DELETE FROM users WHERE 1=1');
+          await provider.raw('DELETE FROM users WHERE 1=1');
         } catch (error) {
           // Table might not exist, that's ok
           console.debug('Users table does not exist or is empty');
@@ -523,7 +523,7 @@ export class DatabaseTestSetup {
 
         // Reset auto-increment counters if needed
         try {
-          await provider.executeRaw(
+          await provider.raw(
             'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
             ['users', 'posts', 'comments']
           );
@@ -534,44 +534,44 @@ export class DatabaseTestSetup {
       } else if (dbType === 'postgresql') {
         // For PostgreSQL, use TRUNCATE with CASCADE to handle foreign keys
         try {
-          await provider.executeRaw(
+          await provider.raw(
             'TRUNCATE TABLE comments, posts, users CASCADE'
           );
           // Reset sequences
-          await provider.executeRaw(
+          await provider.raw(
             'ALTER SEQUENCE users_id_seq RESTART WITH 1'
           );
-          await provider.executeRaw(
+          await provider.raw(
             'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
           );
-          await provider.executeRaw(
+          await provider.raw(
             'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
           );
         } catch (error) {
           // Fallback to DELETE if TRUNCATE fails
-          await provider.executeRaw('DELETE FROM comments');
-          await provider.executeRaw('DELETE FROM posts');
-          await provider.executeRaw('DELETE FROM users');
-          await provider.executeRaw(
+          await provider.raw('DELETE FROM comments');
+          await provider.raw('DELETE FROM posts');
+          await provider.raw('DELETE FROM users');
+          await provider.raw(
             'ALTER SEQUENCE users_id_seq RESTART WITH 1'
           );
-          await provider.executeRaw(
+          await provider.raw(
             'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
           );
-          await provider.executeRaw(
+          await provider.raw(
             'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
           );
         }
       } else if (dbType === 'mysql') {
         // For MySQL, disable foreign key checks temporarily
-        await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 0');
-        await provider.executeRaw('DELETE FROM comments');
-        await provider.executeRaw('DELETE FROM posts');
-        await provider.executeRaw('DELETE FROM users');
-        await provider.executeRaw('ALTER TABLE users AUTO_INCREMENT = 1');
-        await provider.executeRaw('ALTER TABLE posts AUTO_INCREMENT = 1');
-        await provider.executeRaw('ALTER TABLE comments AUTO_INCREMENT = 1');
-        await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
+        await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
+        await provider.raw('DELETE FROM comments');
+        await provider.raw('DELETE FROM posts');
+        await provider.raw('DELETE FROM users');
+        await provider.raw('ALTER TABLE users AUTO_INCREMENT = 1');
+        await provider.raw('ALTER TABLE posts AUTO_INCREMENT = 1');
+        await provider.raw('ALTER TABLE comments AUTO_INCREMENT = 1');
+        await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
       }
     } catch (error) {
       console.warn(`Failed to cleanup tables for ${dbType}:`, error);

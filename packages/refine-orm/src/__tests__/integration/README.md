@@ -137,14 +137,14 @@ The integration tests cover:
 
 1. **Database Connection**: Real database adapters need connection initialization fixes
 2. **Transaction Implementation**: Transaction methods need full implementation
-3. **Raw Query Support**: `executeRaw` method needs implementation
+3. **Raw Query Support**: `raw` method needs implementation
 4. **Mock Client Improvements**: Some mock behaviors need refinement
 
 ## Next Steps
 
 1. **Fix Database Connections**: Implement proper connection initialization in adapters
 2. **Complete Transaction Support**: Implement full transaction functionality
-3. **Implement Raw Queries**: Add `executeRaw` method implementation
+3. **Implement Raw Queries**: Add `raw` method implementation
 4. **Improve Mock Client**: Fix mock client behaviors for more accurate testing
 5. **Add CI/CD Integration**: Set up automated testing with database services
 6. **Performance Optimization**: Add more comprehensive performance tests

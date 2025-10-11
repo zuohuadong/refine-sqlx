@@ -71,7 +71,7 @@ class MockAdapter extends BaseDatabaseAdapter<typeof schema> {
     return this.mockConnected && this.isConnected;
   }
 
-  async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
     if (!this.isConnected) {
       throw new ConnectionError('Not connected to database');
     }
@@ -220,13 +220,13 @@ describe('BaseDatabaseAdapter', () => {
     });
 
     it('should execute raw SQL queries', async () => {
-      const result = await adapter.executeRaw('SELECT * FROM users');
+      const result = await adapter.raw('SELECT * FROM users');
 
       expect(result).toEqual([{ id: 1, name: 'Mock Result' }]);
     });
 
     it('should execute raw SQL queries with parameters', async () => {
-      const result = await adapter.executeRaw(
+      const result = await adapter.raw(
         'SELECT * FROM users WHERE id = $1',
         [1]
       );
@@ -237,7 +237,7 @@ describe('BaseDatabaseAdapter', () => {
     it('should throw error when executing raw query without connection', async () => {
       await adapter.disconnect();
 
-      await expect(adapter.executeRaw('SELECT * FROM users')).rejects.toThrow(
+      await expect(adapter.raw('SELECT * FROM users')).rejects.toThrow(
         ConnectionError
       );
     });
@@ -423,9 +423,9 @@ describe('BaseDatabaseAdapter', () => {
 
     it('should handle concurrent raw queries', async () => {
       const queries = [
-        adapter.executeRaw('SELECT * FROM users WHERE id = 1'),
-        adapter.executeRaw('SELECT * FROM users WHERE id = 2'),
-        adapter.executeRaw('SELECT * FROM users WHERE id = 3'),
+        adapter.raw('SELECT * FROM users WHERE id = 1'),
+        adapter.raw('SELECT * FROM users WHERE id = 2'),
+        adapter.raw('SELECT * FROM users WHERE id = 3'),
       ];
 
       const results = await Promise.all(queries);

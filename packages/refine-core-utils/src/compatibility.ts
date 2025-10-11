@@ -272,7 +272,7 @@ export class CompatibilityUtils {
     if (provider.morphTo) methods.push('morphTo');
 
     // Utility methods
-    if (provider.executeRaw) methods.push('executeRaw');
+    if (provider.raw) methods.push('raw');
     if (provider.transaction) methods.push('transaction');
     if (provider.getWithRelations) methods.push('getWithRelations');
 

@@ -316,7 +316,7 @@ export function addCompatibilityLayer<
   }): Promise<{ data: TRecord; created: boolean }>;
 
   // Raw SQL execution
-  executeRaw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
+  raw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
 
   // Transaction support
   transaction<TResult>(callback: (tx: T) => Promise<TResult>): Promise<TResult>;
@@ -564,7 +564,7 @@ export function addCompatibilityLayer<
   };
 
   // Add raw SQL execution
-  (dataProvider as any).executeRaw = async function <TRecord = any>(
+  (dataProvider as any).raw = async function <TRecord = any>(
     sql: string,
     params?: any[]
   ): Promise<TRecord[]> {

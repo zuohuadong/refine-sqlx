@@ -928,7 +928,7 @@ export class AdvancedUtils {
   /**
    * Execute raw SQL with parameters
    */
-  async executeRaw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+  async raw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
     const result = await this.client.query({ sql, args: params });
     return result.rows as T[];
   }

@@ -142,7 +142,7 @@ describe.skip('MySQL CRUD Integration', () => {
       expect(typeof dataProvider.from).toBe('function');
       expect(typeof dataProvider.morphTo).toBe('function');
       expect(typeof dataProvider.getWithRelations).toBe('function');
-      expect(typeof dataProvider.executeRaw).toBe('function');
+      expect(typeof dataProvider.raw).toBe('function');
       expect(typeof dataProvider.transaction).toBe('function');
     });
   });
@@ -154,8 +154,8 @@ describe.skip('MySQL CRUD Integration', () => {
         testSchema
       );
 
-      // Test executeRaw method exists and works
-      expect(typeof dataProvider.executeRaw).toBe('function');
+      // Test raw method exists and works
+      expect(typeof dataProvider.raw).toBe('function');
     });
 
     it('should support transaction operations', async () => {

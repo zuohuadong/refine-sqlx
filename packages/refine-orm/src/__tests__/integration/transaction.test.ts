@@ -73,38 +73,38 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         // Clean and reseed data before each test
         // Don't recreate the connection - just clean and reseed the data
         try {
-          if (provider && provider.executeRaw) {
+          if (provider && provider.raw) {
             // Clean tables in reverse order due to foreign keys
             if (dbType === 'mysql') {
               // For MySQL, disable foreign key checks temporarily
-              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 0');
+              await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
             }
 
-            await provider.executeRaw('DELETE FROM comments');
-            await provider.executeRaw('DELETE FROM posts');
-            await provider.executeRaw('DELETE FROM users');
+            await provider.raw('DELETE FROM comments');
+            await provider.raw('DELETE FROM posts');
+            await provider.raw('DELETE FROM users');
 
             // Reset sequences based on database type
             if (dbType === 'postgresql') {
-              await provider.executeRaw(
+              await provider.raw(
                 'ALTER SEQUENCE users_id_seq RESTART WITH 1'
               );
-              await provider.executeRaw(
+              await provider.raw(
                 'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
               );
-              await provider.executeRaw(
+              await provider.raw(
                 'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
               );
             } else if (dbType === 'mysql') {
               // For MySQL, TRUNCATE resets AUTO_INCREMENT more reliably
-              await provider.executeRaw('TRUNCATE TABLE comments');
-              await provider.executeRaw('TRUNCATE TABLE posts');
-              await provider.executeRaw('TRUNCATE TABLE users');
+              await provider.raw('TRUNCATE TABLE comments');
+              await provider.raw('TRUNCATE TABLE posts');
+              await provider.raw('TRUNCATE TABLE users');
               // Re-enable foreign key checks
-              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
+              await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
             } else if (dbType === 'sqlite') {
               try {
-                await provider.executeRaw(
+                await provider.raw(
                   'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
                   ['users', 'posts', 'comments']
                 );

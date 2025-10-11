@@ -503,7 +503,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle intermittent connection failures', async () => {
       let callCount = 0;
-      jest.spyOn(adapter, 'executeRaw').mockImplementation(async () => {
+      jest.spyOn(adapter, 'raw').mockImplementation(async () => {
         callCount++;
         if (callCount <= 2) {
           throw MockErrorScenarios.connectionError();
@@ -520,7 +520,7 @@ describe('Edge Cases and Boundary Conditions', () => {
       // Override the mock data to return only 1 user
       adapter.setMockData('users', TestDataGenerators.users(1));
 
-      jest.spyOn(adapter, 'executeRaw').mockImplementation(async () => {
+      jest.spyOn(adapter, 'raw').mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay instead of 5s
         return TestDataGenerators.users(1);
       });

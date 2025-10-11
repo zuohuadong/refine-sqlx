@@ -214,11 +214,11 @@ const adapter = createMySQLProvider(
 // Using the adapter directly
 await adapter.beginTransaction();
 try {
-  await adapter.executeRaw('INSERT INTO users (name, email) VALUES (?, ?)', [
+  await adapter.raw('INSERT INTO users (name, email) VALUES (?, ?)', [
     'John',
     'john@example.com',
   ]);
-  await adapter.executeRaw('INSERT INTO posts (title, user_id) VALUES (?, ?)', [
+  await adapter.raw('INSERT INTO posts (title, user_id) VALUES (?, ?)', [
     'Hello World',
     1,
   ]);
@@ -242,7 +242,7 @@ await dataProvider.transaction(async tx => {
 
 ```typescript
 // Execute raw SQL queries
-const results = await adapter.executeRaw<{ id: number; name: string }>(
+const results = await adapter.raw<{ id: number; name: string }>(
   'SELECT id, name FROM users WHERE created_at > ?',
   [new Date('2024-01-01')]
 );
@@ -401,7 +401,7 @@ const adapter = createMySQLProvider(connectionString, schema, {
 - `connect(): Promise<void>` - Establish database connection
 - `disconnect(): Promise<void>` - Close database connection
 - `healthCheck(): Promise<boolean>` - Check connection health
-- `executeRaw<T>(sql: string, params?: any[]): Promise<T[]>` - Execute raw SQL
+- `raw<T>(sql: string, params?: any[]): Promise<T[]>` - Execute raw SQL
 - `beginTransaction(): Promise<void>` - Begin transaction
 - `commitTransaction(): Promise<void>` - Commit transaction
 - `rollbackTransaction(): Promise<void>` - Rollback transaction

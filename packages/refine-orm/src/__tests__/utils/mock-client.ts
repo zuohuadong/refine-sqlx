@@ -697,7 +697,7 @@ export class MockDatabaseAdapter<
     return this.isConnected;
   }
 
-  async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
     // Mock implementation - return empty array or mock data based on SQL
     if (sql.toLowerCase().includes('select count')) {
       return [{ count: Object.values(this.mockData).flat().length }] as T[];
@@ -741,7 +741,7 @@ export class MockDatabaseAdapter<
     (this.mockClient.delete as any).mockImplementation(() => {
       throw new ConnectionError('Connection lost');
     });
-    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
+    (this.raw as any) = jest.fn().mockImplementation(() => {
       throw new ConnectionError('Connection lost');
     });
   }
@@ -750,7 +750,7 @@ export class MockDatabaseAdapter<
     (this.mockClient.select as any).mockImplementation(() => {
       throw new QueryError('SQL syntax error');
     });
-    (this.executeRaw as any) = jest.fn().mockImplementation(() => {
+    (this.raw as any) = jest.fn().mockImplementation(() => {
       throw new QueryError('SQL syntax error');
     });
   }
@@ -762,7 +762,7 @@ export class MockDatabaseAdapter<
           setTimeout(() => reject(new QueryError('Query timeout')), ms);
         })
     );
-    (this.executeRaw as any) = jest.fn().mockImplementation(
+    (this.raw as any) = jest.fn().mockImplementation(
       () =>
         new Promise((_, reject) => {
           setTimeout(() => reject(new QueryError('Query timeout')), ms);

@@ -1045,7 +1045,7 @@ export function createFullyCompatibleProvider<
     },
 
     async raw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-      return advancedUtils.executeRaw<T>(sql, params);
+      return advancedUtils.raw<T>(sql, params);
     },
 
     // Enhanced relationship loading

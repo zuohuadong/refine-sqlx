@@ -600,7 +600,7 @@ export interface EnhancedDataProvider<TSchema extends BaseSchema = BaseSchema>
   ): Promise<EnhancedGetOneResponse<TSchema, TTable>>;
 
   // Raw query support
-  executeRaw?<T = any>(sql: string, params?: any[]): Promise<T[]>;
+  raw?<T = any>(sql: string, params?: any[]): Promise<T[]>;
 
   // Transaction support
   transaction?<T>(

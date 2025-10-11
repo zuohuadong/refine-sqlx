@@ -55,7 +55,7 @@ export interface RefineOrmCompatibleProvider<
   }): Promise<{ data: TRecord; created: boolean }>;
 
   // Raw SQL execution (refine-orm style)
-  executeRaw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
+  raw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
 
   // Transaction support (refine-orm style)
   transaction<TResult>(
@@ -199,8 +199,8 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
                     tableName
                   );
                 },
-                executeRaw:
-                  (compatibleProvider as any).executeRaw?.bind(
+                raw:
+                  (compatibleProvider as any).raw?.bind(
                     compatibleProvider
                   ) || (async () => []),
                 enablePerformanceMonitoring:
@@ -224,8 +224,8 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
               return nestedCallback(nestedTxProvider);
             });
           },
-          executeRaw:
-            (compatibleProvider as any).executeRaw?.bind(compatibleProvider) ||
+          raw:
+            (compatibleProvider as any).raw?.bind(compatibleProvider) ||
             (async () => []),
           enablePerformanceMonitoring:
             (compatibleProvider as any).enablePerformanceMonitoring?.bind(
@@ -251,8 +251,8 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     },
 
     // Raw SQL execution
-    executeRaw:
-      (compatibleProvider as any).executeRaw?.bind(compatibleProvider) ||
+    raw:
+      (compatibleProvider as any).raw?.bind(compatibleProvider) ||
       (async () => []),
 
     // Enable performance monitoring if requested

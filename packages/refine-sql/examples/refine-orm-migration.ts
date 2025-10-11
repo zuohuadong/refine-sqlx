@@ -200,7 +200,7 @@ async function demonstrateCompatibility() {
     
     // Raw SQL execution (same as refine-orm)
     console.log('\n🔧 Raw SQL execution:');
-    const rawResults = await dataProvider.executeRaw(
+    const rawResults = await dataProvider.raw(
       'SELECT COUNT(*) as count FROM users WHERE status = ?',
       ['active']
     );

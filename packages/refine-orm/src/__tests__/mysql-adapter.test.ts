@@ -219,7 +219,7 @@ describe.skip('MySQL Adapter', () => {
       // Inject the mocked connection after connect()
       (adapter as any).connection = mockConnection;
 
-      const result = await adapter.executeRaw(
+      const result = await adapter.raw(
         'SELECT * FROM users WHERE id = ?',
         [1]
       );
@@ -484,7 +484,7 @@ describe.skip('MySQL Adapter', () => {
       (adapter as any).connection = mockConnection;
 
       await expect(
-        adapter.executeRaw('SELECT * FROM nonexistent_table')
+        adapter.raw('SELECT * FROM nonexistent_table')
       ).rejects.toThrow(QueryError);
     });
 
@@ -568,7 +568,7 @@ describe.skip('MySQL Adapter', () => {
       (adapter as any).connection = mockConnection;
 
       const queries = Array.from({ length: 10 }, (_, i) =>
-        adapter.executeRaw('SELECT * FROM users WHERE id = ?', [i + 1])
+        adapter.raw('SELECT * FROM users WHERE id = ?', [i + 1])
       );
 
       const results = await Promise.all(queries);
@@ -606,7 +606,7 @@ describe.skip('MySQL Adapter', () => {
       // Inject the mocked connection after connect()
       (adapter as any).connection = mockConnection;
 
-      const result = await adapter.executeRaw(
+      const result = await adapter.raw(
         'SELECT * FROM users WHERE id = ?',
         [1]
       );
