@@ -84,21 +84,15 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             // Reset sequences based on database type
             if (dbType === 'postgresql') {
-              await provider.raw(
-                'ALTER SEQUENCE users_id_seq RESTART WITH 1'
-              );
-              await provider.raw(
-                'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
-              );
+              await provider.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+              await provider.raw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
               await provider.raw(
                 'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
               );
             } else if (dbType === 'mysql') {
               await provider.raw('ALTER TABLE users AUTO_INCREMENT = 1');
               await provider.raw('ALTER TABLE posts AUTO_INCREMENT = 1');
-              await provider.raw(
-                'ALTER TABLE comments AUTO_INCREMENT = 1'
-              );
+              await provider.raw('ALTER TABLE comments AUTO_INCREMENT = 1');
             } else if (dbType === 'sqlite') {
               try {
                 await provider.raw(

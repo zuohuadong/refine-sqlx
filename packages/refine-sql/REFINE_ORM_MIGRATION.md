@@ -229,10 +229,9 @@ await dataProvider.transaction(async tx => {
 
 ```typescript
 // 原生 SQL 执行完全兼容
-const results = await dataProvider.raw(
-  'SELECT * FROM users WHERE status = ?',
-  ['active']
-);
+const results = await dataProvider.raw('SELECT * FROM users WHERE status = ?', [
+  'active',
+]);
 ```
 
 ## Cloudflare Workers 部署

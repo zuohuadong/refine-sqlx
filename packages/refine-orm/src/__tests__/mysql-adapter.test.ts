@@ -219,10 +219,7 @@ describe.skip('MySQL Adapter', () => {
       // Inject the mocked connection after connect()
       (adapter as any).connection = mockConnection;
 
-      const result = await adapter.raw(
-        'SELECT * FROM users WHERE id = ?',
-        [1]
-      );
+      const result = await adapter.raw('SELECT * FROM users WHERE id = ?', [1]);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toHaveProperty('id', 1);
@@ -606,10 +603,7 @@ describe.skip('MySQL Adapter', () => {
       // Inject the mocked connection after connect()
       (adapter as any).connection = mockConnection;
 
-      const result = await adapter.raw(
-        'SELECT * FROM users WHERE id = ?',
-        [1]
-      );
+      const result = await adapter.raw('SELECT * FROM users WHERE id = ?', [1]);
 
       expect(result[0]).toHaveProperty('metadata');
     });

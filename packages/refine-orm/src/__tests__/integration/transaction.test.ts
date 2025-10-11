@@ -86,12 +86,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             // Reset sequences based on database type
             if (dbType === 'postgresql') {
-              await provider.raw(
-                'ALTER SEQUENCE users_id_seq RESTART WITH 1'
-              );
-              await provider.raw(
-                'ALTER SEQUENCE posts_id_seq RESTART WITH 1'
-              );
+              await provider.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+              await provider.raw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
               await provider.raw(
                 'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
               );

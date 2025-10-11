@@ -200,9 +200,8 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
                   );
                 },
                 raw:
-                  (compatibleProvider as any).raw?.bind(
-                    compatibleProvider
-                  ) || (async () => []),
+                  (compatibleProvider as any).raw?.bind(compatibleProvider) ||
+                  (async () => []),
                 enablePerformanceMonitoring:
                   (compatibleProvider as any).enablePerformanceMonitoring?.bind(
                     compatibleProvider

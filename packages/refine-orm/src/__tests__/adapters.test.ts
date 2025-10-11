@@ -226,10 +226,9 @@ describe('BaseDatabaseAdapter', () => {
     });
 
     it('should execute raw SQL queries with parameters', async () => {
-      const result = await adapter.raw(
-        'SELECT * FROM users WHERE id = $1',
-        [1]
-      );
+      const result = await adapter.raw('SELECT * FROM users WHERE id = $1', [
+        1,
+      ]);
 
       expect(result).toEqual([{ id: 1, name: 'Mock Result' }]);
     });
