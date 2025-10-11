@@ -178,6 +178,13 @@ export class MySQLAdapter<
           dateStrings: false,
           supportBigNumbers: true,
           bigNumberStrings: false,
+          // Type casting to convert TINYINT(1) to boolean
+          typeCast: function (field: any, next: () => void) {
+            if (field.type === 'TINY' && field.length === 1) {
+              return field.string() === '1'; // Convert TINYINT(1) to boolean
+            }
+            return next();
+          },
           // Remove idleTimeout as it's not a standard mysql2 pool option
           // enableKeepAlive and keepAliveInitialDelay are also not standard
         });
@@ -190,6 +197,13 @@ export class MySQLAdapter<
           dateStrings: false,
           supportBigNumbers: true,
           bigNumberStrings: false,
+          // Type casting to convert TINYINT(1) to boolean
+          typeCast: function (field: any, next: () => void) {
+            if (field.type === 'TINY' && field.length === 1) {
+              return field.string() === '1'; // Convert TINYINT(1) to boolean
+            }
+            return next();
+          },
         });
       }
 

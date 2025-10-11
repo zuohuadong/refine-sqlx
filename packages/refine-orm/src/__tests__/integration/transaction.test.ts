@@ -75,6 +75,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         try {
           if (provider && provider.executeRaw) {
             // Clean tables in reverse order due to foreign keys
+            if (dbType === 'mysql') {
+              // For MySQL, disable foreign key checks temporarily
+              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 0');
+            }
+
             await provider.executeRaw('DELETE FROM comments');
             await provider.executeRaw('DELETE FROM posts');
             await provider.executeRaw('DELETE FROM users');
@@ -96,6 +101,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               await provider.executeRaw(
                 'ALTER TABLE comments AUTO_INCREMENT = 1'
               );
+              // Re-enable foreign key checks
+              await provider.executeRaw('SET FOREIGN_KEY_CHECKS = 1');
             } else if (dbType === 'sqlite') {
               try {
                 await provider.executeRaw(
