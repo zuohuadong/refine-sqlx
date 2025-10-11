@@ -78,27 +78,27 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             if (dbType === 'mysql') {
               // For MySQL, disable foreign key checks temporarily
               await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
-            }
-
-            await provider.raw('DELETE FROM comments');
-            await provider.raw('DELETE FROM posts');
-            await provider.raw('DELETE FROM users');
-
-            // Reset sequences based on database type
-            if (dbType === 'postgresql') {
-              await provider.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-              await provider.raw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
-              await provider.raw(
-                'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
-              );
-            } else if (dbType === 'mysql') {
-              // For MySQL, TRUNCATE resets AUTO_INCREMENT more reliably
+              // Use TRUNCATE to reset AUTO_INCREMENT
               await provider.raw('TRUNCATE TABLE comments');
               await provider.raw('TRUNCATE TABLE posts');
               await provider.raw('TRUNCATE TABLE users');
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
+            } else if (dbType === 'postgresql') {
+              // For PostgreSQL, use DELETE and reset sequences
+              await provider.raw('DELETE FROM comments');
+              await provider.raw('DELETE FROM posts');
+              await provider.raw('DELETE FROM users');
+              await provider.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+              await provider.raw('ALTER SEQUENCE posts_id_seq RESTART WITH 1');
+              await provider.raw(
+                'ALTER SEQUENCE comments_id_seq RESTART WITH 1'
+              );
             } else if (dbType === 'sqlite') {
+              // For SQLite, use DELETE and reset sequences
+              await provider.raw('DELETE FROM comments');
+              await provider.raw('DELETE FROM posts');
+              await provider.raw('DELETE FROM users');
               try {
                 await provider.raw(
                   'DELETE FROM sqlite_sequence WHERE name IN (?, ?, ?)',
