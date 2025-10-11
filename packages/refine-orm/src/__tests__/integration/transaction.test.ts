@@ -78,10 +78,14 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             if (dbType === 'mysql') {
               // For MySQL, disable foreign key checks temporarily
               await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
-              // Use TRUNCATE to reset AUTO_INCREMENT
-              await provider.raw('TRUNCATE TABLE comments');
-              await provider.raw('TRUNCATE TABLE posts');
-              await provider.raw('TRUNCATE TABLE users');
+              // Use DELETE instead of TRUNCATE to avoid issues with AUTO_INCREMENT
+              await provider.raw('DELETE FROM comments');
+              await provider.raw('DELETE FROM posts');
+              await provider.raw('DELETE FROM users');
+              // Reset AUTO_INCREMENT counters
+              await provider.raw('ALTER TABLE users AUTO_INCREMENT = 1');
+              await provider.raw('ALTER TABLE posts AUTO_INCREMENT = 1');
+              await provider.raw('ALTER TABLE comments AUTO_INCREMENT = 1');
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
             } else if (dbType === 'postgresql') {
