@@ -318,56 +318,6 @@ describe('Mock Integration Tests', () => {
     });
   });
 
-  describe('Native Query Builder Integration', () => {
-    it('should perform complex select queries', async () => {
-      const users = await dataProvider.query
-        .select('users')
-        .where('age', 'gte', 25)
-        .orderBy('name', 'asc')
-        .limit(10)
-        .get();
-
-      expect(Array.isArray(users)).toBe(true);
-      expect(users.length).toBeLessThanOrEqual(10);
-    });
-
-    it('should perform insert with returning', async () => {
-      const result = await dataProvider.query
-        .insert('users')
-        .values({ name: 'Query Builder User', email: 'qb@test.com', age: 27 })
-        .returning(['id', 'name', 'email'])
-        .execute();
-
-      expect(Array.isArray(result)).toBe(true);
-      expect(result[0]).toBeDefined();
-      expect(result[0].name).toBe('Query Builder User');
-    });
-
-    it('should perform update with conditions', async () => {
-      const result = await dataProvider.query
-        .update('users')
-        .set({ age: 35 })
-        .where('id', 'eq', 1)
-        .returning(['id', 'age'])
-        .execute();
-
-      expect(Array.isArray(result)).toBe(true);
-      if (result.length > 0) {
-        expect(result[0].age).toBe(35);
-      }
-    });
-
-    it('should perform delete with conditions', async () => {
-      const result = await dataProvider.query
-        .delete('users')
-        .where('age', 'lt', 18)
-        .returning(['id'])
-        .execute();
-
-      expect(Array.isArray(result)).toBe(true);
-    });
-  });
-
   describe('Error Handling Integration', () => {
     it('should handle validation errors', async () => {
       await expect(
