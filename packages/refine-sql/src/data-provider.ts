@@ -67,22 +67,6 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
     morphConfig: MorphConfig
   ): SqlxMorphQuery<T>;
 
-  // Native query builders
-  query: {
-    select<T extends BaseRecord = BaseRecord>(
-      resource: string
-    ): SqlxChainQuery<T>;
-    insert<T extends BaseRecord = BaseRecord>(
-      resource: string
-    ): SqlxChainQuery<T>;
-    update<T extends BaseRecord = BaseRecord>(
-      resource: string
-    ): SqlxChainQuery<T>;
-    delete<T extends BaseRecord = BaseRecord>(
-      resource: string
-    ): SqlxChainQuery<T>;
-  };
-
   // Relationship queries
   getWithRelations<T extends BaseRecord = BaseRecord>(
     resource: string,
@@ -538,29 +522,6 @@ export default function <TSchema extends TableSchema = TableSchema>(
       () => client
     ),
 
-    // Native query builders
-    query: {
-      select: withClientCheck(
-        (resource: string) => new SqlxChainQuery(client, resource),
-        () => client
-      ),
-      insert: withClientCheck(
-        <T extends BaseRecord = BaseRecord>(resource: string) =>
-          new SqlxChainQuery<T>(client, resource),
-        () => client
-      ),
-      update: withClientCheck(
-        <T extends BaseRecord = BaseRecord>(resource: string) =>
-          new SqlxChainQuery<T>(client, resource),
-        () => client
-      ),
-      delete: withClientCheck(
-        <T extends BaseRecord = BaseRecord>(resource: string) =>
-          new SqlxChainQuery<T>(client, resource),
-        () => client
-      ),
-    },
-
     // Relationship queries
     async getWithRelations<T extends BaseRecord = BaseRecord>(
       resource: string,
@@ -967,7 +928,7 @@ export interface FullyCompatibleDataProvider<
     onConflict?: 'ignore' | 'replace'
   ): Promise<T[]>;
 
-  executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]>;
+  raw<T = any>(sql: string, params?: any[]): Promise<T[]>;
 
   // Enhanced relationship loading
   getWithRelations<TRecord = BaseRecord>(
@@ -1083,7 +1044,7 @@ export function createFullyCompatibleProvider<
       );
     },
 
-    async executeRaw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+    async raw<T = any>(sql: string, params: any[] = []): Promise<T[]> {
       return advancedUtils.executeRaw<T>(sql, params);
     },
 

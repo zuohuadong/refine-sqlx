@@ -109,7 +109,7 @@ export abstract class BaseDatabaseAdapter<
   /**
    * Execute raw SQL query
    */
-  abstract executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]>;
+  abstract raw<T = any>(sql: string, params?: any[]): Promise<T[]>;
 
   /**
    * Begin database transaction

@@ -311,7 +311,7 @@ export function createProvider<TSchema extends Record<string, Table>>(
 
         // Handle raw query meta option
         if (normalizedParams.meta?.rawQuery) {
-          const rawResults = await adapter.executeRaw<
+          const rawResults = await adapter.raw<
             InferSelectModel<TSchema[TTable]>
           >(`SELECT * FROM ${normalizedParams.resource}`, []);
           return { data: rawResults, total: rawResults.length };
@@ -1273,18 +1273,18 @@ export function createProvider<TSchema extends Record<string, Table>>(
     },
 
     // Raw query support
-    async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+    async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
       console.log(
-        'executeRaw called with adapter:',
+        'raw called with adapter:',
         typeof adapter,
         Object.getOwnPropertyNames(adapter)
       );
-      if (typeof adapter.executeRaw !== 'function') {
+      if (typeof adapter.raw !== 'function') {
         throw new ConfigurationError(
-          `Adapter does not have executeRaw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`
+          `Adapter does not have raw method. Adapter type: ${typeof adapter}, properties: ${Object.getOwnPropertyNames(adapter).join(', ')}`
         );
       }
-      return await adapter.executeRaw<T>(sql, params);
+      return await adapter.raw<T>(sql, params);
     },
 
     // Transaction support

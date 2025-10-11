@@ -385,7 +385,7 @@ export class SQLiteAdapter<
   /**
    * Execute raw SQL query
    */
-  async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
     if (!this.client || !this.connection) {
       throw new ConnectionError('No active SQLite connection');
     }
@@ -436,8 +436,8 @@ export class SQLiteAdapter<
           this.connection.run('BEGIN TRANSACTION');
         }
       } else {
-        // For other drivers, use executeRaw
-        await this.executeRaw('BEGIN TRANSACTION');
+        // For other drivers, use raw
+        await this.raw('BEGIN TRANSACTION');
       }
     } catch (error) {
       throw new ConnectionError(
@@ -467,8 +467,8 @@ export class SQLiteAdapter<
           this.connection.run('COMMIT');
         }
       } else {
-        // For other drivers, use executeRaw
-        await this.executeRaw('COMMIT');
+        // For other drivers, use raw
+        await this.raw('COMMIT');
       }
     } catch (error) {
       throw new ConnectionError(
@@ -498,8 +498,8 @@ export class SQLiteAdapter<
           this.connection.run('ROLLBACK');
         }
       } else {
-        // For other drivers, use executeRaw
-        await this.executeRaw('ROLLBACK');
+        // For other drivers, use raw
+        await this.raw('ROLLBACK');
       }
     } catch (error) {
       throw new ConnectionError(

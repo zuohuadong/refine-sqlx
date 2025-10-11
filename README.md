@@ -85,26 +85,15 @@ import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
 
-// 🎯 Both API styles are fully compatible and can be mixed!
+// 🎯 Unified chain query API using from()
 
-// refine-sql style (native)
-const posts1 = await dataProvider
+// Chain query with from()
+const posts = await dataProvider
   .from('posts')
   .where('status', 'eq', 'published')
   .orderBy('created_at', 'desc')
   .limit(10)
   .get();
-
-// refine-orm style (compatible)
-const posts2 = await dataProvider.query
-  .select('posts')
-  .where('status', 'eq', 'published')
-  .orderBy('created_at', 'desc')
-  .limit(10)
-  .get();
-
-// Results are identical!
-console.log(posts1.length === posts2.length); // true
 
 // Relationship queries - both styles supported
 const userWithPosts = await dataProvider.getWithRelations('users', 1, [
@@ -132,16 +121,16 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 Compatibility Matrix
 
-| Feature Category      | refine-sql | refine-orm       | Compatibility | Notes                           |
-| --------------------- | ---------- | ---------------- | ------------- | ------------------------------- |
-| Basic CRUD            | ✅         | ✅               | 100%          | Fully compatible                |
-| Chain Queries         | `from()`   | `query.select()` | 100%          | Both APIs coexist               |
-| Relationship Queries  | ✅         | ✅               | 95%           | Basic functionality compatible  |
-| Polymorphic Relations | ✅         | ✅               | 100%          | API consistent                  |
-| Transaction Support   | ✅         | ✅               | 100%          | Fully compatible                |
-| ORM Methods           | ✅         | ✅               | 100%          | `upsert`, `firstOrCreate`, etc. |
-| Raw Queries           | `raw()`    | `executeRaw()`   | 95%           | Slight method name differences  |
-| Type Safety           | ✅         | ✅               | 100%          | Consistent type inference       |
+| Feature Category      | refine-sql | refine-orm | Compatibility | Notes                           |
+| --------------------- | ---------- | ---------- | ------------- | ------------------------------- |
+| Basic CRUD            | ✅         | ✅         | 100%          | Fully compatible                |
+| Chain Queries         | `from()`   | `from()`   | 100%          | Unified API                     |
+| Relationship Queries  | ✅         | ✅         | 95%           | Basic functionality compatible  |
+| Polymorphic Relations | ✅         | ✅         | 100%          | API consistent                  |
+| Transaction Support   | ✅         | ✅         | 100%          | Fully compatible                |
+| ORM Methods           | ✅         | ✅         | 100%          | `upsert`, `firstOrCreate`, etc. |
+| Raw Queries           | `raw()`    | `raw()` | 100%          | Unified method name             |
+| Type Safety           | ✅         | ✅         | 100%          | Consistent type inference       |
 
 **Compatibility Advantages:**
 
@@ -275,7 +264,7 @@ CREATE TABLE todos (
 
 ```bash
 # Clone the repository
-git clone https://github.com/medz/refine-sql.git
+git clone https://github.com/zuohuadong/refine-sqlx.git
 cd refine-sql
 
 # Install dependencies
@@ -357,20 +346,20 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 ## Community
 
-- [GitHub Discussions](https://github.com/medz/refine-sql/discussions) - Ask questions and share ideas
-- [Issues](https://github.com/medz/refine-sql/issues) - Report bugs and request features
+- [GitHub Discussions](https://github.com/zuohuadong/refine-sqlx/discussions) - Ask questions and share ideas
+- [Issues](https://github.com/zuohuadong/refine-sqlx/issues) - Report bugs and request features
 - [Discord](https://discord.gg/refine) - Join the Refine community
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sql)
+MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
 
 ## Acknowledgments
 
 - [Refine](https://refine.dev) - The amazing React framework that inspired this project
 - [Drizzle ORM](https://orm.drizzle.team) - The TypeScript ORM that powers refine-orm
 - [Bun](https://bun.sh) - The fast JavaScript runtime and toolkit
-- All our [contributors](https://github.com/medz/refine-sql/graphs/contributors) who help make this project better
+- All our [contributors](https://github.com/zuohuadong/refine-sqlx/graphs/contributors) who help make this project better
 
 ---
 
@@ -457,26 +446,15 @@ import { createProvider } from 'refine-sql';
 
 const dataProvider = createProvider('./database.db');
 
-// 🎯 两套 API 风格完全兼容，可以混用！
+// 🎯 使用 from() 的统一链式查询 API
 
-// refine-sql 风格 (原生)
-const posts1 = await dataProvider
+// 使用 from() 的链式查询
+const posts = await dataProvider
   .from('posts')
   .where('status', 'eq', 'published')
   .orderBy('created_at', 'desc')
   .limit(10)
   .get();
-
-// refine-orm 风格 (兼容)
-const posts2 = await dataProvider.query
-  .select('posts')
-  .where('status', 'eq', 'published')
-  .orderBy('created_at', 'desc')
-  .limit(10)
-  .get();
-
-// 结果完全相同！
-console.log(posts1.length === posts2.length); // true
 
 // 关系查询 - 两种风格都支持
 const userWithPosts = await dataProvider.getWithRelations('users', 1, [
@@ -504,16 +482,16 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 兼容性对照表
 
-| 功能类别  | refine-sql | refine-orm       | 兼容性 | 说明                         |
-| --------- | ---------- | ---------------- | ------ | ---------------------------- |
-| 基础 CRUD | ✅         | ✅               | 100%   | 完全兼容                     |
-| 链式查询  | `from()`   | `query.select()` | 100%   | 两套 API 并存                |
-| 关系查询  | ✅         | ✅               | 95%    | 基本功能兼容                 |
-| 多态关联  | ✅         | ✅               | 100%   | API 一致                     |
-| 事务支持  | ✅         | ✅               | 100%   | 完全兼容                     |
-| ORM 方法  | ✅         | ✅               | 100%   | `upsert`, `firstOrCreate` 等 |
-| 原生查询  | `raw()`    | `executeRaw()`   | 95%    | 方法名略有差异               |
-| 类型安全  | ✅         | ✅               | 100%   | 类型推断一致                 |
+| 功能类别  | refine-sql | refine-orm     | 兼容性 | 说明                         |
+| --------- | ---------- | -------------- | ------ | ---------------------------- |
+| 基础 CRUD | ✅         | ✅             | 100%   | 完全兼容                     |
+| 链式查询  | `from()`   | `from()`       | 100%   | 统一 API                     |
+| 关系查询  | ✅         | ✅             | 95%    | 基本功能兼容                 |
+| 多态关联  | ✅         | ✅             | 100%   | API 一致                     |
+| 事务支持  | ✅         | ✅             | 100%   | 完全兼容                     |
+| ORM 方法  | ✅         | ✅             | 100%   | `upsert`, `firstOrCreate` 等 |
+| 原生查询  | `raw()`    | `raw()` | 100%   | 统一方法名             |
+| 类型安全  | ✅         | ✅             | 100%   | 类型推断一致                 |
 
 **兼容性优势：**
 
@@ -647,7 +625,7 @@ CREATE TABLE todos (
 
 ```bash
 # 克隆仓库
-git clone https://github.com/medz/refine-sql.git
+git clone https://github.com/zuohuadong/refine-sqlx.git
 cd refine-sql
 
 # 安装依赖
@@ -729,17 +707,17 @@ refine-sql/
 
 ## 社区
 
-- [GitHub 讨论](https://github.com/medz/refine-sql/discussions) - 提问和分享想法
-- [Issues](https://github.com/medz/refine-sql/issues) - 报告错误和请求功能
+- [GitHub 讨论](https://github.com/zuohuadong/refine-sqlx/discussions) - 提问和分享想法
+- [Issues](https://github.com/zuohuadong/refine-sqlx/issues) - 报告错误和请求功能
 - [Discord](https://discord.gg/refine) - 加入 Refine 社区
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/medz/refine-sql)
+MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
 
 ## 致谢
 
 - [Refine](https://refine.dev) - 启发这个项目的出色 React 框架
 - [Drizzle ORM](https://orm.drizzle.team) - 为 refine-orm 提供动力的 TypeScript ORM
 - [Bun](https://bun.sh) - 快速的 JavaScript 运行时和工具包
-- 所有帮助改进这个项目的 [贡献者](https://github.com/medz/refine-sql/graphs/contributors)
+- 所有帮助改进这个项目的 [贡献者](https://github.com/zuohuadong/refine-sqlx/graphs/contributors)

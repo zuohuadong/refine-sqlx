@@ -487,7 +487,7 @@ export class MySQLAdapter<
   /**
    * Execute raw SQL query (MySQL-specific)
    */
-  async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
     if (!this.connection) {
       throw new ConnectionError('No active MySQL connection');
     }

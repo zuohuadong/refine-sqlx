@@ -371,7 +371,7 @@ export class PostgreSQLAdapter<
   /**
    * Execute raw SQL query
    */
-  async executeRaw<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  async raw<T = any>(sql: string, params?: any[]): Promise<T[]> {
     if (!this.connection) {
       throw new ConnectionError('No active PostgreSQL connection');
     }
@@ -402,9 +402,7 @@ export class PostgreSQLAdapter<
       }
 
       // For other drivers (fallback)
-      throw new Error(
-        `executeRaw not implemented for driver: ${this.actualDriver}`
-      );
+      throw new Error(`raw not implemented for driver: ${this.actualDriver}`);
     } catch (error) {
       throw new QueryError(
         `Failed to execute raw SQL: ${error instanceof Error ? error.message : 'Unknown error'}`,

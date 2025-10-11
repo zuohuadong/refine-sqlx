@@ -203,7 +203,7 @@ function App() {
 ```typescript
 // Get users with pagination and filtering
 const users = await dataProvider
-  .chain('users')
+  .from('users')
   .where('email', 'like', '%@example.com')
   .orderBy('createdAt', 'desc')
   .limit(10)
@@ -212,13 +212,13 @@ const users = await dataProvider
 
 // Count with filters
 const count = await dataProvider
-  .chain('users')
+  .from('users')
   .where('active', '=', true)
   .count();
 
 // Complex queries
 const result = await dataProvider
-  .chain('posts')
+  .from('posts')
   .where('published', '=', true)
   .where('createdAt', '>', new Date('2024-01-01'))
   .orderBy('createdAt', 'desc')
@@ -320,7 +320,7 @@ await transactionManager.execute(async tx => {
 
 ```typescript
 // Execute raw SQL
-const result = await dataProvider.executeRaw(
+const result = await dataProvider.raw(
   'SELECT * FROM users WHERE created_at > ?',
   [new Date('2024-01-01')]
 );
@@ -603,7 +603,7 @@ function App() {
 ```typescript
 // 获取带分页和过滤的用户
 const users = await dataProvider
-  .chain('users')
+  .from('users')
   .where('email', 'like', '%@example.com')
   .orderBy('createdAt', 'desc')
   .limit(10)
@@ -612,13 +612,13 @@ const users = await dataProvider
 
 // 带过滤器的计数
 const count = await dataProvider
-  .chain('users')
+  .from('users')
   .where('active', '=', true)
   .count();
 
 // 复杂查询
 const result = await dataProvider
-  .chain('posts')
+  .from('posts')
   .where('published', '=', true)
   .where('createdAt', '>', new Date('2024-01-01'))
   .orderBy('createdAt', 'desc')
@@ -675,7 +675,7 @@ await transactionManager.execute(async tx => {
 
 ```typescript
 // 执行原生 SQL
-const result = await dataProvider.executeRaw(
+const result = await dataProvider.raw(
   'SELECT * FROM users WHERE created_at > ?',
   [new Date('2024-01-01')]
 );
