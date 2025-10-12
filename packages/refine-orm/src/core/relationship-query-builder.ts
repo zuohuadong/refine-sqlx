@@ -76,9 +76,9 @@ export class RelationshipQueryBuilder<TSchema extends Record<string, Table>> {
   /**
    * Load relationships for a single record
    */
-  @LogRelationshipQuery()
+  @ValidateRelationship
   @CacheRelationship(180000) // Cache for 3 minutes
-  @ValidateRelationship()
+  @LogRelationshipQuery
   async loadRelationshipsForRecord<TTable extends keyof TSchema>(
     _tableName: TTable,
     record: InferSelectModel<TSchema[TTable]>,

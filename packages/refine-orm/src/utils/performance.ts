@@ -1351,37 +1351,35 @@ export function createPerformanceManager(options: {
 export { QueryCache };
 
 // Additional TypeScript 5.0+ decorators for relationship queries
-function LogRelationshipQuery() {
-  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
-    return function (this: any, ...args: any[]) {
-      const start = performance.now();
-      try {
-        console.debug(`[RelationshipQuery] Starting ${String(context.name)}`);
-        const result = _originalMethod.apply(this, args);
+function LogRelationshipQuery(_originalMethod: any, context: ClassMethodDecoratorContext) {
+  return function (this: any, ...args: any[]) {
+    const start = performance.now();
+    try {
+      console.debug(`[RelationshipQuery] Starting ${String(context.name)}`);
+      const result = _originalMethod.apply(this, args);
 
-        if (result instanceof Promise) {
-          return result.finally(() => {
-            const duration = performance.now() - start;
-            console.debug(
-              `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
-            );
-          });
-        }
-
-        const duration = performance.now() - start;
-        console.debug(
-          `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
-        );
-        return result;
-      } catch (error) {
-        const duration = performance.now() - start;
-        console.error(
-          `[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`,
-          error
-        );
-        throw error;
+      if (result instanceof Promise) {
+        return result.finally(() => {
+          const duration = performance.now() - start;
+          console.debug(
+            `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+          );
+        });
       }
-    };
+
+      const duration = performance.now() - start;
+      console.debug(
+        `[RelationshipQuery] ${String(context.name)} completed in ${duration.toFixed(2)}ms`
+      );
+      return result;
+    } catch (error) {
+      const duration = performance.now() - start;
+      console.error(
+        `[RelationshipQuery] ${String(context.name)} failed after ${duration.toFixed(2)}ms:`,
+        error
+      );
+      throw error;
+    }
   };
 }
 
@@ -1423,35 +1421,33 @@ function CacheRelationship(ttl: number = 300000) {
   };
 }
 
-function ValidateRelationship() {
-  return function (_originalMethod: any, context: ClassMethodDecoratorContext) {
-    return function (this: any, ...args: any[]) {
-      // Basic validation for relationship method arguments
-      const [tableName, record, relationships] = args;
+function ValidateRelationship(_originalMethod: any, context: ClassMethodDecoratorContext) {
+  return function (this: any, ...args: any[]) {
+    // Basic validation for relationship method arguments
+    const [tableName, record, relationships] = args;
 
-      if (!tableName) {
-        throw new ValidationError(
-          `Table name is required for ${String(context.name)}`
-        );
-      }
-
-      if (!record) {
-        throw new ValidationError(
-          `Record is required for ${String(context.name)}`
-        );
-      }
-
-      if (!relationships || typeof relationships !== 'object') {
-        throw new ValidationError(
-          `Relationships configuration is required for ${String(context.name)}`
-        );
-      }
-
-      console.debug(
-        `[ValidateRelationship] Validation passed for ${String(context.name)}`
+    if (!tableName) {
+      throw new ValidationError(
+        `Table name is required for ${String(context.name)}`
       );
-      return _originalMethod.apply(this, args);
-    };
+    }
+
+    if (!record) {
+      throw new ValidationError(
+        `Record is required for ${String(context.name)}`
+      );
+    }
+
+    if (!relationships || typeof relationships !== 'object') {
+      throw new ValidationError(
+        `Relationships configuration is required for ${String(context.name)}`
+      );
+    }
+
+    console.debug(
+      `[ValidateRelationship] Validation passed for ${String(context.name)}`
+    );
+    return _originalMethod.apply(this, args);
   };
 }
 
