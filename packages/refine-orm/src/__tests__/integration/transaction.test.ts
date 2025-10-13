@@ -74,14 +74,6 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         // Don't recreate the connection - just clean and reseed the data
         try {
           if (provider && provider.raw) {
-            // Debug: Log counts before cleanup
-            if (dbType === 'mysql') {
-              const [usersCountBefore] = await provider.raw('SELECT COUNT(*) as count FROM users');
-              const [postsCountBefore] = await provider.raw('SELECT COUNT(*) as count FROM posts');
-              const [commentsCountBefore] = await provider.raw('SELECT COUNT(*) as count FROM comments');
-              console.log(`[MySQL DEBUG - Before Cleanup] Users: ${usersCountBefore.count}, Posts: ${postsCountBefore.count}, Comments: ${commentsCountBefore.count}`);
-            }
-
             // Clean tables in reverse order due to foreign keys
             if (dbType === 'mysql') {
               // For MySQL, disable foreign key checks temporarily
@@ -95,14 +87,8 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
 
-              // Add a longer delay to ensure MySQL processes the changes
-              await new Promise(resolve => setTimeout(resolve, 1000));
-
-              // Debug: Log counts after cleanup
-              const [usersCountAfter] = await provider.raw('SELECT COUNT(*) as count FROM users');
-              const [postsCountAfter] = await provider.raw('SELECT COUNT(*) as count FROM posts');
-              const [commentsCountAfter] = await provider.raw('SELECT COUNT(*) as count FROM comments');
-              console.log(`[MySQL DEBUG - After Cleanup] Users: ${usersCountAfter.count}, Posts: ${postsCountAfter.count}, Comments: ${commentsCountAfter.count}`);
+              // Add a small delay to ensure MySQL processes the changes
+              await new Promise(resolve => setTimeout(resolve, 100));
             } else if (dbType === 'postgresql') {
               // For PostgreSQL, use DELETE and reset sequences
               await provider.raw('DELETE FROM comments');
@@ -142,19 +128,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               });
             }
 
-            // For MySQL, add a longer delay after data insertion to ensure consistency
+            // For MySQL, add a small delay after data insertion to ensure consistency
             if (dbType === 'mysql') {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-
-              // Debug: Log counts after seeding
-              const [usersCountSeeded] = await provider.raw('SELECT COUNT(*) as count FROM users');
-              const [postsCountSeeded] = await provider.raw('SELECT COUNT(*) as count FROM posts');
-              const [commentsCountSeeded] = await provider.raw('SELECT COUNT(*) as count FROM comments');
-              console.log(`[MySQL DEBUG - After Seeding] Users: ${usersCountSeeded.count}, Posts: ${postsCountSeeded.count}, Comments: ${commentsCountSeeded.count}`);
-
-              // Debug: Log actual user records
-              const userRecords = await provider.raw('SELECT id, name, email FROM users ORDER BY id');
-              console.log('[MySQL DEBUG - User Records]:', userRecords);
+              await new Promise(resolve => setTimeout(resolve, 100));
             }
           }
         } catch (error) {
@@ -210,9 +186,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         });
 
         it('should rollback failed transactions', async () => {
-          // For MySQL, add a longer delay before reading initial counts to ensure data is consistent
+          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50));
           }
 
           const initialUserCount = await provider.getList({
@@ -221,16 +197,6 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
           const initialPostCount = await provider.getList({
             resource: 'posts',
           });
-
-          // Debug: Log what we're actually seeing
-          if (dbType === 'mysql') {
-            console.log(`[MySQL DEBUG - Test Start] Initial user count: ${initialUserCount.total}, expected: 3`);
-            console.log(`[MySQL DEBUG - Test Start] Initial post count: ${initialPostCount.total}, expected: 3`);
-            if (initialUserCount.total !== 3) {
-              const userRecords = await provider.raw('SELECT id, name, email FROM users ORDER BY id');
-              console.log('[MySQL DEBUG - Unexpected User Records]:', userRecords);
-            }
-          }
 
           await expect(
             provider.transaction(async tx => {
@@ -488,23 +454,14 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
       describe('Transaction Error Handling', () => {
         it('should rollback on constraint violations', async () => {
-          // For MySQL, add a longer delay before reading initial counts to ensure data is consistent
+          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50));
           }
 
           const initialUserCount = await provider.getList({
             resource: 'users',
           });
-
-          // Debug: Log what we're actually seeing
-          if (dbType === 'mysql') {
-            console.log(`[MySQL DEBUG - Constraint Test Start] Initial user count: ${initialUserCount.total}, expected: 3`);
-            if (initialUserCount.total !== 3) {
-              const userRecords = await provider.raw('SELECT id, name, email FROM users ORDER BY id');
-              console.log('[MySQL DEBUG - Constraint Test Unexpected User Records]:', userRecords);
-            }
-          }
 
           await expect(
             provider.transaction(async tx => {
@@ -624,9 +581,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             },
           });
 
-          // For MySQL, add a longer delay after creating user to ensure it's fully committed
+          // For MySQL, add a small delay after creating user to ensure it's fully committed
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50));
           }
 
           // Run concurrent transactions
