@@ -37,10 +37,29 @@ export class MySQLAdapter<
   private connection: any = null;
   private runtimeConfig = getRuntimeConfig('mysql');
   private actualDriver: 'mysql2' | 'bun:sql' = 'mysql2'; // Track actual driver in use
+  private transactionConnection: any = null; // Store transaction connection
+  private transactionClient: DrizzleClient<TSchema> | null = null; // Store transaction client
 
   constructor(config: DatabaseConfig<TSchema>) {
     super(config);
     this.validateConfig();
+  }
+
+  /**
+   * Get the Drizzle client instance
+   * Returns transaction client if in a transaction, otherwise main client
+   */
+  override getClient(): DrizzleClient<TSchema> {
+    // If we're in a transaction, return the transaction client
+    if (this.transactionClient) {
+      return this.transactionClient;
+    }
+
+    if (!this.client) {
+      throw new ConnectionError('No active MySQL client');
+    }
+
+    return this.client;
   }
 
   /**
@@ -493,7 +512,9 @@ export class MySQLAdapter<
     }
 
     try {
-      const [rows] = await this.connection.execute(sql, params || []);
+      // Use transaction connection if we're in a transaction
+      const conn = this.transactionConnection || this.connection;
+      const [rows] = await conn.execute(sql, params || []);
       return rows as T[];
     } catch (error) {
       throw new QueryError(
@@ -522,12 +543,34 @@ export class MySQLAdapter<
       ) {
         // Single connection - call beginTransaction directly
         await this.connection.beginTransaction();
+        // For single connections, we can continue using the same client
+        this.transactionConnection = this.connection;
       } else if (this.connection.getConnection) {
         // Pool - get a connection from the pool first
         const poolConnection = await this.connection.getConnection();
         await poolConnection.beginTransaction();
         // Store the pool connection for commit/rollback
-        (this as any).transactionConnection = poolConnection;
+        this.transactionConnection = poolConnection;
+
+        // Create a new drizzle client for this transaction connection
+        if (!drizzleMySQL) {
+          const drizzleModule = await import('drizzle-orm/mysql2');
+          // eslint-disable-next-line require-atomic-updates
+          drizzleMySQL = drizzleModule.drizzle;
+        }
+
+        // Create transaction-specific drizzle client
+        this.transactionClient = drizzleMySQL(poolConnection, {
+          schema: this.config.schema,
+          mode: 'default',
+          logger: this.config.debug,
+          casing: 'snake_case',
+        }) as DrizzleClient<TSchema>;
+
+        // Manually assign schema if it's missing from Drizzle client
+        if (!this.transactionClient.schema) {
+          (this.transactionClient as any).schema = this.config.schema;
+        }
       } else {
         throw new ConnectionError(
           'MySQL connection does not support transactions'
@@ -550,12 +593,16 @@ export class MySQLAdapter<
     }
 
     try {
-      const txConn = (this as any).transactionConnection;
+      const txConn = this.transactionConnection;
       if (txConn) {
         // Using pool connection
         await txConn.commit();
-        txConn.release(); // Release back to pool
-        delete (this as any).transactionConnection;
+        if (txConn !== this.connection) {
+          // Only release if it's a separate pool connection
+          txConn.release(); // Release back to pool
+        }
+        this.transactionConnection = null;
+        this.transactionClient = null;
       } else if (typeof this.connection.commit === 'function') {
         // Single connection
         await this.connection.commit();
@@ -579,12 +626,16 @@ export class MySQLAdapter<
     }
 
     try {
-      const txConn = (this as any).transactionConnection;
+      const txConn = this.transactionConnection;
       if (txConn) {
         // Using pool connection
         await txConn.rollback();
-        txConn.release(); // Release back to pool
-        delete (this as any).transactionConnection;
+        if (txConn !== this.connection) {
+          // Only release if it's a separate pool connection
+          txConn.release(); // Release back to pool
+        }
+        this.transactionConnection = null;
+        this.transactionClient = null;
       } else if (typeof this.connection.rollback === 'function') {
         // Single connection
         await this.connection.rollback();
