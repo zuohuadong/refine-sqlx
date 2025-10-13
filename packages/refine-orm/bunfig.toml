@@ -1,0 +1,12 @@
+[test]
+# Set test timeout to 30 seconds
+timeout = 30000
+
+# Enable test coverage
+coverage = false
+
+# Test file pattern
+root = "./src"
+
+# Preload files before running tests
+preload = []
