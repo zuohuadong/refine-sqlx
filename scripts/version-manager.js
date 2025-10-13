@@ -172,7 +172,7 @@ async function executeVersioning(strategy, newVersion) {
 function updatePackageVersion(path, version) {
   const pkg = JSON.parse(readFileSync(path, 'utf8'));
   pkg.version = version;
-  writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
+  writeFileSync(path, `${JSON.stringify(pkg, null, 2)}\n`);
 }
 
 // Generate changelog entry
