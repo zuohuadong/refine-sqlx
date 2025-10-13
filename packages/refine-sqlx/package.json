@@ -17,6 +17,10 @@
   "bugs": {
     "url": "https://github.com/medz/refine-sql/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "keywords": [
     "refine",
     "data-provider",
