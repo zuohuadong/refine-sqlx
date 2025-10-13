@@ -1351,7 +1351,10 @@ export function createPerformanceManager(options: {
 export { QueryCache };
 
 // Additional TypeScript 5.0+ decorators for relationship queries
-function LogRelationshipQuery(_originalMethod: any, context: ClassMethodDecoratorContext) {
+function LogRelationshipQuery(
+  _originalMethod: any,
+  context: ClassMethodDecoratorContext
+) {
   return function (this: any, ...args: any[]) {
     const start = performance.now();
     try {
@@ -1421,7 +1424,10 @@ function CacheRelationship(ttl: number = 300000) {
   };
 }
 
-function ValidateRelationship(_originalMethod: any, context: ClassMethodDecoratorContext) {
+function ValidateRelationship(
+  _originalMethod: any,
+  context: ClassMethodDecoratorContext
+) {
   return function (this: any, ...args: any[]) {
     // Basic validation for relationship method arguments
     const [tableName, record, relationships] = args;

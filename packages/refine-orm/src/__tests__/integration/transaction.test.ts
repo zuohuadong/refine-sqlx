@@ -89,7 +89,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
               // Add a longer delay to ensure MySQL processes the changes and completes all pending transactions
-              await new Promise(resolve => setTimeout(resolve, 350));
+              await new Promise(resolve => setTimeout(resolve, 500));
             } else if (dbType === 'postgresql') {
               // For PostgreSQL, use DELETE and reset sequences
               await provider.raw('DELETE FROM comments');
@@ -131,7 +131,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             // For MySQL, add a longer delay after data insertion to ensure consistency
             if (dbType === 'mysql') {
-              await new Promise(resolve => setTimeout(resolve, 250));
+              await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
         } catch (error) {
