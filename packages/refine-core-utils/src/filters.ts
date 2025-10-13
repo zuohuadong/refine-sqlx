@@ -141,7 +141,7 @@ export class SqlFilterTransformer {
       combine: conditions =>
         conditions.length > 1 ?
           `(${conditions.join(' AND ')})`
-        : conditions[0] ?? '',
+        : (conditions[0] ?? ''),
     });
 
     this.logicalConfigs.set('or', {
@@ -149,7 +149,7 @@ export class SqlFilterTransformer {
       combine: conditions =>
         conditions.length > 1 ?
           `(${conditions.join(' OR ')})`
-        : conditions[0] ?? '',
+        : (conditions[0] ?? ''),
     });
   }
 
