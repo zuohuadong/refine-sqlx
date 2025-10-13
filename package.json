@@ -64,7 +64,7 @@
     "@prettier/plugin-oxc": "0.0.4",
     "@refinedev/core": "5.0.4",
     "@size-limit/preset-small-lib": "11.2.0",
-    "@types/jest": "^29.5.14",
+    "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "8.46.0",
     "@typescript-eslint/parser": "8.46.0",
     "better-sqlite3": "12.4.1",
