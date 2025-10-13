@@ -26,7 +26,7 @@ export class SqlSortingTransformer {
       }
 
       // Apply field mapping if provided
-      const actualField = context?.fieldMapping?.[field] || field;
+      const actualField = context?.fieldMapping?.[field] ?? field;
 
       // Quote field name to prevent SQL injection
       const quotedField = `"${actualField}"`;

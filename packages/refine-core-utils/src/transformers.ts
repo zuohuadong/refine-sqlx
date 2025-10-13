@@ -118,7 +118,7 @@ export class SqlTransformer {
             return undefined;
           }
 
-          return { sql: result.result, args: result.params || [] };
+          return { sql: result.result, args: result.params ?? [] };
         }
       ),
       'transformFilters'
@@ -154,7 +154,7 @@ export class SqlTransformer {
       return undefined;
     }
 
-    return { sql: result.result, args: result.params || [] };
+    return { sql: result.result, args: result.params ?? [] };
   }
 
   /**

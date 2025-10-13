@@ -438,7 +438,7 @@ export class GradualMigrationHelper<TSchema extends BaseSchema> {
     useNewProviderFor?: string[]; // List of operations to use new provider for
     fallbackToOld?: boolean; // Whether to fallback to old provider on errors
   }): EnhancedDataProvider<TSchema> {
-    const useNewFor = new Set(config.useNewProviderFor || []);
+    const useNewFor = new Set(config.useNewProviderFor ?? []);
     const fallbackToOld = config.fallbackToOld ?? true;
 
     return new Proxy(this.oldProvider, {

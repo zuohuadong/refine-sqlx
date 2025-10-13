@@ -141,7 +141,7 @@ export class SqlFilterTransformer {
       combine: conditions =>
         conditions.length > 1 ?
           `(${conditions.join(' AND ')})`
-        : conditions[0] || '',
+        : conditions[0] ?? '',
     });
 
     this.logicalConfigs.set('or', {
@@ -149,7 +149,7 @@ export class SqlFilterTransformer {
       combine: conditions =>
         conditions.length > 1 ?
           `(${conditions.join(' OR ')})`
-        : conditions[0] || '',
+        : conditions[0] ?? '',
     });
   }
 
@@ -243,7 +243,7 @@ export class SqlFilterTransformer {
     }
 
     // Apply field mapping if provided
-    const actualField = context?.fieldMapping?.[field] || field;
+    const actualField = context?.fieldMapping?.[field] ?? field;
 
     // Transform the filter
     const sqlCondition = config.transform(actualField, value, context);
@@ -456,7 +456,7 @@ export class GenericFilterTransformer<T> {
     }
 
     // Apply field mapping if provided
-    const actualField = context?.fieldMapping?.[field] || field;
+    const actualField = context?.fieldMapping?.[field] ?? field;
 
     // Transform the filter
     const result = config.transform(actualField, value, context);

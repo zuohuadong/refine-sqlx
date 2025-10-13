@@ -483,8 +483,8 @@ export class DefaultSchemaValidator<TSchema extends BaseSchema>
         type: this.mapRelationType(rel.type),
         fromTable: resource,
         toTable: rel.relatedTable,
-        fromColumn: rel.localKey || 'id',
-        toColumn: rel.foreignKey || `${resource}_id`,
+        fromColumn: rel.localKey ?? 'id',
+        toColumn: rel.foreignKey ?? `${resource}_id`,
         pivotTable: rel.pivotTable,
       });
     }

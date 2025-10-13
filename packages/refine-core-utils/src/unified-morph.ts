@@ -129,7 +129,7 @@ export abstract class BaseUnifiedMorphQuery<
     // Restore original limit
     this.limitValue = originalLimit;
 
-    return results[0] || null;
+    return results[0] ?? null;
   }
 
   /**
@@ -265,7 +265,7 @@ export class MorphUtils {
     config: UnifiedMorphConfig<TSchema>,
     defaultStrategy: 'eager' | 'lazy' | 'manual' = 'eager'
   ): 'eager' | 'lazy' | 'manual' {
-    return config.loadingStrategy || defaultStrategy;
+    return config.loadingStrategy ?? defaultStrategy;
   }
 
   /**
@@ -274,7 +274,7 @@ export class MorphUtils {
   static shouldCache<TSchema extends BaseSchema>(
     config: UnifiedMorphConfig<TSchema>
   ): boolean {
-    return config.cache === true && (config.cacheTTL || 0) > 0;
+    return config.cache === true && (config.cacheTTL ?? 0) > 0;
   }
 
   /**
@@ -284,7 +284,7 @@ export class MorphUtils {
     record: any,
     config: UnifiedMorphConfig<TSchema>
   ): string | null {
-    return record[config.typeField] || null;
+    return record[config.typeField] ?? null;
   }
 
   /**
@@ -304,7 +304,7 @@ export class MorphUtils {
     typeName: string,
     config: UnifiedMorphConfig<TSchema>
   ): keyof TSchema | null {
-    return config.types[typeName] || null;
+    return config.types[typeName] ?? null;
   }
 
   /**
@@ -474,7 +474,7 @@ export class MorphUtils {
     };
 
     const map = operatorMaps[targetFormat];
-    return map[operator] || operator;
+    return map[operator] ?? operator;
   }
 }
 
