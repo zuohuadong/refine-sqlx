@@ -4,7 +4,7 @@
 
 ## English
 
-Thank you for your interest in contributing to refine-orm and refinProviders project! This guide will help you get started with contributing to our monorepo containing `refine-orm`, `refine-sql`, and `@refine-orm/core-utils`.
+Thank you for your interest in contributing to refine-sqlx and refinProviders project! This guide will help you get started with contributing to our monorepo containing `refine-sqlx`, `refine-sql`, and `@refine-sqlx/core-utils`.
 
 ## Table of Contents
 
@@ -90,7 +90,7 @@ We recommend using VS Code with these extensions:
 ```
 refine-sql/
 ├── packages/
-│   ├── refine-orm/              # Multi-database ORM provider
+│   ├── refine-sqlx/              # Multi-database ORM provider
 │   │   ├── src/
 │   │   │   ├── adapters/        # Database adapters
 │   │   │   ├── core/            # Core functionality
@@ -112,9 +112,9 @@ refine-sql/
 
 ### Package Responsibilities
 
-- **refine-orm**: Multi-database support with Drizzle ORM
+- **refine-sqlx**: Multi-database support with Drizzle ORM
 - **refine-sql**: Lightweight SQLite-focused provider
-- **@refine-orm/core-utils**: Shared utilities and transformers
+- **@refine-sqlx/core-utils**: Shared utilities and transformers
 
 ## Development Workflow
 
@@ -198,7 +198,7 @@ test(orm): add integration tests for MySQL adapter
 bun run test
 
 # Run tests for specific package
-bun run --filter='refine-orm' test
+bun run --filter='refine-sqlx' test
 bun run --filter='refine-sql' test
 
 # Run integration tests
@@ -418,7 +418,7 @@ Thank you for contributing to making Refine database providers better for everyo
 
 ## 中文
 
-感谢您对 refine-orm 和 refine-sql 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-orm`、`refine-sql` 和 `@refine-orm/core-utils`。
+感谢您对 refine-sqlx 和 refine-sql 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-sqlx`、`refine-sql` 和 `@refine-sqlx/core-utils`。
 
 ## 目录
 
@@ -504,7 +504,7 @@ Thank you for contributing to making Refine database providers better for everyo
 ```
 refine-sql/
 ├── packages/
-│   ├── refine-orm/              # 多数据库 ORM 提供器
+│   ├── refine-sqlx/              # 多数据库 ORM 提供器
 │   │   ├── src/
 │   │   │   ├── adapters/        # 数据库适配器
 │   │   │   ├── core/            # 核心功能
@@ -526,9 +526,9 @@ refine-sql/
 
 ### 包职责
 
-- **refine-orm**: 使用 Drizzle ORM 的多数据库支持
+- **refine-sqlx**: 使用 Drizzle ORM 的多数据库支持
 - **refine-sql**: 轻量级 SQLite 专用提供器
-- **@refine-orm/core-utils**: 共享工具和转换器
+- **@refine-sqlx/core-utils**: 共享工具和转换器
 
 ## 开发工作流
 
@@ -612,7 +612,7 @@ test(orm): add integration tests for MySQL adapter
 bun run test
 
 # 运行特定包的测试
-bun run --filter='refine-orm' test
+bun run --filter='refine-sqlx' test
 bun run --filter='refine-sql' test
 
 # 运行集成测试

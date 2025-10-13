@@ -1,7 +1,7 @@
 /**
  * Polymorphic Associations Example
  *
- * This example demonstrates how to use polymorphic associations with refine-orm,
+ * This example demonstrates how to use polymorphic associations with refine-sqlx,
  * including one-to-many and many-to-many polymorphic relationships.
  */
 

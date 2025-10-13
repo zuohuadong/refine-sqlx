@@ -1,5 +1,5 @@
 name: 📝 User Feedback
-description: Share your experience, suggestions, or general feedback about refine-orm or refine-sql
+description: Share your experience, suggestions, or general feedback about refine-sqlx or refine-sql
 title: '[FEEDBACK] '
 labels: ['feedback', 'user-experience']
 assignees:
@@ -16,7 +16,7 @@ body:
       label: Package
       description: Which package is your feedback about?
       options:
-        - refine-orm
+        - refine-sqlx
         - refine-sql
         - refine-core-utils
         - General/All packages

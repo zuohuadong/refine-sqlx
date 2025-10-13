@@ -35,7 +35,7 @@ async function basicUsage() {
   console.log(`✅ 活跃用户: ${activeUsers.length} 个`);
 }
 
-// ===== 场景 2: refine-orm 兼容 (~11kB) =====
+// ===== 场景 2: refine-sqlx 兼容 (~11kB) =====
 import { createSQLiteProvider } from 'refine-sql/compat';
 
 interface MySchema {
@@ -53,7 +53,7 @@ interface MySchema {
 }
 
 async function compatUsage() {
-  console.log('🔄 refine-orm 兼容模式 (~11kB)');
+  console.log('🔄 refine-sqlx 兼容模式 (~11kB)');
   
   const provider = createSQLiteProvider({
     connection: './compat.db',
@@ -67,7 +67,7 @@ async function compatUsage() {
     },
   });
   
-  // refine-orm 风格的 API
+  // refine-sqlx 风格的 API
   const userWithPosts = await provider.getWithRelations('users', 1, ['posts']);
   
   // 批量操作
@@ -245,7 +245,7 @@ function bundleSizeComparison() {
   
   console.log('\n💡 选择建议:');
   console.log('• 基础应用: 使用 refine-sql/core');
-  console.log('• 从 refine-orm 迁移: 使用 refine-sql/compat');
+  console.log('• 从 refine-sqlx 迁移: 使用 refine-sql/compat');
   console.log('• Cloudflare Workers: 使用 refine-sql/d1');
   console.log('• Bun 应用: 使用 refine-sql/bun');
   console.log('• Node.js 应用: 使用 refine-sql/node');

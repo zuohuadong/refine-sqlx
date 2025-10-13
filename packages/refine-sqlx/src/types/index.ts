@@ -1,4 +1,4 @@
-// Type definitions for refine-orm
+// Type definitions for refine-sqlx
 export * from './client';
 export * from './operations';
 export * from './errors';

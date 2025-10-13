@@ -199,4 +199,4 @@ const newWay = createProvider(newConfig);
 
 ---
 
-**Thank you for contributing to refine-orm/refine-sql! 🚀**
+**Thank you for contributing to refine-sqlx/refine-sql! 🚀**

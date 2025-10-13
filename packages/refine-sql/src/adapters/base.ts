@@ -1,10 +1,10 @@
-// Base adapter interface compatible with refine-orm
+// Base adapter interface compatible with refine-sqlx
 import type { SqlClient } from '../client';
 import type { SQLiteOptions } from '../types/config';
 import { logExecution } from '../utils';
 
 /**
- * Base adapter interface compatible with refine-orm
+ * Base adapter interface compatible with refine-sqlx
  */
 export interface BaseAdapter {
   /** Get the underlying SQL client */

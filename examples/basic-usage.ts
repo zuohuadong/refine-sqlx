@@ -2,7 +2,7 @@
  * refine-sql Basic Usage Example
  * 
  * refine-sql is a lightweight package for SQLite and Cloudflare D1 environments
- * Fully compatible with refine-orm API, making migration from refine-orm easy
+ * Fully compatible with refine-sqlx API, making migration from refine-sqlx easy
  */
 
 import { createRefineSQL } from '../packages/refine-sql/src/index.js';
@@ -19,8 +19,8 @@ async function main() {
     console.log('   🔧 Supports: Bun SQLite, Node.js better-sqlite3, Cloudflare D1');
     console.log('   📝 Usage: provider.getOne({ resource: "users", id: 1 })\n');
 
-    // ========== refine-orm Compatible API ==========
-    console.log('2️⃣ refine-orm Compatible API (Fully Compatible)');
+    // ========== refine-sqlx Compatible API ==========
+    console.log('2️⃣ refine-sqlx Compatible API (Fully Compatible)');
     
     // Standard Refine DataProvider API
     console.log('   📋 Standard CRUD Operations:');
@@ -30,8 +30,8 @@ async function main() {
     console.log('     - update: await provider.update({ resource: "users", id: 1, variables: {...} })');
     console.log('     - deleteOne: await provider.deleteOne({ resource: "users", id: 1 })\n');
 
-    // ========== Chain Query API (Compatible with refine-orm) ==========
-    console.log('3️⃣ Chain Query API (Compatible with refine-orm)');
+    // ========== Chain Query API (Compatible with refine-sqlx) ==========
+    console.log('3️⃣ Chain Query API (Compatible with refine-sqlx)');
     const chainQuery = provider.from('users')
       .where('status', 'eq', 'active')   // New generic method
       .where('age', 'gt', 18)            // New generic method
@@ -41,8 +41,8 @@ async function main() {
     console.log('   ✅ Chain query built successfully (using new generic API)');
     console.log('   📝 Execute: await chainQuery.get()\n');
 
-    // ========== Relationship Queries (Compatible with refine-orm) ==========
-    console.log('4️⃣ Relationship Queries (Compatible with refine-orm)');
+    // ========== Relationship Queries (Compatible with refine-sqlx) ==========
+    console.log('4️⃣ Relationship Queries (Compatible with refine-sqlx)');
     console.log('   📝 belongsTo: provider.from("posts").withBelongsTo("author", "users")');
     console.log('   📝 hasMany: provider.from("users").withHasMany("posts", "posts")');
     console.log('   📝 Execute: await query.getWithRelations()\n');
@@ -54,7 +54,7 @@ async function main() {
     console.log('   ⚡ Cloudflare D1: Edge computing optimized, low latency\n');
 
     console.log('🎉 refine-sql example completed!');
-    console.log('💡 Tip: Fully compatible with refine-orm API, zero-cost migration');
+    console.log('💡 Tip: Fully compatible with refine-sqlx API, zero-cost migration');
 
   } catch (error) {
     console.error('❌ Error:', error);

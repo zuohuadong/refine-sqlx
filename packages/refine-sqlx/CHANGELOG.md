@@ -7,11 +7,11 @@
 - 9308ad4: Initial monorepo setup with Bun workspace structure and Changeset version management
 - Release version 0.3.1
   - Updated README documentation
-  - Removed @refine-orm/core-utils package description from README
+  - Removed @refine-sqlx/core-utils package description from README
   - Minor documentation improvements and formatting fixes
 
 - Updated dependencies
-  - @refine-orm/core-utils@0.3.1
+  - @refine-sqlx/core-utils@0.3.1
 
 All notable changes to this project will be documented in this file.
 
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of refine-orm package
+- Initial release of refine-sqlx package
 - Multi-database support for PostgreSQL, MySQL, and SQLite using drizzle-orm
 - Runtime detection for optimal database drivers (Bun vs Node.js)
 - Type-safe CRUD operations with automatic schema inference
@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM/CJS dual module support
 - Comprehensive test suite with unit and integration tests
 - Performance monitoring and optimization features
-- Shared utilities with @refine-orm/core-utils for code reuse
+- Shared utilities with @refine-sqlx/core-utils for code reuse
 
 ### Features
 
@@ -63,5 +63,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared transformation layer to reduce code duplication
 - Full test coverage with mock and integration tests
 
-[Unreleased]: https://github.com/medz/refine-sql/compare/refine-orm@0.0.1...HEAD
-[0.0.1]: https://github.com/medz/refine-sql/releases/tag/refine-orm@0.0.1
+[Unreleased]: https://github.com/medz/refine-sql/compare/refine-sqlx@0.0.1...HEAD
+[0.0.1]: https://github.com/medz/refine-sql/releases/tag/refine-sqlx@0.0.1

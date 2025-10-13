@@ -10,5 +10,5 @@ contact_links:
     url: https://refine.dev
     about: Learn more about the Refine framework
   - name: 📧 Email Support
-    url: mailto:support@refine-orm.dev
+    url: mailto:support@refine-sqlx.dev
     about: Contact us directly for enterprise support or sensitive issues

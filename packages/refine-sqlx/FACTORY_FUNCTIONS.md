@@ -170,12 +170,12 @@ createDataProvider()        // Auto-detection (implicit database type)
 
 ```typescript
 // Before (Advanced API)
-import { PostgreSQLAdapter, createRefine } from 'refine-orm';
+import { PostgreSQLAdapter, createRefine } from 'refine-sqlx';
 const adapter = new PostgreSQLAdapter(config);
 const provider = createRefine(adapter);
 
 // After (User-Friendly API)
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 const provider = createPostgreSQLProvider({ connection, schema });
 ```
 
@@ -183,7 +183,7 @@ const provider = createPostgreSQLProvider({ connection, schema });
 
 ```typescript
 // Simple migration - just change the import and factory function
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 const dataProvider = createPostgreSQLProvider({
   connection: process.env.DATABASE_URL!,
   schema: myDrizzleSchema,

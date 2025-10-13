@@ -12,7 +12,7 @@ console.log('🧹 Cleaning up test files...');
 
 // List of files that were identified as duplicates or problematic
 const filesToRemove = [
-  // Already removed: 'packages/refine-orm/src/__tests__/mysql-integration.test.ts'
+  // Already removed: 'packages/refine-sqlx/src/__tests__/mysql-integration.test.ts'
 ];
 
 // Remove duplicate files

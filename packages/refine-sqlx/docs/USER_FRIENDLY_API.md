@@ -9,7 +9,7 @@ RefineORM provides several factory functions designed to make it as easy as poss
 The simplest way to create a data provider is using the universal `createRefine` function:
 
 ```typescript
-import { createRefine } from 'refine-orm';
+import { createRefine } from 'refine-sqlx';
 import { schema } from './schema'; // Your Drizzle schema
 
 // PostgreSQL
@@ -39,7 +39,7 @@ const provider = createRefine({
 For even simpler usage, use `createDataProvider` which auto-detects the database type from your connection string:
 
 ```typescript
-import { createDataProvider } from 'refine-orm';
+import { createDataProvider } from 'refine-sqlx';
 
 // Auto-detects PostgreSQL
 const pgProvider = createDataProvider({
@@ -67,7 +67,7 @@ For more control, use database-specific factory functions:
 ### PostgreSQL
 
 ```typescript
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 
 // Simple connection string
 const provider = createPostgreSQLProvider({
@@ -95,7 +95,7 @@ const provider = createPostgreSQLProvider({
 ### MySQL
 
 ```typescript
-import { createMySQLProvider } from 'refine-orm';
+import { createMySQLProvider } from 'refine-sqlx';
 
 // Simple connection string
 const provider = createMySQLProvider({
@@ -122,7 +122,7 @@ const provider = createMySQLProvider({
 ### SQLite
 
 ```typescript
-import { createSQLiteProvider } from 'refine-orm';
+import { createSQLiteProvider } from 'refine-sqlx';
 
 // File-based SQLite
 const provider = createSQLiteProvider({ connection: './database.db', schema });
@@ -232,7 +232,7 @@ interface SQLiteOptions extends RefineOrmOptions {
 ### Check Runtime Support
 
 ```typescript
-import { getRuntimeDiagnostics, checkDatabaseSupport } from 'refine-orm';
+import { getRuntimeDiagnostics, checkDatabaseSupport } from 'refine-sqlx';
 
 // Get comprehensive runtime information
 const diagnostics = getRuntimeDiagnostics();
@@ -326,7 +326,7 @@ function createProviderWithFallback() {
 
 ```typescript
 import { Refine } from '@refinedev/core';
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 import { schema } from './schema';
 
 const dataProvider = createPostgreSQLProvider({
@@ -409,7 +409,7 @@ const provider = createDataProvider({
 ### 5. Handle Runtime Differences
 
 ```typescript
-import { getRuntimeInfo } from 'refine-orm';
+import { getRuntimeInfo } from 'refine-sqlx';
 
 const runtime = getRuntimeInfo();
 const poolSize = runtime.runtime === 'bun' ? 15 : 10;
@@ -427,7 +427,7 @@ If you're currently using the advanced adapter APIs, migration is straightforwar
 
 ```typescript
 // Before (advanced API)
-import { PostgreSQLAdapter, createRefine } from 'refine-orm';
+import { PostgreSQLAdapter, createRefine } from 'refine-sqlx';
 
 const adapter = new PostgreSQLAdapter({
   type: 'postgresql',
@@ -437,7 +437,7 @@ const adapter = new PostgreSQLAdapter({
 const provider = createRefine(adapter);
 
 // After (user-friendly API)
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 
 const provider = createPostgreSQLProvider({
   connection: process.env.DATABASE_URL!,

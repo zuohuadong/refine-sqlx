@@ -6,7 +6,7 @@ export default defineBuildConfig({
     'src/index.ts',
     // Core module - minimal functionality
     { input: 'src/core/index.ts', name: 'core' },
-    // Compatibility module - refine-orm compatible
+    // Compatibility module - refine-sqlx compatible
     { input: 'src/compat/index.ts', name: 'compat' },
     // Runtime-specific modules
     { input: 'src/d1/index.ts', name: 'd1' },

@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug or issue with refine-orm or refine-sql
+description: Report a bug or issue with refine-sqlx or refine-sql
 title: '[Bug]: '
 labels: ['bug', 'needs-triage']
 assignees: []
@@ -15,7 +15,7 @@ body:
       label: Package
       description: Which package is affected?
       options:
-        - refine-orm
+        - refine-sqlx
         - refine-sql
         - Both
         - Not sure
@@ -103,7 +103,7 @@ body:
       description: Please provide a minimal code sample that reproduces the issue
       render: typescript
       placeholder: |
-        import { createPostgreSQLProvider } from 'refine-orm';
+        import { createPostgreSQLProvider } from 'refine-sqlx';
 
         // Your code here...
 

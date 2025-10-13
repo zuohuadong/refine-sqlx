@@ -1,6 +1,6 @@
 /**
- * refine-sql/compat - refine-orm 兼容性模块
- * 提供与 refine-orm 完全兼容的 API
+ * refine-sql/compat - refine-sqlx 兼容性模块
+ * 提供与 refine-sqlx 完全兼容的 API
  */
 
 // 重新导出核心功能
@@ -20,4 +20,4 @@ export {
   CodeTransformer,
   type RefineOrmCompatibleProvider,
   type SQLiteProviderConfig,
-} from '../refine-orm-compat';
+} from '../refine-sqlx-compat';

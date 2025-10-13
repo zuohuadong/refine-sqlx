@@ -469,9 +469,9 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 ## 安装
 
 ```bash
-npm install refine-orm drizzle-orm
+npm install refine-sqlx drizzle-orm
 # 或
-bun add refine-orm drizzle-orm
+bun add refine-sqlx drizzle-orm
 ```
 
 ### 数据库驱动

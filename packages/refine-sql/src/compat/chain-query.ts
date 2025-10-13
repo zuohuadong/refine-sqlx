@@ -1,6 +1,6 @@
 /**
  * 兼容性链式查询构建器
- * 基于核心查询构建器，添加 refine-orm 兼容功能
+ * 基于核心查询构建器，添加 refine-sqlx 兼容功能
  */
 
 import type { BaseRecord } from '@refinedev/core';

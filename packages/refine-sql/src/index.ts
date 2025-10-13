@@ -52,7 +52,7 @@ export {
   type CompatibleDataProvider,
 } from './compatibility-layer';
 
-// Export refine-orm compatibility layer
+// Export refine-sqlx compatibility layer
 export {
   createSQLiteProvider,
   createProvider as createRefineOrmProvider,
@@ -61,7 +61,7 @@ export {
   type RefineOrmCompatibleProvider,
   type SQLiteProviderConfig,
   type UniversalProviderConfig,
-} from './refine-orm-compat';
+} from './refine-sqlx-compat';
 
 // Export decorators and utilities for advanced usage
 export {

@@ -1,6 +1,6 @@
 # MySQL Adapter
 
-The MySQL adapter provides comprehensive MySQL database support for refine-orm using drizzle-orm as the underlying ORM. It supports both Bun and Node.js runtime environments with automatic driver selection.
+The MySQL adapter provides comprehensive MySQL database support for refine-sqlx using drizzle-orm as the underlying ORM. It supports both Bun and Node.js runtime environments with automatic driver selection.
 
 ## Features
 
@@ -17,7 +17,7 @@ The MySQL adapter provides comprehensive MySQL database support for refine-orm u
 
 ```bash
 # Install the core package
-npm install refine-orm drizzle-orm
+npm install refine-sqlx drizzle-orm
 
 # Install MySQL driver
 npm install mysql2
@@ -59,7 +59,7 @@ const schema = { users, posts };
 #### With Connection Object
 
 ```typescript
-import { createMySQLProvider, createRefine } from 'refine-orm';
+import { createMySQLProvider, createRefine } from 'refine-sqlx';
 
 const adapter = createMySQLProvider(
   {
@@ -177,7 +177,7 @@ interface MySQLOptions {
 ### Connection Pooling
 
 ```typescript
-import { createMySQLProviderWithPool } from 'refine-orm';
+import { createMySQLProviderWithPool } from 'refine-sqlx';
 
 const adapter = createMySQLProviderWithPool(
   'mysql://user:pass@localhost:3306/db',
@@ -278,7 +278,7 @@ Since Bun 1.2.21, MySQL support is available through bun:sql. The adapter automa
 
 ```typescript
 // Works with Bun 1.2.21+ - automatically uses bun:sql
-import { createMySQLProviderWithBunSql } from 'refine-orm';
+import { createMySQLProviderWithBunSql } from 'refine-sqlx';
 
 const adapter = createMySQLProviderWithBunSql(
   'mysql://user:pass@localhost:3306/db',
@@ -291,7 +291,7 @@ const adapter = createMySQLProviderWithBunSql(
 The MySQL adapter provides comprehensive error handling:
 
 ```typescript
-import { ConnectionError, QueryError, ConfigurationError } from 'refine-orm';
+import { ConnectionError, QueryError, ConfigurationError } from 'refine-sqlx';
 
 try {
   await adapter.connect();
@@ -307,7 +307,7 @@ try {
 ## Testing Connection
 
 ```typescript
-import { testMySQLConnection } from 'refine-orm';
+import { testMySQLConnection } from 'refine-sqlx';
 
 const result = await testMySQLConnection({
   host: 'localhost',
@@ -362,15 +362,15 @@ const adapter = createMySQLProvider(connectionString, schema, {
 import mysql from 'mysql2/promise';
 const connection = await mysql.createConnection(config);
 
-// After (using refine-orm)
-import { createMySQLProvider } from 'refine-orm';
+// After (using refine-sqlx)
+import { createMySQLProvider } from 'refine-sqlx';
 const adapter = createMySQLProvider(config, schema);
 await adapter.connect();
 ```
 
 ### From other ORMs
 
-The MySQL adapter is designed to be a drop-in replacement for other MySQL data providers in Refine applications. Simply replace your existing data provider with the refine-orm MySQL provider.
+The MySQL adapter is designed to be a drop-in replacement for other MySQL data providers in Refine applications. Simply replace your existing data provider with the refine-sqlx MySQL provider.
 
 ## Troubleshooting
 

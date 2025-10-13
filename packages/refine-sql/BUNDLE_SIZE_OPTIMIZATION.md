@@ -1,6 +1,6 @@
 # refine-sql 包体积优化方案
 
-当前 refine-sql 已经比 refine-orm 小 85%（23kB vs 150kB），但仍有进一步优化空间。
+当前 refine-sql 已经比 refine-sqlx 小 85%（23kB vs 150kB），但仍有进一步优化空间。
 
 ## 当前包体积分析
 
@@ -14,7 +14,7 @@
 
 ### 依赖分析
 
-- `@refine-orm/core-utils` (SqlTransformer): ~5kB
+- `@refine-sqlx/core-utils` (SqlTransformer): ~5kB
 - `@refinedev/core` (types only): 0kB
 - 运行时适配器 (动态导入): 0kB
 
@@ -48,7 +48,7 @@ export { SqlxChainQuery } from './query';
 // 只需要基础功能 - 8kB
 import { createProvider } from 'refine-sql/core';
 
-// 需要 refine-orm 兼容 - 11kB
+// 需要 refine-sqlx 兼容 - 11kB
 import { createSQLiteProvider } from 'refine-sql/compat';
 
 // 需要高级功能 - 13kB
@@ -60,7 +60,7 @@ import { TransactionManager } from 'refine-sql/advanced';
 
 #### 当前问题
 
-依赖 `@refine-orm/core-utils` 的 `SqlTransformer`
+依赖 `@refine-sqlx/core-utils` 的 `SqlTransformer`
 
 #### 解决方案
 
@@ -215,7 +215,7 @@ export class SqlxChainQuery {
 
 ### ✅ 阶段 2: 依赖优化 (已完成 - 减少额外 20%)
 
-1. ✅ 移除 `@refine-orm/core-utils` 依赖
+1. ✅ 移除 `@refine-sqlx/core-utils` 依赖
 2. ✅ 实现轻量级 SQL 构建器 (`LightweightSqlBuilder`)
 3. ✅ 内联必要的工具函数
 

@@ -1,5 +1,5 @@
 /**
- * Advanced features for refine-sql to match refine-orm capabilities
+ * Advanced features for refine-sql to match refine-sqlx capabilities
  * Includes transactions, batch operations, upsert, and native query builders
  */
 

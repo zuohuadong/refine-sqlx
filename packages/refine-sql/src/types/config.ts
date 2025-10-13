@@ -1,8 +1,8 @@
-// Configuration types compatible with refine-orm
+// Configuration types compatible with refine-sqlx
 import type { TableSchema } from '../typed-methods';
 
 /**
- * Base RefineORM options compatible with refine-orm
+ * Base RefineORM options compatible with refine-sqlx
  */
 export interface RefineOrmOptions {
   /** Enable debug logging */
@@ -20,7 +20,7 @@ export interface RefineOrmOptions {
 }
 
 /**
- * SQLite-specific options compatible with refine-orm
+ * SQLite-specific options compatible with refine-sqlx
  * This extends the base options with SQLite-specific settings
  */
 export interface SQLiteOptions extends RefineOrmOptions {
@@ -44,7 +44,7 @@ export interface SQLiteOptions extends RefineOrmOptions {
 }
 
 /**
- * Connection options compatible with refine-orm
+ * Connection options compatible with refine-sqlx
  */
 export interface ConnectionOptions {
   /** Database file path for SQLite */

@@ -1,6 +1,6 @@
 /**
  * 兼容性数据提供器
- * 基于核心提供器，添加 refine-orm 兼容功能
+ * 基于核心提供器，添加 refine-sqlx 兼容功能
  */
 
 import type { BaseRecord } from '@refinedev/core';
@@ -23,7 +23,7 @@ export interface CompatDataProvider<TSchema extends TableSchema = TableSchema>
     CoreDataProvider<TSchema>,
     'from' | 'createMany' | 'updateMany' | 'deleteMany'
   > {
-  // Schema 访问 (refine-orm 风格)
+  // Schema 访问 (refine-sqlx 风格)
   schema: TSchema;
 
   // 兼容性链式查询
@@ -461,7 +461,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // 调试日志
   if (config.options?.debug) {
     console.log(
-      '[refine-sql/compat] SQLite provider created with refine-orm compatibility'
+      '[refine-sql/compat] SQLite provider created with refine-sqlx compatibility'
     );
     console.log(
       '[refine-sql/compat] Schema tables:',

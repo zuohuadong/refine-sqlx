@@ -1,6 +1,6 @@
 /**
- * Compatibility layer for smooth migration from refine-orm to refine-sql
- * Provides refine-orm compatible APIs while maintaining refine-sql's performance benefits
+ * Compatibility layer for smooth migration from refine-sqlx to refine-sql
+ * Provides refine-sqlx compatible APIs while maintaining refine-sql's performance benefits
  *
  * Key compatibility features:
  * - All WHERE and ORDER BY methods available directly in SqlxChainQuery
@@ -17,7 +17,7 @@ import type { SqlClient } from './client';
 import { SqlxChainQuery } from './chain-query';
 
 /**
- * Extended chain query with refine-orm compatibility methods
+ * Extended chain query with refine-sqlx compatibility methods
  * Note: Most deprecated methods (whereEq, whereNe, etc.) are now available directly
  * from the base SqlxChainQuery class and should be used instead of this compatibility layer.
  */
@@ -98,7 +98,7 @@ export class CompatibleChainQuery<
   }
 
   /**
-   * Batch processing with chunks (refine-orm compatible)
+   * Batch processing with chunks (refine-sqlx compatible)
    */
   async *chunk(size: number = 100): AsyncGenerator<T[], void, unknown> {
     if (size <= 0) throw new Error('Chunk size must be greater than 0');
@@ -259,7 +259,7 @@ export class CompatibleChainQuery<
 
 /**
  * Compatibility wrapper for the data provider
- * Adds refine-orm compatible methods and behaviors
+ * Adds refine-sqlx compatible methods and behaviors
  */
 export function addCompatibilityLayer<
   T extends {
@@ -269,7 +269,7 @@ export function addCompatibilityLayer<
 >(
   dataProvider: T
 ): T & {
-  // Add refine-orm compatible methods
+  // Add refine-sqlx compatible methods
   getWithRelations<TRecord = BaseRecord>(
     resource: string,
     id: any,

@@ -51,7 +51,7 @@ import {
 import { CompatibleChainQuery } from './compatibility-layer';
 
 /**
- * Enhanced data provider interface compatible with refine-orm
+ * Enhanced data provider interface compatible with refine-sqlx
  */
 export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
   extends DataProvider {
@@ -860,7 +860,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
 }
 
 /**
- * Enhanced data provider with all refine-orm compatible features
+ * Enhanced data provider with all refine-sqlx compatible features
  */
 export interface FullyCompatibleDataProvider<
   TSchema extends TableSchema = TableSchema,
@@ -953,7 +953,7 @@ export interface FullyCompatibleDataProvider<
 }
 
 /**
- * Create a fully compatible data provider with all refine-orm features
+ * Create a fully compatible data provider with all refine-sqlx features
  */
 export function createFullyCompatibleProvider<
   TSchema extends TableSchema = TableSchema,

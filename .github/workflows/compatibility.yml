@@ -49,9 +49,9 @@ jobs:
       - name: Verify ESM/CJS compatibility
         run: |
           # Test ESM import
-          node -e "import('./packages/refine-orm/dist/index.mjs').then(() => console.log('ESM import works')).catch(e => { console.error('ESM failed:', e.message); process.exit(1); })"
+          node -e "import('./packages/refine-sqlx/dist/index.mjs').then(() => console.log('ESM import works')).catch(e => { console.error('ESM failed:', e.message); process.exit(1); })"
           # Test CJS require
-          node -e "try { const pkg = require('./packages/refine-orm/dist/index.cjs'); console.log('CJS require works'); } catch(e) { console.error('CJS failed:', e.message); process.exit(1); }"
+          node -e "try { const pkg = require('./packages/refine-sqlx/dist/index.cjs'); console.log('CJS require works'); } catch(e) { console.error('CJS failed:', e.message); process.exit(1); }"
 
   bun-compatibility:
     name: Bun compatibility

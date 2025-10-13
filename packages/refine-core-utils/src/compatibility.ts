@@ -1,7 +1,7 @@
 import type { BaseSchema, EnhancedDataProvider } from './enhanced-types.js';
 
 /**
- * Compatibility utilities for migrating between refine-sql and refine-orm
+ * Compatibility utilities for migrating between refine-sql and refine-sqlx
  */
 export class CompatibilityUtils {
   /**

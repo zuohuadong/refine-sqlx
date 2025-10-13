@@ -40,8 +40,8 @@
         "@refinedev/core": "^4.0.0",
       },
     },
-    "packages/refine-orm": {
-      "name": "refine-orm",
+    "packages/refine-sqlx": {
+      "name": "refine-sqlx",
       "version": "0.3.1",
       "dependencies": {
         "drizzle-orm": "^0.44.4",
@@ -1258,7 +1258,7 @@
 
     "refine-core-utils": ["refine-core-utils@workspace:packages/refine-core-utils"],
 
-    "refine-orm": ["refine-orm@workspace:packages/refine-orm"],
+    "refine-sqlx": ["refine-sqlx@workspace:packages/refine-sqlx"],
 
     "refine-sql": ["refine-sql@workspace:packages/refine-sql"],
 

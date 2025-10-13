@@ -36,7 +36,7 @@ A basic blog application demonstrating CRUD operations with users and posts.
 An e-commerce example with products, orders, and customers.
 
 **Files:**
-- `ecommerce-orm.ts` - Using refine-orm with MySQL
+- `ecommerce-orm.ts` - Using refine-sqlx with MySQL
 - `ecommerce-sql.ts` - Using refine-sql with SQLite
 - `ecommerce-schema.sql` - Database schema
 
@@ -264,7 +264,7 @@ Use this template for new examples:
  * - Required environment variables
  */
 
-import { createPostgreSQLProvider } from 'refine-orm';
+import { createPostgreSQLProvider } from 'refine-sqlx';
 import { schema } from './schema';
 
 async function main() {

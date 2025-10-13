@@ -1,4 +1,4 @@
-# @refine-orm/core-utils
+# @refine-sqlx/core-utils
 
 ## 0.3.1
 
@@ -6,5 +6,5 @@
 
 - Release version 0.3.1
   - Updated README documentation
-  - Removed @refine-orm/core-utils package description from README
+  - Removed @refine-sqlx/core-utils package description from README
   - Minor documentation improvements and formatting fixes

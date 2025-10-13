@@ -10,7 +10,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
 
-const packages = ['refine-orm', 'refine-sql', 'refine-core-utils'];
+const packages = ['refine-sqlx', 'refine-sql', 'refine-core-utils'];
 
 console.log('🔍 Testing ESM/CJS dual module format correctness...\n');
 

@@ -1,4 +1,4 @@
-// refine-orm - Multi-database ORM data provider for Refine
+// refine-sqlx - Multi-database ORM data provider for Refine
 // Built on top of drizzle-orm with support for PostgreSQL, MySQL, and SQLite
 
 // Export essential types

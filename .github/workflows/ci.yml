@@ -129,7 +129,7 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
           echo "MySQL connection successful, running tests..."
           echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
-          cd packages/refine-orm
+          cd packages/refine-sqlx
           npm run test -- src/__tests__/integration
 
       - name: Install PostgreSQL client
@@ -154,7 +154,7 @@ jobs:
           PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
           echo "PostgreSQL connection successful, running tests..."
           echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
-          cd packages/refine-orm
+          cd packages/refine-sqlx
           npm run test -- src/__tests__/integration
 
   lint:
@@ -276,7 +276,7 @@ jobs:
 
       - name: Test package builds
         run: |
-          cd packages/refine-orm && npm pack --dry-run
+          cd packages/refine-sqlx && npm pack --dry-run
           cd ../refine-sql && npm pack --dry-run
           cd ../refine-core-utils && npm pack --dry-run
 

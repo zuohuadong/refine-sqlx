@@ -44,7 +44,7 @@ try {
   }
 
   // Check individual packages
-  const packages = ['refine-orm', 'refine-sql', 'refine-core-utils'];
+  const packages = ['refine-sqlx', 'refine-sql', 'refine-core-utils'];
 
   for (const pkg of packages) {
     try {
