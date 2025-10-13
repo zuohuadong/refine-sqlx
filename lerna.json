@@ -1,0 +1,50 @@
+{
+  "version": "independent",
+  "npmClient": "bun",
+  "command": {
+    "publish": {
+      "conventionalCommits": true,
+      "message": "chore(release): publish",
+      "registry": "https://registry.npmjs.org",
+      "allowBranch": ["main", "release/*"],
+      "ignoreChanges": ["**/*.md", "**/*.test.ts", "**/__tests__/**"],
+      "preid": "rc",
+      "distTag": "latest",
+      "yes": false,
+      "contents": "dist",
+      "gitTagVersion": true,
+      "granularPathspec": false
+    },
+    "version": {
+      "conventionalCommits": true,
+      "changelogPreset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" },
+          { "type": "docs", "hidden": false, "section": "Documentation" },
+          { "type": "refactor", "hidden": false, "section": "Code Refactoring" },
+          { "type": "test", "hidden": false, "section": "Tests" },
+          { "type": "chore", "hidden": false, "section": "Maintenance" }
+        ]
+      },
+      "message": "chore(release): version %v",
+      "allowBranch": ["main"],
+      "push": true,
+      "gitTagVersion": true,
+      "signGitTag": false,
+      "signGitCommit": false,
+      "forceGitTag": false,
+      "commitHooks": false,
+      "gitRemote": "origin",
+      "tagVersionPrefix": "v"
+    },
+    "bootstrap": {
+      "npmClientArgs": ["--no-package-lock", "--no-ci"],
+      "hoist": true
+    }
+  },
+  "packages": ["packages/*"],
+  "useWorkspaces": true
+}

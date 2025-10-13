@@ -44,7 +44,16 @@
     "test:all-quality": "npm run test:node-versions && npm run test:compatibility && npm run test:modules && npm run test:tree-shaking",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "release:interactive": "node scripts/version-manager.js",
+    "release:auto": "semantic-release",
+    "release:it": "release-it",
+    "release:lerna": "lerna publish",
+    "version:bump": "changeset version && changeset tag",
+    "version:check": "changeset status --verbose",
+    "prerelease": "bun run build && bun run test && bun run lint",
+    "postrelease": "git push --follow-tags origin main",
+    "release:dry-run": "changeset publish --dry-run"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.7",
