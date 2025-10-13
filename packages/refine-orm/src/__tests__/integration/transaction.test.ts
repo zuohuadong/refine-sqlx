@@ -87,21 +87,16 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               // For MySQL, disable foreign key checks temporarily
               await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
 
-              // First try DELETE to be more compatible
-              await provider.raw('DELETE FROM comments');
-              await provider.raw('DELETE FROM posts');
-              await provider.raw('DELETE FROM users');
-
-              // Reset AUTO_INCREMENT counters
-              await provider.raw('ALTER TABLE comments AUTO_INCREMENT = 1');
-              await provider.raw('ALTER TABLE posts AUTO_INCREMENT = 1');
-              await provider.raw('ALTER TABLE users AUTO_INCREMENT = 1');
+              // Use TRUNCATE for complete cleanup - more reliable than DELETE
+              await provider.raw('TRUNCATE TABLE comments');
+              await provider.raw('TRUNCATE TABLE posts');
+              await provider.raw('TRUNCATE TABLE users');
 
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
 
-              // Add a longer delay to ensure MySQL processes the changes and completes all pending transactions
-              await new Promise(resolve => setTimeout(resolve, 500));
+              // Add a longer delay to ensure MySQL processes the changes
+              await new Promise(resolve => setTimeout(resolve, 1000));
 
               // Debug: Log counts after cleanup
               const [usersCountAfter] = await provider.raw('SELECT COUNT(*) as count FROM users');
@@ -149,7 +144,7 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
             // For MySQL, add a longer delay after data insertion to ensure consistency
             if (dbType === 'mysql') {
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise(resolve => setTimeout(resolve, 1000));
 
               // Debug: Log counts after seeding
               const [usersCountSeeded] = await provider.raw('SELECT COUNT(*) as count FROM users');
