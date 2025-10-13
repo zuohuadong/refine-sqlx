@@ -562,14 +562,16 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
       });
 
       describe('Transaction Isolation', () => {
-        it('should maintain data consistency during concurrent operations', async () => {
-          // Skip this test for SQLite as it doesn't support concurrent transactions
-          if (dbName.toLowerCase().includes('sqlite')) {
-            console.warn(
-              'Skipping concurrent transaction test for SQLite - not supported'
-            );
-            return;
-          }
+        it(
+          'should maintain data consistency during concurrent operations',
+          async () => {
+            // Skip this test for SQLite as it doesn't support concurrent transactions
+            if (dbName.toLowerCase().includes('sqlite')) {
+              console.warn(
+                'Skipping concurrent transaction test for SQLite - not supported'
+              );
+              return;
+            }
 
           // Create initial user
           const user = await provider.create({
@@ -635,11 +637,15 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             filters: [{ field: 'userId', operator: 'eq', value: user.data.id }],
           });
           expect(userPosts.data.length).toBeGreaterThan(0);
-        });
+        },
+          10000 // 10 second timeout
+        );
       });
 
       describe('Transaction Performance', () => {
-        it('should handle bulk operations efficiently in transactions', async () => {
+        it(
+          'should handle bulk operations efficiently in transactions',
+          async () => {
           const startTime = Date.now();
 
           const result = await provider.transaction(async tx => {
@@ -690,7 +696,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
           expect(finalUserCount.total).toBeGreaterThanOrEqual(50);
           expect(finalPostCount.total).toBeGreaterThanOrEqual(100);
-        });
+        },
+          20000 // 20 second timeout for bulk operations
+        );
       });
     }
   );

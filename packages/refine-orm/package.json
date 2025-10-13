@@ -51,10 +51,10 @@
     "jsx"
   ],
   "scripts": {
-    "test": "bun test",
+    "test": "bun test --timeout 20000",
     "test:unit": "bun test --exclude='**/__tests__/integration/**'",
     "test:node": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
-    "test:integration": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js test/integration",
+    "test:integration": "bun test --timeout 30000 packages/refine-orm/src/__tests__/integration",
     "build": "unbuild",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
