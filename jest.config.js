@@ -4,7 +4,7 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@refine-orm/core-utils$':
+    '^@refine-sqlx/core-utils$':
       '<rootDir>/packages/refine-core-utils/src/index.ts',
   },
   testMatch: [

@@ -1,6 +1,6 @@
 /**
- * refine-orm compatibility factory functions
- * Provides the same API as refine-orm for seamless migration
+ * refine-sqlx compatibility factory functions
+ * Provides the same API as refine-sqlx for seamless migration
  */
 
 import type { BaseRecord } from '@refinedev/core';
@@ -19,20 +19,20 @@ import {
 } from './compatibility-layer';
 
 /**
- * refine-orm compatible data provider interface
+ * refine-sqlx compatible data provider interface
  */
 export interface RefineOrmCompatibleProvider<
   TSchema extends TableSchema = TableSchema,
 > extends Omit<EnhancedDataProvider<TSchema>, 'transaction'> {
-  // Schema access (refine-orm style)
+  // Schema access (refine-sqlx style)
   schema: TSchema;
 
-  // Chain query with refine-orm compatibility
+  // Chain query with refine-sqlx compatibility
   from<T extends BaseRecord = BaseRecord>(
     tableName: string
   ): CompatibleChainQuery<T>;
 
-  // Advanced utilities (refine-orm style)
+  // Advanced utilities (refine-sqlx style)
   upsert<TRecord = BaseRecord>(params: {
     resource: string;
     variables: Record<string, any>;
@@ -54,15 +54,15 @@ export interface RefineOrmCompatibleProvider<
     values: Variables;
   }): Promise<{ data: TRecord; created: boolean }>;
 
-  // Raw SQL execution (refine-orm style)
+  // Raw SQL execution (refine-sqlx style)
   raw<TRecord = any>(sql: string, params?: any[]): Promise<TRecord[]>;
 
-  // Transaction support (refine-orm style)
+  // Transaction support (refine-sqlx style)
   transaction<TResult>(
     callback: (tx: RefineOrmCompatibleProvider<TSchema>) => Promise<TResult>
   ): Promise<TResult>;
 
-  // Performance monitoring (refine-orm style)
+  // Performance monitoring (refine-sqlx style)
   enablePerformanceMonitoring(): void;
   getPerformanceMetrics(): {
     enabled: boolean;
@@ -76,7 +76,7 @@ export interface RefineOrmCompatibleProvider<
 }
 
 /**
- * Configuration for SQLite provider (refine-orm compatible)
+ * Configuration for SQLite provider (refine-sqlx compatible)
  */
 export interface SQLiteProviderConfig<
   TSchema extends TableSchema = TableSchema,
@@ -112,8 +112,8 @@ export interface SQLiteProviderConfig<
 }
 
 /**
- * Create SQLite provider with refine-orm compatible API
- * This function provides the same interface as refine-orm's createSQLiteProvider
+ * Create SQLite provider with refine-sqlx compatible API
+ * This function provides the same interface as refine-sqlx's createSQLiteProvider
  *
  * @example
  * ```typescript
@@ -148,11 +148,11 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // Add compatibility layer
   const compatibleProvider = addCompatibilityLayer(baseProvider);
 
-  // Create enhanced provider with refine-orm style API
+  // Create enhanced provider with refine-sqlx style API
   const enhancedProvider: RefineOrmCompatibleProvider<TSchema> = {
     ...compatibleProvider,
 
-    // Add schema property (refine-orm style)
+    // Add schema property (refine-sqlx style)
     schema: config.schema,
 
     // Override from method to return CompatibleChainQuery
@@ -270,7 +270,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // Enable debug logging if configured
   if (config.options?.debug && process.env.NODE_ENV === 'development') {
     console.log(
-      '[refine-sql] SQLite provider created with refine-orm compatibility'
+      '[refine-sql] SQLite provider created with refine-sqlx compatibility'
     );
     console.log('[refine-sql] Schema tables:', Object.keys(config.schema));
   }
@@ -279,7 +279,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
 }
 
 /**
- * Universal provider factory (refine-orm compatible)
+ * Universal provider factory (refine-sqlx compatible)
  * Automatically detects database type and creates appropriate provider
  */
 export interface UniversalProviderConfig<
@@ -305,8 +305,8 @@ export interface UniversalProviderConfig<
 }
 
 /**
- * Create provider with automatic database type detection (refine-orm compatible)
- * Currently only supports SQLite, but maintains the same API as refine-orm
+ * Create provider with automatic database type detection (refine-sqlx compatible)
+ * Currently only supports SQLite, but maintains the same API as refine-sqlx
  *
  * @example
  * ```typescript
@@ -355,11 +355,11 @@ export const MigrationHelpers = {
     };
     if (deps['pg'] || deps['postgres']) {
       issues.push('PostgreSQL is not supported in refine-sql');
-      recommendations.push('Consider using refine-orm for PostgreSQL support');
+      recommendations.push('Consider using refine-sqlx for PostgreSQL support');
     }
     if (deps['mysql2'] || deps['mysql']) {
       issues.push('MySQL is not supported in refine-sql');
-      recommendations.push('Consider using refine-orm for MySQL support');
+      recommendations.push('Consider using refine-sqlx for MySQL support');
     }
 
     // Check for SQLite support
@@ -381,7 +381,7 @@ export const MigrationHelpers = {
    */
   generateChecklist(): string[] {
     return [
-      '1. Update import statements from refine-orm to refine-sql',
+      '1. Update import statements from refine-sqlx to refine-sql',
       '2. Replace createSQLiteProvider with refine-sql version',
       '3. Update schema definitions (remove Drizzle dependency)',
       '4. Test chain query methods (most should work unchanged)',
@@ -413,13 +413,13 @@ export const MigrationHelpers = {
  */
 export const CodeTransformer = {
   /**
-   * Transform refine-orm import statements to refine-sql
+   * Transform refine-sqlx import statements to refine-sql
    */
   transformImports(code: string): string {
     return code
-      .replace(/from ['"]refine-orm['"]/g, "from 'refine-sql'")
+      .replace(/from ['"]refine-sqlx['"]/g, "from 'refine-sql'")
       .replace(
-        /import.*from ['"]refine-orm['"]/g,
+        /import.*from ['"]refine-sqlx['"]/g,
         "import { createSQLiteProvider } from 'refine-sql'"
       );
   },

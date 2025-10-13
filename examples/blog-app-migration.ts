@@ -1,16 +1,16 @@
 /**
- * Migration Example: From refine-orm to refine-sql
+ * Migration Example: From refine-sqlx to refine-sql
  * 
- * refine-sql is a streamlined version of refine-orm designed for SQLite/D1 environments
- * Fully compatible with refine-orm API, enabling zero-cost migration
+ * refine-sql is a streamlined version of refine-sqlx designed for SQLite/D1 environments
+ * Fully compatible with refine-sqlx API, enabling zero-cost migration
  */
 
-// ===== Before Migration (refine-orm - Full Package) =====
+// ===== Before Migration (refine-sqlx - Full Package) =====
 /*
-import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from 'refine-orm';
+import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from 'refine-sqlx';
 import { schema } from './schema';
 
-// refine-orm supports multiple databases
+// refine-sqlx supports multiple databases
 const postgresProvider = await createPostgreSQLProvider('postgresql://...', schema);
 const mysqlProvider = await createMySQLProvider('mysql://...', schema);
 const sqliteProvider = await createSQLiteProvider('./app.db', schema);
@@ -50,12 +50,12 @@ type UserRecord = BlogSchema['users'];
 type PostRecord = BlogSchema['posts'];
 
 async function main() {
-  console.log('🚀 Blog App Migration Example - refine-orm to refine-sql');
+  console.log('🚀 Blog App Migration Example - refine-sqlx to refine-sql');
 
-  // Create data provider - compatible with refine-orm API
+  // Create data provider - compatible with refine-sqlx API
   const dataProvider = createProvider('./blog_migration.db');
 
-  console.log('✅ Data provider created successfully (refine-orm compatible API)');
+  console.log('✅ Data provider created successfully (refine-sqlx compatible API)');
 
   // Set up database tables
   await setupDatabase(dataProvider);
@@ -129,7 +129,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
   const post = await dataProvider.create({
     resource: 'posts',
     variables: {
-      title: 'Migrating from refine-orm to refine-sql',
+      title: 'Migrating from refine-sqlx to refine-sql',
       content: 'This article explains how to smoothly migrate...',
       author_id: user.data.id,
       created_at: new Date().toISOString()
@@ -174,7 +174,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
     resource: 'posts',
     id: post.data.id,
     variables: {
-      title: 'Migrating from refine-orm to refine-sql (Updated)',
+      title: 'Migrating from refine-sqlx to refine-sql (Updated)',
       content: 'This article explains how to smoothly migrate, including detailed steps...'
     }
   });
@@ -184,10 +184,10 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
 async function demonstrateCompatibleChainQueries(dataProvider: any) {
   console.log('\n⛓️ Demonstrating compatible chain queries...');
 
-  // Using refine-orm compatible chain query API
+  // Using refine-sqlx compatible chain query API
   console.log('\n🔗 Using compatible chain query methods...');
 
-  // Method 1: Using compatible convenience methods (same as refine-orm)
+  // Method 1: Using compatible convenience methods (same as refine-sqlx)
   const recentPosts = await dataProvider
     .from('posts')
     .where('author_id', 'nnull', null)  // New generic method
@@ -282,7 +282,7 @@ async function demonstrateCompatibleRelationships(dataProvider: any) {
     console.log(`    Comments: ${post.comment_count || 0}`);
   });
 
-  // Method 3: Using polymorphic relationships (compatible with refine-orm)
+  // Method 3: Using polymorphic relationships (compatible with refine-sqlx)
   console.log('\n🔄 Polymorphic relationship queries...');
 
   // Create attachments table for polymorphic relationships

@@ -1,11 +1,11 @@
 /**
- * Complete migration example from refine-orm to refine-sql
+ * Complete migration example from refine-sqlx to refine-sql
  * Shows before/after code and compatibility features
  */
 
-// ===== BEFORE (refine-orm) =====
+// ===== BEFORE (refine-sqlx) =====
 /*
-import { createSQLiteProvider } from 'refine-orm';
+import { createSQLiteProvider } from 'refine-sqlx';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 // Drizzle schema definition
@@ -101,7 +101,7 @@ async function newUsageExamples() {
     .limit(10)
     .get();
 
-  // Relationship queries (same API as refine-orm)
+  // Relationship queries (same API as refine-sqlx)
   const postsWithAuthors = await dataProvider
     .from('posts')
     .withBelongsTo('author', 'users', 'userId')
@@ -229,7 +229,7 @@ async function performanceComparison() {
   
   console.log(`Query executed in ${endTime - startTime}ms`);
   console.log(`Results: ${complexQuery.length} posts with relationships`);
-  console.log(`Bundle size: ~23kB (vs ~150kB with refine-orm)`);
+  console.log(`Bundle size: ~23kB (vs ~150kB with refine-sqlx)`);
   
   return complexQuery;
 }
@@ -240,7 +240,7 @@ function migrationUtilities() {
   // Check if project is compatible
   const packageJson = {
     dependencies: {
-      'refine-orm': '^1.0.0',
+      'refine-sqlx': '^1.0.0',
       'better-sqlite3': '^8.0.0',
     }
   };
@@ -250,7 +250,7 @@ function migrationUtilities() {
 
   // Transform old code
   const oldCode = `
-    import { createSQLiteProvider } from 'refine-orm';
+    import { createSQLiteProvider } from 'refine-sqlx';
     const provider = createSQLiteProvider('./db.sqlite', schema);
     const users = await provider.from('users').where('active', 'eq', true).orderBy('name', 'asc').get();
   `;

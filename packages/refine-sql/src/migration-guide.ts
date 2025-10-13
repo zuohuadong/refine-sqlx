@@ -1,5 +1,5 @@
 /**
- * Migration utilities and helpers for smooth transition from refine-orm to refine-sql
+ * Migration utilities and helpers for smooth transition from refine-sqlx to refine-sql
  */
 
 import type { BaseRecord } from '@refinedev/core';
@@ -21,7 +21,7 @@ export interface EnhancedDataProvider<
  * Migration configuration options
  */
 export interface MigrationConfig {
-  /** Enable compatibility mode for refine-orm APIs */
+  /** Enable compatibility mode for refine-sqlx APIs */
   enableCompatibilityMode?: boolean;
   /** Show deprecation warnings for old APIs */
   showDeprecationWarnings?: boolean;
@@ -231,14 +231,14 @@ export interface MigrationCompatibleChainQuery<
  */
 export class CodeTransformer {
   /**
-   * Transform refine-orm code to refine-sql compatible code
+   * Transform refine-sqlx code to refine-sql compatible code
    */
   static transformCode(code: string): string {
     let transformed = code;
 
     // Transform import statements
     transformed = transformed.replace(
-      /import\s+{([^}]+)}\s+from\s+['"]refine-orm['"]/g,
+      /import\s+{([^}]+)}\s+from\s+['"]refine-sqlx['"]/g,
       (_match, imports) => {
         const importList = imports.split(',').map((imp: string) => imp.trim());
         const transformedImports = importList
@@ -414,7 +414,7 @@ export const MigrationHelpers = {
       preRequisites: [
         'Ensure project only uses SQLite database',
         'Backup your current codebase',
-        'Review current refine-orm usage patterns',
+        'Review current refine-sqlx usage patterns',
         'Check for custom Drizzle ORM queries',
       ],
       steps: [
@@ -427,7 +427,7 @@ export const MigrationHelpers = {
         'Run comprehensive tests',
       ],
       postMigration: [
-        'Remove refine-orm dependency',
+        'Remove refine-sqlx dependency',
         'Remove drizzle-orm dependency (if not used elsewhere)',
         'Update documentation',
         'Monitor performance improvements',

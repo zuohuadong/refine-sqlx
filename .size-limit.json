@@ -12,19 +12,19 @@
     "limit": "25 KB",
     "gzip": true,
     "ignore": [
-      "@refine-orm/core-utils",
+      "@refine-sqlx/core-utils",
       "better-sqlite3",
       "bun:sqlite",
       "@refinedev/core"
     ]
   },
   {
-    "name": "refine-orm (main)",
-    "path": "packages/refine-orm/dist/index.mjs",
+    "name": "refine-sqlx (main)",
+    "path": "packages/refine-sqlx/dist/index.mjs",
     "limit": "35 KB",
     "gzip": true,
     "ignore": [
-      "@refine-orm/core-utils",
+      "@refine-sqlx/core-utils",
       "drizzle-orm",
       "postgres",
       "mysql2",

@@ -40,6 +40,7 @@ export default defineBuildConfig({
     },
   },
   externals: [
+    // 注意：refine-core-utils 已从 externals 中移除，会被打包进最终产物
     'bun:sqlite',
     'node:sqlite',
     'better-sqlite3',

@@ -1,14 +1,14 @@
 /**
- * Complete migration example from refine-orm to refine-sql
+ * Complete migration example from refine-sqlx to refine-sql
  * Shows before/after code and step-by-step migration process
  */
 
-// ===== BEFORE (refine-orm) =====
+// ===== BEFORE (refine-sqlx) =====
 /*
-import { createSQLiteProvider } from 'refine-orm';
+import { createSQLiteProvider } from 'refine-sqlx';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
-// Drizzle schema definition (refine-orm requires Drizzle)
+// Drizzle schema definition (refine-sqlx requires Drizzle)
 const users = sqliteTable('users', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
@@ -29,11 +29,11 @@ const posts = sqliteTable('posts', {
 
 const schema = { users, posts };
 
-// Create provider (refine-orm)
+// Create provider (refine-sqlx)
 const dataProvider = createSQLiteProvider('./database.db', schema);
 */
 
-// ===== AFTER (refine-sql with refine-orm compatibility) =====
+// ===== AFTER (refine-sql with refine-sqlx compatibility) =====
 
 import { 
   createSQLiteProvider,
@@ -41,7 +41,7 @@ import {
   type SQLiteProviderConfig,
   MigrationHelpers,
   CodeTransformer
-} from '../src/refine-orm-compat';
+} from '../src/refine-sqlx-compat';
 
 // Simple TypeScript schema definition (no Drizzle needed)
 interface MySchema {
@@ -63,7 +63,7 @@ interface MySchema {
   };
 }
 
-// Create provider with refine-orm compatible API
+// Create provider with refine-sqlx compatible API
 const config: SQLiteProviderConfig<MySchema> = {
   connection: './database.db',
   schema: {
@@ -81,13 +81,13 @@ const dataProvider: RefineOrmCompatibleProvider<MySchema> = createSQLiteProvider
 // ===== MIGRATION EXAMPLES =====
 
 async function demonstrateMigration() {
-  console.log('🚀 refine-orm to refine-sql Migration Example');
+  console.log('🚀 refine-sqlx to refine-sql Migration Example');
   
   // 1. Check compatibility
   console.log('\n1️⃣ Checking compatibility...');
   const packageJson = {
     dependencies: {
-      'refine-orm': '^1.0.0',
+      'refine-sqlx': '^1.0.0',
       'better-sqlite3': '^8.0.0',
     }
   };
@@ -105,14 +105,14 @@ async function demonstrateMigration() {
   // 3. Bundle size comparison
   console.log('\n3️⃣ Bundle size comparison:');
   const bundleComparison = MigrationHelpers.getBundleSizeComparison();
-  console.log(`   refine-orm: ${bundleComparison.refineOrm}`);
+  console.log(`   refine-sqlx: ${bundleComparison.refineOrm}`);
   console.log(`   refine-sql: ${bundleComparison.refineSql}`);
   console.log(`   Savings: ${bundleComparison.savings}`);
   
   // 4. Code transformation example
   console.log('\n4️⃣ Code transformation example:');
   const oldCode = `
-    import { createSQLiteProvider } from 'refine-orm';
+    import { createSQLiteProvider } from 'refine-sqlx';
     const provider = createSQLiteProvider('./db.sqlite', schema);
     const users = await provider.from('users')
       .whereEq('status', 'active')
@@ -126,13 +126,13 @@ async function demonstrateMigration() {
   console.log('   New code:', newCode.trim());
 }
 
-// ===== USAGE EXAMPLES (All refine-orm methods work) =====
+// ===== USAGE EXAMPLES (All refine-sqlx methods work) =====
 
 async function demonstrateCompatibility() {
-  console.log('\n🔄 Demonstrating refine-orm compatibility...');
+  console.log('\n🔄 Demonstrating refine-sqlx compatibility...');
   
   try {
-    // Standard CRUD operations (same as refine-orm)
+    // Standard CRUD operations (same as refine-sqlx)
     console.log('\n📝 Standard CRUD operations:');
     
     const user = await dataProvider.create({
@@ -146,7 +146,7 @@ async function demonstrateCompatibility() {
     });
     console.log('✅ User created:', user.data.name);
     
-    // Chain queries (same as refine-orm)
+    // Chain queries (same as refine-sqlx)
     console.log('\n⛓️ Chain queries:');
     const activeUsers = await dataProvider
       .from('users')
@@ -157,7 +157,7 @@ async function demonstrateCompatibility() {
       .get();
     console.log(`✅ Found ${activeUsers.length} active users`);
     
-    // Relationship queries (same as refine-orm)
+    // Relationship queries (same as refine-sqlx)
     console.log('\n🔗 Relationship queries:');
     const userWithPosts = await dataProvider.getWithRelations(
       'users',
@@ -166,7 +166,7 @@ async function demonstrateCompatibility() {
     );
     console.log('✅ User with posts loaded');
     
-    // Batch operations (same as refine-orm)
+    // Batch operations (same as refine-sqlx)
     console.log('\n📦 Batch operations:');
     const batchUsers = await dataProvider.createMany({
       resource: 'users',
@@ -178,7 +178,7 @@ async function demonstrateCompatibility() {
     });
     console.log(`✅ Created ${batchUsers.data.length} users in batch`);
     
-    // Advanced utilities (same as refine-orm)
+    // Advanced utilities (same as refine-sqlx)
     console.log('\n🛠️ Advanced utilities:');
     const upsertResult = await dataProvider.upsert({
       resource: 'users',
@@ -198,7 +198,7 @@ async function demonstrateCompatibility() {
     });
     console.log(`✅ FirstOrCreate result - created: ${firstOrCreateResult.created}`);
     
-    // Raw SQL execution (same as refine-orm)
+    // Raw SQL execution (same as refine-sqlx)
     console.log('\n🔧 Raw SQL execution:');
     const rawResults = await dataProvider.raw(
       'SELECT COUNT(*) as count FROM users WHERE status = ?',
@@ -206,7 +206,7 @@ async function demonstrateCompatibility() {
     );
     console.log('✅ Raw query result:', rawResults);
     
-    // Transaction support (same as refine-orm)
+    // Transaction support (same as refine-sqlx)
     console.log('\n💾 Transaction support:');
     await dataProvider.transaction(async (tx) => {
       await tx.create({
@@ -216,7 +216,7 @@ async function demonstrateCompatibility() {
       console.log('✅ Transaction completed successfully');
     });
     
-    // Performance monitoring (same as refine-orm)
+    // Performance monitoring (same as refine-sqlx)
     console.log('\n📊 Performance monitoring:');
     dataProvider.enablePerformanceMonitoring();
     
@@ -310,7 +310,7 @@ async function demonstrateAdvancedChainQueries() {
 // Example for Cloudflare Workers deployment
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
-    // Create provider with D1 database (same API as refine-orm)
+    // Create provider with D1 database (same API as refine-sqlx)
     const workerProvider = createSQLiteProvider({
       connection: env.DB, // D1 database
       schema: {
@@ -363,9 +363,9 @@ async function main() {
   console.log('\n🎉 Migration demonstration completed!');
   console.log('\n💡 Key benefits of refine-sql:');
   console.log('   • 85% smaller bundle size');
-  console.log('   • Same familiar API as refine-orm');
+  console.log('   • Same familiar API as refine-sqlx');
   console.log('   • Optimized for SQLite and Cloudflare D1');
-  console.log('   • Zero-cost migration from refine-orm');
+  console.log('   • Zero-cost migration from refine-sqlx');
   console.log('   • Enhanced performance in edge environments');
 }
 
