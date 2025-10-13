@@ -20,7 +20,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const question = (query) => new Promise(resolve => rl.question(query, resolve));
+const question = query => new Promise(resolve => rl.question(query, resolve));
 
 // Color codes for better terminal output
 const colors = {
@@ -45,7 +45,10 @@ function getCurrentVersion(packagePath = './package.json') {
 // Parse conventional commits to determine version bump
 function analyzeCommits() {
   try {
-    const commits = execSync('git log --pretty=format:"%s" HEAD...$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)', { encoding: 'utf8' });
+    const commits = execSync(
+      'git log --pretty=format:"%s" HEAD...$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)',
+      { encoding: 'utf8' }
+    );
     const lines = commits.split('\n').filter(Boolean);
 
     let bump = 'patch';
@@ -109,7 +112,10 @@ async function selectVersionStrategy() {
 
   switch (choice) {
     case '1':
-      return { strategy: 'auto', version: getNextVersion(current, suggestedBump) };
+      return {
+        strategy: 'auto',
+        version: getNextVersion(current, suggestedBump),
+      };
     case '2':
       return { strategy: 'manual', version: getNextVersion(current, 'patch') };
     case '3':
@@ -117,7 +123,10 @@ async function selectVersionStrategy() {
     case '4':
       return { strategy: 'manual', version: getNextVersion(current, 'major') };
     case '5':
-      return { strategy: 'prerelease', version: getNextVersion(current, 'prerelease') };
+      return {
+        strategy: 'prerelease',
+        version: getNextVersion(current, 'prerelease'),
+      };
     case '6':
       const custom = await question('Enter custom version: ');
       return { strategy: 'custom', version: custom };
@@ -150,7 +159,11 @@ async function executeVersioning(strategy, newVersion) {
       updatePackageVersion('./package.json', newVersion);
 
       // Update all workspace packages
-      const packages = ['packages/refine-sqlx', 'packages/refine-sql', 'packages/refine-core-utils'];
+      const packages = [
+        'packages/refine-sqlx',
+        'packages/refine-sql',
+        'packages/refine-core-utils',
+      ];
       for (const pkg of packages) {
         updatePackageVersion(`${pkg}/package.json`, newVersion);
       }
@@ -160,8 +173,12 @@ async function executeVersioning(strategy, newVersion) {
 
       // Create git commit and tag
       execSync('git add -A', { stdio: 'inherit' });
-      execSync(`git commit -m "chore(release): v${newVersion}"`, { stdio: 'inherit' });
-      execSync(`git tag -a v${newVersion} -m "Release v${newVersion}"`, { stdio: 'inherit' });
+      execSync(`git commit -m "chore(release): v${newVersion}"`, {
+        stdio: 'inherit',
+      });
+      execSync(`git tag -a v${newVersion} -m "Release v${newVersion}"`, {
+        stdio: 'inherit',
+      });
 
       log('\n✅ Version updated successfully!', 'green');
       log(`Tagged as: v${newVersion}`, 'blue');
@@ -178,7 +195,10 @@ function updatePackageVersion(path, version) {
 // Generate changelog entry
 function generateChangelog(version) {
   const date = new Date().toISOString().split('T')[0];
-  const commits = execSync('git log --pretty=format:"- %s (%h)" HEAD...$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)', { encoding: 'utf8' });
+  const commits = execSync(
+    'git log --pretty=format:"- %s (%h)" HEAD...$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)',
+    { encoding: 'utf8' }
+  );
 
   const entry = `## [${version}] - ${date}\n\n${commits}\n\n`;
 
@@ -195,7 +215,9 @@ async function main() {
   try {
     const { strategy, version } = await selectVersionStrategy();
 
-    const confirm = await question(`\nProceed with ${strategy} ${version ? `(v${version})` : ''}? (y/n): `);
+    const confirm = await question(
+      `\nProceed with ${strategy} ${version ? `(v${version})` : ''}? (y/n): `
+    );
 
     if (confirm.toLowerCase() === 'y') {
       await executeVersioning(strategy, version);

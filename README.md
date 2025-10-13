@@ -122,15 +122,15 @@ await dataProvider.transaction(async tx => {
 ### 🎯 Compatibility Matrix
 
 | Feature Category      | refine-sql | refine-sqlx | Compatibility | Notes                           |
-| --------------------- | ---------- | ---------- | ------------- | ------------------------------- |
-| Basic CRUD            | ✅         | ✅         | 100%          | Fully compatible                |
-| Chain Queries         | `from()`   | `from()`   | 100%          | Unified API                     |
-| Relationship Queries  | ✅         | ✅         | 95%           | Basic functionality compatible  |
-| Polymorphic Relations | ✅         | ✅         | 100%          | API consistent                  |
-| Transaction Support   | ✅         | ✅         | 100%          | Fully compatible                |
-| ORM Methods           | ✅         | ✅         | 100%          | `upsert`, `firstOrCreate`, etc. |
-| Raw Queries           | `raw()`    | `raw()`    | 100%          | Unified method name             |
-| Type Safety           | ✅         | ✅         | 100%          | Consistent type inference       |
+| --------------------- | ---------- | ----------- | ------------- | ------------------------------- |
+| Basic CRUD            | ✅         | ✅          | 100%          | Fully compatible                |
+| Chain Queries         | `from()`   | `from()`    | 100%          | Unified API                     |
+| Relationship Queries  | ✅         | ✅          | 95%           | Basic functionality compatible  |
+| Polymorphic Relations | ✅         | ✅          | 100%          | API consistent                  |
+| Transaction Support   | ✅         | ✅          | 100%          | Fully compatible                |
+| ORM Methods           | ✅         | ✅          | 100%          | `upsert`, `firstOrCreate`, etc. |
+| Raw Queries           | `raw()`    | `raw()`     | 100%          | Unified method name             |
+| Type Safety           | ✅         | ✅          | 100%          | Consistent type inference       |
 
 **Compatibility Advantages:**
 
@@ -483,15 +483,15 @@ await dataProvider.transaction(async tx => {
 ### 🎯 兼容性对照表
 
 | 功能类别  | refine-sql | refine-sqlx | 兼容性 | 说明                         |
-| --------- | ---------- | ---------- | ------ | ---------------------------- |
-| 基础 CRUD | ✅         | ✅         | 100%   | 完全兼容                     |
-| 链式查询  | `from()`   | `from()`   | 100%   | 统一 API                     |
-| 关系查询  | ✅         | ✅         | 95%    | 基本功能兼容                 |
-| 多态关联  | ✅         | ✅         | 100%   | API 一致                     |
-| 事务支持  | ✅         | ✅         | 100%   | 完全兼容                     |
-| ORM 方法  | ✅         | ✅         | 100%   | `upsert`, `firstOrCreate` 等 |
-| 原生查询  | `raw()`    | `raw()`    | 100%   | 统一方法名                   |
-| 类型安全  | ✅         | ✅         | 100%   | 类型推断一致                 |
+| --------- | ---------- | ----------- | ------ | ---------------------------- |
+| 基础 CRUD | ✅         | ✅          | 100%   | 完全兼容                     |
+| 链式查询  | `from()`   | `from()`    | 100%   | 统一 API                     |
+| 关系查询  | ✅         | ✅          | 95%    | 基本功能兼容                 |
+| 多态关联  | ✅         | ✅          | 100%   | API 一致                     |
+| 事务支持  | ✅         | ✅          | 100%   | 完全兼容                     |
+| ORM 方法  | ✅         | ✅          | 100%   | `upsert`, `firstOrCreate` 等 |
+| 原生查询  | `raw()`    | `raw()`     | 100%   | 统一方法名                   |
+| 类型安全  | ✅         | ✅          | 100%   | 类型推断一致                 |
 
 **兼容性优势：**
 
@@ -507,7 +507,7 @@ await dataProvider.transaction(async tx => {
 
 ## 功能对比
 
-| 功能            | refine-sqlx                | refine-sql               |
+| 功能            | refine-sqlx               | refine-sql               |
 | --------------- | ------------------------- | ------------------------ |
 | **数据库**      | PostgreSQL, MySQL, SQLite | 仅 SQLite                |
 | **类型安全**    | 完整模式推断              | 基础 TypeScript          |
@@ -607,7 +607,7 @@ CREATE TABLE todos (
 
 ## 运行时支持
 
-| 运行时                 | refine-sqlx        | refine-sql        |
+| 运行时                 | refine-sqlx       | refine-sql        |
 | ---------------------- | ----------------- | ----------------- |
 | **Bun**                | ✅ 原生 SQL 驱动  | ✅ bun:sqlite     |
 | **Node.js**            | ✅ 标准驱动       | ✅ better-sqlite3 |

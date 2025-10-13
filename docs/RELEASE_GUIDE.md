@@ -3,6 +3,7 @@
 ## 🎯 版本管理策略对比
 
 ### 1. **Changesets（当前推荐）** ⭐⭐⭐⭐⭐
+
 最适合 monorepo，提供灵活的版本控制和变更记录。
 
 ```bash
@@ -23,12 +24,14 @@ bun run release:dry-run
 ```
 
 **优点：**
+
 - 完美支持 monorepo
 - 变更记录清晰
 - 支持关联包版本管理
 - GitHub 集成良好
 
 ### 2. **Semantic Release（全自动）** ⭐⭐⭐⭐
+
 基于提交信息自动决定版本号。
 
 ```bash
@@ -37,16 +40,19 @@ bun run release:auto
 ```
 
 **优点：**
+
 - 完全自动化
 - 遵循语义化版本规范
 - 自动生成 CHANGELOG
 - 自动创建 GitHub Release
 
 **要求：**
+
 - 必须使用约定式提交（Conventional Commits）
 - 提交格式：`type(scope): message`
 
 ### 3. **Release-It（交互式）** ⭐⭐⭐⭐
+
 提供友好的交互式发布体验。
 
 ```bash
@@ -60,12 +66,14 @@ npx release-it major
 ```
 
 **优点：**
+
 - 交互式界面友好
 - 支持预发布版本
 - 自动化程度高
 - 可自定义 hooks
 
 ### 4. **自定义脚本（灵活控制）** ⭐⭐⭐
+
 使用我们的自定义版本管理器。
 
 ```bash
@@ -74,11 +82,13 @@ bun run release:interactive
 ```
 
 **优点：**
+
 - 完全控制版本流程
 - 支持多种策略选择
 - 适合特殊需求
 
 ### 5. **Lerna（企业级）** ⭐⭐⭐
+
 适合大型 monorepo 项目。
 
 ```bash
@@ -98,19 +108,19 @@ npx lerna version --conventional-commits
 
 ### 提交类型与版本影响
 
-| 类型 | 描述 | 版本影响 | 示例 |
-|------|------|----------|------|
-| `feat` | 新功能 | Minor | `feat: add new query builder` |
-| `fix` | Bug 修复 | Patch | `fix: resolve connection issue` |
-| `docs` | 文档 | 无 | `docs: update API guide` |
-| `style` | 代码格式 | 无 | `style: format code` |
-| `refactor` | 重构 | 无 | `refactor: optimize query logic` |
-| `perf` | 性能优化 | Patch | `perf: improve query speed` |
-| `test` | 测试 | 无 | `test: add unit tests` |
-| `build` | 构建系统 | 无 | `build: update webpack config` |
-| `ci` | CI/CD | 无 | `ci: update GitHub Actions` |
-| `chore` | 杂项 | 无 | `chore: update dependencies` |
-| `revert` | 回滚 | Patch | `revert: revert commit abc123` |
+| 类型       | 描述     | 版本影响 | 示例                             |
+| ---------- | -------- | -------- | -------------------------------- |
+| `feat`     | 新功能   | Minor    | `feat: add new query builder`    |
+| `fix`      | Bug 修复 | Patch    | `fix: resolve connection issue`  |
+| `docs`     | 文档     | 无       | `docs: update API guide`         |
+| `style`    | 代码格式 | 无       | `style: format code`             |
+| `refactor` | 重构     | 无       | `refactor: optimize query logic` |
+| `perf`     | 性能优化 | Patch    | `perf: improve query speed`      |
+| `test`     | 测试     | 无       | `test: add unit tests`           |
+| `build`    | 构建系统 | 无       | `build: update webpack config`   |
+| `ci`       | CI/CD    | 无       | `ci: update GitHub Actions`      |
+| `chore`    | 杂项     | 无       | `chore: update dependencies`     |
+| `revert`   | 回滚     | Patch    | `revert: revert commit abc123`   |
 
 ### Breaking Changes（主版本）
 
@@ -155,6 +165,7 @@ bun run postrelease
 ### 自动化 CI/CD 发布
 
 推送到 main 分支后，GitHub Actions 会自动：
+
 1. 运行测试
 2. 构建包
 3. 创建 Release PR
@@ -163,6 +174,7 @@ bun run postrelease
 ## 🏷️ 版本标签策略
 
 ### 正式版本
+
 ```bash
 # 生产版本
 v1.0.0
@@ -171,6 +183,7 @@ v2.0.0
 ```
 
 ### 预发布版本
+
 ```bash
 # Alpha（内部测试）
 v1.0.0-alpha.0
@@ -186,6 +199,7 @@ v1.0.0-rc.1
 ```
 
 ### 标签管理
+
 ```bash
 # Canary（每日构建）
 npm publish --tag canary
@@ -217,16 +231,19 @@ git push origin :refs/tags/v1.2.3
 ## 📊 版本策略最佳实践
 
 ### 1. **语义化版本（SemVer）**
+
 - **Major (x.0.0)**: Breaking changes
 - **Minor (1.x.0)**: New features, backward compatible
 - **Patch (1.0.x)**: Bug fixes, backward compatible
 
 ### 2. **发布频率建议**
+
 - **Patch**: 随时（bug 修复）
 - **Minor**: 每 2-4 周
 - **Major**: 每 3-6 个月
 
 ### 3. **分支策略**
+
 ```
 main         → 稳定版本
 develop      → 开发版本
@@ -235,6 +252,7 @@ hotfix/*     → 紧急修复
 ```
 
 ### 4. **自动化检查清单**
+
 - ✅ 所有测试通过
 - ✅ 代码覆盖率达标
 - ✅ 无 lint 错误
@@ -271,13 +289,13 @@ bun add -d commitizen cz-conventional-changelog
 
 ## 💡 选择建议
 
-| 场景 | 推荐工具 | 原因 |
-|------|----------|------|
-| Monorepo 项目 | Changesets | 最佳的 monorepo 支持 |
-| 完全自动化 | Semantic Release | 零人工干预 |
-| 需要审核 | Release-It | 交互式确认 |
-| 企业级项目 | Lerna + Changesets | 功能最完整 |
-| 小型项目 | npm version | 简单直接 |
+| 场景          | 推荐工具           | 原因                 |
+| ------------- | ------------------ | -------------------- |
+| Monorepo 项目 | Changesets         | 最佳的 monorepo 支持 |
+| 完全自动化    | Semantic Release   | 零人工干预           |
+| 需要审核      | Release-It         | 交互式确认           |
+| 企业级项目    | Lerna + Changesets | 功能最完整           |
+| 小型项目      | npm version        | 简单直接             |
 
 ---
 

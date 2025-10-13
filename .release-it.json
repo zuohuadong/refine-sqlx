@@ -48,8 +48,6 @@
       },
       "infile": "CHANGELOG.md"
     },
-    "@release-it/bumper": {
-      "out": ["package.json", "packages/*/package.json"]
-    }
+    "@release-it/bumper": { "out": ["package.json", "packages/*/package.json"] }
   }
 }
