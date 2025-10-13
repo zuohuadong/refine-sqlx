@@ -100,9 +100,6 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
 
-              // Force MySQL to flush any pending operations
-              await provider.raw('FLUSH TABLES');
-
               // Add a longer delay to ensure MySQL processes the changes and completes all pending transactions
               await new Promise(resolve => setTimeout(resolve, 500));
 
