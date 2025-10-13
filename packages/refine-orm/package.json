@@ -52,12 +52,13 @@
   ],
   "scripts": {
     "test": "bun test",
+    "test:unit": "bun test --exclude='**/__tests__/integration/**'",
     "test:node": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
     "test:integration": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js test/integration",
     "build": "unbuild",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run typecheck && bun run build && bun run test",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run test:unit",
     "pack-test": "npm pack --dry-run"
   },
   "exports": {
