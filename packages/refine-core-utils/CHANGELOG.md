@@ -1,5 +1,11 @@
 # @refine-sqlx/core-utils
 
+## 0.3.2
+
+### Patch Changes
+
+- Continue using TypeScript new decorators and add publishConfig for npm publishing
+
 ## 0.3.1
 
 ### Patch Changes

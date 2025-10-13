@@ -1,6 +1,6 @@
 {
   "name": "refine-sqlx",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A Refine ORM data provider with multi-database support using drizzle-orm.",
   "type": "module",
   "license": "MIT",

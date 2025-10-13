@@ -1,6 +1,6 @@
 {
   "name": "refine-core-utils",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Shared utilities for Refine data providers",
   "type": "module",
