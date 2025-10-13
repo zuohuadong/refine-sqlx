@@ -187,6 +187,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         });
 
         it('should rollback failed transactions', async () => {
+          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
+          if (dbType === 'mysql') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+
           const initialUserCount = await provider.getList({
             resource: 'users',
           });
@@ -450,6 +455,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
       describe('Transaction Error Handling', () => {
         it('should rollback on constraint violations', async () => {
+          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
+          if (dbType === 'mysql') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+
           const initialUserCount = await provider.getList({
             resource: 'users',
           });
@@ -571,6 +581,11 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
               age: 30,
             },
           });
+
+          // For MySQL, add a small delay after creating user to ensure it's fully committed
+          if (dbType === 'mysql') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
 
           // Run concurrent transactions
           const transaction1 = provider.transaction(async tx => {
