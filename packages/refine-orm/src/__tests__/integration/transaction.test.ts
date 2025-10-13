@@ -78,14 +78,10 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             if (dbType === 'mysql') {
               // For MySQL, disable foreign key checks temporarily
               await provider.raw('SET FOREIGN_KEY_CHECKS = 0');
-              // Use DELETE instead of TRUNCATE to avoid issues with AUTO_INCREMENT
-              await provider.raw('DELETE FROM comments');
-              await provider.raw('DELETE FROM posts');
-              await provider.raw('DELETE FROM users');
-              // Reset AUTO_INCREMENT counters
-              await provider.raw('ALTER TABLE users AUTO_INCREMENT = 1');
-              await provider.raw('ALTER TABLE posts AUTO_INCREMENT = 1');
-              await provider.raw('ALTER TABLE comments AUTO_INCREMENT = 1');
+              // Use TRUNCATE for complete table cleanup
+              await provider.raw('TRUNCATE TABLE comments');
+              await provider.raw('TRUNCATE TABLE posts');
+              await provider.raw('TRUNCATE TABLE users');
               // Re-enable foreign key checks
               await provider.raw('SET FOREIGN_KEY_CHECKS = 1');
               // Add a longer delay to ensure MySQL processes the changes and completes all pending transactions
@@ -187,9 +183,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
         });
 
         it('should rollback failed transactions', async () => {
-          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
+          // For MySQL, add a longer delay before reading initial counts to ensure data is consistent
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
 
           const initialUserCount = await provider.getList({
@@ -455,9 +451,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
 
       describe('Transaction Error Handling', () => {
         it('should rollback on constraint violations', async () => {
-          // For MySQL, add a small delay before reading initial counts to ensure data is consistent
+          // For MySQL, add a longer delay before reading initial counts to ensure data is consistent
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
 
           const initialUserCount = await provider.getList({
@@ -582,9 +578,9 @@ TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
             },
           });
 
-          // For MySQL, add a small delay after creating user to ensure it's fully committed
+          // For MySQL, add a longer delay after creating user to ensure it's fully committed
           if (dbType === 'mysql') {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
 
           // Run concurrent transactions
