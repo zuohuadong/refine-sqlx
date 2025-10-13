@@ -6,12 +6,16 @@ import { performanceManager, QueryOptimizer } from '../utils/performance';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // TypeScript 5.0 Decorators for database adapters
-export function ConnectionRequired(
-  originalMethod: any,
-  context: ClassMethodDecoratorContext
-) {
-  return function (this: any, ...args: any[]) {
-    if (!this.isConnected || !this.client) {
+export function ConnectionRequired<This, Args extends any[], Return>(
+  originalMethod: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >
+): (this: This, ...args: Args) => Return {
+  return function (this: This, ...args: Args): Return {
+    const self = this as any;
+    if (!self.isConnected || !self.client) {
       throw new ConfigurationError(
         `Database connection required for ${String(context.name)}. Call connect() first.`
       );
