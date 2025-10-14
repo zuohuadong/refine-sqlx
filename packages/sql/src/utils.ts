@@ -241,3 +241,91 @@ export function withClientCheck<T extends (...args: any[]) => any>(
     return fn(...args);
   }) as T;
 }
+
+/**
+ * Shared WHERE condition builder for SQL queries
+ * This function is used by SelectChain, UpdateChain, and DeleteChain
+ * to build WHERE conditions consistently across different query types.
+ */
+export function buildWhereCondition(
+  column: string,
+  operator: string,
+  value: any
+): { sql: string; args: any[] } {
+  const normalizedOperator = operator.toLowerCase();
+
+  switch (normalizedOperator) {
+    case 'eq':
+    case '=':
+      return { sql: `${column} = ?`, args: [value] };
+
+    case 'ne':
+    case '!=':
+      return { sql: `${column} != ?`, args: [value] };
+
+    case 'gt':
+    case '>':
+      return { sql: `${column} > ?`, args: [value] };
+
+    case 'gte':
+    case '>=':
+      return { sql: `${column} >= ?`, args: [value] };
+
+    case 'lt':
+    case '<':
+      return { sql: `${column} < ?`, args: [value] };
+
+    case 'lte':
+    case '<=':
+      return { sql: `${column} <= ?`, args: [value] };
+
+    case 'like':
+      return { sql: `${column} LIKE ?`, args: [`%${value}%`] };
+
+    case 'ilike':
+      // SQLite uses COLLATE NOCASE for case-insensitive matching
+      return { sql: `${column} LIKE ? COLLATE NOCASE`, args: [`%${value}%`] };
+
+    case 'notlike':
+      return { sql: `${column} NOT LIKE ?`, args: [`%${value}%`] };
+
+    case 'in':
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => '?').join(', ');
+        return { sql: `${column} IN (${placeholders})`, args: value };
+      }
+      return { sql: `${column} = ?`, args: [value] };
+
+    case 'notin':
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => '?').join(', ');
+        return { sql: `${column} NOT IN (${placeholders})`, args: value };
+      }
+      return { sql: `${column} != ?`, args: [value] };
+
+    case 'isnull':
+    case 'null':
+      return { sql: `${column} IS NULL`, args: [] };
+
+    case 'isnotnull':
+    case 'notnull':
+      return { sql: `${column} IS NOT NULL`, args: [] };
+
+    case 'between':
+      if (Array.isArray(value) && value.length === 2) {
+        return { sql: `${column} BETWEEN ? AND ?`, args: value };
+      }
+      throw new Error('Between operator requires array with exactly 2 values');
+
+    case 'notbetween':
+      if (Array.isArray(value) && value.length === 2) {
+        return { sql: `${column} NOT BETWEEN ? AND ?`, args: value };
+      }
+      throw new Error(
+        'Not between operator requires array with exactly 2 values'
+      );
+
+    default:
+      throw new Error(`Unsupported operator: ${operator}`);
+  }
+}

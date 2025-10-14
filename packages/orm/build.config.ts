@@ -11,7 +11,10 @@ export default defineBuildConfig({
   failOnWarn: false,
   rollup: {
     esbuild: {
-      minify: false, // Disable minification to fix CJS compatibility
+      minify: true,
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true,
       target: 'es2022',
       // 启用新标准装饰器支持
       tsconfigRaw: {
@@ -21,6 +24,9 @@ export default defineBuildConfig({
         },
       },
       treeShaking: true,
+      // More aggressive compression settings
+      mangleProps: /^_/,
+      legalComments: 'none',
     },
     emitCJS: true,
   },

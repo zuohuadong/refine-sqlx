@@ -6,6 +6,7 @@
 import type { BaseRecord } from '@refinedev/core';
 import type { SqlClient, SqlQuery } from './client';
 import { SqlxChainQuery } from './chain-query';
+import { buildWhereCondition } from './utils';
 
 /**
  * Transaction context interface
@@ -158,7 +159,7 @@ export class SelectChain {
    * Add WHERE condition
    */
   where(column: string, operator: string, value: any): this {
-    const condition = this.buildWhereCondition(column, operator, value);
+    const condition = buildWhereCondition(column, operator, value);
     this.whereConditions.push(condition.sql);
     this.whereArgs.push(...condition.args);
     return this;
@@ -180,7 +181,7 @@ export class SelectChain {
     conditions: Array<{ column: string; operator: string; value: any }>
   ): this {
     const andConditions = conditions.map(c => {
-      const condition = this.buildWhereCondition(c.column, c.operator, c.value);
+      const condition = buildWhereCondition(c.column, c.operator, c.value);
       this.whereArgs.push(...condition.args);
       return condition.sql;
     });
@@ -198,7 +199,7 @@ export class SelectChain {
     conditions: Array<{ column: string; operator: string; value: any }>
   ): this {
     const orConditions = conditions.map(c => {
-      const condition = this.buildWhereCondition(c.column, c.operator, c.value);
+      const condition = buildWhereCondition(c.column, c.operator, c.value);
       this.whereArgs.push(...condition.args);
       return condition.sql;
     });
@@ -238,7 +239,7 @@ export class SelectChain {
    * Add HAVING with count condition
    */
   havingCount(operator: string, value: number): this {
-    const condition = this.buildWhereCondition('COUNT(*)', operator, value);
+    const condition = buildWhereCondition('COUNT(*)', operator, value);
     this.havingConditions.push(condition.sql);
     this.havingArgs.push(...condition.args);
     return this;
@@ -407,62 +408,6 @@ export class SelectChain {
 
     return { sql, args: [...this.whereArgs, ...this.havingArgs] };
   }
-
-  private buildWhereCondition(
-    column: string,
-    operator: string,
-    value: any
-  ): { sql: string; args: any[] } {
-    switch (operator.toLowerCase()) {
-      case 'eq':
-      case '=':
-        return { sql: `${column} = ?`, args: [value] };
-      case 'ne':
-      case '!=':
-        return { sql: `${column} != ?`, args: [value] };
-      case 'gt':
-      case '>':
-        return { sql: `${column} > ?`, args: [value] };
-      case 'gte':
-      case '>=':
-        return { sql: `${column} >= ?`, args: [value] };
-      case 'lt':
-      case '<':
-        return { sql: `${column} < ?`, args: [value] };
-      case 'lte':
-      case '<=':
-        return { sql: `${column} <= ?`, args: [value] };
-      case 'like':
-        return { sql: `${column} LIKE ?`, args: [`%${value}%`] };
-      case 'ilike':
-        return { sql: `${column} LIKE ? COLLATE NOCASE`, args: [`%${value}%`] };
-      case 'in':
-        if (Array.isArray(value)) {
-          const placeholders = value.map(() => '?').join(', ');
-          return { sql: `${column} IN (${placeholders})`, args: value };
-        }
-        return { sql: `${column} = ?`, args: [value] };
-      case 'notin':
-        if (Array.isArray(value)) {
-          const placeholders = value.map(() => '?').join(', ');
-          return { sql: `${column} NOT IN (${placeholders})`, args: value };
-        }
-        return { sql: `${column} != ?`, args: [value] };
-      case 'isnull':
-        return { sql: `${column} IS NULL`, args: [] };
-      case 'isnotnull':
-        return { sql: `${column} IS NOT NULL`, args: [] };
-      case 'between':
-        if (Array.isArray(value) && value.length === 2) {
-          return { sql: `${column} BETWEEN ? AND ?`, args: value };
-        }
-        throw new Error(
-          'Between operator requires array with exactly 2 values'
-        );
-      default:
-        throw new Error(`Unsupported operator: ${operator}`);
-    }
-  }
 }
 
 /**
@@ -583,7 +528,7 @@ export class UpdateChain {
    * Add WHERE condition
    */
   where(column: string, operator: string, value: any): this {
-    const condition = this.buildWhereCondition(column, operator, value);
+    const condition = buildWhereCondition(column, operator, value);
     this.whereConditions.push(condition.sql);
     this.whereArgs.push(...condition.args);
     return this;
@@ -648,42 +593,6 @@ export class UpdateChain {
 
     return { sql, args };
   }
-
-  private buildWhereCondition(
-    column: string,
-    operator: string,
-    value: any
-  ): { sql: string; args: any[] } {
-    // Same implementation as SelectChain
-    switch (operator.toLowerCase()) {
-      case 'eq':
-      case '=':
-        return { sql: `${column} = ?`, args: [value] };
-      case 'ne':
-      case '!=':
-        return { sql: `${column} != ?`, args: [value] };
-      case 'gt':
-      case '>':
-        return { sql: `${column} > ?`, args: [value] };
-      case 'gte':
-      case '>=':
-        return { sql: `${column} >= ?`, args: [value] };
-      case 'lt':
-      case '<':
-        return { sql: `${column} < ?`, args: [value] };
-      case 'lte':
-      case '<=':
-        return { sql: `${column} <= ?`, args: [value] };
-      case 'in':
-        if (Array.isArray(value)) {
-          const placeholders = value.map(() => '?').join(', ');
-          return { sql: `${column} IN (${placeholders})`, args: value };
-        }
-        return { sql: `${column} = ?`, args: [value] };
-      default:
-        throw new Error(`Unsupported operator: ${operator}`);
-    }
-  }
 }
 
 /**
@@ -703,7 +612,7 @@ export class DeleteChain {
    * Add WHERE condition
    */
   where(column: string, operator: string, value: any): this {
-    const condition = this.buildWhereCondition(column, operator, value);
+    const condition = buildWhereCondition(column, operator, value);
     this.whereConditions.push(condition.sql);
     this.whereArgs.push(...condition.args);
     return this;
@@ -751,30 +660,6 @@ export class DeleteChain {
     }
 
     return { sql, args: this.whereArgs };
-  }
-
-  private buildWhereCondition(
-    column: string,
-    operator: string,
-    value: any
-  ): { sql: string; args: any[] } {
-    // Same implementation as SelectChain and UpdateChain
-    switch (operator.toLowerCase()) {
-      case 'eq':
-      case '=':
-        return { sql: `${column} = ?`, args: [value] };
-      case 'ne':
-      case '!=':
-        return { sql: `${column} != ?`, args: [value] };
-      case 'in':
-        if (Array.isArray(value)) {
-          const placeholders = value.map(() => '?').join(', ');
-          return { sql: `${column} IN (${placeholders})`, args: value };
-        }
-        return { sql: `${column} = ?`, args: [value] };
-      default:
-        throw new Error(`Unsupported operator: ${operator}`);
-    }
   }
 }
 

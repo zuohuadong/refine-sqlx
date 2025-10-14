@@ -7,6 +7,16 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
     inlineDependencies: true,
+    esbuild: {
+      minify: true,
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true,
+      target: 'es2022',
+      // More aggressive compression settings
+      mangleProps: /^_/,
+      legalComments: 'none',
+    },
   },
   externals: [],
 });
