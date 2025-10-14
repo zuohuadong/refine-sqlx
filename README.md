@@ -315,6 +315,19 @@ bun run format
   - Node.js 20+ (with `better-sqlite3`)
   - Cloudflare Workers (with D1 bindings)
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs) directory:
+
+- **[Technical Specifications](./docs/specs/CLAUDE_SPEC.md)** - Project standards, TypeScript requirements, database drivers, and build optimization
+- **[v0.3.0 Features](./docs/features/FEATURES_v0.3.0.md)** - Drizzle ORM integration, type-safe queries, D1 optimized build
+- **[v0.4.0 Features](./docs/features/FEATURES_v0.4.0.md)** - Eloquent-style ORM, automatic relationships, polymorphic relations
+- **[D1 Bundle Size Analysis](./docs/analysis/D1_BUNDLE_SIZE_ANALYSIS.md)** - Performance optimization and bundle size targets
+
+See the [documentation index](./docs/README.md) for more details.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
