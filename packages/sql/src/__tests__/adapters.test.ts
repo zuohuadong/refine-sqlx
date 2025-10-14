@@ -14,8 +14,8 @@ import {
   createBunSQLiteAdapter,
   createNodeSQLiteAdapter,
   createBetterSQLite3Adapter,
-} from '../src/adapters/index.js';
-import type { SqlQuery } from '../src/client.js';
+} from '../src/adapters/index';
+import type { SqlQuery, SqlClient } from '../src/client';
 
 // Mock implementations
 const mockD1 = { prepare: jest.fn(), batch: jest.fn() };
@@ -181,7 +181,7 @@ describe('Bun SQLite Adapter', () => {
 
     const client = createBunSQLiteAdapter(mockBunDB as any);
 
-    const result = await client.transaction!(async tx => {
+    const result = await client.transaction!(async (tx: SqlClient) => {
       await tx.execute({
         sql: 'INSERT INTO users (name) VALUES (?)',
         args: ['John'],
@@ -209,7 +209,7 @@ describe('Bun SQLite Adapter', () => {
     const client = createBunSQLiteAdapter(mockBunDB as any);
 
     await expect(
-      client.transaction!(async tx => {
+      client.transaction!(async (tx: SqlClient) => {
         await tx.execute({
           sql: 'INSERT INTO users (name) VALUES (?)',
           args: ['John'],
@@ -282,7 +282,7 @@ describe('Node SQLite Adapter', () => {
 
     const client = createNodeSQLiteAdapter(mockNodeDB as any);
 
-    const result = await client.transaction!(async tx => {
+    const result = await client.transaction!(async (tx: SqlClient) => {
       await tx.execute({
         sql: 'INSERT INTO users (name) VALUES (?)',
         args: ['John'],
@@ -362,7 +362,7 @@ describe('better-sqlite3 Adapter', () => {
 
     const client = createBetterSQLite3Adapter(mockBetterSQLite3DB as any);
 
-    const result = await client.transaction!(async tx => {
+    const result = await client.transaction!(async (tx: SqlClient) => {
       await tx.execute({
         sql: 'INSERT INTO users (name) VALUES (?)',
         args: ['John'],

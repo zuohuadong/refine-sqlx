@@ -5,7 +5,7 @@ import type {
   GetManyParams,
 } from '@refinedev/core';
 import type { SqlClient } from './client';
-import { SqlTransformer } from 'refine-core';
+import { SqlTransformer } from '@refine-sqlx/core';
 import { deserializeSqlResult } from './utils';
 
 // Type definitions

@@ -9,8 +9,8 @@ import {
   jest,
   test,
 } from './test-utils.js';
-import createRefineSQL from '../src/data-provider.js';
-import type { SqlClient } from '../src/client.js';
+import createRefineSQL from '../src/data-provider';
+import type { SqlClient } from '../src/client';
 import type {
   GetListParams,
   CreateParams,
@@ -45,7 +45,7 @@ describe('Data Provider Integration', () => {
       resource: 'users',
       filters: [{ field: 'name', operator: 'contains', value: 'J' }],
       sorters: [{ field: 'name', order: 'asc' }],
-      pagination: { current: 1, pageSize: 10 },
+      pagination: { currentPage: 1, pageSize: 10 },
     };
 
     const result = await dataProvider.getList(params);
