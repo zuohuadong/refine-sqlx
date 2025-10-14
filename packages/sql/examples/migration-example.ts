@@ -327,7 +327,7 @@ export {
 To run this example:
 
 1. Install dependencies:
-   npm install @@refine-sqlx/sqlx/sql
+   npm install@refine-sqlx/sql
 
 2. Create database:
    sqlite3 database.db < schema.sql

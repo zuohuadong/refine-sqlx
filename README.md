@@ -11,7 +11,7 @@ A collection of powerful, type-safe data providers for [Refine](https://refine.d
 
 ## Packages
 
-### 🚀 [@@refine-sqlx/sqlx/orm](./packages/@refine-sqlx/orm)
+### 🚀 [@refine-sqlx/orm](./packages/@refine-sqlx/orm)
 
 A powerful, type-safe data provider with multi-database support using Drizzle ORM.
 
@@ -21,10 +21,10 @@ A powerful, type-safe data provider with multi-database support using Drizzle OR
 - **Runtime detection**: Automatic driver selection (Bun, Node.js, Cloudflare)
 
 ```bash
-npm install @@refine-sqlx/sqlx/orm drizzle-orm
+npm install @refine-sqlx/orm drizzle-orm
 ```
 
-### ⚡ [@@refine-sqlx/sqlx/sql](./packages/@refine-sqlx/sql)
+### ⚡ [@refine-sqlx/sql](./packages/@refine-sqlx/sql)
 
 A lightweight, cross-platform SQL data provider with native runtime support.
 
@@ -34,7 +34,7 @@ A lightweight, cross-platform SQL data provider with native runtime support.
 - **Lightweight**: Minimal dependencies
 
 ```bash
-npm install @@refine-sqlx/sqlx/sql
+npm install @refine-sqlx/sql
 ```
 
 ## Quick Start
@@ -43,7 +43,7 @@ npm install @@refine-sqlx/sqlx/sql
 
 #### For Advanced ORM Features (Recommended)
 
-Use **@@refine-sqlx/sqlx/orm** if you need:
+Use **@refine-sqlx/orm** if you need:
 
 - Type-safe schema definitions
 - Complex relationships and joins
@@ -52,7 +52,7 @@ Use **@@refine-sqlx/sqlx/orm** if you need:
 - Multi-database support
 
 ```typescript
-import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -63,7 +63,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### For Simple SQL Operations
 
-Use **@@refine-sqlx/sqlx/sql** if you need:
+Use **@refine-sqlx/sql** if you need:
 
 - Lightweight SQLite-only solution
 - Raw SQL control
@@ -71,17 +71,17 @@ Use **@@refine-sqlx/sqlx/sql** if you need:
 - Minimal setup
 
 ```typescript
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM Compatibility - Near 100% API Compatibility!
 
-**@@refine-sqlx/sqlx/sql** now provides **near 100% API compatibility** with @refine-sqlx/orm, allowing users to seamlessly migrate or use both API styles simultaneously:
+**@refine-sqlx/sql** now provides **near 100% API compatibility** with @refine-sqlx/orm, allowing users to seamlessly migrate or use both API styles simultaneously:
 
 ```typescript
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 
@@ -192,7 +192,7 @@ export const schema = { users, posts };
 
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -219,7 +219,7 @@ function App() {
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./todos.db');
 
@@ -372,7 +372,7 @@ MIT © [RefineORM Team](https://github.com/zuohuadong/@refine-sqlx/orm)
 
 ## 包列表
 
-### 🚀 [@@refine-sqlx/sqlx/orm](./packages/@refine-sqlx/orm)
+### 🚀 [@refine-sqlx/orm](./packages/@refine-sqlx/orm)
 
 一个强大的、类型安全的数据提供器，使用 Drizzle ORM 支持多数据库。
 
@@ -382,10 +382,10 @@ MIT © [RefineORM Team](https://github.com/zuohuadong/@refine-sqlx/orm)
 - **运行时检测**: 自动驱动选择 (Bun, Node.js, Cloudflare)
 
 ```bash
-npm install @@refine-sqlx/sqlx/orm drizzle-orm
+npm install @refine-sqlx/orm drizzle-orm
 ```
 
-### ⚡ [@@refine-sqlx/sqlx/sql](./packages/@refine-sqlx/sql)
+### ⚡ [@refine-sqlx/sql](./packages/@refine-sqlx/sql)
 
 一个轻量级、跨平台的 SQL 数据提供器，支持原生运行时。
 
@@ -395,7 +395,7 @@ npm install @@refine-sqlx/sqlx/orm drizzle-orm
 - **轻量级**: 最小依赖
 
 ```bash
-npm install @@refine-sqlx/sqlx/sql
+npm install @refine-sqlx/sql
 ```
 
 ## 快速开始
@@ -404,7 +404,7 @@ npm install @@refine-sqlx/sqlx/sql
 
 #### 高级 ORM 功能（推荐）
 
-如果您需要以下功能，请使用 **@@refine-sqlx/sqlx/orm**：
+如果您需要以下功能，请使用 **@refine-sqlx/orm**：
 
 - 类型安全的模式定义
 - 复杂关系和连接
@@ -413,7 +413,7 @@ npm install @@refine-sqlx/sqlx/sql
 - 多数据库支持
 
 ```typescript
-import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -424,7 +424,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### 简单 SQL 操作
 
-如果您需要以下功能，请使用 **@@refine-sqlx/sqlx/sql**：
+如果您需要以下功能，请使用 **@refine-sqlx/sql**：
 
 - 轻量级 SQLite 专用解决方案
 - 原生 SQL 控制
@@ -432,17 +432,17 @@ const dataProvider = await createPostgreSQLProvider(
 - 最小设置
 
 ```typescript
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM 兼容性 - 接近 100% API 兼容性！
 
-**@@refine-sqlx/sqlx/sql** 现在提供了与 @refine-sqlx/orm **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
+**@refine-sqlx/sql** 现在提供了与 @refine-sqlx/orm **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
 
 ```typescript
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 
@@ -553,7 +553,7 @@ export const schema = { users, posts };
 
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -580,7 +580,7 @@ function App() {
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 const dataProvider = createProvider('./todos.db');
 

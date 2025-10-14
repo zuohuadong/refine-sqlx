@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the implementation of native query builders for the @refine-sqlx/sqlx package. The native query builders provide type-safe, chainable interfaces for building complex SQL queries using drizzle-orm.
+This document describes the implementation of native query builders for the @refine-sqlx/orm package. The native query builders provide type-safe, chainable interfaces for building complex SQL queries using drizzle-orm.
 
 ## Implemented Components
 
@@ -274,4 +274,4 @@ This implementation satisfies the following requirements from the task:
 ✅ **2.2**: Complex query support with filtering, sorting, and relationships
 ✅ **7.2**: Advanced query functionality and database-specific features
 
-The native query builders provide a powerful, type-safe interface for building complex database queries while maintaining compatibility with the existing @refine-sqlx/sqlx architecture.
+The native query builders provide a powerful, type-safe interface for building complex database queries while maintaining compatibility with the existing @refine-sqlx/orm architecture.

@@ -21,9 +21,9 @@ A powerful, type-safe data provider for [Refine](https://refine.dev) with multi-
 ## Installation
 
 ```bash
-npm install @@refine-sqlx/sqlx/sqlx drizzle-orm
+npm install @refine-sqlx/orm drizzle-orm
 # or
-bun add @@refine-sqlx/sqlx/sqlx drizzle-orm
+bun add @refine-sqlx/orm drizzle-orm
 ```
 
 ### Database Drivers
@@ -121,7 +121,7 @@ export const schema = { users, posts };
 #### PostgreSQL
 
 ```typescript
-import { createPostgreSQLProvider } from '@refine-sqlx/sqlx';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 // Connection string
@@ -146,7 +146,7 @@ const dataProvider = await createPostgreSQLProvider(
 #### MySQL
 
 ```typescript
-import { createMySQLProvider } from '@refine-sqlx/sqlx';
+import { createMySQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createMySQLProvider(
@@ -158,7 +158,7 @@ const dataProvider = await createMySQLProvider(
 #### SQLite
 
 ```typescript
-import { createSQLiteProvider } from '@refine-sqlx/sqlx';
+import { createSQLiteProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 // File database
@@ -229,7 +229,7 @@ const result = await dataProvider
 ### Polymorphic Relationships
 
 ```typescript
-import { createMorphConfig } from '@refine-sqlx/sqlx';
+import { createMorphConfig } from '@refine-sqlx/orm';
 
 // Define polymorphic relationship
 const morphConfig = createMorphConfig({
@@ -294,7 +294,7 @@ const result = await dataProvider.create({
 ### Transactions
 
 ```typescript
-import { TransactionManager } from '@refine-sqlx/sqlx';
+import { TransactionManager } from '@refine-sqlx/orm';
 
 const transactionManager = new TransactionManager(dataProvider);
 
@@ -377,7 +377,7 @@ import {
   QueryError,
   ValidationError,
   TransactionError,
-} from '@refine-sqlx/sqlx';
+} from '@refine-sqlx/orm';
 
 try {
   const result = await dataProvider.getList({ resource: 'users' });
@@ -469,9 +469,9 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 ## 安装
 
 ```bash
-npm install @@refine-sqlx/sqlx/sqlx drizzle-orm
+npm install @refine-sqlx/orm drizzle-orm
 # 或
-bun add @@refine-sqlx/sqlx/sqlx drizzle-orm
+bun add @refine-sqlx/orm drizzle-orm
 ```
 
 ### 数据库驱动
@@ -521,7 +521,7 @@ export const schema = { users, posts };
 #### PostgreSQL
 
 ```typescript
-import { createPostgreSQLProvider } from '@refine-sqlx/sqlx';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 // 连接字符串
@@ -546,7 +546,7 @@ const dataProvider = await createPostgreSQLProvider(
 #### MySQL
 
 ```typescript
-import { createMySQLProvider } from '@refine-sqlx/sqlx';
+import { createMySQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createMySQLProvider(
@@ -558,7 +558,7 @@ const dataProvider = await createMySQLProvider(
 #### SQLite
 
 ```typescript
-import { createSQLiteProvider } from '@refine-sqlx/sqlx';
+import { createSQLiteProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 // 文件数据库
@@ -629,7 +629,7 @@ const result = await dataProvider
 ### 多态关系
 
 ```typescript
-import { createMorphConfig } from '@refine-sqlx/sqlx';
+import { createMorphConfig } from '@refine-sqlx/orm';
 
 // 定义多态关系
 const morphConfig = createMorphConfig({
@@ -649,7 +649,7 @@ const comments = await dataProvider
 ### 事务
 
 ```typescript
-import { TransactionManager } from '@refine-sqlx/sqlx';
+import { TransactionManager } from '@refine-sqlx/orm';
 
 const transactionManager = new TransactionManager(dataProvider);
 
@@ -732,7 +732,7 @@ import {
   QueryError,
   ValidationError,
   TransactionError,
-} from '@refine-sqlx/sqlx';
+} from '@refine-sqlx/orm';
 
 try {
   const result = await dataProvider.getList({ resource: 'users' });

@@ -264,7 +264,7 @@ Use this template for new examples:
  * - Required environment variables
  */
 
-import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 async function main() {

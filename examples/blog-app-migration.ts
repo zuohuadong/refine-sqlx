@@ -7,7 +7,7 @@
 
 // ===== Before Migration (@refine-sqlx/orm - Full Package) =====
 /*
-import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from '@@refine-sqlx/sqlx/orm';
+import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from '@refine-sqlx/orm';
 import { schema } from './schema';
 
 // @refine-sqlx/orm supports multiple databases

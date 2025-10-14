@@ -34,7 +34,7 @@ function createRefine<TSchema extends Record<string, Table>>(
 **Example:**
 
 ```typescript
-import { createPostgreSQLAdapter, createRefine } from '@refine-sqlx/sqlx';
+import { createPostgreSQLAdapter, createRefine } from '@refine-sqlx/orm';
 
 const adapter = createPostgreSQLAdapter(connectionString, schema);
 const dataProvider = createRefine(adapter, {
@@ -431,7 +431,7 @@ const result = await dataProvider.transaction(async tx => {
 For more complex transaction management:
 
 ```typescript
-import { TransactionManager } from '@refine-sqlx/sqlx';
+import { TransactionManager } from '@refine-sqlx/orm';
 
 const transactionManager = new TransactionManager(dataProvider);
 
@@ -585,7 +585,7 @@ import {
   QueryError,
   ValidationError,
   TransactionError,
-} from '@refine-sqlx/sqlx';
+} from '@refine-sqlx/orm';
 
 try {
   const result = await dataProvider.getList({ resource: 'users' });
@@ -623,7 +623,7 @@ async function testConnection(
 **Example:**
 
 ```typescript
-import { testConnection } from '@refine-sqlx/sqlx';
+import { testConnection } from '@refine-sqlx/orm';
 
 const isConnected = await testConnection(
   'postgresql://user:pass@localhost:5432/mydb',
@@ -649,7 +649,7 @@ function validateSchema<TSchema extends Record<string, Table>>(
 **Example:**
 
 ```typescript
-import { validateSchema } from '@refine-sqlx/sqlx';
+import { validateSchema } from '@refine-sqlx/orm';
 
 const validation = validateSchema(schema);
 
@@ -676,7 +676,7 @@ interface RuntimeInfo {
 **Example:**
 
 ```typescript
-import { getRuntimeInfo } from '@refine-sqlx/sqlx';
+import { getRuntimeInfo } from '@refine-sqlx/orm';
 
 const info = getRuntimeInfo();
 console.log('Runtime:', info.runtime);
@@ -717,7 +717,7 @@ interface MigrationHelper {
 }
 
 // Usage
-import { createMigrationHelper } from '@refine-sqlx/sqlx';
+import { createMigrationHelper } from '@refine-sqlx/orm';
 
 const migrationHelper = createMigrationHelper();
 const convertedFilters = migrationHelper.convertFilters(oldFilters);

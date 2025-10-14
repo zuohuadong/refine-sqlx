@@ -1,4 +1,4 @@
-# @@refine-sqlx/sqlx/core-utils
+# @refine-sqlx/core
 
 ## 0.3.2
 
@@ -12,5 +12,5 @@
 
 - Release version 0.3.1
   - Updated README documentation
-  - Removed @@refine-sqlx/sqlx/core-utils package description from README
+  - Removed @refine-sqlx/core package description from README
   - Minor documentation improvements and formatting fixes

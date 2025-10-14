@@ -14,7 +14,7 @@ The PostgreSQL adapter provides multi-runtime support for PostgreSQL databases, 
 
 ```bash
 # Install the core package
-npm install @@refine-sqlx/sqlx/sqlx drizzle-orm
+npm install @refine-sqlx/orm drizzle-orm
 
 # Install PostgreSQL driver (choose based on your runtime)
 npm install postgres          # For Node.js
@@ -25,7 +25,7 @@ npm install postgres          # For Node.js
 
 ```typescript
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { createPostgreSQLProvider, createRefine } from '@refine-sqlx/sqlx';
+import { createPostgreSQLProvider, createRefine } from '@refine-sqlx/orm';
 
 // Define your schema
 const users = pgTable('users', {
@@ -123,7 +123,7 @@ const adapter = createPostgreSQLProvider(connectionString, schema, {
 ### Force Bun SQL Driver
 
 ```typescript
-import { createPostgreSQLProviderWithBunSql } from '@refine-sqlx/sqlx';
+import { createPostgreSQLProviderWithBunSql } from '@refine-sqlx/orm';
 
 const adapter = createPostgreSQLProviderWithBunSql(
   connectionString,
@@ -135,7 +135,7 @@ const adapter = createPostgreSQLProviderWithBunSql(
 ### Force postgres-js Driver
 
 ```typescript
-import { createPostgreSQLProviderWithPostgresJs } from '@refine-sqlx/sqlx';
+import { createPostgreSQLProviderWithPostgresJs } from '@refine-sqlx/orm';
 
 const adapter = createPostgreSQLProviderWithPostgresJs(
   connectionString,

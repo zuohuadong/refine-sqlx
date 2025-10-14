@@ -16,11 +16,11 @@
 - 9308ad4: Initial monorepo setup with Bun workspace structure and Changeset version management
 - Release version 0.3.1
   - Updated README documentation
-  - Removed @@refine-sqlx/sqlx/core-utils package description from README
+  - Removed @refine-sqlx/core package description from README
   - Minor documentation improvements and formatting fixes
 
 - Updated dependencies
-  - @@refine-sqlx/sqlx/core-utils@0.3.1
+  - @refine-sqlx/core@0.3.1
 
 All notable changes to this project will be documented in this file.
 
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of @refine-sqlx/sqlx package
+- Initial release of @refine-sqlx/orm package
 - Multi-database support for PostgreSQL, MySQL, and SQLite using drizzle-orm
 - Runtime detection for optimal database drivers (Bun vs Node.js)
 - Type-safe CRUD operations with automatic schema inference
@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM/CJS dual module support
 - Comprehensive test suite with unit and integration tests
 - Performance monitoring and optimization features
-- Shared utilities with @@refine-sqlx/sqlx/core-utils for code reuse
+- Shared utilities with @refine-sqlx/core for code reuse
 
 ### Features
 
@@ -72,5 +72,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared transformation layer to reduce code duplication
 - Full test coverage with mock and integration tests
 
-[Unreleased]: https://github.com/zuohuadong/@refine-sqlx/sql/compare/@refine-sqlx/sqlx@0.0.1...HEAD
-[0.0.1]: https://github.com/zuohuadong/@refine-sqlx/sql/releases/tag/@refine-sqlx/sqlx@0.0.1
+[Unreleased]: https://github.com/zuohuadong/@refine-sqlx/sql/compare/@refine-sqlx/orm@0.0.1...HEAD
+[0.0.1]: https://github.com/zuohuadong/@refine-sqlx/sql/releases/tag/@refine-sqlx/orm@0.0.1

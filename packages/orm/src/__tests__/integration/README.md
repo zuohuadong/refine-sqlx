@@ -1,6 +1,6 @@
 # Integration Tests
 
-This directory contains comprehensive integration tests for the @refine-sqlx/sqlx package.
+This directory contains comprehensive integration tests for the @refine-sqlx/orm package.
 
 ## Test Structure
 
@@ -162,6 +162,6 @@ Current type issues have been identified and documented for future resolution.
 
 ## Conclusion
 
-The integration test suite provides a solid foundation for testing the @refine-sqlx/sqlx package. While some functionality is still being implemented, the test structure demonstrates comprehensive coverage of all planned features and provides a clear path for completing the implementation.
+The integration test suite provides a solid foundation for testing the @refine-sqlx/orm package. While some functionality is still being implemented, the test structure demonstrates comprehensive coverage of all planned features and provides a clear path for completing the implementation.
 
 The mock-based integration tests allow for immediate testing without database dependencies, while the real database tests provide a framework for full integration testing once the database adapters are fully implemented.

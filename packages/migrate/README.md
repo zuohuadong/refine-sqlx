@@ -1,25 +1,25 @@
-# @@refine-sqlx/sqlx/migrate
+# @@refine-sqlx/orm/migrate
 
-Migration tools for @refine-sqlx/sqlx packages.
+Migration tools for @refine-sqlx/orm packages.
 
 ## Overview
 
-This package provides tools to help you migrate between different versions of @refine-sqlx/sqlx packages, including:
+This package provides tools to help you migrate between different versions of @refine-sqlx/orm packages, including:
 
-- `@@refine-sqlx/sqlx/sql` - SQLite data provider
-- `@@refine-sqlx/sqlx/orm` - Multi-database ORM provider (using Drizzle ORM)
-- `@@refine-sqlx/sqlx/core` - Core utilities shared across packages
+- `@refine-sqlx/sql` - SQLite data provider
+- `@refine-sqlx/ormlti-database ORM provider (using Drizzle ORM)
+- `@@refine-sqlx/orm/core` - Core utilities shared across packages
 
 ## Installation
 
 ```bash
-npm install @@refine-sqlx/sqlx/migrate
+npm install @@refine-sqlx/orm/migrate
 # or
-yarn add @@refine-sqlx/sqlx/migrate
+yarn add @@refine-sqlx/orm/migrate
 # or
-pnpm add @@refine-sqlx/sqlx/migrate
+pnpm add @@refine-sqlx/orm/migrate
 # or
-bun add @@refine-sqlx/sqlx/migrate
+bun add @@refine-sqlx/orm/migrate
 ```
 
 ## Usage
@@ -27,49 +27,49 @@ bun add @@refine-sqlx/sqlx/migrate
 ### CLI
 
 ```bash
-npx @@refine-sqlx/sqlx/migrate
+npx @@refine-sqlx/orm/migrate
 ```
 
 ### Programmatic API
 
 ```typescript
-import { migrate } from '@@refine-sqlx/sqlx/migrate';
+import { migrate } from '@@refine-sqlx/orm/migrate';
 
 // Run migration
 await migrate({
   from: '@refine-sqlx/sql',
-  to: '@@refine-sqlx/sqlx/sql',
+  to: '@refine-sqlx/sql',
   path: './src'
 });
 ```
 
 ## Migration Guides
 
-### From @refine-sqlx/sql to @@refine-sqlx/sqlx/sql
+### From @refine-sqlx/sql to @refine-sqlx/sql
 
 Update your imports:
 
 ```diff
-- import { createDataProvider } from '@@refine-sqlx/sqlx/sql';
-+ import { createDataProvider } from '@@refine-sqlx/sqlx/sql';
+- import { createDataProvider } from '@refine-sqlx/sql';
++ import { createDataProvider } from '@refine-sqlx/sql';
 ```
 
-### From @refine-sqlx/sqlx (old) to @@refine-sqlx/sqlx/orm
+### From @refine-sqlx/orm (old) to @@refine-sqlx/orm
 
 Update your imports:
 
 ```diff
-- import { createDataProvider } from '@refine-sqlx/sqlx';
-+ import { createDataProvider } from '@@refine-sqlx/sqlx/orm';
+- import { createDataProvider } from '@refine-sqlx/orm';
++ import { createDataProvider } from '@refine-sqlx/orm';
 ```
 
-### From @refine-sqlx/core to @@refine-sqlx/sqlx/core
+### From @refine-sqlx/core to @@refine-sqlx/orm/core
 
 Update your imports:
 
 ```diff
-- import { utils } from '@@refine-sqlx/sqlx/core';
-+ import { utils } from '@@refine-sqlx/sqlx/core';
+- import { utils } from '@@refine-sqlx/orm/core';
++ import { utils } from '@@refine-sqlx/orm/core';
 ```
 
 ## Features

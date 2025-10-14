@@ -1,11 +1,11 @@
-# 从 @refine-sqlx/sqlx 迁移到 @refine-sqlx/sql
+# 从 @refine-sqlx/orm 迁移到 @refine-sqlx/sql
 
-@refine-sqlx/sql 是专为 SQLite 和 Cloudflare D1 环境优化的轻量级数据提供器，完全兼容 @refine-sqlx/sqlx 的 API，使迁移变得简单无痛。
+@refine-sqlx/sql 是专为 SQLite 和 Cloudflare D1 环境优化的轻量级数据提供器，完全兼容 @refine-sqlx/orm 的 API，使迁移变得简单无痛。
 
 ## 为什么选择 @refine-sqlx/sql？
 
-- **体积小巧**: 仅 23kB，比 @refine-sqlx/sqlx 小 85%
-- **完全兼容**: 支持 @refine-sqlx/sqlx 的所有核心 API
+- **体积小巧**: 仅 23kB，比 @refine-sqlx/orm 小 85%
+- **完全兼容**: 支持 @refine-sqlx/orm 的所有核心 API
 - **性能优化**: 专为 SQLite/D1 环境优化
 - **零成本迁移**: 大部分代码无需修改
 - **边缘计算友好**: 完美适配 Cloudflare Workers
@@ -15,24 +15,24 @@
 ### 1. 安装 @refine-sqlx/sql
 
 ```bash
-npm install @@refine-sqlx/sqlx/sql
-npm uninstall @refine-sqlx/sqlx drizzle-orm
+npm install @refine-sqlx/sql
+npm uninstall @refine-sqlx/orm drizzle-orm
 ```
 
 ### 2. 更新导入语句
 
 ```typescript
-// 之前 (@refine-sqlx/sqlx)
-import { createSQLiteProvider } from '@refine-sqlx/sqlx';
+// 之前 (@refine-sqlx/orm)
+import { createSQLiteProvider } from '@refine-sqlx/orm';
 
 // 现在 (@refine-sqlx/sql)
-import { createSQLiteProvider } from '@@refine-sqlx/sqlx/sql';
+import { createSQLiteProvider } from '@refine-sqlx/sql';
 ```
 
 ### 3. 更新 Schema 定义
 
 ```typescript
-// 之前 (@refine-sqlx/sqlx) - 需要 Drizzle
+// 之前 (@refine-sqlx/orm) - 需要 Drizzle
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 const users = sqliteTable('users', {
@@ -54,7 +54,7 @@ const schema: MySchema = { users: {} as MySchema['users'] };
 ### 4. 更新提供器创建
 
 ```typescript
-// 之前 (@refine-sqlx/sqlx)
+// 之前 (@refine-sqlx/orm)
 const dataProvider = createSQLiteProvider('./database.db', schema);
 
 // 现在 (@refine-sqlx/sql)
@@ -82,10 +82,10 @@ const users = await dataProvider
 
 ## 完整迁移示例
 
-### 迁移前 (@refine-sqlx/sqlx)
+### 迁移前 (@refine-sqlx/orm)
 
 ```typescript
-import { createSQLiteProvider } from '@refine-sqlx/sqlx';
+import { createSQLiteProvider } from '@refine-sqlx/orm';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 const users = sqliteTable('users', {
@@ -115,7 +115,7 @@ const activeUsers = await dataProvider
 ### 迁移后 (@refine-sqlx/sql)
 
 ```typescript
-import { createSQLiteProvider } from '@@refine-sqlx/sqlx/sql';
+import { createSQLiteProvider } from '@refine-sqlx/sql';
 
 interface MySchema {
   users: {
@@ -143,12 +143,12 @@ const activeUsers = await dataProvider
 
 ## 兼容性功能
 
-@refine-sqlx/sql 支持 @refine-sqlx/sqlx 的所有核心功能：
+@refine-sqlx/sql 支持 @refine-sqlx/orm 的所有核心功能：
 
 ### 标准 CRUD 操作
 
 ```typescript
-// 完全兼容 @refine-sqlx/sqlx API
+// 完全兼容 @refine-sqlx/orm API
 await dataProvider.getList({ resource: 'users' });
 await dataProvider.getOne({ resource: 'users', id: 1 });
 await dataProvider.create({ resource: 'users', variables: { name: 'John' } });
@@ -163,7 +163,7 @@ await dataProvider.deleteOne({ resource: 'users', id: 1 });
 ### 链式查询
 
 ```typescript
-// 所有 @refine-sqlx/sqlx 的链式查询方法都支持
+// 所有 @refine-sqlx/orm 的链式查询方法都支持
 const query = dataProvider
   .from('users')
   .where('status', 'eq', 'active')
@@ -239,7 +239,7 @@ const results = await dataProvider.raw('SELECT * FROM users WHERE status = ?', [
 @refine-sqlx/sql 特别适合 Cloudflare Workers 环境：
 
 ```typescript
-import { createSQLiteProvider } from '@@refine-sqlx/sqlx/sql';
+import { createSQLiteProvider } from '@refine-sqlx/sql';
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
@@ -263,7 +263,7 @@ export default {
 
 ## 性能对比
 
-| 特性       | @refine-sqlx/sqlx | @refine-sqlx/sql | 改进        |
+| 特性       | @refine-sqlx/orm | @refine-sqlx/sql | 改进        |
 | ---------- | ----------- | ---------- | ----------- |
 | 包大小     | ~150kB      | ~23kB      | 85% 更小    |
 | 冷启动时间 | ~200ms      | ~100ms     | 50% 更快    |
@@ -272,7 +272,7 @@ export default {
 
 ## 迁移检查清单
 
-- [ ] 安装 @refine-sqlx/sql，卸载 @refine-sqlx/sqlx 和 drizzle-orm
+- [ ] 安装 @refine-sqlx/sql，卸载 @refine-sqlx/orm 和 drizzle-orm
 - [ ] 更新导入语句
 - [ ] 将 Drizzle schema 转换为 TypeScript 接口
 - [ ] 更新提供器创建代码
@@ -289,7 +289,7 @@ export default {
 @refine-sqlx/sql 提供了自动化迁移工具：
 
 ```typescript
-import { MigrationHelpers, CodeTransformer } from '@@refine-sqlx/sqlx/sql';
+import { MigrationHelpers, CodeTransformer } from '@refine-sqlx/sql';
 
 // 检查兼容性
 const compatibility = MigrationHelpers.checkCompatibility(packageJson);
@@ -305,9 +305,9 @@ const checklist = MigrationHelpers.generateChecklist();
 
 ### Q: 是否支持 PostgreSQL 和 MySQL？
 
-A: @refine-sqlx/sql 专注于 SQLite 和 D1，不支持其他数据库。如需多数据库支持，请继续使用 @refine-sqlx/sqlx。
+A: @refine-sqlx/sql 专注于 SQLite 和 D1，不支持其他数据库。如需多数据库支持，请继续使用 @refine-sqlx/orm。
 
-### Q: 所有 @refine-sqlx/sqlx 功能都支持吗？
+### Q: 所有 @refine-sqlx/orm 功能都支持吗？
 
 A: 支持所有核心功能，包括 CRUD、链式查询、关系、批量操作、事务等。
 
@@ -317,13 +317,13 @@ A: 是的，特别是在 Cloudflare Workers 等边缘环境中，包大小减少
 
 ### Q: 可以逐步迁移吗？
 
-A: 可以，@refine-sqlx/sql 完全兼容 @refine-sqlx/sqlx API，可以直接替换而无需修改业务逻辑。
+A: 可以，@refine-sqlx/sql 完全兼容 @refine-sqlx/orm API，可以直接替换而无需修改业务逻辑。
 
 ## 获取帮助
 
 如果在迁移过程中遇到问题：
 
-1. 查看 [示例代码](./examples/@refine-sqlx/sqlx-migration.ts)
+1. 查看 [示例代码](./examples/@refine-sqlx/orm-migration.ts)
 2. 使用自动化迁移工具检查兼容性
 3. 参考 [API 文档](./README.md)
 4. 提交 Issue 获取支持

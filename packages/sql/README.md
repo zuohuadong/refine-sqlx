@@ -26,9 +26,9 @@ A lightweight, cross-platform SQL data provider for [Refine](https://refine.dev)
 ## Installation
 
 ```bash
-npm install @@refine-sqlx/sqlx/sql
+npm install @refine-sqlx/sql
 # or
-bun add @@refine-sqlx/sqlx/sql
+bun add @refine-sqlx/sql
 ```
 
 ### Advanced Features (On-demand)
@@ -37,7 +37,7 @@ Import advanced features only when needed:
 
 ```typescript
 // Import the main provider
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 
 // Optional: Polymorphic relations
 import { SqlxMorphQuery } from '@refine-sqlx/sql/morph-query';
@@ -62,7 +62,7 @@ npm install better-sqlite3
 ### Basic Usage
 
 ```typescript
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 // File database (Bun/Node.js)
 const dataProvider = createRefineSQL('./database.db');
@@ -78,7 +78,7 @@ const dataProvider = createRefineSQL(env.DB);
 
 ```typescript
 import { Refine } from '@refinedev/core';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const dataProvider = createRefineSQL('./database.db');
 
@@ -223,7 +223,7 @@ const dataProvider = createRefineSQL('./database.db', {
 ## Error Handling
 
 ```typescript
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 try {
   const dataProvider = createRefineSQL('./database.db');
@@ -263,7 +263,7 @@ const dataProvider = createRefineSQL('./database.db');
 ```typescript
 // server.ts
 import { Hono } from 'hono';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const app = new Hono();
 const dataProvider = createRefineSQL('./app.db');
@@ -280,7 +280,7 @@ export default app;
 
 ```typescript
 // worker.ts
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -300,7 +300,7 @@ export default {
 ```typescript
 // server.js
 import express from 'express';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const app = express();
 const dataProvider = createRefineSQL('./database.db');
@@ -327,7 +327,7 @@ The `@refine-sqlx/sql` package now includes enhanced ORM compatibility features 
 import createRefineSQL, {
   type EnhancedDataProvider,
   type TableSchema,
-} from '@@refine-sqlx/sqlx/sql';
+} from '@refine-sqlx/sql';
 
 // Define your schema for type safety
 interface MySchema extends TableSchema {
@@ -498,9 +498,9 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 ## 安装
 
 ```bash
-npm install @@refine-sqlx/sqlx/sql
+npm install @refine-sqlx/sql
 # 或
-bun add @@refine-sqlx/sqlx/sql
+bun add @refine-sqlx/sql
 ```
 
 ## 包大小优化
@@ -509,7 +509,7 @@ bun add @@refine-sqlx/sqlx/sql
 
 ```typescript
 // 导入主要提供器
-import { createProvider } from '@@refine-sqlx/sqlx/sql';
+import { createProvider } from '@refine-sqlx/sql';
 ```
 
 ### 可选依赖
@@ -528,7 +528,7 @@ npm install better-sqlite3
 ### 基础用法
 
 ```typescript
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 // 文件数据库 (Bun/Node.js)
 const dataProvider = createRefineSQL('./database.db');
@@ -544,7 +544,7 @@ const dataProvider = createRefineSQL(env.DB);
 
 ```typescript
 import { Refine } from '@refinedev/core';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const dataProvider = createRefineSQL('./database.db');
 
@@ -688,7 +688,7 @@ const dataProvider = createRefineSQL('./database.db', {
 ## 错误处理
 
 ```typescript
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 try {
   const dataProvider = createRefineSQL('./database.db');
@@ -728,7 +728,7 @@ const dataProvider = createRefineSQL('./database.db');
 ```typescript
 // server.ts
 import { Hono } from 'hono';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const app = new Hono();
 const dataProvider = createRefineSQL('./app.db');
@@ -745,7 +745,7 @@ export default app;
 
 ```typescript
 // worker.ts
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -765,7 +765,7 @@ export default {
 ```typescript
 // server.js
 import express from 'express';
-import { createRefineSQL } from '@@refine-sqlx/sqlx/sql';
+import { createRefineSQL } from '@refine-sqlx/sql';
 
 const app = express();
 const dataProvider = createRefineSQL('./database.db');
@@ -792,7 +792,7 @@ app.listen(3000);
 import createRefineSQL, {
   type EnhancedDataProvider,
   type TableSchema,
-} from '@@refine-sqlx/sqlx/sql';
+} from '@refine-sqlx/sql';
 
 // 为类型安全定义您的模式
 interface MySchema extends TableSchema {

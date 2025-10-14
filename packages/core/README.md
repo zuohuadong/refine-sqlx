@@ -6,7 +6,7 @@
 
 Shared utilities and transformers for Refine data providers.
 
-[![npm version](https://img.shields.io/npm/v/@@refine-sqlx/sqlx/core-utils.svg)](https://www.npmjs.com/package/@@refine-sqlx/sqlx/core-utils)
+[![npm version](https://img.shields.io/npm/v/@refine-sqlx/core.svg)](https://www.npmjs.com/package/@refine-sqlx/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -21,9 +21,9 @@ Shared utilities and transformers for Refine data providers.
 ## Installation
 
 ```bash
-npm install @@refine-sqlx/sqlx/core-utils
+npm install @refine-sqlx/core
 # or
-bun add @@refine-sqlx/sqlx/core-utils
+bun add @refine-sqlx/core
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ bun add @@refine-sqlx/sqlx/core-utils
 ### SQL Transformer
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -60,7 +60,7 @@ const paginationResult = transformer.transformPagination({
 ### Complete Query Building
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -84,7 +84,7 @@ console.log(query.args);
 ### SQL Transformation
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -154,7 +154,7 @@ const sorting = transformer.transformSorting([
 ### Custom Field Mapping
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -173,7 +173,7 @@ const result = transformer.transformFilters(
 ### Drizzle ORM Integration
 
 ```typescript
-import { createDrizzleTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { createDrizzleTransformer } from '@refine-sqlx/core';
 import { eq, and, or, like, gt } from 'drizzle-orm';
 
 // Create a Drizzle-specific transformer
@@ -208,7 +208,7 @@ import {
   validateFilters,
   validateFieldName,
   validateFilterValue,
-} from '@@refine-sqlx/sqlx/core-utils';
+} from '@refine-sqlx/core';
 
 // Validate entire filter structure
 const errors = validateFilters([
@@ -285,7 +285,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 Refine 数据提供器的共享工具和转换器。
 
-[![npm version](https://img.shields.io/npm/v/@@refine-sqlx/sqlx/core-utils.svg)](https://www.npmjs.com/package/@@refine-sqlx/sqlx/core-utils)
+[![npm version](https://img.shields.io/npm/v/@refine-sqlx/core.svg)](https://www.npmjs.com/package/@refine-sqlx/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -300,9 +300,9 @@ Refine 数据提供器的共享工具和转换器。
 ## 安装
 
 ```bash
-npm install @@refine-sqlx/sqlx/core-utils
+npm install @refine-sqlx/core
 # 或
-bun add @@refine-sqlx/sqlx/core-utils
+bun add @refine-sqlx/core
 ```
 
 ## 使用方法
@@ -310,7 +310,7 @@ bun add @@refine-sqlx/sqlx/core-utils
 ### SQL 转换器
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -339,7 +339,7 @@ const paginationResult = transformer.transformPagination({
 ### 完整查询构建
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -363,7 +363,7 @@ console.log(query.args);
 ### SQL 转换
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -433,7 +433,7 @@ const sorting = transformer.transformSorting([
 ### 自定义字段映射
 
 ```typescript
-import { SqlTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { SqlTransformer } from '@refine-sqlx/core';
 
 const transformer = new SqlTransformer();
 
@@ -452,7 +452,7 @@ const result = transformer.transformFilters(
 ### Drizzle ORM 集成
 
 ```typescript
-import { createDrizzleTransformer } from '@@refine-sqlx/sqlx/core-utils';
+import { createDrizzleTransformer } from '@refine-sqlx/core';
 import { eq, and, or, like, gt } from 'drizzle-orm';
 
 // 创建 Drizzle 特定的转换器
@@ -487,7 +487,7 @@ import {
   validateFilters,
   validateFieldName,
   validateFilterValue,
-} from '@@refine-sqlx/sqlx/core-utils';
+} from '@refine-sqlx/core';
 
 // 验证整个过滤器结构
 const errors = validateFilters([

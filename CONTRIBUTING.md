@@ -112,9 +112,9 @@ We recommend using VS Code with these extensions:
 
 ### Package Responsibilities
 
-- **@@refine-sqlx/sqlx/orm**: Multi-database support with Drizzle ORM
-- **@@refine-sqlx/sqlx/sql**: Lightweight SQLite-focused provider
-- **@@refine-sqlx/orm/core-utils**: Shared utilities and transformers
+- **@refine-sqlx/ormlti-database support with Drizzle ORM
+- **@refine-sqlx/sql**: Lightweight SQLite-focused provider
+- **@refine-sqlx/core**: Shared utilities and transformers
 
 ## Development Workflow
 
@@ -526,9 +526,9 @@ Thank you for contributing to making Refine database providers better for everyo
 
 ### 包职责
 
-- **@@refine-sqlx/sqlx/orm**: 使用 Drizzle ORM 的多数据库支持
-- **@@refine-sqlx/sqlx/sql**: 轻量级 SQLite 专用提供器
-- **@@refine-sqlx/orm/core-utils**: 共享工具和转换器
+- **@refine-sqlx/orm**: 使用 Drizzle ORM 的多数据库支持
+- **@refine-sqlx/sql**: 轻量级 SQLite 专用提供器
+- **@refine-sqlx/core**: 共享工具和转换器
 
 ## 开发工作流
 

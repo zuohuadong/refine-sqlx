@@ -16,11 +16,11 @@
 - 9308ad4: Initial monorepo setup with Bun workspace structure and Changeset version management
 - Release version 0.3.1
   - Updated README documentation
-  - Removed @@refine-sqlx/sqlx/core-utils package description from README
+  - Removed @refine-sqlx/core package description from README
   - Minor documentation improvements and formatting fixes
 
 - Updated dependencies
-  - @@refine-sqlx/sqlx/core-utils@0.3.1
+  - @refine-sqlx/core@0.3.1
 
 All notable changes to this project will be documented in this file.
 
@@ -39,8 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chain query builder for fluent SQL operations
 - Polymorphic relationship support (morph queries)
 - Type-safe methods with schema validation
-- ORM compatibility features for gradual migration to @refine-sqlx/sqlx
-- Shared utilities with @@refine-sqlx/sqlx/core-utils for consistency
+- ORM compatibility features for gradual migration to @refine-sqlx/orm
+- Shared utilities with @refine-sqlx/core for consistency
 - Support for multiple SQLite runtimes:
   - Bun with bun:sqlite (native)
   - Node.js with better-sqlite3
@@ -69,13 +69,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Built on native SQL with runtime-specific optimizations
 - Automatic driver detection and fallback mechanisms
-- Shared transformation layer with @refine-sqlx/sqlx for consistency
+- Shared transformation layer with @refine-sqlx/orm for consistency
 - Modular exports for tree-shaking and optimal bundle size
 - Comprehensive test coverage across all supported runtimes
 
 ### Migration Path
 
-- Provides compatibility layer for migration to @refine-sqlx/sqlx
+- Provides compatibility layer for migration to @refine-sqlx/orm
 - Shared utilities ensure consistent behavior between packages
 - Gradual migration support with feature parity
 

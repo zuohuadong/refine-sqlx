@@ -32,7 +32,7 @@ The `@refine-sqlx/sql` package now includes enhanced ORM compatibility features 
 ### 1. Define Your Schema
 
 ```typescript
-import { type TableSchema } from '@@refine-sqlx/sqlx/sql';
+import { type TableSchema } from '@refine-sqlx/sql';
 
 interface MySchema extends TableSchema {
   users: {
@@ -57,7 +57,7 @@ interface MySchema extends TableSchema {
 ### 2. Create Enhanced Data Provider
 
 ```typescript
-import createRefineSQL, { type EnhancedDataProvider } from '@@refine-sqlx/sqlx/sql';
+import createRefineSQL, { type EnhancedDataProvider } from '@refine-sqlx/sql';
 
 const dataProvider: EnhancedDataProvider<MySchema> =
   createRefineSQL<MySchema>('database.db');
@@ -404,7 +404,7 @@ See the complete example in `examples/orm-compatibility.ts` for a comprehensive 
 ### 1. 定义您的模式
 
 ```typescript
-import { type TableSchema } from '@@refine-sqlx/sqlx/sql';
+import { type TableSchema } from '@refine-sqlx/sql';
 
 interface MySchema extends TableSchema {
   users: {
@@ -429,7 +429,7 @@ interface MySchema extends TableSchema {
 ### 2. 创建增强数据提供器
 
 ```typescript
-import createRefineSQL, { type EnhancedDataProvider } from '@@refine-sqlx/sqlx/sql';
+import createRefineSQL, { type EnhancedDataProvider } from '@refine-sqlx/sql';
 
 const dataProvider: EnhancedDataProvider<MySchema> =
   createRefineSQL<MySchema>('database.db');
