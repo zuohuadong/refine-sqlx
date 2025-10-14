@@ -1,7 +1,6 @@
 // 测试 refine-orm 的 Bun 和 Node.js 支持
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { ormDataProvider } from '../src/provider';
-import type { OrmConfig } from '../src/types';
+import { ormDataProvider } from '../provider';
+import type { OrmConfig } from '../types';
 
 describe('refine-orm Multi-Runtime Support', () => {
   let provider: ReturnType<typeof ormDataProvider>;
@@ -105,7 +104,7 @@ describe('refine-orm Multi-Runtime Support', () => {
   });
 
   test('should detect runtime correctly', async () => {
-    const { detectRuntime } = await import('../src/runtime-adapter');
+    const { detectRuntime } = await import('../runtime-adapter');
     const runtime = detectRuntime();
     
     // 检查实际的运行时环境

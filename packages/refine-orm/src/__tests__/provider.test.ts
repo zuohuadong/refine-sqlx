@@ -1,5 +1,4 @@
-import { test, expect } from 'vitest';
-import { ormDataProvider } from '../src/index';
+import { ormDataProvider } from '../index';
 
 // Mock database connection
 const createMockConnection = () => ({
@@ -23,7 +22,8 @@ const createMockConnection = () => ({
   }
 });
 
-test('ORM数据提供者 - 基本功能验证', () => {
+describe('ORM Data Provider', () => {
+  test('基本功能验证', () => {
   const mockConnection = createMockConnection();
   const provider = ormDataProvider({
     database: 'postgresql',
@@ -38,9 +38,9 @@ test('ORM数据提供者 - 基本功能验证', () => {
   expect(typeof provider.deleteOne).toBe('function');
   expect(typeof provider.queryWithOrm).toBe('function');
   expect(typeof provider.transaction).toBe('function');
-});
+  });
 
-test('ORM数据提供者 - getList 操作', async () => {
+  test('getList 操作', async () => {
   const mockConnection = createMockConnection();
   const provider = ormDataProvider({
     database: 'postgresql',
@@ -55,9 +55,9 @@ test('ORM数据提供者 - getList 操作', async () => {
   expect(result).toHaveProperty('data');
   expect(result).toHaveProperty('total');
   expect(Array.isArray(result.data)).toBe(true);
-});
+  });
 
-test('ORM数据提供者 - create 操作', async () => {
+  test('create 操作', async () => {
   const mockConnection = createMockConnection();
   const provider = ormDataProvider({
     database: 'postgresql',
@@ -68,6 +68,7 @@ test('ORM数据提供者 - create 操作', async () => {
     resource: 'posts',
     variables: { title: 'New Post', content: 'Post content' }
   });
-  
+
   expect(result).toHaveProperty('data');
+  });
 });

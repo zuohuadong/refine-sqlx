@@ -10,7 +10,7 @@ export default defineConfig({
     format: ["esm"],
     dts: true,
     treeshake: { preset: "smallest" },
-    external: ["@refinedev/core", "drizzle-orm", "refine-sql"],
+    external: ["@refinedev/core", "drizzle-orm"],
     bundle: true,
     minify: true,
     esbuildOptions(options) {

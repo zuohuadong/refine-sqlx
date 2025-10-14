@@ -1,5 +1,4 @@
-import { test, expect, describe } from 'vitest';
-import { ormDataProvider } from '../src/index';
+import { ormDataProvider } from '../index';
 
 // Mock database connection
 const createMockConnection = () => ({

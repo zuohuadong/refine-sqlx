@@ -1,6 +1,6 @@
 {
   "name": "refine-orm",
-  "description": "ORM extension for refine-sql using Drizzle ORM - Supports PostgreSQL, MySQL, and other SQL databases with type-safe queries",
+  "description": "Type-safe ORM data provider for Refine - Supports PostgreSQL, MySQL, SQLite with Drizzle ORM and native runtimes",
   "version": "0.2.1",
   "license": "MIT",
   "main": "dist/index.mjs",
@@ -34,30 +34,30 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zuohuadong/refine-sql.git",
+    "url": "git+https://github.com/zuohuadong/refine-sqlxx.git",
     "directory": "packages/refine-orm"
   },
   "bugs": {
-    "url": "https://github.com/zuohuadong/refine-sql/issues"
+    "url": "https://github.com/zuohuadong/refine-sqlx/issues"
   },
-  "homepage": "https://github.com/zuohuadong/refine-sql/tree/main/packages/refine-orm#readme",
+  "homepage": "https://github.com/zuohuadong/refine-sqlx/tree/main/packages/refine-orm#readme",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "tsup --minify",
-    "test": "node --experimental-sqlite ../../node_modules/vitest/vitest.mjs",
-    "test:bun": "bun x vitest run --config=./vitest.config.bun.ts",
-    "test:run": "node --experimental-sqlite ../../node_modules/vitest/vitest.mjs run",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:bun": "bun test",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run test:run && npm run build"
-  },
-  "dependencies": {
-    "refine-sql": "^0.2.0"
+    "prepublishOnly": "npm run test && npm run build",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "peerDependencies": {
-    "@refinedev/core": "^4.0.0",
-    "drizzle-orm": "^0.30.0"
+    "@refinedev/core": "^5.0.4",
+    "drizzle-orm": "^0.44.4"
   },
   "peerDependenciesMeta": {
     "@refinedev/core": {
@@ -65,7 +65,10 @@
     }
   },
   "devDependencies": {
-    "@refinedev/core": "^4.57.9",
-    "drizzle-orm": "^0.30.10"
+    "@refinedev/core": "^5.0.4",
+    "@types/jest": "^30.0.0",
+    "drizzle-orm": "^0.44.4",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5"
   }
 }

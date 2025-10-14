@@ -5,8 +5,7 @@
     "rootDir": "./src"
   },
   "include": [
-    "src/**/*",
-    "test/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "dist",

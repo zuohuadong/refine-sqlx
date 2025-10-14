@@ -1,26 +1,25 @@
 # @refinedev/refine-orm
 
-一个基于 `refine-sql` 的 ORM 增强插件，为 Refine 框架提供类型安全的 ORM 支持和高级数据库功能。
+一个为 Refine 框架提供类型安全的独立 ORM 数据提供者，支持多种 SQL 数据库和现代运行时。
 
 ## 🚀 特性
 
-- **🔄 完全兼容 refine-sql**：复用所有基础 CRUD 操作
 - **🛡️ 类型安全**：完整的 TypeScript 类型支持
 - **🗃️ 多数据库支持**：PostgreSQL、MySQL、SQLite、Turso
 - **🚀 多运行时支持**：Bun SQLite、Node.js SQLite、Drizzle ORM
 - **⚡ 事务支持**：原生事务处理
 - **🔧 ORM 集成**：支持 Drizzle ORM 等现代 ORM
 - **📝 增强查询**：类型安全的查询构建器
-- **🎯 零依赖**：除了 refine-sql 和 @refinedev/core
+- **🎯 零额外依赖**：仅需 @refinedev/core
 
 ## 📦 安装
 
 ### 基础安装
 
 ```bash
-npm install refine-sql refine-orm
+npm install refine-orm
 # 或
-pnpm add refine-sql refine-orm
+pnpm add refine-orm
 ```
 
 ### 根据数据库类型安装驱动
@@ -161,7 +160,7 @@ const complexResult = await dataProvider.customOrm({
 
 ## 🎯 架构设计
 
-refine-orm 采用**完全兼容实现**的架构：
+refine-orm 是一个独立实现的数据提供者：
 
 ```
 ┌─────────────────────────────────┐
@@ -175,21 +174,22 @@ refine-orm 采用**完全兼容实现**的架构：
 │  └─────────────────────────────┘ │
 │               ↓                 │
 │  ┌─────────────────────────────┐ │
-│  │   兼容的基础 CRUD 实现       │ │
-│  │  • 与 refine-sql 完全兼容   │ │
+│  │   完整的 CRUD 实现          │ │
+│  │  • getList / getOne        │ │
+│  │  • create / update         │ │
+│  │  • delete / custom         │ │
 │  │  • 支持所有数据库类型       │ │
-│  │  • 统一的行为表现          │ │
 │  └─────────────────────────────┘ │
 └─────────────────────────────────┘
 ```
 
 ### 优势
 
-1. **一致性**：所有数据库都使用相同的实现逻辑，确保行为一致
-2. **控制性**：完全掌控所有 CRUD 操作的实现细节
-3. **扩展性**：可以轻松添加特定于不同数据库的优化
-4. **独立性**：不依赖于 refine-sql 的内部实现细节
-5. **兼容性**：与 refine-sql 的 API 完全兼容
+1. **独立性**：无需额外依赖，完全掌控实现
+2. **灵活性**：支持多种数据库和运行时环境
+3. **扩展性**：可以轻松添加特定数据库优化
+4. **兼容性**：完全符合 Refine 数据提供者规范
+5. **类型安全**：全面的 TypeScript 类型支持
 
 ## 🔧 配置选项
 
@@ -206,7 +206,7 @@ interface OrmConfig {
 
 ### 基础操作
 
-继承自 `refine-sql` 的所有方法：
+完整实现了 Refine 数据提供者的所有方法：
 - `getList(params)` - 获取列表数据
 - `getOne(params)` - 获取单个记录
 - `create(params)` - 创建记录

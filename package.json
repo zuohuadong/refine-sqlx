@@ -2,5 +2,15 @@
   "name": "@zuohuadong/refine-workspace",
   "private": true,
   "packageManager": "bun@1.2.18",
-  "workspaces": ["packages/*"]
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "bun run --filter '*' test",
+    "build": "bun run --filter '*' build",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "bun run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7"
+  }
 }
