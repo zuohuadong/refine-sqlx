@@ -1,6 +1,6 @@
 import type { CrudFilters, CrudSorting, BaseRecord } from '@refinedev/core';
 import type { SqlClient, SqlQuery } from './client';
-import { SqlTransformer } from 'refine-core';
+import { SqlTransformer } from '@refine-sqlx/core';
 import { deserializeSqlResult } from './utils';
 
 // Helper functions for method validation and logging

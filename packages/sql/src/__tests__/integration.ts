@@ -1,6 +1,6 @@
 import { expect, beforeEach, afterEach, describe, it } from 'vitest';
-import createRefineSQL from '../src/data-provider';
-import type { SqlClient } from '../src/client';
+import createRefineSQL from '../src/data-provider.js';
+import type { SqlClient } from '../src/client.js';
 
 /**
  * Generic integration test suite that can be used with any SQL client
@@ -151,7 +151,7 @@ export function createIntegrationTestSuite(
           return; // Skip if transaction is not supported
         }
 
-        const result = await client.transaction!(async tx => {
+        const result = await client.transaction!(async (tx: SqlClient) => {
           const user1 = await tx.execute({
             sql: 'INSERT INTO users (name, email, age) VALUES (?, ?, ?)',
             args: ['Transaction User 1', 'tx1@example.com', 28],
@@ -183,7 +183,7 @@ export function createIntegrationTestSuite(
         }
 
         await expect(
-          client.transaction!(async tx => {
+          client.transaction!(async (tx: SqlClient) => {
             await tx.execute({
               sql: 'INSERT INTO users (name, email, age) VALUES (?, ?, ?)',
               args: ['Valid User', 'valid@example.com', 25],
@@ -261,7 +261,7 @@ export function createIntegrationTestSuite(
         // Test pagination
         const listResult = await dataProvider.getList({
           resource: 'users',
-          pagination: { current: 2, pageSize: 5 },
+          pagination: { currentPage: 2, pageSize: 5 },
           sorters: [{ field: 'id', order: 'asc' }],
         });
 

@@ -27,7 +27,7 @@ import type {
   InferRecord,
   SchemaValidator,
   PerformanceStats,
-} from 'refine-core';
+} from '@refine-sqlx/core';
 
 import type { DrizzleClient } from './client';
 import type { RefineOrmOptions } from './config';

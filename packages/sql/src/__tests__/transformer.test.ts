@@ -9,7 +9,7 @@ import {
   jest,
   test,
 } from './test-utils.js';
-import { SqlTransformer } from 'refine-core';
+import { SqlTransformer } from '@refine-sqlx/core';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 describe('SqlTransformer.sortingToSql', () => {

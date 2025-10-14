@@ -9,7 +9,7 @@ import {
   jest,
   test,
 } from './test-utils.js';
-import detectSqlite from '../src/detect-sqlite.js';
+import detectSqlite from '../src/detect-sqlite';
 
 describe('Runtime Detection', () => {
   // These tests are environment-dependent and challenging to mock reliably
