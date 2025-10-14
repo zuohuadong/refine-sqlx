@@ -28,7 +28,7 @@
     "test:integration-postgresql": "cd packages/refine-sqlx && node --experimental-vm-modules ../../node_modules/jest/bin/jest.js src/__tests__/integration",
     "typecheck": "bun run --filter='*' typecheck",
     "typecheck:strict": "tsc --project tsconfig.strict.json",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
