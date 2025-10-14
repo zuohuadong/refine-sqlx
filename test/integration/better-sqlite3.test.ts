@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from '@jest/globals';
 import { createBetterSQLite3Adapter } from '../../src/adapters';
 import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';

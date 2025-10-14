@@ -1,5 +1,5 @@
 import { createCrudFilters, createCrudSorting } from '../src/utils';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 describe('createCrudSorting', () => {

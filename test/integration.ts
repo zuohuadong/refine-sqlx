@@ -1,4 +1,4 @@
-import { expect, beforeEach, afterEach, describe, it } from 'vitest';
+import { expect, beforeEach, afterEach, describe, it } from '@jest/globals';
 import createRefineSQL from '../src/data-provider';
 import type { SqlClient } from '../src/client';
 

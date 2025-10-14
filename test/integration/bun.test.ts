@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe } from '@jest/globals';
 import { Database } from 'bun:sqlite';
 import { createBunSQLiteAdapter } from '../../src/adapters';
 import { createIntegrationTestSuite } from '../integration';

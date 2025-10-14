@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import {
   createCloudflareD1Adapter,
   createBunSQLiteAdapter,
@@ -8,23 +8,23 @@ import {
 import type { SqlQuery } from '../src/client';
 
 // Mock implementations
-const mockD1 = { prepare: vi.fn(), batch: vi.fn() };
+const mockD1 = { prepare: jest.fn(), batch: jest.fn() };
 
-const mockBunDB = { prepare: vi.fn() };
+const mockBunDB = { prepare: jest.fn() };
 
-const mockNodeDB = { prepare: vi.fn() };
+const mockNodeDB = { prepare: jest.fn() };
 
-const mockBetterSQLite3DB = { prepare: vi.fn() };
+const mockBetterSQLite3DB = { prepare: jest.fn() };
 
 describe('Cloudflare D1 Adapter', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      bind: vi.fn().mockReturnThis(),
-      raw: vi.fn().mockResolvedValue([
+      bind: jest.fn().mockReturnThis(),
+      raw: jest.fn().mockResolvedValue([
         ['id', 'name'], // column names
         [1, 'John'], // first row
         [2, 'Jane'], // second row
@@ -51,7 +51,7 @@ describe('Cloudflare D1 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: vi.fn().mockReturnThis(),
+      bind: jest.fn().mockReturnThis(),
       run: vi
         .fn()
         .mockResolvedValue({ meta: { changes: 1, last_row_id: 123 } }),
@@ -72,7 +72,7 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch operations', async () => {
-    const mockStmt = { bind: vi.fn().mockReturnThis() };
+    const mockStmt = { bind: jest.fn().mockReturnThis() };
     mockD1.prepare.mockReturnValue(mockStmt);
     mockD1.batch.mockResolvedValue([
       { success: true, meta: { changes: 1, last_row_id: 1 } },
@@ -100,7 +100,7 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch failures', async () => {
-    const mockStmt = { bind: vi.fn().mockReturnThis() };
+    const mockStmt = { bind: jest.fn().mockReturnThis() };
     mockD1.prepare.mockReturnValue(mockStmt);
     mockD1.batch.mockResolvedValue([{ success: false, error: 'Syntax error' }]);
 
@@ -115,12 +115,12 @@ describe('Cloudflare D1 Adapter', () => {
 
 describe('Bun SQLite Adapter', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      values: vi.fn().mockReturnValue([
+      values: jest.fn().mockReturnValue([
         [1, 'John'],
         [2, 'Jane'],
       ]),
@@ -144,7 +144,7 @@ describe('Bun SQLite Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      run: vi.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
     };
     mockBunDB.prepare.mockReturnValue(mockStmt);
 
@@ -214,16 +214,16 @@ describe('Bun SQLite Adapter', () => {
 
 describe('Node SQLite Adapter', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      all: vi.fn().mockReturnValue([
+      all: jest.fn().mockReturnValue([
         { id: 1, name: 'John' },
         { id: 2, name: 'Jane' },
       ]),
-      columns: vi.fn().mockReturnValue([{ column: 'id' }, { column: 'name' }]),
+      columns: jest.fn().mockReturnValue([{ column: 'id' }, { column: 'name' }]),
     };
     mockNodeDB.prepare.mockReturnValue(mockStmt);
 
@@ -243,7 +243,7 @@ describe('Node SQLite Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      run: vi.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
     };
     mockNodeDB.prepare.mockReturnValue(mockStmt);
 
@@ -286,20 +286,20 @@ describe('Node SQLite Adapter', () => {
 
 describe('better-sqlite3 Adapter', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockRawStmt = {
-      all: vi.fn().mockReturnValue([
+      all: jest.fn().mockReturnValue([
         [1, 'John'],
         [2, 'Jane'],
       ]),
     };
     const mockStmt = {
-      bind: vi.fn().mockReturnThis(),
-      columns: vi.fn().mockReturnValue([{ name: 'id' }, { name: 'name' }]),
-      raw: vi.fn().mockReturnValue(mockRawStmt),
+      bind: jest.fn().mockReturnThis(),
+      columns: jest.fn().mockReturnValue([{ name: 'id' }, { name: 'name' }]),
+      raw: jest.fn().mockReturnValue(mockRawStmt),
     };
     mockBetterSQLite3DB.prepare.mockReturnValue(mockStmt);
 
@@ -320,8 +320,8 @@ describe('better-sqlite3 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: vi.fn().mockReturnThis(),
-      run: vi.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      bind: jest.fn().mockReturnThis(),
+      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
     };
     mockBetterSQLite3DB.prepare.mockReturnValue(mockStmt);
 
@@ -339,7 +339,7 @@ describe('better-sqlite3 Adapter', () => {
 
   it('should handle transactions', async () => {
     const mockStmt = {
-      bind: vi.fn().mockReturnThis(),
+      bind: jest.fn().mockReturnThis(),
       run: vi
         .fn()
         .mockReturnValueOnce({ changes: 0 }) // BEGIN
