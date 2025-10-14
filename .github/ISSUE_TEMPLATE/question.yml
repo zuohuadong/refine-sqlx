@@ -15,8 +15,8 @@ body:
       label: Package
       description: Which package is your question about?
       options:
-        - refine-sqlx
-        - refine-d1
+        - refine-orm
+        - refine-sql
         - Both
         - General usage
     validations:
@@ -75,7 +75,7 @@ body:
       render: typescript
       placeholder: |
         // Share your current code here
-        import { createPostgreSQLProvider } from 'refine-sqlx';
+        import { createPostgreSQLProvider } from 'refine-orm';
 
         const dataProvider = createPostgreSQLProvider(
           process.env.DATABASE_URL!,
@@ -123,7 +123,7 @@ body:
       description: Please provide relevant environment details
       render: text
       placeholder: |
-        - Package version: [e.g., refine-sqlx@1.0.0]
+        - Package version: [e.g., refine-orm@1.0.0]
         - Database: [e.g., PostgreSQL 15.3]
         - Runtime: [e.g., Node.js 18.17.0, Bun 1.0.0]
         - OS: [e.g., macOS 14.0]

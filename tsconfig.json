@@ -48,9 +48,9 @@
     "preserveConstEnums": true
   },
   "references": [
-    { "path": "./packages/refine-core-utils" },
-    { "path": "./packages/refine-sqlx" },
-    { "path": "./packages/refine-d1" }
+    { "path": "./packages/refine-core" },
+    { "path": "./packages/refine-orm" },
+    { "path": "./packages/refine-sql" }
   ],
   "exclude": ["node_modules", "**/dist/**"]
 }

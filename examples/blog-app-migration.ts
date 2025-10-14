@@ -1,24 +1,24 @@
 /**
- * Migration Example: From refine-sqlx to refine-d1
+ * Migration Example: From @refine-sqlx/orm to @refine-sqlx/sql
  * 
- * refine-d1 is a streamlined version of refine-sqlx designed for SQLite/D1 environments
- * Fully compatible with refine-sqlx API, enabling zero-cost migration
+ * @refine-sqlx/sql is a streamlined version of @refine-sqlx/orm designed for SQLite/D1 environments
+ * Fully compatible with @refine-sqlx/orm API, enabling zero-cost migration
  */
 
-// ===== Before Migration (refine-sqlx - Full Package) =====
+// ===== Before Migration (@refine-sqlx/orm - Full Package) =====
 /*
-import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider, createMySQLProvider, createSQLiteProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
-// refine-sqlx supports multiple databases
+// @refine-sqlx/orm supports multiple databases
 const postgresProvider = await createPostgreSQLProvider('postgresql://...', schema);
 const mysqlProvider = await createMySQLProvider('mysql://...', schema);
 const sqliteProvider = await createSQLiteProvider('./app.db', schema);
 */
 
-// ===== After Migration (refine-d1 - SQLite/D1 Specialized Lightweight Package) =====
+// ===== After Migration (@refine-sqlx/sql - SQLite/D1 Specialized Lightweight Package) =====
 
-import { createProvider } from '../packages/refine-d1/src/index.js';
+import { createProvider } from '../packages/@refine-sqlx/sql/src/index.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Define TypeScript types for better development experience
@@ -50,12 +50,12 @@ type UserRecord = BlogSchema['users'];
 type PostRecord = BlogSchema['posts'];
 
 async function main() {
-  console.log('🚀 Blog App Migration Example - refine-sqlx to refine-d1');
+  console.log('🚀 Blog App Migration Example - @refine-sqlx/orm to @refine-sqlx/sql');
 
-  // Create data provider - compatible with refine-sqlx API
+  // Create data provider - compatible with @refine-sqlx/orm API
   const dataProvider = createProvider('./blog_migration.db');
 
-  console.log('✅ Data provider created successfully (refine-sqlx compatible API)');
+  console.log('✅ Data provider created successfully (@refine-sqlx/orm compatible API)');
 
   // Set up database tables
   await setupDatabase(dataProvider);
@@ -129,7 +129,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
   const post = await dataProvider.create({
     resource: 'posts',
     variables: {
-      title: 'Migrating from refine-sqlx to refine-d1',
+      title: 'Migrating from @refine-sqlx/orm to @refine-sqlx/sql',
       content: 'This article explains how to smoothly migrate...',
       author_id: user.data.id,
       created_at: new Date().toISOString()
@@ -174,7 +174,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
     resource: 'posts',
     id: post.data.id,
     variables: {
-      title: 'Migrating from refine-sqlx to refine-d1 (Updated)',
+      title: 'Migrating from @refine-sqlx/orm to @refine-sqlx/sql (Updated)',
       content: 'This article explains how to smoothly migrate, including detailed steps...'
     }
   });
@@ -184,10 +184,10 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
 async function demonstrateCompatibleChainQueries(dataProvider: any) {
   console.log('\n⛓️ Demonstrating compatible chain queries...');
 
-  // Using refine-sqlx compatible chain query API
+  // Using @refine-sqlx/orm compatible chain query API
   console.log('\n🔗 Using compatible chain query methods...');
 
-  // Method 1: Using compatible convenience methods (same as refine-sqlx)
+  // Method 1: Using compatible convenience methods (same as @refine-sqlx/orm)
   const recentPosts = await dataProvider
     .from('posts')
     .where('author_id', 'nnull', null)  // New generic method
@@ -282,7 +282,7 @@ async function demonstrateCompatibleRelationships(dataProvider: any) {
     console.log(`    Comments: ${post.comment_count || 0}`);
   });
 
-  // Method 3: Using polymorphic relationships (compatible with refine-sqlx)
+  // Method 3: Using polymorphic relationships (compatible with @refine-sqlx/orm)
   console.log('\n🔄 Polymorphic relationship queries...');
 
   // Create attachments table for polymorphic relationships

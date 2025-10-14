@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "refine-d1-monorepo",
+      "name": "refine-sql-monorepo",
       "devDependencies": {
         "@changesets/changelog-github": "0.5.1",
         "@changesets/cli": "2.29.7",
@@ -29,8 +29,8 @@
         "typescript-eslint": "8.46.0",
       },
     },
-    "packages/refine-core-utils": {
-      "name": "refine-core-utils",
+    "packages/core": {
+      "name": "@refine-sqlx/core",
       "version": "0.3.2",
       "devDependencies": {
         "@refinedev/core": "5.0.4",
@@ -41,40 +41,20 @@
         "@refinedev/core": "^4.0.0",
       },
     },
-    "packages/refine-d1": {
-      "name": "refine-d1",
-      "version": "0.3.2",
-      "dependencies": {
-        "refine-core-utils": "workspace:*",
-      },
+    "packages/migrate": {
+      "name": "@refine-sqlx/migrate",
+      "version": "0.1.0",
       "devDependencies": {
-        "@cloudflare/workers-types": "4.20251011.0",
-        "@ianvs/prettier-plugin-sort-imports": "4.7.0",
-        "@prettier/plugin-oxc": "0.0.4",
-        "@types/better-sqlite3": "7.6.13",
-        "@types/bun": "1.3.0",
-        "@types/jest": "^30.0.0",
-        "@types/node": "^24.6.0",
-        "better-sqlite3": "^12.4.1",
-        "jest": "^30.2.0",
-        "prettier": "3.6.2",
-        "ts-jest": "^29.2.5",
         "typescript": "^5.9.3",
         "unbuild": "3.6.1",
       },
-      "optionalDependencies": {
-        "better-sqlite3": "12.4.1",
-      },
-      "peerDependencies": {
-        "@refinedev/core": "^4.57.11",
-      },
     },
-    "packages/refine-sqlx": {
-      "name": "refine-sqlx",
+    "packages/orm": {
+      "name": "@refine-sqlx/orm",
       "version": "0.3.2",
       "dependencies": {
+        "@refine-sqlx/core": "workspace:*",
         "drizzle-orm": "^0.44.4",
-        "refine-core-utils": "workspace:*",
       },
       "devDependencies": {
         "@types/better-sqlite3": "7.6.13",
@@ -97,6 +77,34 @@
       },
       "peerDependencies": {
         "@refinedev/core": "4.57.11",
+      },
+    },
+    "packages/sql": {
+      "name": "@refine-sqlx/sql",
+      "version": "0.3.3",
+      "dependencies": {
+        "@refine-sqlx/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "4.20251011.0",
+        "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+        "@prettier/plugin-oxc": "0.0.4",
+        "@types/better-sqlite3": "7.6.13",
+        "@types/bun": "1.3.0",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.6.0",
+        "better-sqlite3": "^12.4.1",
+        "jest": "^30.2.0",
+        "prettier": "3.6.2",
+        "ts-jest": "^29.2.5",
+        "typescript": "^5.9.3",
+        "unbuild": "3.6.1",
+      },
+      "optionalDependencies": {
+        "better-sqlite3": "12.4.1",
+      },
+      "peerDependencies": {
+        "@refinedev/core": "^4.57.11",
       },
     },
   },
@@ -402,6 +410,14 @@
     "@pkgr/core": ["@pkgr/core@0.2.9", "", {}, "sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA=="],
 
     "@prettier/plugin-oxc": ["@prettier/plugin-oxc@0.0.4", "", { "dependencies": { "oxc-parser": "0.74.0" } }, "sha512-UGXe+g/rSRbglL0FOJiar+a+nUrst7KaFmsg05wYbKiInGWP6eAj/f8A2Uobgo5KxEtb2X10zeflNH6RK2xeIQ=="],
+
+    "@refine-sqlx/core": ["@refine-sqlx/core@workspace:packages/core"],
+
+    "@refine-sqlx/migrate": ["@refine-sqlx/migrate@workspace:packages/migrate"],
+
+    "@refine-sqlx/orm": ["@refine-sqlx/orm@workspace:packages/orm"],
+
+    "@refine-sqlx/sql": ["@refine-sqlx/sql@workspace:packages/sql"],
 
     "@refinedev/core": ["@refinedev/core@5.0.4", "", { "dependencies": { "@refinedev/devtools-internal": "2.0.0", "@tanstack/react-query": "^5.81.5", "lodash": "^4.17.21", "lodash-es": "^4.17.21", "papaparse": "^5.3.0", "pluralize": "^8.0.0", "qs": "^6.10.1", "tslib": "^2.6.2", "warn-once": "^0.1.0" }, "peerDependencies": { "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" } }, "sha512-rDlumL0wEZzey7MDSxItLaCiO+Q7AVbdfmYEyzC+mzowOvVnbXOU+X6NzzMhJw8xibLsD7hGBZ7g2xwpSRN+bA=="],
 
@@ -1312,12 +1328,6 @@
     "readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
 
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
-
-    "refine-core-utils": ["refine-core-utils@workspace:packages/refine-core-utils"],
-
-    "refine-d1": ["refine-d1@workspace:packages/refine-d1"],
-
-    "refine-sqlx": ["refine-sqlx@workspace:packages/refine-sqlx"],
 
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 

@@ -10,7 +10,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
 
-const packages = ['refine-sqlx', 'refine-d1', 'refine-core-utils'];
+const packages = ['refine-orm', 'refine-sql', 'refine-core'];
 
 console.log('🌳 Testing tree-shaking support and bundle optimization...\n');
 
@@ -87,19 +87,19 @@ for (const pkg of packages) {
     let importStatement = '';
     let testCode = '';
 
-    if (pkg === 'refine-sqlx') {
+    if (pkg === 'refine-orm') {
       importStatement = `import { createPostgreSQLProvider } from '${join(process.cwd(), distPath, 'index.mjs')}';`;
       testCode = `
 console.log('Testing selective import for ${pkg}');
 console.log('createPostgreSQLProvider imported successfully');
 `;
-    } else if (pkg === 'refine-d1') {
+    } else if (pkg === 'refine-sql') {
       importStatement = `import { createProvider } from '${join(process.cwd(), distPath, 'index.mjs')}';`;
       testCode = `
 console.log('Testing selective import for ${pkg}');
 console.log('createProvider imported successfully');
 `;
-    } else if (pkg === 'refine-core-utils') {
+    } else if (pkg === 'refine-core') {
       importStatement = `import { SqlTransformer } from '${join(process.cwd(), distPath, 'index.mjs')}';`;
       testCode = `
 console.log('Testing selective import for ${pkg}');

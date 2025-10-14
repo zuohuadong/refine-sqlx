@@ -1,30 +1,30 @@
 [
   {
-    "name": "refine-core-utils",
-    "path": "packages/refine-core-utils/dist/index.mjs",
+    "name": "@refine-sqlx/core",
+    "path": "packages/refine-core/dist/index.mjs",
     "limit": "10 KB",
     "gzip": true,
     "ignore": ["@refinedev/core"]
   },
   {
-    "name": "refine-d1 (main)",
-    "path": "packages/refine-d1/dist/index.mjs",
+    "name": "@refine-sqlx/sql (main)",
+    "path": "packages/refine-sql/dist/index.mjs",
     "limit": "25 KB",
     "gzip": true,
     "ignore": [
-      "@refine-sqlx/core-utils",
+      "@refine-orm/core-utils",
       "better-sqlite3",
       "bun:sqlite",
       "@refinedev/core"
     ]
   },
   {
-    "name": "refine-sqlx (main)",
-    "path": "packages/refine-sqlx/dist/index.mjs",
+    "name": "@refine-sqlx/orm (main)",
+    "path": "packages/refine-orm/dist/index.mjs",
     "limit": "35 KB",
     "gzip": true,
     "ignore": [
-      "@refine-sqlx/core-utils",
+      "@refine-orm/core-utils",
       "drizzle-orm",
       "postgres",
       "mysql2",

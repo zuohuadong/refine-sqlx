@@ -1,6 +1,6 @@
 # Code Review Guidelines
 
-This document outlines the code review process and standards for the refine-sqlx and refine-d1 packages.
+This document outlines the code review process and standards for the @refine-sqlx/orm and @refine-sqlx/sql packages.
 
 ## Review Process
 

@@ -1,5 +1,5 @@
 /**
- * Example: Blog Application with refine-d1
+ * Example: Blog Application with @refine-sqlx/sql
  * Description: A complete blog application demonstrating CRUD operations,
  * relationships, and advanced queries using SQLite
  * 
@@ -18,9 +18,9 @@
  * - Bun uses built-in bun:sqlite
  */
 
-import { createProvider, type EnhancedDataProvider, type TableSchema } from '../packages/refine-d1/src/index.js';
+import { createProvider, type EnhancedDataProvider, type TableSchema } from '../packages/@refine-sqlx/sql/src/index.js';
 // @ts-ignore
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Define TypeScript schema for type safety
@@ -103,7 +103,7 @@ interface BlogSchema extends TableSchema {
 
 async function main() {
   try {
-    console.log('🚀 Starting Blog Application Example with refine-d1');
+    console.log('🚀 Starting Blog Application Example with @refine-sqlx/sql');
 
     // Create data provider with type safety
     const dataProvider = createRefineSQL('./blog_example.db') as EnhancedDataProvider<BlogSchema>;
@@ -883,7 +883,7 @@ async function demonstrateTypeSafeOperations(dataProvider: EnhancedDataProvider<
   });
 }
 
-// Transaction example (simplified for refine-d1)
+// Transaction example (simplified for @refine-sqlx/sql)
 async function demonstrateTransactions(dataProvider: EnhancedDataProvider<BlogSchema>) {
   console.log('\n💳 Demonstrating Transactions...');
 
@@ -948,7 +948,7 @@ async function demonstratePerformance(dataProvider: EnhancedDataProvider<BlogSch
 
   const startTime = Date.now();
 
-  // Batch operations (simplified for refine-d1)
+  // Batch operations (simplified for @refine-sqlx/sql)
   const batchTags = [
     { name: 'Performance', slug: 'performance', color: '#FF5722', createdAt: new Date() },
     { name: 'Optimization', slug: 'optimization', color: '#FF9800', createdAt: new Date() },
