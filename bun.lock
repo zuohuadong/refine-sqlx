@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "refine-d1-monorepo",
+      "name": "refine-sql-monorepo",
       "devDependencies": {
         "@changesets/changelog-github": "0.5.1",
         "@changesets/cli": "2.29.7",
@@ -29,8 +29,8 @@
         "typescript-eslint": "8.46.0",
       },
     },
-    "packages/refine-core-utils": {
-      "name": "refine-core-utils",
+    "packages/refine-core": {
+      "name": "refine-core",
       "version": "0.3.2",
       "devDependencies": {
         "@refinedev/core": "5.0.4",
@@ -41,11 +41,11 @@
         "@refinedev/core": "^4.0.0",
       },
     },
-    "packages/refine-d1": {
-      "name": "refine-d1",
+    "packages/refine-sql": {
+      "name": "refine-sql",
       "version": "0.3.2",
       "dependencies": {
-        "refine-core-utils": "workspace:*",
+        "refine-core": "workspace:*",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "4.20251011.0",
@@ -69,12 +69,12 @@
         "@refinedev/core": "^4.57.11",
       },
     },
-    "packages/refine-sqlx": {
-      "name": "refine-sqlx",
+    "packages/refine-orm": {
+      "name": "refine-orm",
       "version": "0.3.2",
       "dependencies": {
         "drizzle-orm": "^0.44.4",
-        "refine-core-utils": "workspace:*",
+        "refine-core": "workspace:*",
       },
       "devDependencies": {
         "@types/better-sqlite3": "7.6.13",
@@ -1313,11 +1313,11 @@
 
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
-    "refine-core-utils": ["refine-core-utils@workspace:packages/refine-core-utils"],
+    "refine-core": ["refine-core@workspace:packages/refine-core"],
 
-    "refine-d1": ["refine-d1@workspace:packages/refine-d1"],
+    "refine-sql": ["refine-sql@workspace:packages/refine-sql"],
 
-    "refine-sqlx": ["refine-sqlx@workspace:packages/refine-sqlx"],
+    "refine-orm": ["refine-orm@workspace:packages/refine-orm"],
 
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 

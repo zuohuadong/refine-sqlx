@@ -1,14 +1,14 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 GitHub Discussions
-    url: https://github.com/zuohuadong/refine-d1/discussions
+    url: https://github.com/zuohuadong/refine-sql/discussions
     about: Ask questions, share ideas, and discuss with the community
   - name: 📖 Documentation
-    url: https://github.com/zuohuadong/refine-d1#readme
+    url: https://github.com/zuohuadong/refine-sql#readme
     about: Read the documentation and examples
   - name: 🚀 Refine Framework
     url: https://refine.dev
     about: Learn more about the Refine framework
   - name: 📧 Email Support
-    url: mailto:support@refine-sqlx.dev
+    url: mailto:support@refine-orm.dev
     about: Contact us directly for enterprise support or sensitive issues

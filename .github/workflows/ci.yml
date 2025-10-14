@@ -94,7 +94,7 @@ jobs:
       - name: Run integration tests - SQLite
         if: matrix.database == 'sqlite'
         run: |
-          cd packages/refine-d1
+          cd packages/refine-sql
           echo "Running Bun SQLite integration tests with Bun runtime..."
           bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
           echo "Running better-sqlite3 integration tests with Jest..."
@@ -129,7 +129,7 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -u test -ptest -e "SELECT 1;" refine_orm_test
           echo "MySQL connection successful, running tests..."
           echo "Running MySQL integration tests with Node.js ${{ matrix.node-version }}..."
-          cd packages/refine-sqlx
+          cd packages/refine-orm
           npm run test -- src/__tests__/integration
 
       - name: Install PostgreSQL client
@@ -154,7 +154,7 @@ jobs:
           PGPASSWORD=test psql -h localhost -p 5432 -U test -d refine_orm_test -c "SELECT 1;"
           echo "PostgreSQL connection successful, running tests..."
           echo "Running PostgreSQL integration tests with Node.js ${{ matrix.node-version }}..."
-          cd packages/refine-sqlx
+          cd packages/refine-orm
           npm run test -- src/__tests__/integration
 
   lint:
@@ -236,7 +236,7 @@ jobs:
 
       - name: Run integration tests - SQLite
         run: |
-          cd packages/refine-d1
+          cd packages/refine-sql
           echo "Running Bun SQLite integration tests with Bun runtime..."
           bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
           echo "Running better-sqlite3 integration tests with Jest..."
@@ -276,9 +276,9 @@ jobs:
 
       - name: Test package builds
         run: |
-          cd packages/refine-sqlx && npm pack --dry-run
-          cd ../refine-d1 && npm pack --dry-run
-          cd ../refine-core-utils && npm pack --dry-run
+          cd packages/refine-orm && npm pack --dry-run
+          cd ../refine-sql && npm pack --dry-run
+          cd ../refine-core && npm pack --dry-run
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

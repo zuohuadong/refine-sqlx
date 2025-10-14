@@ -1,0 +1,129 @@
+{
+  "name": "@refine-sqlx/sql",
+  "version": "0.3.3",
+  "description": "A Refine cross database data provider with SQL support.",
+  "type": "module",
+  "license": "MIT",
+  "author": "RefineORM Team",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "homepage": "https://github.com/zuohuadong/refine-sql#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuohuadong/refine-sql.git",
+    "directory": "packages/refine-sql"
+  },
+  "bugs": {
+    "url": "https://github.com/zuohuadong/refine-sql/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "keywords": [
+    "refine",
+    "data-provider",
+    "sql",
+    "sqlite",
+    "database",
+    "bun",
+    "nodejs",
+    "cloudflare",
+    "d1",
+    "typescript",
+    "react",
+    "crud",
+    "lightweight",
+    "cross-platform",
+    "better-sqlite3",
+    "bun-sqlite",
+    "chain-query",
+    "morph-query",
+    "runtime-detection",
+    "edge-computing",
+    "serverless",
+    "admin-panel",
+    "dashboard",
+    "backend",
+    "frontend",
+    "web-development",
+    "javascript",
+    "tsx",
+    "jsx",
+    "polymorphic",
+    "relationships"
+  ],
+  "scripts": {
+    "test": "bun test --exclude=\"src/__tests__/integration/**\"",
+    "test:node": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
+    "test:integration-bun": "bun test src/__tests__/integration/bun.test.ts",
+    "test:integration-node": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js src/__tests__/integration/node.test.ts --testPathIgnorePatterns=/node_modules/ --testPathIgnorePatterns=/dist/",
+    "test:integration-better-sqlite3": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js src/__tests__/integration/better-sqlite3.test.ts --testPathIgnorePatterns=/node_modules/ --testPathIgnorePatterns=/dist/",
+    "build": "unbuild",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run test",
+    "pack-test": "npm pack --dry-run"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.mjs",
+      "require": "./dist/core.cjs"
+    },
+    "./compat": {
+      "types": "./dist/compat.d.ts",
+      "import": "./dist/compat.mjs",
+      "require": "./dist/compat.cjs"
+    },
+    "./d1": {
+      "types": "./dist/d1.d.ts",
+      "import": "./dist/d1.mjs",
+      "require": "./dist/d1.cjs"
+    },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "import": "./dist/bun.mjs",
+      "require": "./dist/bun.cjs"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.mjs",
+      "require": "./dist/node.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "devDependencies": {
+    "@cloudflare/workers-types": "4.20251011.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+    "@prettier/plugin-oxc": "0.0.4",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/bun": "1.3.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.6.0",
+    "typescript": "^5.9.3",
+    "better-sqlite3": "^12.4.1",
+    "jest": "^30.2.0",
+    "prettier": "3.6.2",
+    "ts-jest": "^29.2.5",
+    "unbuild": "3.6.1"
+  },
+  "dependencies": {
+    "@refine-sqlx/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@refinedev/core": "^4.57.11"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "12.4.1"
+  }
+}

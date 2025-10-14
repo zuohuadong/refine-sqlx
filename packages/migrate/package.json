@@ -1,0 +1,57 @@
+{
+  "name": "@refine-sqlx/migrate",
+  "version": "0.1.0",
+  "description": "Migration tools for refine-sqlx packages",
+  "type": "module",
+  "license": "MIT",
+  "author": "RefineORM Team",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "homepage": "https://github.com/zuohuadong/refine-sql#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuohuadong/refine-sql.git",
+    "directory": "packages/refine-migrate"
+  },
+  "bugs": {
+    "url": "https://github.com/zuohuadong/refine-sql/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "keywords": [
+    "refine",
+    "migration",
+    "database",
+    "sql",
+    "orm",
+    "migration-tool",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "bun run typecheck && bun run build"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "unbuild": "3.6.1"
+  }
+}

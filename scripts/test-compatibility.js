@@ -8,7 +8,7 @@ import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const packages = ['refine-sqlx', 'refine-d1', 'refine-core-utils'];
+const packages = ['refine-orm', 'refine-sql', 'refine-core'];
 
 console.log('🔍 Testing Node.js compatibility and module formats...\n');
 

@@ -11,7 +11,7 @@ A collection of powerful, type-safe data providers for [Refine](https://refine.d
 
 ## Packages
 
-### 🚀 [refine-sqlx](./packages/refine-sqlx)
+### 🚀 [@@refine-sqlx/sqlx/orm](./packages/@refine-sqlx/orm)
 
 A powerful, type-safe data provider with multi-database support using Drizzle ORM.
 
@@ -21,10 +21,10 @@ A powerful, type-safe data provider with multi-database support using Drizzle OR
 - **Runtime detection**: Automatic driver selection (Bun, Node.js, Cloudflare)
 
 ```bash
-npm install refine-sqlx drizzle-orm
+npm install @@refine-sqlx/sqlx/orm drizzle-orm
 ```
 
-### ⚡ [refine-d1](./packages/refine-d1)
+### ⚡ [@@refine-sqlx/sqlx/sql](./packages/@refine-sqlx/sql)
 
 A lightweight, cross-platform SQL data provider with native runtime support.
 
@@ -34,7 +34,7 @@ A lightweight, cross-platform SQL data provider with native runtime support.
 - **Lightweight**: Minimal dependencies
 
 ```bash
-npm install refine-d1
+npm install @@refine-sqlx/sqlx/sql
 ```
 
 ## Quick Start
@@ -43,7 +43,7 @@ npm install refine-d1
 
 #### For Advanced ORM Features (Recommended)
 
-Use **refine-sqlx** if you need:
+Use **@@refine-sqlx/sqlx/orm** if you need:
 
 - Type-safe schema definitions
 - Complex relationships and joins
@@ -52,7 +52,7 @@ Use **refine-sqlx** if you need:
 - Multi-database support
 
 ```typescript
-import { createPostgreSQLProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -63,7 +63,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### For Simple SQL Operations
 
-Use **refine-d1** if you need:
+Use **@@refine-sqlx/sqlx/sql** if you need:
 
 - Lightweight SQLite-only solution
 - Raw SQL control
@@ -71,17 +71,17 @@ Use **refine-d1** if you need:
 - Minimal setup
 
 ```typescript
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM Compatibility - Near 100% API Compatibility!
 
-**refine-d1** now provides **near 100% API compatibility** with refine-sqlx, allowing users to seamlessly migrate or use both API styles simultaneously:
+**@@refine-sqlx/sqlx/sql** now provides **near 100% API compatibility** with @refine-sqlx/orm, allowing users to seamlessly migrate or use both API styles simultaneously:
 
 ```typescript
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 
@@ -121,7 +121,7 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 Compatibility Matrix
 
-| Feature Category      | refine-d1 | refine-sqlx | Compatibility | Notes                           |
+| Feature Category      | @refine-sqlx/sql | @refine-sqlx/orm | Compatibility | Notes                           |
 | --------------------- | ---------- | ----------- | ------------- | ------------------------------- |
 | Basic CRUD            | ✅         | ✅          | 100%          | Fully compatible                |
 | Chain Queries         | `from()`   | `from()`    | 100%          | Unified API                     |
@@ -134,19 +134,19 @@ await dataProvider.transaction(async tx => {
 
 **Compatibility Advantages:**
 
-- 🔄 **Seamless Migration**: Existing refine-sqlx code requires minimal changes
+- 🔄 **Seamless Migration**: Existing @refine-sqlx/orm code requires minimal changes
 - 🎯 **Progressive Upgrade**: Gradual migration possible, mix both APIs
 - 🚀 **Performance Boost**: Native SQLite performance, faster query execution
 - 📦 **Smaller Bundle**: Lightweight implementation, reduced bundle size
 - 🛡️ **Type Safety**: Maintains same TypeScript type inference
 
-See our [Compatibility Guide](./packages/refine-d1/COMPATIBILITY.md) for detailed information.
+See our [Compatibility Guide](./packages/@refine-sqlx/sql/COMPATIBILITY.md) for detailed information.
 
 **Test Validation**: All 36 compatibility tests pass, ensuring API behavior consistency and type safety.
 
 ## Features Comparison
 
-| Feature                | refine-sqlx                  | refine-d1                         |
+| Feature                | @refine-sqlx/orm                  | @refine-sqlx/sql                         |
 | ---------------------- | ---------------------------- | ---------------------------------- |
 | **Databases**          | PostgreSQL, MySQL, SQLite    | SQLite only                        |
 | **Type Safety**        | Full schema inference        | Basic TypeScript                   |
@@ -160,7 +160,7 @@ See our [Compatibility Guide](./packages/refine-d1/COMPATIBILITY.md) for detaile
 
 ## Examples
 
-### Blog Application with refine-sqlx
+### Blog Application with @refine-sqlx/orm
 
 ```typescript
 // schema.ts
@@ -192,7 +192,7 @@ export const schema = { users, posts };
 
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createPostgreSQLProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -214,12 +214,12 @@ function App() {
 }
 ```
 
-### Simple Todo App with refine-d1
+### Simple Todo App with @refine-sqlx/sql
 
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./todos.db');
 
@@ -246,7 +246,7 @@ CREATE TABLE todos (
 
 ## Runtime Support
 
-| Runtime                | refine-sqlx           | refine-d1        |
+| Runtime                | @refine-sqlx/orm           | @refine-sqlx/sql        |
 | ---------------------- | --------------------- | ----------------- |
 | **Bun**                | ✅ Native SQL drivers | ✅ bun:sqlite     |
 | **Node.js**            | ✅ Standard drivers   | ✅ better-sqlite3 |
@@ -264,8 +264,8 @@ CREATE TABLE todos (
 
 ```bash
 # Clone the repository
-git clone https://github.com/zuohuadong/refine-sqlx.git
-cd refine-d1
+git clone https://github.com/zuohuadong/@refine-sqlx/orm.git
+cd @refine-sqlx/sql
 
 # Install dependencies
 bun install
@@ -283,10 +283,10 @@ bun run typecheck
 ### Project Structure
 
 ```
-refine-d1/
+@refine-sqlx/sql/
 ├── packages/
-│   ├── refine-sqlx/         # Full-featured ORM data provider
-│   └── refine-d1/          # Lightweight SQL data provider
+│   ├── @refine-sqlx/orm/         # Full-featured ORM data provider
+│   └── @refine-sqlx/sql/          # Lightweight SQL data provider
 ├── .github/
 │   └── workflows/           # CI/CD workflows
 ├── .changeset/              # Version management
@@ -346,20 +346,20 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 ## Community
 
-- [GitHub Discussions](https://github.com/zuohuadong/refine-sqlx/discussions) - Ask questions and share ideas
-- [Issues](https://github.com/zuohuadong/refine-sqlx/issues) - Report bugs and request features
+- [GitHub Discussions](https://github.com/zuohuadong/@refine-sqlx/orm/discussions) - Ask questions and share ideas
+- [Issues](https://github.com/zuohuadong/@refine-sqlx/orm/issues) - Report bugs and request features
 - [Discord](https://discord.gg/refine) - Join the Refine community
 
 ## License
 
-MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/zuohuadong/@refine-sqlx/orm)
 
 ## Acknowledgments
 
 - [Refine](https://refine.dev) - The amazing React framework that inspired this project
-- [Drizzle ORM](https://orm.drizzle.team) - The TypeScript ORM that powers refine-sqlx
+- [Drizzle ORM](https://orm.drizzle.team) - The TypeScript ORM that powers @refine-sqlx/orm
 - [Bun](https://bun.sh) - The fast JavaScript runtime and toolkit
-- All our [contributors](https://github.com/zuohuadong/refine-sqlx/graphs/contributors) who help make this project better
+- All our [contributors](https://github.com/zuohuadong/@refine-sqlx/orm/graphs/contributors) who help make this project better
 
 ---
 
@@ -372,7 +372,7 @@ MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
 
 ## 包列表
 
-### 🚀 [refine-sqlx](./packages/refine-sqlx)
+### 🚀 [@@refine-sqlx/sqlx/orm](./packages/@refine-sqlx/orm)
 
 一个强大的、类型安全的数据提供器，使用 Drizzle ORM 支持多数据库。
 
@@ -382,10 +382,10 @@ MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
 - **运行时检测**: 自动驱动选择 (Bun, Node.js, Cloudflare)
 
 ```bash
-npm install refine-sqlx drizzle-orm
+npm install @@refine-sqlx/sqlx/orm drizzle-orm
 ```
 
-### ⚡ [refine-d1](./packages/refine-d1)
+### ⚡ [@@refine-sqlx/sqlx/sql](./packages/@refine-sqlx/sql)
 
 一个轻量级、跨平台的 SQL 数据提供器，支持原生运行时。
 
@@ -395,7 +395,7 @@ npm install refine-sqlx drizzle-orm
 - **轻量级**: 最小依赖
 
 ```bash
-npm install refine-d1
+npm install @@refine-sqlx/sqlx/sql
 ```
 
 ## 快速开始
@@ -404,7 +404,7 @@ npm install refine-d1
 
 #### 高级 ORM 功能（推荐）
 
-如果您需要以下功能，请使用 **refine-sqlx**：
+如果您需要以下功能，请使用 **@@refine-sqlx/sqlx/orm**：
 
 - 类型安全的模式定义
 - 复杂关系和连接
@@ -413,7 +413,7 @@ npm install refine-d1
 - 多数据库支持
 
 ```typescript
-import { createPostgreSQLProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -424,7 +424,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### 简单 SQL 操作
 
-如果您需要以下功能，请使用 **refine-d1**：
+如果您需要以下功能，请使用 **@@refine-sqlx/sqlx/sql**：
 
 - 轻量级 SQLite 专用解决方案
 - 原生 SQL 控制
@@ -432,17 +432,17 @@ const dataProvider = await createPostgreSQLProvider(
 - 最小设置
 
 ```typescript
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM 兼容性 - 接近 100% API 兼容性！
 
-**refine-d1** 现在提供了与 refine-sqlx **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
+**@@refine-sqlx/sqlx/sql** 现在提供了与 @refine-sqlx/orm **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
 
 ```typescript
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./database.db');
 
@@ -482,7 +482,7 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 兼容性对照表
 
-| 功能类别  | refine-d1 | refine-sqlx | 兼容性 | 说明                         |
+| 功能类别  | @refine-sqlx/sql | @refine-sqlx/orm | 兼容性 | 说明                         |
 | --------- | ---------- | ----------- | ------ | ---------------------------- |
 | 基础 CRUD | ✅         | ✅          | 100%   | 完全兼容                     |
 | 链式查询  | `from()`   | `from()`    | 100%   | 统一 API                     |
@@ -495,19 +495,19 @@ await dataProvider.transaction(async tx => {
 
 **兼容性优势：**
 
-- 🔄 **无缝迁移**: 现有 refine-sqlx 代码几乎无需修改
+- 🔄 **无缝迁移**: 现有 @refine-sqlx/orm 代码几乎无需修改
 - 🎯 **渐进式升级**: 可以逐步迁移，两套 API 混用
 - 🚀 **性能提升**: SQLite 原生性能，更快的查询执行
 - 📦 **更小体积**: 轻量级实现，减少 bundle 大小
 - 🛡️ **类型安全**: 保持相同的 TypeScript 类型推断
 
-查看我们的 [兼容性指南](./packages/refine-d1/COMPATIBILITY.md) 了解详细信息。
+查看我们的 [兼容性指南](./packages/@refine-sqlx/sql/COMPATIBILITY.md) 了解详细信息。
 
 **测试验证**: 36 个兼容性测试全部通过，确保 API 行为一致性和类型安全。
 
 ## 功能对比
 
-| 功能            | refine-sqlx               | refine-d1               |
+| 功能            | @refine-sqlx/orm               | @refine-sqlx/sql               |
 | --------------- | ------------------------- | ------------------------ |
 | **数据库**      | PostgreSQL, MySQL, SQLite | 仅 SQLite                |
 | **类型安全**    | 完整模式推断              | 基础 TypeScript          |
@@ -521,7 +521,7 @@ await dataProvider.transaction(async tx => {
 
 ## 示例
 
-### 使用 refine-sqlx 的博客应用
+### 使用 @refine-sqlx/orm 的博客应用
 
 ```typescript
 // schema.ts
@@ -553,7 +553,7 @@ export const schema = { users, posts };
 
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createPostgreSQLProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
 const dataProvider = await createPostgreSQLProvider(
@@ -575,12 +575,12 @@ function App() {
 }
 ```
 
-### 使用 refine-d1 的简单待办应用
+### 使用 @refine-sqlx/sql 的简单待办应用
 
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from 'refine-d1';
+import { createProvider } from '@@refine-sqlx/sqlx/sql';
 
 const dataProvider = createProvider('./todos.db');
 
@@ -607,7 +607,7 @@ CREATE TABLE todos (
 
 ## 运行时支持
 
-| 运行时                 | refine-sqlx       | refine-d1        |
+| 运行时                 | @refine-sqlx/orm       | @refine-sqlx/sql        |
 | ---------------------- | ----------------- | ----------------- |
 | **Bun**                | ✅ 原生 SQL 驱动  | ✅ bun:sqlite     |
 | **Node.js**            | ✅ 标准驱动       | ✅ better-sqlite3 |
@@ -625,8 +625,8 @@ CREATE TABLE todos (
 
 ```bash
 # 克隆仓库
-git clone https://github.com/zuohuadong/refine-sqlx.git
-cd refine-d1
+git clone https://github.com/zuohuadong/@refine-sqlx/orm.git
+cd @refine-sqlx/sql
 
 # 安装依赖
 bun install
@@ -644,10 +644,10 @@ bun run typecheck
 ### 项目结构
 
 ```
-refine-d1/
+@refine-sqlx/sql/
 ├── packages/
-│   ├── refine-sqlx/          # 功能完整的 ORM 数据提供器
-│   └── refine-d1/          # 轻量级 SQL 数据提供器
+│   ├── @refine-sqlx/orm/          # 功能完整的 ORM 数据提供器
+│   └── @refine-sqlx/sql/          # 轻量级 SQL 数据提供器
 ├── .github/
 │   └── workflows/           # CI/CD 工作流
 ├── .changeset/              # 版本管理
@@ -707,17 +707,17 @@ refine-d1/
 
 ## 社区
 
-- [GitHub 讨论](https://github.com/zuohuadong/refine-sqlx/discussions) - 提问和分享想法
-- [Issues](https://github.com/zuohuadong/refine-sqlx/issues) - 报告错误和请求功能
+- [GitHub 讨论](https://github.com/zuohuadong/@refine-sqlx/orm/discussions) - 提问和分享想法
+- [Issues](https://github.com/zuohuadong/@refine-sqlx/orm/issues) - 报告错误和请求功能
 - [Discord](https://discord.gg/refine) - 加入 Refine 社区
 
 ## 许可证
 
-MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
+MIT © [RefineORM Team](https://github.com/zuohuadong/@refine-sqlx/orm)
 
 ## 致谢
 
 - [Refine](https://refine.dev) - 启发这个项目的出色 React 框架
-- [Drizzle ORM](https://orm.drizzle.team) - 为 refine-sqlx 提供动力的 TypeScript ORM
+- [Drizzle ORM](https://orm.drizzle.team) - 为 @refine-sqlx/orm 提供动力的 TypeScript ORM
 - [Bun](https://bun.sh) - 快速的 JavaScript 运行时和工具包
-- 所有帮助改进这个项目的 [贡献者](https://github.com/zuohuadong/refine-sqlx/graphs/contributors)
+- 所有帮助改进这个项目的 [贡献者](https://github.com/zuohuadong/@refine-sqlx/orm/graphs/contributors)

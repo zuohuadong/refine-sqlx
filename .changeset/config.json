@@ -3,13 +3,13 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "zuohuadong/refine-sqlx"
+      "repo": "zuohuadong/refine-orm"
     }
   ],
   "commit": false,
   "fixed": [],
   "linked": [
-    ["refine-sqlx", "refine-d1", "refine-core-utils"]
+    ["refine-orm", "refine-sql", "refine-core"]
   ],
   "access": "public",
   "baseBranch": "main",

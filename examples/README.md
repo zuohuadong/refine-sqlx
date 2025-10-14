@@ -1,10 +1,10 @@
-# refine-d1 Usage Examples
+# @refine-sqlx/sql Usage Examples
 
 [English](#english) | [中文](#中文)
 
 ## English
 
-This directory contains comprehensive examples showing how to use refine-d1 in different scenarios.
+This directory contains comprehensive examples showing how to use @refine-sqlx/sql in different scenarios.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ This directory contains comprehensive examples showing how to use refine-d1 in d
 A basic blog application demonstrating CRUD operations with users and posts.
 
 **Files:**
-- `blog-app-sqlx.ts` - Complete blog application using refine-d1 with SQLite
+- `blog-app-sqlx.ts` - Complete blog application using @refine-sqlx/sql with SQLite
 - `basic-usage.ts` - Basic usage examples and API overview
 - `blog-app-migration.ts` - Migration guide from traditional DataProvider
 
@@ -36,8 +36,8 @@ A basic blog application demonstrating CRUD operations with users and posts.
 An e-commerce example with products, orders, and customers.
 
 **Files:**
-- `ecommerce-orm.ts` - Using refine-sqlx with MySQL
-- `ecommerce-sql.ts` - Using refine-d1 with SQLite
+- `ecommerce-orm.ts` - Using @refine-sqlx/orm with MySQL
+- `ecommerce-sql.ts` - Using @refine-sqlx/sql with SQLite
 - `ecommerce-schema.sql` - Database schema
 
 **Features:**
@@ -144,7 +144,7 @@ A CMS with pages, media, and user roles.
 Examples optimized for Bun runtime.
 
 **Files:**
-- `bun-server.ts` - Bun HTTP server with refine-d1
+- `bun-server.ts` - Bun HTTP server with @refine-sqlx/sql
 - `bun-websockets.ts` - Real-time features with WebSockets
 - `bun-performance.ts` - Performance optimizations
 
@@ -264,7 +264,7 @@ Use this template for new examples:
  * - Required environment variables
  */
 
-import { createPostgreSQLProvider } from 'refine-sqlx';
+import { createPostgreSQLProvider } from '@@refine-sqlx/sqlx/orm';
 import { schema } from './schema';
 
 async function main() {
@@ -297,7 +297,7 @@ If you have questions about the examples:
 
 1. Check the example's README.md file
 2. Look at similar examples for patterns
-3. Ask questions in [GitHub Discussions](https://github.com/zuohuadong/refine-d1/discussions)
-4. Report issues in [GitHub Issues](https://github.com/zuohuadong/refine-d1/issues)
+3. Ask questions in [GitHub Discussions](https://github.com/zuohuadong/@refine-sqlx/sql/discussions)
+4. Report issues in [GitHub Issues](https://github.com/zuohuadong/@refine-sqlx/sql/issues)
 
 Happy coding! 🚀
