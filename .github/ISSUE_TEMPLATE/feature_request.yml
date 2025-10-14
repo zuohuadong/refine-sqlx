@@ -16,7 +16,7 @@ body:
       description: Which package should this feature be added to?
       options:
         - refine-sqlx
-        - refine-sql
+        - refine-d1
         - Both
         - New package
     validations:

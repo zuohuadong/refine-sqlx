@@ -4,7 +4,7 @@
 
 ## English
 
-The `refine-sql` package now includes enhanced ORM compatibility features that provide a more modern, type-safe, and flexible way to interact with your SQLite database while maintaining full compatibility with the existing Refine DataProvider interface.
+The `refine-d1` package now includes enhanced ORM compatibility features that provide a more modern, type-safe, and flexible way to interact with your SQLite database while maintaining full compatibility with the existing Refine DataProvider interface.
 
 ## Features Overview
 
@@ -32,7 +32,7 @@ The `refine-sql` package now includes enhanced ORM compatibility features that p
 ### 1. Define Your Schema
 
 ```typescript
-import { type TableSchema } from 'refine-sql';
+import { type TableSchema } from 'refine-d1';
 
 interface MySchema extends TableSchema {
   users: {
@@ -57,7 +57,7 @@ interface MySchema extends TableSchema {
 ### 2. Create Enhanced Data Provider
 
 ```typescript
-import createRefineSQL, { type EnhancedDataProvider } from 'refine-sql';
+import createRefineSQL, { type EnhancedDataProvider } from 'refine-d1';
 
 const dataProvider: EnhancedDataProvider<MySchema> =
   createRefineSQL<MySchema>('database.db');
@@ -376,7 +376,7 @@ See the complete example in `examples/orm-compatibility.ts` for a comprehensive 
 
 ## 中文
 
-`refine-sql` 包现在包含增强的 ORM 兼容性功能，提供更现代、类型安全和灵活的方式与您的 SQLite 数据库交互，同时保持与现有 Refine DataProvider 接口的完全兼容性。
+`refine-d1` 包现在包含增强的 ORM 兼容性功能，提供更现代、类型安全和灵活的方式与您的 SQLite 数据库交互，同时保持与现有 Refine DataProvider 接口的完全兼容性。
 
 ## 功能概述
 
@@ -404,7 +404,7 @@ See the complete example in `examples/orm-compatibility.ts` for a comprehensive 
 ### 1. 定义您的模式
 
 ```typescript
-import { type TableSchema } from 'refine-sql';
+import { type TableSchema } from 'refine-d1';
 
 interface MySchema extends TableSchema {
   users: {
@@ -429,7 +429,7 @@ interface MySchema extends TableSchema {
 ### 2. 创建增强数据提供器
 
 ```typescript
-import createRefineSQL, { type EnhancedDataProvider } from 'refine-sql';
+import createRefineSQL, { type EnhancedDataProvider } from 'refine-d1';
 
 const dataProvider: EnhancedDataProvider<MySchema> =
   createRefineSQL<MySchema>('database.db');

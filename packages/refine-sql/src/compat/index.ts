@@ -1,5 +1,5 @@
 /**
- * refine-sql/compat - refine-sqlx 兼容性模块
+ * refine-d1/compat - refine-sqlx 兼容性模块
  * 提供与 refine-sqlx 完全兼容的 API
  */
 

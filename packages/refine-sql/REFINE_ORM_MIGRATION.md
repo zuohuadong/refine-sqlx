@@ -1,8 +1,8 @@
-# 从 refine-sqlx 迁移到 refine-sql
+# 从 refine-sqlx 迁移到 refine-d1
 
-refine-sql 是专为 SQLite 和 Cloudflare D1 环境优化的轻量级数据提供器，完全兼容 refine-sqlx 的 API，使迁移变得简单无痛。
+refine-d1 是专为 SQLite 和 Cloudflare D1 环境优化的轻量级数据提供器，完全兼容 refine-sqlx 的 API，使迁移变得简单无痛。
 
-## 为什么选择 refine-sql？
+## 为什么选择 refine-d1？
 
 - **体积小巧**: 仅 23kB，比 refine-sqlx 小 85%
 - **完全兼容**: 支持 refine-sqlx 的所有核心 API
@@ -12,10 +12,10 @@ refine-sql 是专为 SQLite 和 Cloudflare D1 环境优化的轻量级数据提�
 
 ## 快速迁移指南
 
-### 1. 安装 refine-sql
+### 1. 安装 refine-d1
 
 ```bash
-npm install refine-sql
+npm install refine-d1
 npm uninstall refine-sqlx drizzle-orm
 ```
 
@@ -25,8 +25,8 @@ npm uninstall refine-sqlx drizzle-orm
 // 之前 (refine-sqlx)
 import { createSQLiteProvider } from 'refine-sqlx';
 
-// 现在 (refine-sql)
-import { createSQLiteProvider } from 'refine-sql';
+// 现在 (refine-d1)
+import { createSQLiteProvider } from 'refine-d1';
 ```
 
 ### 3. 更新 Schema 定义
@@ -43,7 +43,7 @@ const users = sqliteTable('users', {
 
 const schema = { users };
 
-// 现在 (refine-sql) - 简单的 TypeScript 接口
+// 现在 (refine-d1) - 简单的 TypeScript 接口
 interface MySchema {
   users: { id: number; name: string; email: string };
 }
@@ -57,7 +57,7 @@ const schema: MySchema = { users: {} as MySchema['users'] };
 // 之前 (refine-sqlx)
 const dataProvider = createSQLiteProvider('./database.db', schema);
 
-// 现在 (refine-sql)
+// 现在 (refine-d1)
 const dataProvider = createSQLiteProvider({
   connection: './database.db',
   schema: schema,
@@ -112,10 +112,10 @@ const activeUsers = await dataProvider
   .get();
 ```
 
-### 迁移后 (refine-sql)
+### 迁移后 (refine-d1)
 
 ```typescript
-import { createSQLiteProvider } from 'refine-sql';
+import { createSQLiteProvider } from 'refine-d1';
 
 interface MySchema {
   users: {
@@ -143,7 +143,7 @@ const activeUsers = await dataProvider
 
 ## 兼容性功能
 
-refine-sql 支持 refine-sqlx 的所有核心功能：
+refine-d1 支持 refine-sqlx 的所有核心功能：
 
 ### 标准 CRUD 操作
 
@@ -236,10 +236,10 @@ const results = await dataProvider.raw('SELECT * FROM users WHERE status = ?', [
 
 ## Cloudflare Workers 部署
 
-refine-sql 特别适合 Cloudflare Workers 环境：
+refine-d1 特别适合 Cloudflare Workers 环境：
 
 ```typescript
-import { createSQLiteProvider } from 'refine-sql';
+import { createSQLiteProvider } from 'refine-d1';
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
@@ -263,7 +263,7 @@ export default {
 
 ## 性能对比
 
-| 特性       | refine-sqlx | refine-sql | 改进        |
+| 特性       | refine-sqlx | refine-d1 | 改进        |
 | ---------- | ----------- | ---------- | ----------- |
 | 包大小     | ~150kB      | ~23kB      | 85% 更小    |
 | 冷启动时间 | ~200ms      | ~100ms     | 50% 更快    |
@@ -272,7 +272,7 @@ export default {
 
 ## 迁移检查清单
 
-- [ ] 安装 refine-sql，卸载 refine-sqlx 和 drizzle-orm
+- [ ] 安装 refine-d1，卸载 refine-sqlx 和 drizzle-orm
 - [ ] 更新导入语句
 - [ ] 将 Drizzle schema 转换为 TypeScript 接口
 - [ ] 更新提供器创建代码
@@ -286,10 +286,10 @@ export default {
 
 ## 自动化迁移工具
 
-refine-sql 提供了自动化迁移工具：
+refine-d1 提供了自动化迁移工具：
 
 ```typescript
-import { MigrationHelpers, CodeTransformer } from 'refine-sql';
+import { MigrationHelpers, CodeTransformer } from 'refine-d1';
 
 // 检查兼容性
 const compatibility = MigrationHelpers.checkCompatibility(packageJson);
@@ -305,7 +305,7 @@ const checklist = MigrationHelpers.generateChecklist();
 
 ### Q: 是否支持 PostgreSQL 和 MySQL？
 
-A: refine-sql 专注于 SQLite 和 D1，不支持其他数据库。如需多数据库支持，请继续使用 refine-sqlx。
+A: refine-d1 专注于 SQLite 和 D1，不支持其他数据库。如需多数据库支持，请继续使用 refine-sqlx。
 
 ### Q: 所有 refine-sqlx 功能都支持吗？
 
@@ -317,7 +317,7 @@ A: 是的，特别是在 Cloudflare Workers 等边缘环境中，包大小减少
 
 ### Q: 可以逐步迁移吗？
 
-A: 可以，refine-sql 完全兼容 refine-sqlx API，可以直接替换而无需修改业务逻辑。
+A: 可以，refine-d1 完全兼容 refine-sqlx API，可以直接替换而无需修改业务逻辑。
 
 ## 获取帮助
 
@@ -328,4 +328,4 @@ A: 可以，refine-sql 完全兼容 refine-sqlx API，可以直接替换而无�
 3. 参考 [API 文档](./README.md)
 4. 提交 Issue 获取支持
 
-迁移到 refine-sql，享受更小的包体积和更好的性能！
+迁移到 refine-d1，享受更小的包体积和更好的性能！

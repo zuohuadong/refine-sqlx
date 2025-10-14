@@ -1,5 +1,5 @@
 {
-  "name": "refine-sql-monorepo",
+  "name": "refine-d1-monorepo",
   "version": "0.3.0",
   "description": "Monorepo for Refine SQL data providers",
   "private": true,
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sql.git"
+    "url": "git+https://github.com/zuohuadong/refine-d1.git"
   },
   "workspaces": [
     "packages/*"
@@ -21,9 +21,9 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:bun": "bun test",
     "test:integration": "bun run --filter='*' test:integration",
-    "test:integration-bun": "cd packages/refine-sql && bun run test:integration-bun",
-    "test:integration-node": "cd packages/refine-sql && bun run test:integration-node",
-    "test:integration-better-sqlite3": "cd packages/refine-sql && bun run test:integration-better-sqlite3",
+    "test:integration-bun": "cd packages/refine-d1 && bun run test:integration-bun",
+    "test:integration-node": "cd packages/refine-d1 && bun run test:integration-node",
+    "test:integration-better-sqlite3": "cd packages/refine-d1 && bun run test:integration-better-sqlite3",
     "test:integration-mysql": "cd packages/refine-sqlx && node --experimental-vm-modules ../../node_modules/jest/bin/jest.js src/__tests__/integration",
     "test:integration-postgresql": "cd packages/refine-sqlx && node --experimental-vm-modules ../../node_modules/jest/bin/jest.js src/__tests__/integration",
     "typecheck": "bun run --filter='*' typecheck",

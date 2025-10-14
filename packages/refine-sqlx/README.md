@@ -450,7 +450,7 @@ We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING
 
 ## License
 
-## MIT © [RefineSQLX Team](https://github.com/medz/refine-sql)
+## MIT © [RefineSQLX Team](https://github.com/zuohuadong/refine-d1)
 
 ## 中文
 
@@ -805,4 +805,4 @@ const dataProvider = await createPostgreSQLProvider(
 
 ## 许可证
 
-MIT © [RefineSQLX Team](https://github.com/medz/refine-sql)
+MIT © [RefineSQLX Team](https://github.com/zuohuadong/refine-d1)

@@ -9,7 +9,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["refine-sqlx", "refine-sql", "refine-core-utils"]
+    ["refine-sqlx", "refine-d1", "refine-core-utils"]
   ],
   "access": "public",
   "baseBranch": "main",

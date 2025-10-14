@@ -1,5 +1,5 @@
 /**
- * refine-sql createProvider() 使用示例
+ * refine-d1 createProvider() 使用示例
  * 展示新的统一工厂函数的各种用法
  */
 
@@ -25,7 +25,7 @@ interface BlogSchema extends TableSchema {
 }
 
 async function main() {
-    console.log('🚀 refine-sql createProvider() 示例');
+    console.log('🚀 refine-d1 createProvider() 示例');
 
     // 1. 基础用法 - 文件数据库
     console.log('\n1. 基础用法 - 文件数据库');

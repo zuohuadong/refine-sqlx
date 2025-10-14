@@ -58,10 +58,10 @@ export interface EnhancedDataProvider<TSchema extends TableSchema = TableSchema>
   // Client access
   client: SqlClient;
 
-  // Chain query methods (refine-sql style)
+  // Chain query methods (refine-d1 style)
   from<T extends BaseRecord = BaseRecord>(tableName: string): SqlxChainQuery<T>;
 
-  // Polymorphic relationship methods (refine-sql style)
+  // Polymorphic relationship methods (refine-d1 style)
   morphTo<T extends BaseRecord = BaseRecord>(
     tableName: string,
     morphConfig: MorphConfig

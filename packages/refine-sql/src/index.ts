@@ -1,4 +1,4 @@
-// refine-sql - Modern SQLite and Cloudflare D1 data provider for Refine
+// refine-d1 - Modern SQLite and Cloudflare D1 data provider for Refine
 // Optimized for SQLite environments with decorator-based error handling
 
 // Export essential types

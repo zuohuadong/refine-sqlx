@@ -1,11 +1,11 @@
 import type { BaseSchema, EnhancedDataProvider } from './enhanced-types.js';
 
 /**
- * Compatibility utilities for migrating between refine-sql and refine-sqlx
+ * Compatibility utilities for migrating between refine-d1 and refine-sqlx
  */
 export class CompatibilityUtils {
   /**
-   * Convert refine-sql TableSchema to BaseSchema format
+   * Convert refine-d1 TableSchema to BaseSchema format
    */
   static convertTableSchemaToBaseSchema<T extends Record<string, any>>(
     tableSchema: T

@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug or issue with refine-sqlx or refine-sql
+description: Report a bug or issue with refine-sqlx or refine-d1
 title: '[Bug]: '
 labels: ['bug', 'needs-triage']
 assignees: []
@@ -16,7 +16,7 @@ body:
       description: Which package is affected?
       options:
         - refine-sqlx
-        - refine-sql
+        - refine-d1
         - Both
         - Not sure
     validations:

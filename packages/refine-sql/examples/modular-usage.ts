@@ -4,7 +4,7 @@
  */
 
 // ===== 场景 1: 基础 CRUD 操作 (最小包体积 ~8kB) =====
-import { createProvider } from 'refine-sql/core';
+import { createProvider } from 'refine-d1/core';
 
 async function basicUsage() {
   console.log('📦 基础 CRUD 操作 (~8kB)');
@@ -36,7 +36,7 @@ async function basicUsage() {
 }
 
 // ===== 场景 2: refine-sqlx 兼容 (~11kB) =====
-import { createSQLiteProvider } from 'refine-sql/compat';
+import { createSQLiteProvider } from 'refine-d1/compat';
 
 interface MySchema {
   users: {
@@ -103,7 +103,7 @@ async function compatUsage() {
 }
 
 // ===== 场景 3: Cloudflare D1 专用 (~6kB) =====
-import { createD1Provider } from 'refine-sql/d1';
+import { createD1Provider } from 'refine-d1/d1';
 
 // Cloudflare Workers 环境
 export default {
@@ -151,7 +151,7 @@ export default {
 };
 
 // ===== 场景 4: Bun 专用 (~5kB) =====
-import { createBunProvider } from 'refine-sql/bun';
+import { createBunProvider } from 'refine-d1/bun';
 
 async function bunUsage() {
   console.log('🥟 Bun SQLite 专用版本 (~5kB)');
@@ -183,7 +183,7 @@ async function bunUsage() {
 }
 
 // ===== 场景 5: Node.js 专用 (~9kB) =====
-import { createNodeProvider } from 'refine-sql/node';
+import { createNodeProvider } from 'refine-d1/node';
 
 async function nodeUsage() {
   console.log('🟢 Node.js SQLite 专用版本 (~9kB)');
@@ -235,26 +235,26 @@ function bundleSizeComparison() {
   console.log('┌─────────────────────────┬──────────┬──────────┐');
   console.log('│ 模块                    │ 大小     │ 适用场景 │');
   console.log('├─────────────────────────┼──────────┼──────────┤');
-  console.log('│ refine-sql (完整)       │ ~23kB    │ 全功能   │');
-  console.log('│ refine-sql/core         │ ~8kB     │ 基础CRUD │');
-  console.log('│ refine-sql/compat       │ ~11kB    │ 兼容模式 │');
-  console.log('│ refine-sql/d1           │ ~6kB     │ D1专用   │');
-  console.log('│ refine-sql/bun          │ ~5kB     │ Bun专用  │');
-  console.log('│ refine-sql/node         │ ~9kB     │ Node专用 │');
+  console.log('│ refine-d1 (完整)       │ ~23kB    │ 全功能   │');
+  console.log('│ refine-d1/core         │ ~8kB     │ 基础CRUD │');
+  console.log('│ refine-d1/compat       │ ~11kB    │ 兼容模式 │');
+  console.log('│ refine-d1/d1           │ ~6kB     │ D1专用   │');
+  console.log('│ refine-d1/bun          │ ~5kB     │ Bun专用  │');
+  console.log('│ refine-d1/node         │ ~9kB     │ Node专用 │');
   console.log('└─────────────────────────┴──────────┴──────────┘');
   
   console.log('\n💡 选择建议:');
-  console.log('• 基础应用: 使用 refine-sql/core');
-  console.log('• 从 refine-sqlx 迁移: 使用 refine-sql/compat');
-  console.log('• Cloudflare Workers: 使用 refine-sql/d1');
-  console.log('• Bun 应用: 使用 refine-sql/bun');
-  console.log('• Node.js 应用: 使用 refine-sql/node');
-  console.log('• 需要全功能: 使用 refine-sql');
+  console.log('• 基础应用: 使用 refine-d1/core');
+  console.log('• 从 refine-sqlx 迁移: 使用 refine-d1/compat');
+  console.log('• Cloudflare Workers: 使用 refine-d1/d1');
+  console.log('• Bun 应用: 使用 refine-d1/bun');
+  console.log('• Node.js 应用: 使用 refine-d1/node');
+  console.log('• 需要全功能: 使用 refine-d1');
 }
 
 // ===== 主函数 =====
 async function main() {
-  console.log('🚀 refine-sql 模块化使用示例\n');
+  console.log('🚀 refine-d1 模块化使用示例\n');
   
   bundleSizeComparison();
   

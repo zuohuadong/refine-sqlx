@@ -83,7 +83,7 @@ function logTransformation<T extends (...args: any[]) => any>(
 }
 
 /**
- * Complete SQL transformer for refine-sql
+ * Complete SQL transformer for refine-d1
  */
 export class SqlTransformer {
   private filterTransformer: SqlFilterTransformer;

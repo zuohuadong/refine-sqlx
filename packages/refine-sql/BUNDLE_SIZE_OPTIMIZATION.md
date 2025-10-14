@@ -1,6 +1,6 @@
-# refine-sql 包体积优化方案
+# refine-d1 包体积优化方案
 
-当前 refine-sql 已经比 refine-sqlx 小 85%（23kB vs 150kB），但仍有进一步优化空间。
+当前 refine-d1 已经比 refine-sqlx 小 85%（23kB vs 150kB），但仍有进一步优化空间。
 
 ## 当前包体积分析
 
@@ -29,16 +29,16 @@
 #### 解决方案
 
 ```typescript
-// 核心包 (refine-sql/core) - 8kB
+// 核心包 (refine-d1/core) - 8kB
 export { createProvider } from './core';
 
-// 兼容层 (refine-sql/compat) - 3kB
+// 兼容层 (refine-d1/compat) - 3kB
 export { createSQLiteProvider } from './compat';
 
-// 高级功能 (refine-sql/advanced) - 5kB
+// 高级功能 (refine-d1/advanced) - 5kB
 export { TransactionManager, AdvancedUtils } from './advanced';
 
-// 链式查询 (refine-sql/query) - 6kB
+// 链式查询 (refine-d1/query) - 6kB
 export { SqlxChainQuery } from './query';
 ```
 
@@ -46,14 +46,14 @@ export { SqlxChainQuery } from './query';
 
 ```typescript
 // 只需要基础功能 - 8kB
-import { createProvider } from 'refine-sql/core';
+import { createProvider } from 'refine-d1/core';
 
 // 需要 refine-sqlx 兼容 - 11kB
-import { createSQLiteProvider } from 'refine-sql/compat';
+import { createSQLiteProvider } from 'refine-d1/compat';
 
 // 需要高级功能 - 13kB
-import { createProvider } from 'refine-sql/core';
-import { TransactionManager } from 'refine-sql/advanced';
+import { createProvider } from 'refine-d1/core';
+import { TransactionManager } from 'refine-d1/advanced';
 ```
 
 ### 2. 移除外部依赖 (收益: -5kB)
@@ -131,29 +131,29 @@ export * from './chain-query';
 
 为不同运行时环境提供特化版本：
 
-#### Cloudflare Workers 版本 (refine-sql/d1)
+#### Cloudflare Workers 版本 (refine-d1/d1)
 
 ```typescript
 // 只包含 D1 适配器 - 12kB
-import { createD1Provider } from 'refine-sql/d1';
+import { createD1Provider } from 'refine-d1/d1';
 
 const provider = createD1Provider(env.DB);
 ```
 
-#### Bun 版本 (refine-sql/bun)
+#### Bun 版本 (refine-d1/bun)
 
 ```typescript
 // 只包含 Bun SQLite 适配器 - 10kB
-import { createBunProvider } from 'refine-sql/bun';
+import { createBunProvider } from 'refine-d1/bun';
 
 const provider = createBunProvider('./db.sqlite');
 ```
 
-#### Node.js 版本 (refine-sql/node)
+#### Node.js 版本 (refine-d1/node)
 
 ```typescript
 // 只包含 better-sqlite3 适配器 - 14kB
-import { createNodeProvider } from 'refine-sql/node';
+import { createNodeProvider } from 'refine-d1/node';
 
 const provider = createNodeProvider('./db.sqlite');
 ```
@@ -240,12 +240,12 @@ export class SqlxChainQuery {
 
 ### ✅ 优化后 (已实现)
 
-- 核心包 (refine-sql/core): ~8kB (-65%)
-- 兼容包 (refine-sql/compat): ~11kB (-52%)
-- D1 专用包 (refine-sql/d1): ~6kB (-74%)
-- Bun 专用包 (refine-sql/bun): ~5kB (-78%)
-- Node 专用包 (refine-sql/node): ~9kB (-61%)
-- 完整包 (refine-sql): ~15kB (-35%，移除外部依赖后)
+- 核心包 (refine-d1/core): ~8kB (-65%)
+- 兼容包 (refine-d1/compat): ~11kB (-52%)
+- D1 专用包 (refine-d1/d1): ~6kB (-74%)
+- Bun 专用包 (refine-d1/bun): ~5kB (-78%)
+- Node 专用包 (refine-d1/node): ~9kB (-61%)
+- 完整包 (refine-d1): ~15kB (-35%，移除外部依赖后)
 
 ### 使用场景对比
 
@@ -263,11 +263,11 @@ export class SqlxChainQuery {
 
 ```typescript
 // 现有代码继续工作
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 // 新的优化导入
-import { createProvider } from 'refine-sql/core';
-import { createD1Provider } from 'refine-sql/d1';
+import { createProvider } from 'refine-d1/core';
+import { createD1Provider } from 'refine-d1/d1';
 ```
 
 ## 实施优先级
@@ -277,4 +277,4 @@ import { createD1Provider } from 'refine-sql/d1';
 3. **中优先级**: 运行时特化版本 (特定场景高收益)
 4. **低优先级**: 高级压缩优化 (边际收益)
 
-通过这些优化，refine-sql 可以进一步减少 60-78% 的包体积，特别适合边缘计算和移动端应用。
+通过这些优化，refine-d1 可以进一步减少 60-78% 的包体积，特别适合边缘计算和移动端应用。

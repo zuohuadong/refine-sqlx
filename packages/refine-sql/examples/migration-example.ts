@@ -1,5 +1,5 @@
 /**
- * Complete migration example from refine-sqlx to refine-sql
+ * Complete migration example from refine-sqlx to refine-d1
  * Shows before/after code and compatibility features
  */
 
@@ -55,7 +55,7 @@ async function oldUsageExamples() {
 }
 */
 
-// ===== AFTER (refine-sql) =====
+// ===== AFTER (refine-d1) =====
 
 import {
   createProvider,
@@ -64,7 +64,7 @@ import {
   MigrationHelpers,
   type TableSchema,
   type MigrationConfig
-} from 'refine-sql';
+} from 'refine-d1';
 
 // Simple TypeScript schema definition (no Drizzle needed)
 interface MySchema extends TableSchema {
@@ -159,7 +159,7 @@ async function compatibilityExamples() {
 // ===== ADVANCED FEATURES =====
 
 async function advancedExamples() {
-  // Enhanced aggregation (new in refine-sql)
+  // Enhanced aggregation (new in refine-d1)
   const userStats = await dataProvider
     .from('users')
     .where('status', 'eq', 'active')
@@ -169,7 +169,7 @@ async function advancedExamples() {
       { function: 'max', column: 'created_at', alias: 'latest_user' },
     ]);
 
-  // Batch processing (new in refine-sql)
+  // Batch processing (new in refine-d1)
   const allUsers = [];
   for await (const userChunk of dataProvider.from('users').chunk(100)) {
     allUsers.push(...userChunk);
@@ -327,7 +327,7 @@ export {
 To run this example:
 
 1. Install dependencies:
-   npm install refine-sql
+   npm install refine-d1
 
 2. Create database:
    sqlite3 database.db < schema.sql

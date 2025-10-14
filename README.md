@@ -24,7 +24,7 @@ A powerful, type-safe data provider with multi-database support using Drizzle OR
 npm install refine-sqlx drizzle-orm
 ```
 
-### ⚡ [refine-sql](./packages/refine-sql)
+### ⚡ [refine-d1](./packages/refine-d1)
 
 A lightweight, cross-platform SQL data provider with native runtime support.
 
@@ -34,7 +34,7 @@ A lightweight, cross-platform SQL data provider with native runtime support.
 - **Lightweight**: Minimal dependencies
 
 ```bash
-npm install refine-sql
+npm install refine-d1
 ```
 
 ## Quick Start
@@ -63,7 +63,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### For Simple SQL Operations
 
-Use **refine-sql** if you need:
+Use **refine-d1** if you need:
 
 - Lightweight SQLite-only solution
 - Raw SQL control
@@ -71,17 +71,17 @@ Use **refine-sql** if you need:
 - Minimal setup
 
 ```typescript
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM Compatibility - Near 100% API Compatibility!
 
-**refine-sql** now provides **near 100% API compatibility** with refine-sqlx, allowing users to seamlessly migrate or use both API styles simultaneously:
+**refine-d1** now provides **near 100% API compatibility** with refine-sqlx, allowing users to seamlessly migrate or use both API styles simultaneously:
 
 ```typescript
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./database.db');
 
@@ -121,7 +121,7 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 Compatibility Matrix
 
-| Feature Category      | refine-sql | refine-sqlx | Compatibility | Notes                           |
+| Feature Category      | refine-d1 | refine-sqlx | Compatibility | Notes                           |
 | --------------------- | ---------- | ----------- | ------------- | ------------------------------- |
 | Basic CRUD            | ✅         | ✅          | 100%          | Fully compatible                |
 | Chain Queries         | `from()`   | `from()`    | 100%          | Unified API                     |
@@ -140,13 +140,13 @@ await dataProvider.transaction(async tx => {
 - 📦 **Smaller Bundle**: Lightweight implementation, reduced bundle size
 - 🛡️ **Type Safety**: Maintains same TypeScript type inference
 
-See our [Compatibility Guide](./packages/refine-sql/COMPATIBILITY.md) for detailed information.
+See our [Compatibility Guide](./packages/refine-d1/COMPATIBILITY.md) for detailed information.
 
 **Test Validation**: All 36 compatibility tests pass, ensuring API behavior consistency and type safety.
 
 ## Features Comparison
 
-| Feature                | refine-sqlx                  | refine-sql                         |
+| Feature                | refine-sqlx                  | refine-d1                         |
 | ---------------------- | ---------------------------- | ---------------------------------- |
 | **Databases**          | PostgreSQL, MySQL, SQLite    | SQLite only                        |
 | **Type Safety**        | Full schema inference        | Basic TypeScript                   |
@@ -214,12 +214,12 @@ function App() {
 }
 ```
 
-### Simple Todo App with refine-sql
+### Simple Todo App with refine-d1
 
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./todos.db');
 
@@ -246,7 +246,7 @@ CREATE TABLE todos (
 
 ## Runtime Support
 
-| Runtime                | refine-sqlx           | refine-sql        |
+| Runtime                | refine-sqlx           | refine-d1        |
 | ---------------------- | --------------------- | ----------------- |
 | **Bun**                | ✅ Native SQL drivers | ✅ bun:sqlite     |
 | **Node.js**            | ✅ Standard drivers   | ✅ better-sqlite3 |
@@ -265,7 +265,7 @@ CREATE TABLE todos (
 ```bash
 # Clone the repository
 git clone https://github.com/zuohuadong/refine-sqlx.git
-cd refine-sql
+cd refine-d1
 
 # Install dependencies
 bun install
@@ -283,10 +283,10 @@ bun run typecheck
 ### Project Structure
 
 ```
-refine-sql/
+refine-d1/
 ├── packages/
 │   ├── refine-sqlx/         # Full-featured ORM data provider
-│   └── refine-sql/          # Lightweight SQL data provider
+│   └── refine-d1/          # Lightweight SQL data provider
 ├── .github/
 │   └── workflows/           # CI/CD workflows
 ├── .changeset/              # Version management
@@ -385,7 +385,7 @@ MIT © [RefineORM Team](https://github.com/zuohuadong/refine-sqlx)
 npm install refine-sqlx drizzle-orm
 ```
 
-### ⚡ [refine-sql](./packages/refine-sql)
+### ⚡ [refine-d1](./packages/refine-d1)
 
 一个轻量级、跨平台的 SQL 数据提供器，支持原生运行时。
 
@@ -395,7 +395,7 @@ npm install refine-sqlx drizzle-orm
 - **轻量级**: 最小依赖
 
 ```bash
-npm install refine-sql
+npm install refine-d1
 ```
 
 ## 快速开始
@@ -424,7 +424,7 @@ const dataProvider = await createPostgreSQLProvider(
 
 #### 简单 SQL 操作
 
-如果您需要以下功能，请使用 **refine-sql**：
+如果您需要以下功能，请使用 **refine-d1**：
 
 - 轻量级 SQLite 专用解决方案
 - 原生 SQL 控制
@@ -432,17 +432,17 @@ const dataProvider = await createPostgreSQLProvider(
 - 最小设置
 
 ```typescript
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./database.db');
 ```
 
 #### 🔄 ORM 兼容性 - 接近 100% API 兼容性！
 
-**refine-sql** 现在提供了与 refine-sqlx **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
+**refine-d1** 现在提供了与 refine-sqlx **接近 100% 的 API 兼容性**，让用户可以无缝迁移或同时使用两套 API：
 
 ```typescript
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./database.db');
 
@@ -482,7 +482,7 @@ await dataProvider.transaction(async tx => {
 
 ### 🎯 兼容性对照表
 
-| 功能类别  | refine-sql | refine-sqlx | 兼容性 | 说明                         |
+| 功能类别  | refine-d1 | refine-sqlx | 兼容性 | 说明                         |
 | --------- | ---------- | ----------- | ------ | ---------------------------- |
 | 基础 CRUD | ✅         | ✅          | 100%   | 完全兼容                     |
 | 链式查询  | `from()`   | `from()`    | 100%   | 统一 API                     |
@@ -501,13 +501,13 @@ await dataProvider.transaction(async tx => {
 - 📦 **更小体积**: 轻量级实现，减少 bundle 大小
 - 🛡️ **类型安全**: 保持相同的 TypeScript 类型推断
 
-查看我们的 [兼容性指南](./packages/refine-sql/COMPATIBILITY.md) 了解详细信息。
+查看我们的 [兼容性指南](./packages/refine-d1/COMPATIBILITY.md) 了解详细信息。
 
 **测试验证**: 36 个兼容性测试全部通过，确保 API 行为一致性和类型安全。
 
 ## 功能对比
 
-| 功能            | refine-sqlx               | refine-sql               |
+| 功能            | refine-sqlx               | refine-d1               |
 | --------------- | ------------------------- | ------------------------ |
 | **数据库**      | PostgreSQL, MySQL, SQLite | 仅 SQLite                |
 | **类型安全**    | 完整模式推断              | 基础 TypeScript          |
@@ -575,12 +575,12 @@ function App() {
 }
 ```
 
-### 使用 refine-sql 的简单待办应用
+### 使用 refine-d1 的简单待办应用
 
 ```typescript
 // app.tsx
 import { Refine } from '@refinedev/core';
-import { createProvider } from 'refine-sql';
+import { createProvider } from 'refine-d1';
 
 const dataProvider = createProvider('./todos.db');
 
@@ -607,7 +607,7 @@ CREATE TABLE todos (
 
 ## 运行时支持
 
-| 运行时                 | refine-sqlx       | refine-sql        |
+| 运行时                 | refine-sqlx       | refine-d1        |
 | ---------------------- | ----------------- | ----------------- |
 | **Bun**                | ✅ 原生 SQL 驱动  | ✅ bun:sqlite     |
 | **Node.js**            | ✅ 标准驱动       | ✅ better-sqlite3 |
@@ -626,7 +626,7 @@ CREATE TABLE todos (
 ```bash
 # 克隆仓库
 git clone https://github.com/zuohuadong/refine-sqlx.git
-cd refine-sql
+cd refine-d1
 
 # 安装依赖
 bun install
@@ -644,10 +644,10 @@ bun run typecheck
 ### 项目结构
 
 ```
-refine-sql/
+refine-d1/
 ├── packages/
 │   ├── refine-sqlx/          # 功能完整的 ORM 数据提供器
-│   └── refine-sql/          # 轻量级 SQL 数据提供器
+│   └── refine-d1/          # 轻量级 SQL 数据提供器
 ├── .github/
 │   └── workflows/           # CI/CD 工作流
 ├── .changeset/              # 版本管理

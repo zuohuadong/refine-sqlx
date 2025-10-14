@@ -161,7 +161,7 @@ async function executeVersioning(strategy, newVersion) {
       // Update all workspace packages
       const packages = [
         'packages/refine-sqlx',
-        'packages/refine-sql',
+        'packages/refine-d1',
         'packages/refine-core-utils',
       ];
       for (const pkg of packages) {

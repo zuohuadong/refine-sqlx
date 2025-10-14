@@ -1,6 +1,6 @@
 {
-  "name": "refine-sql",
-  "version": "0.3.2",
+  "name": "refine-d1",
+  "version": "0.3.3",
   "description": "A Refine cross database data provider with SQL support.",
   "type": "module",
   "license": "MIT",
@@ -8,14 +8,14 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "homepage": "https://github.com/medz/refine-sql#readme",
+  "homepage": "https://github.com/zuohuadong/refine-d1#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sql.git",
-    "directory": "packages/refine-sql"
+    "url": "git+https://github.com/zuohuadong/refine-d1.git",
+    "directory": "packages/refine-d1"
   },
   "bugs": {
-    "url": "https://github.com/medz/refine-sql/issues"
+    "url": "https://github.com/zuohuadong/refine-d1/issues"
   },
   "publishConfig": {
     "access": "public",

@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of refine-sql package as part of monorepo structure
+- Initial release of refine-d1 package as part of monorepo structure
 - Enhanced SQLite-focused data provider for Refine applications
 - Runtime detection for optimal SQLite drivers (bun:sqlite vs better-sqlite3)
 - Chain query builder for fluent SQL operations
@@ -79,5 +79,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared utilities ensure consistent behavior between packages
 - Gradual migration support with feature parity
 
-[Unreleased]: https://github.com/medz/refine-sql/compare/refine-sql@0.0.1...HEAD
-[0.0.1]: https://github.com/medz/refine-sql/releases/tag/refine-sql@0.0.1
+[Unreleased]: https://github.com/zuohuadong/refine-d1/compare/refine-d1@0.0.1...HEAD
+[0.0.1]: https://github.com/zuohuadong/refine-d1/releases/tag/refine-d1@0.0.1

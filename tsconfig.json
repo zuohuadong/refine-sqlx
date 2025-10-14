@@ -50,7 +50,7 @@
   "references": [
     { "path": "./packages/refine-core-utils" },
     { "path": "./packages/refine-sqlx" },
-    { "path": "./packages/refine-sql" }
+    { "path": "./packages/refine-d1" }
   ],
   "exclude": ["node_modules", "**/dist/**"]
 }

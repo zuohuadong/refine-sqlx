@@ -1,6 +1,6 @@
 /**
- * Compatibility layer for smooth migration from refine-sqlx to refine-sql
- * Provides refine-sqlx compatible APIs while maintaining refine-sql's performance benefits
+ * Compatibility layer for smooth migration from refine-sqlx to refine-d1
+ * Provides refine-sqlx compatible APIs while maintaining refine-d1's performance benefits
  *
  * Key compatibility features:
  * - All WHERE and ORDER BY methods available directly in SqlxChainQuery

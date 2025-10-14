@@ -1,5 +1,5 @@
 /**
- * refine-sql/node - Node.js 专用版本
+ * refine-d1/node - Node.js 专用版本
  * 只包含 better-sqlite3 和 node:sqlite 适配器
  */
 
@@ -27,7 +27,7 @@ export function createNodeProvider<TSchema extends TableSchema = TableSchema>(
 ): NodeDataProvider<TSchema> {
   if (options?.debug) {
     console.log(
-      `[refine-sql/node] Creating Node.js SQLite provider with ${options.driver || 'auto'} driver`
+      `[refine-d1/node] Creating Node.js SQLite provider with ${options.driver || 'auto'} driver`
     );
   }
 

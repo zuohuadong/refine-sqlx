@@ -1,5 +1,5 @@
 /**
- * Migration utilities and helpers for smooth transition from refine-sqlx to refine-sql
+ * Migration utilities and helpers for smooth transition from refine-sqlx to refine-d1
  */
 
 import type { BaseRecord } from '@refinedev/core';
@@ -231,7 +231,7 @@ export interface MigrationCompatibleChainQuery<
  */
 export class CodeTransformer {
   /**
-   * Transform refine-sqlx code to refine-sql compatible code
+   * Transform refine-sqlx code to refine-d1 compatible code
    */
   static transformCode(code: string): string {
     let transformed = code;
@@ -246,7 +246,7 @@ export class CodeTransformer {
             switch (imp) {
               case 'createPostgreSQLProvider':
               case 'createMySQLProvider':
-                return `// ${imp} - Not available in refine-sql (SQLite only)`;
+                return `// ${imp} - Not available in refine-d1 (SQLite only)`;
               case 'createSQLiteProvider':
                 return 'createProvider';
               default:
@@ -256,7 +256,7 @@ export class CodeTransformer {
           .filter((imp: string) => !imp.startsWith('//'))
           .join(', ');
 
-        return `import { ${transformedImports} } from 'refine-sql';`;
+        return `import { ${transformedImports} } from 'refine-d1';`;
       }
     );
 
@@ -307,7 +307,7 @@ export class CodeTransformer {
       report.errors.push({
         type: 'unsupported-database',
         message:
-          'PostgreSQL and MySQL are not supported in refine-sql. Only SQLite is supported.',
+          'PostgreSQL and MySQL are not supported in refine-d1. Only SQLite is supported.',
         line: 0,
       });
     }
@@ -361,7 +361,7 @@ export interface MigrationReport {
  */
 export const MigrationHelpers = {
   /**
-   * Check if current project is compatible with refine-sql
+   * Check if current project is compatible with refine-d1
    */
   checkCompatibility(packageJson: any): CompatibilityCheck {
     const result: CompatibilityCheck = {
@@ -380,7 +380,7 @@ export const MigrationHelpers = {
       result.issues.push({
         type: 'dependency',
         message:
-          'drizzle-orm dependency detected. refine-sql uses native SQL instead of Drizzle ORM.',
+          'drizzle-orm dependency detected. refine-d1 uses native SQL instead of Drizzle ORM.',
         severity: 'warning',
       });
     }
@@ -389,7 +389,7 @@ export const MigrationHelpers = {
       result.issues.push({
         type: 'database',
         message:
-          'PostgreSQL/MySQL dependencies detected. refine-sql only supports SQLite.',
+          'PostgreSQL/MySQL dependencies detected. refine-d1 only supports SQLite.',
         severity: 'error',
       });
       result.compatible = false;
@@ -418,7 +418,7 @@ export const MigrationHelpers = {
         'Check for custom Drizzle ORM queries',
       ],
       steps: [
-        'Install refine-sql package',
+        'Install refine-d1 package',
         'Update import statements',
         'Replace provider creation calls',
         'Update chain query method calls',

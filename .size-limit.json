@@ -7,8 +7,8 @@
     "ignore": ["@refinedev/core"]
   },
   {
-    "name": "refine-sql (main)",
-    "path": "packages/refine-sql/dist/index.mjs",
+    "name": "refine-d1 (main)",
+    "path": "packages/refine-d1/dist/index.mjs",
     "limit": "25 KB",
     "gzip": true,
     "ignore": [

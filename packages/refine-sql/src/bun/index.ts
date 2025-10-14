@@ -1,5 +1,5 @@
 /**
- * refine-sql/bun - Bun SQLite 专用版本
+ * refine-d1/bun - Bun SQLite 专用版本
  * 只包含 Bun SQLite 适配器，最小包体积
  */
 
@@ -22,7 +22,7 @@ export function createBunProvider<TSchema extends TableSchema = TableSchema>(
   options?: { debug?: boolean }
 ): BunDataProvider<TSchema> {
   if (options?.debug) {
-    console.log('[refine-sql/bun] Creating Bun SQLite provider');
+    console.log('[refine-d1/bun] Creating Bun SQLite provider');
   }
 
   return createCoreProvider<TSchema>(

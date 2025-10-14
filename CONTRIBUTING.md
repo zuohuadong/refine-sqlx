@@ -4,7 +4,7 @@
 
 ## English
 
-Thank you for your interest in contributing to refine-sqlx and refinProviders project! This guide will help you get started with contributing to our monorepo containing `refine-sqlx`, `refine-sql`, and `@refine-sqlx/core-utils`.
+Thank you for your interest in contributing to refine-sqlx and refinProviders project! This guide will help you get started with contributing to our monorepo containing `refine-sqlx`, `refine-d1`, and `@refine-sqlx/core-utils`.
 
 ## Table of Contents
 
@@ -36,12 +36,12 @@ This project adheres to a code of conduct. By participating, you are expected to
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/refine-sql.git
-   cd refine-sql
+   git clone https://github.com/YOUR_USERNAME/refine-d1.git
+   cd refine-d1
    ```
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/medz/refine-sql.git
+   git remote add upstream https://github.com/zuohuadong/refine-d1.git
    ```
 4. **Install dependencies**:
    ```bash
@@ -88,7 +88,7 @@ We recommend using VS Code with these extensions:
 ## Project Structure
 
 ```
-refine-sql/
+refine-d1/
 ├── packages/
 │   ├── refine-sqlx/              # Multi-database ORM provider
 │   │   ├── src/
@@ -99,7 +99,7 @@ refine-sql/
 │   │   │   └── __tests__/       # Unit tests
 │   │   ├── test/                # Integration tests
 │   │   └── examples/            # Usage examples
-│   ├── refine-sql/             # SQLite-focused provider
+│   ├── refine-d1/             # SQLite-focused provider
 │   │   ├── src/
 │   │   ├── test/
 │   │   └── examples/
@@ -113,7 +113,7 @@ refine-sql/
 ### Package Responsibilities
 
 - **refine-sqlx**: Multi-database support with Drizzle ORM
-- **refine-sql**: Lightweight SQLite-focused provider
+- **refine-d1**: Lightweight SQLite-focused provider
 - **@refine-sqlx/core-utils**: Shared utilities and transformers
 
 ## Development Workflow
@@ -199,7 +199,7 @@ bun run test
 
 # Run tests for specific package
 bun run --filter='refine-sqlx' test
-bun run --filter='refine-sql' test
+bun run --filter='refine-d1' test
 
 # Run integration tests
 bun run test:integration
@@ -418,7 +418,7 @@ Thank you for contributing to making Refine database providers better for everyo
 
 ## 中文
 
-感谢您对 refine-sqlx 和 refine-sql 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-sqlx`、`refine-sql` 和 `@refine-sqlx/core-utils`。
+感谢您对 refine-sqlx 和 refine-d1 项目的贡献兴趣！本指南将帮助您开始为我们的 monorepo 做贡献，该仓库包含 `refine-sqlx`、`refine-d1` 和 `@refine-sqlx/core-utils`。
 
 ## 目录
 
@@ -450,12 +450,12 @@ Thank you for contributing to making Refine database providers better for everyo
 1. **在 GitHub 上 Fork 仓库**
 2. **本地克隆您的 fork**：
    ```bash
-   git clone https://github.com/YOUR_USERNAME/refine-sql.git
-   cd refine-sql
+   git clone https://github.com/YOUR_USERNAME/refine-d1.git
+   cd refine-d1
    ```
 3. **添加上游远程仓库**：
    ```bash
-   git remote add upstream https://github.com/medz/refine-sql.git
+   git remote add upstream https://github.com/zuohuadong/refine-d1.git
    ```
 4. **安装依赖**：
    ```bash
@@ -502,7 +502,7 @@ Thank you for contributing to making Refine database providers better for everyo
 ## 项目结构
 
 ```
-refine-sql/
+refine-d1/
 ├── packages/
 │   ├── refine-sqlx/              # 多数据库 ORM 提供器
 │   │   ├── src/
@@ -513,7 +513,7 @@ refine-sql/
 │   │   │   └── __tests__/       # 单元测试
 │   │   ├── test/                # 集成测试
 │   │   └── examples/            # 使用示例
-│   ├── refine-sql/             # SQLite 专用提供器
+│   ├── refine-d1/             # SQLite 专用提供器
 │   │   ├── src/
 │   │   ├── test/
 │   │   └── examples/
@@ -527,7 +527,7 @@ refine-sql/
 ### 包职责
 
 - **refine-sqlx**: 使用 Drizzle ORM 的多数据库支持
-- **refine-sql**: 轻量级 SQLite 专用提供器
+- **refine-d1**: 轻量级 SQLite 专用提供器
 - **@refine-sqlx/core-utils**: 共享工具和转换器
 
 ## 开发工作流
@@ -613,7 +613,7 @@ bun run test
 
 # 运行特定包的测试
 bun run --filter='refine-sqlx' test
-bun run --filter='refine-sql' test
+bun run --filter='refine-d1' test
 
 # 运行集成测试
 bun run test:integration

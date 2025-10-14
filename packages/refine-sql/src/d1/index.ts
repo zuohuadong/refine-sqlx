@@ -1,5 +1,5 @@
 /**
- * refine-sql/d1 - Cloudflare D1 专用版本
+ * refine-d1/d1 - Cloudflare D1 专用版本
  * 只包含 D1 适配器，最小包体积
  */
 
@@ -22,7 +22,7 @@ export function createD1Provider<TSchema extends TableSchema = TableSchema>(
   options?: { debug?: boolean }
 ): D1DataProvider<TSchema> {
   if (options?.debug) {
-    console.log('[refine-sql/d1] Creating D1 provider for Cloudflare Workers');
+    console.log('[refine-d1/d1] Creating D1 provider for Cloudflare Workers');
   }
 
   return createCoreProvider<TSchema>(database) as D1DataProvider<TSchema>;

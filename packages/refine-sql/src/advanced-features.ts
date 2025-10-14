@@ -1,5 +1,5 @@
 /**
- * Advanced features for refine-sql to match refine-sqlx capabilities
+ * Advanced features for refine-d1 to match refine-sqlx capabilities
  * Includes transactions, batch operations, upsert, and native query builders
  */
 
@@ -17,7 +17,7 @@ export interface TransactionContext {
 }
 
 /**
- * Transaction manager for refine-sql
+ * Transaction manager for refine-d1
  */
 export class TransactionManager {
   private activeTransactions = new Map<string, any>();
@@ -779,7 +779,7 @@ export class DeleteChain {
 }
 
 /**
- * Advanced utility methods for refine-sql
+ * Advanced utility methods for refine-d1
  */
 export class AdvancedUtils {
   constructor(private client: SqlClient) {}

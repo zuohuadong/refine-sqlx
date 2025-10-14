@@ -8,14 +8,14 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "homepage": "https://github.com/medz/refine-sql#readme",
+  "homepage": "https://github.com/zuohuadong/refine-d1#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sql.git",
+    "url": "git+https://github.com/zuohuadong/refine-d1.git",
     "directory": "packages/refine-sqlx"
   },
   "bugs": {
-    "url": "https://github.com/medz/refine-sql/issues"
+    "url": "https://github.com/zuohuadong/refine-d1/issues"
   },
   "publishConfig": {
     "access": "public",

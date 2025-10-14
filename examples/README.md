@@ -1,10 +1,10 @@
-# refine-sql Usage Examples
+# refine-d1 Usage Examples
 
 [English](#english) | [中文](#中文)
 
 ## English
 
-This directory contains comprehensive examples showing how to use refine-sql in different scenarios.
+This directory contains comprehensive examples showing how to use refine-d1 in different scenarios.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ This directory contains comprehensive examples showing how to use refine-sql in 
 A basic blog application demonstrating CRUD operations with users and posts.
 
 **Files:**
-- `blog-app-sqlx.ts` - Complete blog application using refine-sql with SQLite
+- `blog-app-sqlx.ts` - Complete blog application using refine-d1 with SQLite
 - `basic-usage.ts` - Basic usage examples and API overview
 - `blog-app-migration.ts` - Migration guide from traditional DataProvider
 
@@ -37,7 +37,7 @@ An e-commerce example with products, orders, and customers.
 
 **Files:**
 - `ecommerce-orm.ts` - Using refine-sqlx with MySQL
-- `ecommerce-sql.ts` - Using refine-sql with SQLite
+- `ecommerce-sql.ts` - Using refine-d1 with SQLite
 - `ecommerce-schema.sql` - Database schema
 
 **Features:**
@@ -144,7 +144,7 @@ A CMS with pages, media, and user roles.
 Examples optimized for Bun runtime.
 
 **Files:**
-- `bun-server.ts` - Bun HTTP server with refine-sql
+- `bun-server.ts` - Bun HTTP server with refine-d1
 - `bun-websockets.ts` - Real-time features with WebSockets
 - `bun-performance.ts` - Performance optimizations
 
@@ -297,7 +297,7 @@ If you have questions about the examples:
 
 1. Check the example's README.md file
 2. Look at similar examples for patterns
-3. Ask questions in [GitHub Discussions](https://github.com/medz/refine-sql/discussions)
-4. Report issues in [GitHub Issues](https://github.com/medz/refine-sql/issues)
+3. Ask questions in [GitHub Discussions](https://github.com/zuohuadong/refine-d1/discussions)
+4. Report issues in [GitHub Issues](https://github.com/zuohuadong/refine-d1/issues)
 
 Happy coding! 🚀

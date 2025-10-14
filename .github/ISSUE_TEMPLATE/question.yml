@@ -16,7 +16,7 @@ body:
       description: Which package is your question about?
       options:
         - refine-sqlx
-        - refine-sql
+        - refine-d1
         - Both
         - General usage
     validations:

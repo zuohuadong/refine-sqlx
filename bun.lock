@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "refine-sql-monorepo",
+      "name": "refine-d1-monorepo",
       "devDependencies": {
         "@changesets/changelog-github": "0.5.1",
         "@changesets/cli": "2.29.7",
@@ -41,8 +41,8 @@
         "@refinedev/core": "^4.0.0",
       },
     },
-    "packages/refine-sql": {
-      "name": "refine-sql",
+    "packages/refine-d1": {
+      "name": "refine-d1",
       "version": "0.3.2",
       "dependencies": {
         "refine-core-utils": "workspace:*",
@@ -1315,7 +1315,7 @@
 
     "refine-core-utils": ["refine-core-utils@workspace:packages/refine-core-utils"],
 
-    "refine-sql": ["refine-sql@workspace:packages/refine-sql"],
+    "refine-d1": ["refine-d1@workspace:packages/refine-d1"],
 
     "refine-sqlx": ["refine-sqlx@workspace:packages/refine-sqlx"],
 

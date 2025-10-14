@@ -1,5 +1,5 @@
 /**
- * Complete migration example from refine-sqlx to refine-sql
+ * Complete migration example from refine-sqlx to refine-d1
  * Shows before/after code and step-by-step migration process
  */
 
@@ -33,7 +33,7 @@ const schema = { users, posts };
 const dataProvider = createSQLiteProvider('./database.db', schema);
 */
 
-// ===== AFTER (refine-sql with refine-sqlx compatibility) =====
+// ===== AFTER (refine-d1 with refine-sqlx compatibility) =====
 
 import { 
   createSQLiteProvider,
@@ -81,7 +81,7 @@ const dataProvider: RefineOrmCompatibleProvider<MySchema> = createSQLiteProvider
 // ===== MIGRATION EXAMPLES =====
 
 async function demonstrateMigration() {
-  console.log('🚀 refine-sqlx to refine-sql Migration Example');
+  console.log('🚀 refine-sqlx to refine-d1 Migration Example');
   
   // 1. Check compatibility
   console.log('\n1️⃣ Checking compatibility...');
@@ -106,7 +106,7 @@ async function demonstrateMigration() {
   console.log('\n3️⃣ Bundle size comparison:');
   const bundleComparison = MigrationHelpers.getBundleSizeComparison();
   console.log(`   refine-sqlx: ${bundleComparison.refineOrm}`);
-  console.log(`   refine-sql: ${bundleComparison.refineSql}`);
+  console.log(`   refine-d1: ${bundleComparison.refineSql}`);
   console.log(`   Savings: ${bundleComparison.savings}`);
   
   // 4. Code transformation example
@@ -361,7 +361,7 @@ async function main() {
   await demonstrateAdvancedChainQueries();
   
   console.log('\n🎉 Migration demonstration completed!');
-  console.log('\n💡 Key benefits of refine-sql:');
+  console.log('\n💡 Key benefits of refine-d1:');
   console.log('   • 85% smaller bundle size');
   console.log('   • Same familiar API as refine-sqlx');
   console.log('   • Optimized for SQLite and Cloudflare D1');

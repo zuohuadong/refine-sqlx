@@ -72,5 +72,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared transformation layer to reduce code duplication
 - Full test coverage with mock and integration tests
 
-[Unreleased]: https://github.com/medz/refine-sql/compare/refine-sqlx@0.0.1...HEAD
-[0.0.1]: https://github.com/medz/refine-sql/releases/tag/refine-sqlx@0.0.1
+[Unreleased]: https://github.com/zuohuadong/refine-d1/compare/refine-sqlx@0.0.1...HEAD
+[0.0.1]: https://github.com/zuohuadong/refine-d1/releases/tag/refine-sqlx@0.0.1

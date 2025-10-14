@@ -1,14 +1,14 @@
 /**
- * refine-sql Basic Usage Example
+ * refine-d1 Basic Usage Example
  * 
- * refine-sql is a lightweight package for SQLite and Cloudflare D1 environments
+ * refine-d1 is a lightweight package for SQLite and Cloudflare D1 environments
  * Fully compatible with refine-sqlx API, making migration from refine-sqlx easy
  */
 
-import { createRefineSQL } from '../packages/refine-sql/src/index.js';
+import { createRefineSQL } from '../packages/refine-d1/src/index.js';
 
 async function main() {
-  console.log('🚀 refine-sql - SQLite/D1 精简包示例\n');
+  console.log('🚀 refine-d1 - SQLite/D1 精简包示例\n');
 
   try {
     // ========== Auto-detect Runtime Environment ==========
@@ -53,7 +53,7 @@ async function main() {
     console.log('   ⚡ Node.js: Uses better-sqlite3, high performance');
     console.log('   ⚡ Cloudflare D1: Edge computing optimized, low latency\n');
 
-    console.log('🎉 refine-sql example completed!');
+    console.log('🎉 refine-d1 example completed!');
     console.log('💡 Tip: Fully compatible with refine-sqlx API, zero-cost migration');
 
   } catch (error) {

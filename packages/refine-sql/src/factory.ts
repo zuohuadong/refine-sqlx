@@ -1,5 +1,5 @@
 /**
- * Modern factory function for creating refine-sql data providers
+ * Modern factory function for creating refine-d1 data providers
  */
 
 import createRefineSQL, { type EnhancedDataProvider } from './data-provider';
@@ -23,7 +23,7 @@ export interface SQLiteConfig<TSchema extends TableSchema = TableSchema> {
 }
 
 /**
- * Create a refine-sql data provider with validation and error handling
+ * Create a refine-d1 data provider with validation and error handling
  */
 export function createProvider<TSchema extends TableSchema = TableSchema>(
   config: SQLiteConfig<TSchema>

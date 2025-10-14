@@ -461,10 +461,10 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // 调试日志
   if (config.options?.debug) {
     console.log(
-      '[refine-sql/compat] SQLite provider created with refine-sqlx compatibility'
+      '[refine-d1/compat] SQLite provider created with refine-sqlx compatibility'
     );
     console.log(
-      '[refine-sql/compat] Schema tables:',
+      '[refine-d1/compat] Schema tables:',
       Object.keys(config.schema)
     );
   }

@@ -270,9 +270,9 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
   // Enable debug logging if configured
   if (config.options?.debug && process.env.NODE_ENV === 'development') {
     console.log(
-      '[refine-sql] SQLite provider created with refine-sqlx compatibility'
+      '[refine-d1] SQLite provider created with refine-sqlx compatibility'
     );
-    console.log('[refine-sql] Schema tables:', Object.keys(config.schema));
+    console.log('[refine-d1] Schema tables:', Object.keys(config.schema));
   }
 
   return enhancedProvider;
@@ -322,7 +322,7 @@ export function createProvider<TSchema extends TableSchema = TableSchema>(
 ): RefineOrmCompatibleProvider<TSchema> {
   if (config.database !== 'sqlite') {
     throw new Error(
-      `Database type '${config.database}' is not supported. refine-sql only supports SQLite.`
+      `Database type '${config.database}' is not supported. refine-d1 only supports SQLite.`
     );
   }
 
@@ -338,7 +338,7 @@ export function createProvider<TSchema extends TableSchema = TableSchema>(
  */
 export const MigrationHelpers = {
   /**
-   * Check if current project is compatible with refine-sql
+   * Check if current project is compatible with refine-d1
    */
   checkCompatibility(packageJson: any): {
     compatible: boolean;
@@ -354,11 +354,11 @@ export const MigrationHelpers = {
       ...packageJson.devDependencies,
     };
     if (deps['pg'] || deps['postgres']) {
-      issues.push('PostgreSQL is not supported in refine-sql');
+      issues.push('PostgreSQL is not supported in refine-d1');
       recommendations.push('Consider using refine-sqlx for PostgreSQL support');
     }
     if (deps['mysql2'] || deps['mysql']) {
-      issues.push('MySQL is not supported in refine-sql');
+      issues.push('MySQL is not supported in refine-d1');
       recommendations.push('Consider using refine-sqlx for MySQL support');
     }
 
@@ -369,7 +369,7 @@ export const MigrationHelpers = {
       deps['@cloudflare/workers-types']
     ) {
       recommendations.push(
-        'SQLite support detected - good for refine-sql migration'
+        'SQLite support detected - good for refine-d1 migration'
       );
     }
 
@@ -381,8 +381,8 @@ export const MigrationHelpers = {
    */
   generateChecklist(): string[] {
     return [
-      '1. Update import statements from refine-sqlx to refine-sql',
-      '2. Replace createSQLiteProvider with refine-sql version',
+      '1. Update import statements from refine-sqlx to refine-d1',
+      '2. Replace createSQLiteProvider with refine-d1 version',
       '3. Update schema definitions (remove Drizzle dependency)',
       '4. Test chain query methods (most should work unchanged)',
       '5. Update relationship loading if using complex relationships',
@@ -413,14 +413,14 @@ export const MigrationHelpers = {
  */
 export const CodeTransformer = {
   /**
-   * Transform refine-sqlx import statements to refine-sql
+   * Transform refine-sqlx import statements to refine-d1
    */
   transformImports(code: string): string {
     return code
-      .replace(/from ['"]refine-sqlx['"]/g, "from 'refine-sql'")
+      .replace(/from ['"]refine-sqlx['"]/g, "from 'refine-d1'")
       .replace(
         /import.*from ['"]refine-sqlx['"]/g,
-        "import { createSQLiteProvider } from 'refine-sql'"
+        "import { createSQLiteProvider } from 'refine-d1'"
       );
   },
 

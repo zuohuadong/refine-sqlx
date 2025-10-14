@@ -34,4 +34,4 @@ console.log('- Consolidated duplicate describe blocks in adapters.test.ts');
 console.log('- Improved skipped tests in detect-sqlite.test.ts');
 console.log('- Fixed SQL query expectations in data-provider.test.ts');
 console.log('- Added coverage thresholds to vitest configs');
-console.log('- Created vitest.config.ts for refine-sql package');
+console.log('- Created vitest.config.ts for refine-d1 package');

@@ -1,7 +1,7 @@
 /**
- * Migration Example: From refine-sqlx to refine-sql
+ * Migration Example: From refine-sqlx to refine-d1
  * 
- * refine-sql is a streamlined version of refine-sqlx designed for SQLite/D1 environments
+ * refine-d1 is a streamlined version of refine-sqlx designed for SQLite/D1 environments
  * Fully compatible with refine-sqlx API, enabling zero-cost migration
  */
 
@@ -16,9 +16,9 @@ const mysqlProvider = await createMySQLProvider('mysql://...', schema);
 const sqliteProvider = await createSQLiteProvider('./app.db', schema);
 */
 
-// ===== After Migration (refine-sql - SQLite/D1 Specialized Lightweight Package) =====
+// ===== After Migration (refine-d1 - SQLite/D1 Specialized Lightweight Package) =====
 
-import { createProvider } from '../packages/refine-sql/src/index.js';
+import { createProvider } from '../packages/refine-d1/src/index.js';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
 
 // Define TypeScript types for better development experience
@@ -50,7 +50,7 @@ type UserRecord = BlogSchema['users'];
 type PostRecord = BlogSchema['posts'];
 
 async function main() {
-  console.log('🚀 Blog App Migration Example - refine-sqlx to refine-sql');
+  console.log('🚀 Blog App Migration Example - refine-sqlx to refine-d1');
 
   // Create data provider - compatible with refine-sqlx API
   const dataProvider = createProvider('./blog_migration.db');
@@ -129,7 +129,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
   const post = await dataProvider.create({
     resource: 'posts',
     variables: {
-      title: 'Migrating from refine-sqlx to refine-sql',
+      title: 'Migrating from refine-sqlx to refine-d1',
       content: 'This article explains how to smoothly migrate...',
       author_id: user.data.id,
       created_at: new Date().toISOString()
@@ -174,7 +174,7 @@ async function demonstrateCompatibleCRUD(dataProvider: any) {
     resource: 'posts',
     id: post.data.id,
     variables: {
-      title: 'Migrating from refine-sqlx to refine-sql (Updated)',
+      title: 'Migrating from refine-sqlx to refine-d1 (Updated)',
       content: 'This article explains how to smoothly migrate, including detailed steps...'
     }
   });

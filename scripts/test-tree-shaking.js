@@ -10,7 +10,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
 
-const packages = ['refine-sqlx', 'refine-sql', 'refine-core-utils'];
+const packages = ['refine-sqlx', 'refine-d1', 'refine-core-utils'];
 
 console.log('🌳 Testing tree-shaking support and bundle optimization...\n');
 
@@ -93,7 +93,7 @@ for (const pkg of packages) {
 console.log('Testing selective import for ${pkg}');
 console.log('createPostgreSQLProvider imported successfully');
 `;
-    } else if (pkg === 'refine-sql') {
+    } else if (pkg === 'refine-d1') {
       importStatement = `import { createProvider } from '${join(process.cwd(), distPath, 'index.mjs')}';`;
       testCode = `
 console.log('Testing selective import for ${pkg}');
