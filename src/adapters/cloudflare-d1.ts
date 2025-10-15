@@ -53,9 +53,7 @@ export default function createCloudflareD1Adapter(d1: D1Database): SqlClient {
    * D1's batch API provides atomic transactions with automatic rollback.
    * This wrapper provides a transaction-like API for consistency with other adapters.
    */
-  async function transaction<T>(
-    fn: (tx: SqlClient) => Promise<T>,
-  ): Promise<T> {
+  async function transaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
     // Collect all queries executed within the transaction
     const queries: SqlQuery[] = [];
 

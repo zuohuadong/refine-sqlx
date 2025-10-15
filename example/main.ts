@@ -1,8 +1,8 @@
-import { createRefineSQL } from 'refine-sqlx';
-import { Database as BunDatabase } from 'bun:sqlite';
-import { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import { D1Database } from '@cloudflare/workers-types';
 import BetterSqlite3 from 'better-sqlite3';
+import { Database as BunDatabase } from 'bun:sqlite';
+import { DatabaseSync as NodeDatabase } from 'node:sqlite';
+import { createRefineSQL } from 'refine-sqlx';
 
 //---------- Detect SQLite, Auto matching supported
 const provider = createRefineSQL(':memory:');

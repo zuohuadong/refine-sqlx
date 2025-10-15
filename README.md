@@ -46,9 +46,7 @@ import { createRefineSQL } from 'refine-sqlx';
 const dataProvider = createRefineSQL(':memory:');
 
 const App = () => (
-  <Refine dataProvider={dataProvider}>
-    {/* Your app components */}
-  </Refine>
+  <Refine dataProvider={dataProvider}>{/* Your app components */}</Refine>
 );
 ```
 
@@ -116,7 +114,7 @@ import { createRefineSQL } from 'refine-sqlx';
 const dataProvider = createRefineSQL({
   async connect() {
     // Returns your client.
-  }
+  },
 });
 ```
 
@@ -141,7 +139,7 @@ const customClient: SqlClient = {
   async transaction(fn) {
     // Your custom transaction implementation
     return await fn(this);
-  }
+  },
 };
 
 const dataProvider = createRefineSQL(customClient);
@@ -161,37 +159,26 @@ const dataProvider = createRefineSQL(':memory:');
 // Create a record
 const createResult = await dataProvider.create({
   resource: 'users',
-  variables: {
-    name: 'John Doe',
-    email: 'john@example.com',
-    age: 30
-  }
+  variables: { name: 'John Doe', email: 'john@example.com', age: 30 },
 });
 
 // Get a list with filtering and pagination
 const listResult = await dataProvider.getList({
   resource: 'users',
   pagination: { current: 1, pageSize: 10 },
-  filters: [
-    { field: 'age', operator: 'gte', value: 18 }
-  ],
-  sorters: [
-    { field: 'name', order: 'asc' }
-  ]
+  filters: [{ field: 'age', operator: 'gte', value: 18 }],
+  sorters: [{ field: 'name', order: 'asc' }],
 });
 
 // Update a record
 const updateResult = await dataProvider.update({
   resource: 'users',
   id: 1,
-  variables: { age: 31 }
+  variables: { age: 31 },
 });
 
 // Delete a record
-const deleteResult = await dataProvider.deleteOne({
-  resource: 'users',
-  id: 1
-});
+const deleteResult = await dataProvider.deleteOne({ resource: 'users', id: 1 });
 ```
 
 ### Batch Operations
@@ -203,21 +190,21 @@ const createManyResult = await dataProvider.createMany({
   variables: [
     { name: 'Alice', email: 'alice@example.com', age: 25 },
     { name: 'Bob', email: 'bob@example.com', age: 30 },
-    { name: 'Charlie', email: 'charlie@example.com', age: 35 }
-  ]
+    { name: 'Charlie', email: 'charlie@example.com', age: 35 },
+  ],
 });
 
 // Update multiple records
 const updateManyResult = await dataProvider.updateMany({
   resource: 'users',
   ids: [1, 2, 3],
-  variables: { status: 'active' }
+  variables: { status: 'active' },
 });
 
 // Delete multiple records
 const deleteManyResult = await dataProvider.deleteMany({
   resource: 'users',
-  ids: [1, 2, 3]
+  ids: [1, 2, 3],
 });
 ```
 
@@ -233,12 +220,12 @@ const result = await dataProvider.getList({
     { field: 'age', operator: 'gte', value: 18 },
     { field: 'age', operator: 'lte', value: 65 },
     { field: 'email', operator: 'ne', value: null },
-    { field: 'status', operator: 'in', value: ['active', 'pending'] }
+    { field: 'status', operator: 'in', value: ['active', 'pending'] },
   ],
   sorters: [
     { field: 'created_at', order: 'desc' },
-    { field: 'name', order: 'asc' }
-  ]
+    { field: 'name', order: 'asc' },
+  ],
 });
 ```
 

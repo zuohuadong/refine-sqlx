@@ -20,9 +20,10 @@ This project provides a Refine data provider for SQL databases with cross-platfo
 - Use Drizzle's migration system for database schema changes
 
 **Example**:
+
 ```typescript
 import { drizzle } from 'drizzle-orm/...';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey(),
@@ -38,12 +39,14 @@ export const users = sqliteTable('users', {
 **MANDATORY**: All TypeScript code MUST use **TypeScript 5.0+ decorators** (Stage 3 decorators standard).
 
 **Requirements**:
+
 - ✅ **MUST** use TypeScript 5.0 or higher
 - ✅ **MUST** enable modern decorators in `tsconfig.json`
 - ❌ **DO NOT** use legacy experimental decorators
 - ❌ **DO NOT** set `experimentalDecorators: true`
 
 **tsconfig.json Configuration**:
+
 ```json
 {
   "compilerOptions": {
@@ -51,9 +54,9 @@ export const users = sqliteTable('users', {
     "module": "ESNext",
     "lib": ["ES2022"],
     "moduleResolution": "bundler",
-    "experimentalDecorators": false,  // MUST be false or omitted
-    "emitDecoratorMetadata": false,   // MUST be false or omitted
-    "useDefineForClassFields": true,  // Required for Stage 3 decorators
+    "experimentalDecorators": false, // MUST be false or omitted
+    "emitDecoratorMetadata": false, // MUST be false or omitted
+    "useDefineForClassFields": true, // Required for Stage 3 decorators
     "strict": true,
     "skipLibCheck": true
   }
@@ -61,11 +64,12 @@ export const users = sqliteTable('users', {
 ```
 
 **TypeScript 5.0+ Decorator Syntax**:
+
 ```typescript
 // ✅ CORRECT: Modern TypeScript 5.0+ decorators (Stage 3)
 function logged(value: Function, context: ClassMethodDecoratorContext) {
   const methodName = String(context.name);
-  return function(this: any, ...args: any[]) {
+  return function (this: any, ...args: any[]) {
     console.log(`Calling ${methodName} with:`, args);
     return value.apply(this, args);
   };
@@ -79,7 +83,11 @@ class DatabaseService {
 }
 
 // ❌ INCORRECT: Legacy experimental decorators (deprecated)
-function OldDecorator(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function OldDecorator(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor,
+) {
   // DO NOT USE THIS STYLE
 }
 ```
@@ -87,12 +95,13 @@ function OldDecorator(target: any, propertyKey: string, descriptor: PropertyDesc
 **Common Use Cases**:
 
 **1. Method Decorators**:
+
 ```typescript
 function cache(target: Function, context: ClassMethodDecoratorContext) {
   const methodName = String(context.name);
   const cache = new Map();
 
-  return function(this: any, ...args: any[]) {
+  return function (this: any, ...args: any[]) {
     const key = JSON.stringify(args);
     if (cache.has(key)) {
       return cache.get(key);
@@ -112,10 +121,11 @@ class DataProvider {
 ```
 
 **2. Class Decorators**:
+
 ```typescript
-function sealed<T extends { new(...args: any[]): {} }>(
+function sealed<T extends { new (...args: any[]): {} }>(
   target: T,
-  context: ClassDecoratorContext
+  context: ClassDecoratorContext,
 ) {
   Object.seal(target);
   Object.seal(target.prototype);
@@ -128,6 +138,7 @@ class ImmutableService {
 ```
 
 **3. Accessor Decorators**:
+
 ```typescript
 function validate(target: Function, context: ClassAccessorDecoratorContext) {
   return {
@@ -139,7 +150,7 @@ function validate(target: Function, context: ClassAccessorDecoratorContext) {
         throw new TypeError('Value must be a string');
       }
       return target.set.call(this, value);
-    }
+    },
   };
 }
 
@@ -152,6 +163,7 @@ class User {
 **Migration from Legacy Decorators**:
 
 If upgrading from legacy decorators:
+
 1. Update TypeScript to 5.0+
 2. Remove `experimentalDecorators: true` from tsconfig.json
 3. Update decorator signatures to use context parameter
@@ -159,6 +171,7 @@ If upgrading from legacy decorators:
 5. Test thoroughly as behavior may differ
 
 **References**:
+
 - [TypeScript 5.0 Release Notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html)
 - [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators)
 
@@ -170,23 +183,26 @@ If upgrading from legacy decorators:
 
 For Bun runtime, **MUST** use **bun:sql** (Bun's native SQL driver) to support all three database types:
 
-| Database Type | Driver | Import Path | Drizzle Integration | Status |
-|---------------|--------|-------------|---------------------|--------|
-| **PostgreSQL** | bun:sql | `import { Database } from 'bun:sql'` | `drizzle-orm/bun-sql` | ✅ Supported |
-| **SQLite** | bun:sqlite | `import { Database } from 'bun:sqlite'` | `drizzle-orm/bun-sqlite` | ✅ Supported |
-| **MySQL** | bun:sql | `import { Database } from 'bun:sql'` | Custom Adapter (Pending) | ⏳ Future Support |
+| Database Type  | Driver     | Import Path                             | Drizzle Integration      | Status            |
+| -------------- | ---------- | --------------------------------------- | ------------------------ | ----------------- |
+| **PostgreSQL** | bun:sql    | `import { Database } from 'bun:sql'`    | `drizzle-orm/bun-sql`    | ✅ Supported      |
+| **SQLite**     | bun:sqlite | `import { Database } from 'bun:sqlite'` | `drizzle-orm/bun-sqlite` | ✅ Supported      |
+| **MySQL**      | bun:sql    | `import { Database } from 'bun:sql'`    | Custom Adapter (Pending) | ⏳ Future Support |
 
 **Technical Documentation**:
+
 - **Bun SQL API**: https://bun.com/docs/api/sql (或中文版: https://bun.net.cn/docs/api/sql)
 - **Drizzle + Bun SQL Integration**: https://drizzle.zhcndoc.com/docs/connect-bun-sql (或英文版: https://orm.drizzle.team/docs/connect-bun-sql)
 - **Drizzle + Bun SQLite**: https://orm.drizzle.team/docs/connect-bun-sqlite
 
 **Current Support Status**:
+
 - ✅ **PostgreSQL**: Drizzle ORM officially supports `bun:sql` via `drizzle-orm/bun-sql` package
 - ✅ **SQLite**: Currently use `bun:sqlite` via `drizzle-orm/bun-sqlite` (will migrate to `bun:sql` when supported)
 - ⏳ **MySQL**: Awaiting official Drizzle support for `bun:sql` MySQL backend (see GitHub issues #3985, #4013)
 
 **Key Features of bun:sql**:
+
 - Native built-in database driver (no external dependencies required)
 - Unified API across SQLite, MySQL, and PostgreSQL (Bun 1.2+)
 - High-performance native implementation (claims 50% faster)
@@ -196,6 +212,7 @@ For Bun runtime, **MUST** use **bun:sql** (Bun's native SQL driver) to support a
   - PostgreSQL: `postgresql://user:password@host:port/database`
 
 **Example (PostgreSQL - Currently Supported)**:
+
 ```typescript
 import { Database } from 'bun:sql';
 import { drizzle } from 'drizzle-orm/bun-sql';
@@ -212,10 +229,11 @@ const users = pgTable('users', {
 ```
 
 **Example (SQLite - Currently Using bun:sqlite)**:
+
 ```typescript
 import { Database } from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 const sqlite = new Database(':memory:');
 const db = drizzle(sqlite);
@@ -228,14 +246,15 @@ const users = sqliteTable('users', {
 ```
 
 **Example (MySQL - Custom Adapter for Future Support)**:
+
 ```typescript
 // Note: This is a placeholder for future Drizzle support
 // Currently requires a custom adapter until drizzle-orm/bun-sql supports MySQL
 
 import { Database } from 'bun:sql';
+import { int, mysqlTable, varchar } from 'drizzle-orm/mysql-core';
 // Custom adapter to be implemented in src/adapters/bun/mysql-adapter.ts
 import { createBunSqlMySQLAdapter } from './adapters/bun/mysql-adapter';
-import { mysqlTable, int, varchar } from 'drizzle-orm/mysql-core';
 
 const mysql = new Database('mysql://root:password@localhost:3306/mydb');
 // Custom adapter wraps bun:sql until official support
@@ -255,13 +274,14 @@ const users = mysqlTable('users', {
 
 For Node.js runtime, **MUST** use the following specific drivers:
 
-| Database Type | Required Driver | Import Path | Drizzle Integration | Prohibited Drivers |
-|---------------|-----------------|-------------|---------------------|-------------------|
-| **SQLite** | better-sqlite3 | `import Database from 'better-sqlite3'` | `drizzle-orm/better-sqlite3` | ❌ node:sqlite (optional) |
-| **MySQL** | mysql2 | `import mysql from 'mysql2/promise'` | `drizzle-orm/mysql2` | ❌ mysql |
-| **PostgreSQL** | postgres-js | `import postgres from 'postgres'` | `drizzle-orm/postgres-js` | ❌ pg, node-postgres |
+| Database Type  | Required Driver | Import Path                             | Drizzle Integration          | Prohibited Drivers        |
+| -------------- | --------------- | --------------------------------------- | ---------------------------- | ------------------------- |
+| **SQLite**     | better-sqlite3  | `import Database from 'better-sqlite3'` | `drizzle-orm/better-sqlite3` | ❌ node:sqlite (optional) |
+| **MySQL**      | mysql2          | `import mysql from 'mysql2/promise'`    | `drizzle-orm/mysql2`         | ❌ mysql                  |
+| **PostgreSQL** | postgres-js     | `import postgres from 'postgres'`       | `drizzle-orm/postgres-js`    | ❌ pg, node-postgres      |
 
 **IMPORTANT**:
+
 - ❌ **DO NOT** use `pg` or `node-postgres` packages for PostgreSQL
 - ❌ **DO NOT** use legacy `mysql` package
 - ✅ **ALWAYS** use the specified drivers above
@@ -269,6 +289,7 @@ For Node.js runtime, **MUST** use the following specific drivers:
 **Examples**:
 
 **SQLite (Node.js)**:
+
 ```typescript
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
@@ -278,9 +299,10 @@ const db = drizzle(sqlite);
 ```
 
 **MySQL (Node.js)**:
+
 ```typescript
-import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 
 const connection = await mysql.createConnection({
   host: 'localhost',
@@ -291,9 +313,10 @@ const db = drizzle(connection);
 ```
 
 **PostgreSQL (Node.js)**:
+
 ```typescript
-import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 
 const sql = postgres('postgresql://user:password@localhost:5432/dbname');
 const db = drizzle(sql);
@@ -306,6 +329,7 @@ const db = drizzle(sql);
 For Cloudflare D1 (Workers) runtime, **MUST** implement special build optimizations to minimize bundle size.
 
 **Requirements**:
+
 - ✅ **MUST** use `@cloudflare/d1` with `drizzle-orm/d1`
 - ✅ **MUST** perform tree-shaking and dead code elimination
 - ✅ **MUST** bundle only required drizzle-orm modules
@@ -315,6 +339,7 @@ For Cloudflare D1 (Workers) runtime, **MUST** implement special build optimizati
 **Build Configuration**:
 
 **1. Package Structure for D1**:
+
 ```json
 {
   "name": "refine-sqlx",
@@ -324,10 +349,7 @@ For Cloudflare D1 (Workers) runtime, **MUST** implement special build optimizati
     "build:d1:analyze": "unbuild --minify && wrangler deploy --dry-run --outdir=dist"
   },
   "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
-    },
+    ".": { "import": "./dist/index.mjs", "types": "./dist/index.d.ts" },
     "./d1": {
       "workerd": "./dist/d1.mjs",
       "import": "./dist/d1.mjs",
@@ -338,6 +360,7 @@ For Cloudflare D1 (Workers) runtime, **MUST** implement special build optimizati
 ```
 
 **2. Build Config (build.config.ts)**:
+
 ```typescript
 import { defineBuildConfig } from 'unbuild';
 
@@ -351,11 +374,7 @@ export default defineBuildConfig({
       name: 'd1',
       builder: 'rollup',
       rollup: {
-        esbuild: {
-          target: 'es2022',
-          minify: true,
-          treeShaking: true,
-        },
+        esbuild: { target: 'es2022', minify: true, treeShaking: true },
         resolve: {
           // Only bundle specific drizzle-orm modules
           exportConditions: ['workerd', 'worker', 'import'],
@@ -366,9 +385,7 @@ export default defineBuildConfig({
   declaration: true,
   rollup: {
     emitCJS: false, // D1 only supports ESM
-    esbuild: {
-      minify: true,
-    },
+    esbuild: { minify: true },
   },
   externals: [
     // Don't bundle Cloudflare runtime APIs
@@ -379,12 +396,13 @@ export default defineBuildConfig({
 ```
 
 **3. Optimized D1 Imports** (src/d1/index.ts):
+
 ```typescript
 // ✅ CORRECT: Module-specific imports (enables tree-shaking)
+import type { D1Database } from '@cloudflare/workers-types';
 import { drizzle } from 'drizzle-orm/d1';
 import { sqliteTable } from 'drizzle-orm/sqlite-core';
-import { eq, and, or } from 'drizzle-orm/sqlite-core/expressions';
-import type { D1Database } from '@cloudflare/workers-types';
+import { and, eq, or } from 'drizzle-orm/sqlite-core/expressions';
 
 // ❌ INCORRECT: Barrel imports (bundles everything)
 // import { drizzle, sqliteTable, eq } from 'drizzle-orm';
@@ -398,11 +416,21 @@ export function createRefineD1(d1: D1Database) {
 
   return {
     // Only include methods actually used
-    getList: async (params) => { /* ... */ },
-    getOne: async (params) => { /* ... */ },
-    create: async (params) => { /* ... */ },
-    update: async (params) => { /* ... */ },
-    deleteOne: async (params) => { /* ... */ },
+    getList: async (params) => {
+      /* ... */
+    },
+    getOne: async (params) => {
+      /* ... */
+    },
+    create: async (params) => {
+      /* ... */
+    },
+    update: async (params) => {
+      /* ... */
+    },
+    deleteOne: async (params) => {
+      /* ... */
+    },
   };
 }
 
@@ -412,6 +440,7 @@ export { drizzle, sqliteTable, eq, and, or };
 ```
 
 **4. Worker Entry Point** (worker.ts):
+
 ```typescript
 import { createRefineD1 } from 'refine-sqlx/d1';
 
@@ -431,6 +460,7 @@ export default {
 ```
 
 **5. Wrangler Configuration** (wrangler.toml):
+
 ```toml
 name = "refine-d1-worker"
 main = "dist/worker.mjs"
@@ -453,6 +483,7 @@ main = "./dist/worker.mjs"
 **Bundle Size Optimization Techniques**:
 
 **1. Use Conditional Exports**:
+
 ```typescript
 // Only import what each runtime needs
 if (import.meta.env.CLOUDFLARE_D1) {
@@ -463,12 +494,14 @@ if (import.meta.env.CLOUDFLARE_D1) {
 ```
 
 **2. Lazy Loading for Non-Critical Features**:
+
 ```typescript
 // Dynamic imports for optional features
 const { validateSchema } = await import('./validators');
 ```
 
 **3. Remove Development-Only Code**:
+
 ```typescript
 // Use build-time flags
 if (process.env.NODE_ENV === 'development') {
@@ -477,6 +510,7 @@ if (process.env.NODE_ENV === 'development') {
 ```
 
 **4. Analyze Bundle Size**:
+
 ```bash
 # Build and analyze
 bun run build:d1:analyze
@@ -487,6 +521,7 @@ wrangler deploy --dry-run --outdir=dist
 ```
 
 **Bundle Size Targets**:
+
 - **Minimum**: < 100 KB (core functionality only)
 - **Recommended**: < 250 KB (with common features)
 - **Maximum**: < 1000 KB (Workers size limit)
@@ -494,9 +529,10 @@ wrangler deploy --dry-run --outdir=dist
 - **Optimized Goal**: 5-10 KB gzipped (with aggressive optimization)
 
 **D1 Example Usage**:
+
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export interface Env {
   DB: D1Database;
@@ -521,6 +557,7 @@ export default {
 ```
 
 **Monitoring Bundle Size**:
+
 ```json
 {
   "scripts": {
@@ -531,19 +568,17 @@ export default {
 ```
 
 **.bundlesizerc.json**:
+
 ```json
 {
   "files": [
-    {
-      "path": "./dist/d1.mjs",
-      "maxSize": "250 KB",
-      "compression": "gzip"
-    }
+    { "path": "./dist/d1.mjs", "maxSize": "250 KB", "compression": "gzip" }
   ]
 }
 ```
 
 **References**:
+
 - [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
 - [Drizzle ORM with D1](https://orm.drizzle.team/docs/get-started-sqlite#cloudflare-d1)
 - [Workers Size Limits](https://developers.cloudflare.com/workers/platform/limits/)
@@ -580,8 +615,9 @@ if (isCloudflareD1()) {
 - Use Drizzle's `.select()`, `.insert()`, `.update()`, `.delete()` methods
 
 **Example**:
+
 ```typescript
-import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
@@ -642,6 +678,7 @@ await db.transaction(async (tx) => {
 - Document migration procedures in project README
 
 **Commands**:
+
 ```bash
 # Generate migrations
 drizzle-kit generate:sqlite
@@ -690,6 +727,7 @@ src/
 #### 12.1 Why Changesets?
 
 Changesets provides:
+
 - ✅ **Automated versioning** based on semantic versioning
 - ✅ **Automated changelog generation** from changeset files
 - ✅ **Multi-package monorepo support** (future-proof)
@@ -699,12 +737,14 @@ Changesets provides:
 #### 12.2 Installation and Setup
 
 **Install Changesets**:
+
 ```bash
 bun add -D @changesets/cli
 bunx changeset init
 ```
 
 **Configuration (.changeset/config.json)**:
+
 ```json
 {
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
@@ -720,6 +760,7 @@ bunx changeset init
 ```
 
 **Add npm scripts (package.json)**:
+
 ```json
 {
   "scripts": {
@@ -748,15 +789,17 @@ bun changeset
 ```
 
 Example changeset file (`.changeset/cool-feature.md`):
+
 ```markdown
 ---
-"refine-sqlx": minor
+'refine-sqlx': minor
 ---
 
 Add support for Cloudflare D1 transaction API wrapper
 ```
 
 **Change Type Guidelines**:
+
 - **major** (1.0.0 → 2.0.0): Breaking changes
 - **minor** (1.0.0 → 1.1.0): New features, backwards compatible
 - **patch** (1.0.0 → 1.0.1): Bug fixes, backwards compatible
@@ -842,55 +885,63 @@ jobs:
         with:
           publish: bun run release
           version: bun run version
-          commit: "chore: release package"
-          title: "chore: release package"
+          commit: 'chore: release package'
+          title: 'chore: release package'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 **Required GitHub Secrets**:
+
 - `GITHUB_TOKEN`: Automatically provided by GitHub
 - `NPM_TOKEN`: Create at https://www.npmjs.com/settings/tokens
 
 #### 12.5 Changeset Examples
 
 **Example 1: Bug Fix (patch)**:
+
 ```bash
 bun changeset
 ```
+
 ```markdown
 ---
-"refine-sqlx": patch
+'refine-sqlx': patch
 ---
 
 Fix D1 batch query error handling to properly propagate exceptions
 ```
 
 **Example 2: New Feature (minor)**:
+
 ```bash
 bun changeset
 ```
+
 ```markdown
 ---
-"refine-sqlx": minor
+'refine-sqlx': minor
 ---
 
 Add PostgreSQL support with postgres-js driver integration
 ```
 
 **Example 3: Breaking Change (major)**:
+
 ```bash
 bun changeset
 ```
+
 ```markdown
 ---
-"refine-sqlx": major
+'refine-sqlx': major
 ---
 
 BREAKING: Remove deprecated `createRefineSQL` string overload
 
 Migration guide:
+
 - Old: `createRefineSQL('./db.sqlite')`
 - New: `createRefineSQL({ connection: './db.sqlite', schema })`
 ```
@@ -923,6 +974,7 @@ Changesets automatically generates `CHANGELOG.md`:
 #### 12.7 Best Practices
 
 **DO**:
+
 - ✅ Create one changeset per PR
 - ✅ Write clear, user-facing summaries
 - ✅ Use semantic versioning correctly
@@ -930,6 +982,7 @@ Changesets automatically generates `CHANGELOG.md`:
 - ✅ Commit changeset files with your code changes
 
 **DON'T**:
+
 - ❌ Manually edit `package.json` version
 - ❌ Manually edit `CHANGELOG.md`
 - ❌ Skip creating changesets for user-facing changes
@@ -941,13 +994,11 @@ Changesets automatically generates `CHANGELOG.md`:
 If the project becomes a monorepo:
 
 ```json
-{
-  "packages": ["packages/*"],
-  "version": "independent"
-}
+{ "packages": ["packages/*"], "version": "independent" }
 ```
 
 Create changesets for specific packages:
+
 ```bash
 bun changeset
 # Select: @refine-sqlx/core, @refine-sqlx/d1, etc.
@@ -961,9 +1012,7 @@ bun changeset
 
 ```json
 {
-  "dependencies": {
-    "drizzle-orm": "^0.x.x"
-  },
+  "dependencies": { "drizzle-orm": "^0.x.x" },
   "devDependencies": {
     "typescript": "^5.0.0",
     "@cloudflare/workers-types": "^4.x.x",
@@ -1022,22 +1071,26 @@ When implementing database features, ensure:
 ### Official Documentation
 
 **Cloudflare**:
+
 - [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/) - Official D1 database docs
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/) - Workers platform
 - [Workers Size Limits](https://developers.cloudflare.com/workers/platform/limits/) - Bundle size constraints
 - [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) - D1 deployment tool
 
 **TypeScript**:
+
 - [TypeScript 5.0 Release Notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html) - Modern decorators support
 - [TypeScript Decorators Documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) - Official decorator guide
 - [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators) - Stage 3 decorators specification
 
 **Bun SQL**:
+
 - [Bun SQL API Documentation](https://bun.com/docs/api/sql) - Official Bun SQL API reference
 - [Bun SQL (中文版)](https://bun.net.cn/docs/api/sql) - Chinese version
 - [Bun SQL (English - bun.sh)](https://bun.sh/docs/api/sql) - Alternative English version
 
 **Drizzle ORM**:
+
 - [Drizzle ORM Documentation](https://orm.drizzle.team/) - Main documentation
 - [Drizzle ORM (中文)](https://drizzle.zhcndoc.com/) - Chinese documentation
 - [Drizzle with Bun SQL (PostgreSQL)](https://drizzle.zhcndoc.com/docs/connect-bun-sql) - Integration guide for Bun SQL
@@ -1047,15 +1100,18 @@ When implementing database features, ensure:
 - [Drizzle with postgres-js](https://orm.drizzle.team/docs/get-started-postgresql#postgresjs)
 
 **GitHub Issues (Tracking Future Support)**:
+
 - [Feature Request: bun 1.2 SQL driver support (#3985)](https://github.com/drizzle-team/drizzle-orm/issues/3985) - MySQL/SQLite support for bun:sql
 - [Feature Request: Support for Bun.sql (#4013)](https://github.com/drizzle-team/drizzle-orm/issues/4013) - General bun:sql support
 
 **Database Drivers (Node.js)**:
+
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) - SQLite3 driver
 - [mysql2](https://github.com/sidorares/node-mysql2) - MySQL driver
 - [postgres-js](https://github.com/porsager/postgres) - PostgreSQL driver
 
 **Version Management**:
+
 - [Changesets Documentation](https://github.com/changesets/changesets) - Automated version management
 - [Changesets GitHub Action](https://github.com/changesets/action) - CI/CD integration
 

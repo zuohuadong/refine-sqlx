@@ -1,9 +1,9 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import {
-  createCloudflareD1Adapter,
-  createBunSQLiteAdapter,
-  createNodeSQLiteAdapter,
   createBetterSQLite3Adapter,
+  createBunSQLiteAdapter,
+  createCloudflareD1Adapter,
+  createNodeSQLiteAdapter,
 } from '../src/adapters';
 import type { SqlQuery } from '../src/client';
 
@@ -223,7 +223,9 @@ describe('Node SQLite Adapter', () => {
         { id: 1, name: 'John' },
         { id: 2, name: 'Jane' },
       ]),
-      columns: jest.fn().mockReturnValue([{ column: 'id' }, { column: 'name' }]),
+      columns: jest
+        .fn()
+        .mockReturnValue([{ column: 'id' }, { column: 'name' }]),
     };
     mockNodeDB.prepare.mockReturnValue(mockStmt);
 

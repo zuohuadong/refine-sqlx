@@ -1,6 +1,6 @@
-import { expect, beforeEach, afterEach, describe, it } from '@jest/globals';
-import createRefineSQL from '../src/data-provider';
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import type { SqlClient } from '../src/client';
+import createRefineSQL from '../src/data-provider';
 
 /**
  * Generic integration test suite that can be used with any SQL client
