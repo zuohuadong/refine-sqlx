@@ -9,7 +9,9 @@ docs/
 ├── specs/              # Technical specifications and standards
 │   └── CLAUDE_SPEC.md      # Claude Code project specifications
 ├── features/           # Feature documentation and release notes
-│   └── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
+│   ├── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
+│   ├── FEATURES_v0.4.0.md  # v0.4.0 roadmap (P0/P1 features)
+│   └── FEATURES_v0.5.0.md  # v0.5.0 roadmap (P2/P3 features)
 ├── analysis/           # Technical analysis and research
 │   └── D1_BUNDLE_SIZE_ANALYSIS.md  # D1 bundle size analysis
 ├── examples/           # Interactive examples and templates
@@ -68,6 +70,26 @@ Click to open examples in your browser:
 - D1 environment optimized build (16KB gzipped)
 - Cross-platform improvements
 - Migration guide from v0.2.x
+
+**[FEATURES_v0.4.0.md](./features/FEATURES_v0.4.0.md)** - v0.4.0 Roadmap (Planned Q1 2025)
+
+- P0: custom() method for raw SQL queries
+- P0: getApiUrl() method (✅ completed in v0.3.2)
+- P1: Nested relations loading with Drizzle
+- P1: Aggregation query support
+- P1: Field selection/projection
+- P1: Soft delete support
+
+**[FEATURES_v0.5.0.md](./features/FEATURES_v0.5.0.md)** - v0.5.0 Roadmap (Planned Q2-Q3 2025)
+
+- P2: Optimistic locking for concurrency control
+- P2: Live queries / real-time subscriptions
+- P2: Multi-tenancy / row-level security
+- P2: Query caching (memory, Redis, Cloudflare KV)
+- P3: TypeScript schema generator
+- P3: Data validation integration (Zod)
+- P3: Enhanced logging & debugging
+- P3: Migration management tools
 
 **Target Audience**: End users, npm package consumers, developers
 
