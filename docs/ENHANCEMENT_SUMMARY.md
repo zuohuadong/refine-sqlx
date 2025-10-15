@@ -177,8 +177,7 @@ docs/
 ├── specs/                             # Technical specifications
 │   └── CLAUDE_SPEC.md
 ├── features/                          # Feature documentation
-│   ├── FEATURES_v0.3.0.md
-│   └── FEATURES_v0.4.0.md
+│   └── FEATURES_v0.3.0.md
 ├── analysis/                          # Technical analysis
 │   └── D1_BUNDLE_SIZE_ANALYSIS.md
 ├── examples/                          # Interactive examples

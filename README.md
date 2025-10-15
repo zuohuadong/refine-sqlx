@@ -364,7 +364,7 @@ type UserInsert = InferInsertModel<typeof users>;
 - **TypeScript**: 5.0+
 - **Node.js**: 20.0+ (24.0+ recommended for native SQLite)
 - **Bun**: 1.0+ (optional)
-- **Peer Dependencies**: `@refinedev/core ^4.57.10`
+- **Peer Dependencies**: `@refinedev/core ^5.0.0`, `@tanstack/react-query ^5.0.0`
 - **Dependencies**: `drizzle-orm ^0.44.0`
 - **Optional**: `better-sqlite3 ^12.0.0` (fallback for Node.js < 24)
 
@@ -390,10 +390,28 @@ bun run format
 
 Comprehensive documentation is available:
 
+### Current Version (v0.3.x)
+
 - **[v0.3.0 Release Notes](./.changeset/v0-3-0-release.md)** - Complete rewrite with Drizzle ORM
 - **[D1 Example](./example/D1_EXAMPLE.md)** - Cloudflare Workers setup guide
 - **[Example Code](./example/main-v0.3.0.ts)** - Full usage examples
 - **[Technical Specifications](./docs/specs/CLAUDE_SPEC.md)** - Architecture and standards
+
+### Roadmap & Future Versions
+
+- **[v0.4.0 Features (Planned)](./docs/features/FEATURES_v0.4.0.md)** - Core features and enhancements (Q1 2025)
+  - custom() method for raw SQL queries
+  - Nested relations loading
+  - Aggregation support
+  - Field selection/projection
+  - Soft delete support
+- **[v0.5.0 Features (Planned)](./docs/features/FEATURES_v0.5.0.md)** - Enterprise & developer experience (Q2-Q3 2025)
+  - Optimistic locking
+  - Live queries / real-time subscriptions
+  - Multi-tenancy / row-level security
+  - Query caching
+  - TypeScript schema generator
+  - Enhanced logging & debugging
 
 ## 🔄 Migration from v0.2.x
 

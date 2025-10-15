@@ -1,45 +1,45 @@
-# Refine SQLx v0.4.0 - Feature Roadmap
+# Refine SQLx v0.4.0 - 功能路线图
 
-**Status**: Planned
-**Target Release**: Q1 2025
-**Refine Version**: 5.0+
+**状态**: 已计划
+**目标发布**: 2025年第一季度
+**Refine 版本**: 5.0+
 
-## Overview
+## 概述
 
-Version 0.4.0 focuses on core missing features (P0) and essential enhancements (P1) to make refine-sqlx a complete and production-ready data provider for Refine 5.0.
+版本 0.4.0 专注于核心缺失功能（P0）和重要增强功能（P1），使 refine-sqlx 成为一个完整且可用于生产环境的 Refine 5.0 数据提供者。
 
 ---
 
-## Priority P0 - Core Missing Features
+## 优先级 P0 - 核心缺失功能
 
-### 1. ✅ getApiUrl() Method
+### 1. ✅ getApiUrl() 方法
 
-**Status**: ✅ Completed in v0.3.2
+**状态**: ✅ 已在 v0.3.2 完成
 
-The `getApiUrl()` method is now implemented across all data providers.
+`getApiUrl()` 方法现已在所有数据提供者中实现。
 
 ```typescript
 const dataProvider = await createRefineSQL({ connection: db, schema });
 
-// Returns empty string for SQL databases (no REST API endpoint)
+// 对于 SQL 数据库返回空字符串（没有 REST API 端点）
 console.log(dataProvider.getApiUrl()); // ""
 ```
 
-**Implementation Details**:
+**实现细节**:
 
-- Returns empty string as SQL databases don't have a traditional API URL
-- Required by Refine 5.0 DataProvider interface
-- Available in all implementations (provider.ts, d1.ts, data-provider.ts)
+- 返回空字符串，因为 SQL 数据库没有传统的 API URL
+- Refine 5.0 DataProvider 接口所需
+- 在所有实现中可用（provider.ts、d1.ts、data-provider.ts）
 
 ---
 
-### 2. custom() Method ⭐
+### 2. custom() 方法 ⭐
 
-**Status**: 🚧 Planned for v0.4.0
+**状态**: 🚧 计划在 v0.4.0 实现
 
-Execute custom SQL queries or complex database operations that go beyond standard CRUD.
+执行自定义 SQL 查询或超出标准 CRUD 的复杂数据库操作。
 
-#### API Design
+#### API 设计
 
 ```typescript
 interface CustomParams {
@@ -57,13 +57,13 @@ interface CustomResponse<T = any> {
   data: T;
 }
 
-// DataProvider signature
+// DataProvider 签名
 custom?: <T = any>(params: CustomParams) => Promise<CustomResponse<T>>;
 ```
 
-#### Usage Examples
+#### 使用示例
 
-**Basic Raw SQL Query**:
+**基础原始 SQL 查询**:
 
 ```typescript
 const result = await dataProvider.custom<User[]>({
@@ -76,7 +76,7 @@ const result = await dataProvider.custom<User[]>({
 });
 ```
 
-**Complex Aggregation**:
+**复杂聚合**:
 
 ```typescript
 const stats = await dataProvider.custom<{ total: number; avg: number }>({
@@ -96,7 +96,7 @@ const stats = await dataProvider.custom<{ total: number; avg: number }>({
 });
 ```
 
-**Execute Statement (INSERT/UPDATE/DELETE)**:
+**执行语句（INSERT/UPDATE/DELETE）**:
 
 ```typescript
 const result = await dataProvider.custom({
@@ -109,7 +109,7 @@ const result = await dataProvider.custom({
 });
 ```
 
-**Drizzle ORM Integration**:
+**Drizzle ORM 集成**:
 
 ```typescript
 import { sql } from 'drizzle-orm';
@@ -126,7 +126,7 @@ const result = await dataProvider.custom({
 });
 ```
 
-#### Implementation Plan
+#### 实现计划
 
 ```typescript
 // src/provider.ts
@@ -136,7 +136,7 @@ async function custom<T = any>(
   const { url, payload } = params;
 
   if (url === 'query' && payload?.sql) {
-    // Execute SELECT queries
+    // 执行 SELECT 查询
     const result = await db.execute(
       sql.raw(payload.sql, ...(payload.args || [])),
     );
@@ -144,7 +144,7 @@ async function custom<T = any>(
   }
 
   if (url === 'execute' && payload?.sql) {
-    // Execute INSERT/UPDATE/DELETE
+    // 执行 INSERT/UPDATE/DELETE
     const result = await db.execute(
       sql.raw(payload.sql, ...(payload.args || [])),
     );
@@ -152,33 +152,33 @@ async function custom<T = any>(
   }
 
   if (url === 'drizzle' && payload?.query) {
-    // Execute Drizzle query builder
+    // 执行 Drizzle 查询构造器
     const result = await payload.query;
     return { data: result as T };
   }
 
-  throw new UnsupportedOperatorError(`Unsupported custom operation: ${url}`);
+  throw new UnsupportedOperatorError(`不支持的自定义操作: ${url}`);
 }
 ```
 
-**Benefits**:
+**优势**:
 
-- Flexibility for complex queries beyond CRUD
-- Access to full SQL power
-- Integration with Drizzle query builder
-- Essential for real-world applications
+- 支持超越 CRUD 的复杂查询
+- 访问完整的 SQL 能力
+- 与 Drizzle 查询构造器集成
+- 对于实际应用至关重要
 
 ---
 
-## Priority P1 - Enhancement Features
+## 优先级 P1 - 增强功能
 
-### 3. Nested Relations Loading
+### 3. 嵌套关系加载
 
-**Status**: 🚧 Planned for v0.4.0
+**状态**: 🚧 计划在 v0.4.0 实现
 
-Leverage Drizzle ORM's relational query API to load nested data in a single query.
+利用 Drizzle ORM 的关系查询 API 在单个查询中加载嵌套数据。
 
-#### Schema Definition
+#### Schema 定义
 
 ```typescript
 import { relations } from 'drizzle-orm';
@@ -207,7 +207,7 @@ export const comments = sqliteTable('comments', {
   content: text('content').notNull(),
 });
 
-// Define relations
+// 定义关系
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
 }));
@@ -222,9 +222,9 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 }));
 ```
 
-#### Usage Examples
+#### 使用示例
 
-**Basic Relation Loading**:
+**基础关系加载**:
 
 ```typescript
 const { data } = await dataProvider.getOne<User>({
@@ -232,12 +232,12 @@ const { data } = await dataProvider.getOne<User>({
   id: 1,
   meta: {
     include: {
-      posts: true, // Load all posts
+      posts: true, // 加载所有帖子
     },
   },
 });
 
-// Result:
+// 结果:
 // {
 //   id: 1,
 //   name: "John Doe",
@@ -249,7 +249,7 @@ const { data } = await dataProvider.getOne<User>({
 // }
 ```
 
-**Nested Relations**:
+**嵌套关系**:
 
 ```typescript
 const { data } = await dataProvider.getOne<User>({
@@ -259,7 +259,7 @@ const { data } = await dataProvider.getOne<User>({
     include: {
       posts: {
         include: {
-          comments: true, // Load comments for each post
+          comments: true, // 为每个帖子加载评论
         },
       },
     },
@@ -267,7 +267,7 @@ const { data } = await dataProvider.getOne<User>({
 });
 ```
 
-**Selective Field Loading**:
+**选择性字段加载**:
 
 ```typescript
 const { data } = await dataProvider.getOne<User>({
@@ -279,7 +279,7 @@ const { data } = await dataProvider.getOne<User>({
         select: {
           id: true,
           title: true,
-          // Exclude content field
+          // 排除 content 字段
         },
       },
     },
@@ -287,7 +287,7 @@ const { data } = await dataProvider.getOne<User>({
 });
 ```
 
-**List with Relations**:
+**带关系的列表查询**:
 
 ```typescript
 const { data, total } = await dataProvider.getList<User>({
@@ -297,7 +297,7 @@ const { data, total } = await dataProvider.getList<User>({
 });
 ```
 
-#### Implementation
+#### 实现
 
 ```typescript
 async function getOne<T extends BaseRecord = BaseRecord>(
@@ -306,7 +306,7 @@ async function getOne<T extends BaseRecord = BaseRecord>(
   const table = getTable(params.resource);
   const idColumn = params.meta?.idColumnName ?? 'id';
 
-  // Check if relations are requested
+  // 检查是否请求关系
   if (params.meta?.include) {
     const [data] = await db.query[params.resource].findMany({
       where: eq(table[idColumn], params.id),
@@ -317,7 +317,7 @@ async function getOne<T extends BaseRecord = BaseRecord>(
     return { data: data as T };
   }
 
-  // Standard query without relations
+  // 不带关系的标准查询
   const [data] = await db
     .select()
     .from(table)
@@ -330,13 +330,13 @@ async function getOne<T extends BaseRecord = BaseRecord>(
 
 ---
 
-### 4. Aggregation Query Support
+### 4. 聚合查询支持
 
-**Status**: 🚧 Planned for v0.4.0
+**状态**: 🚧 计划在 v0.4.0 实现
 
-Perform statistical analysis and reporting with built-in aggregation functions.
+使用内置聚合函数执行统计分析和报告。
 
-#### API Design
+#### API 设计
 
 ```typescript
 interface AggregationMeta {
@@ -353,9 +353,9 @@ interface AggregationMeta {
 }
 ```
 
-#### Usage Examples
+#### 使用示例
 
-**Basic Aggregations**:
+**基础聚合**:
 
 ```typescript
 const result = await dataProvider.getList<OrderStats>({
@@ -371,7 +371,7 @@ const result = await dataProvider.getList<OrderStats>({
   },
 });
 
-// Result:
+// 结果:
 // {
 //   data: [{
 //     totalRevenue: 45000,
@@ -384,7 +384,7 @@ const result = await dataProvider.getList<OrderStats>({
 // }
 ```
 
-**Group By**:
+**分组查询**:
 
 ```typescript
 const result = await dataProvider.getList<OrderStatsByStatus>({
@@ -395,7 +395,7 @@ const result = await dataProvider.getList<OrderStatsByStatus>({
   },
 });
 
-// Result:
+// 结果:
 // {
 //   data: [
 //     { status: 'completed', created_at: '2024-01', total: 150, revenue: 22500 },
@@ -406,7 +406,7 @@ const result = await dataProvider.getList<OrderStatsByStatus>({
 // }
 ```
 
-**With Filters**:
+**带过滤条件**:
 
 ```typescript
 const result = await dataProvider.getList<OrderStats>({
@@ -425,7 +425,7 @@ const result = await dataProvider.getList<OrderStats>({
 });
 ```
 
-#### Implementation
+#### 实现
 
 ```typescript
 import { avg, count, max, min, sql, sum } from 'drizzle-orm';
@@ -435,11 +435,11 @@ async function getList<T extends BaseRecord = BaseRecord>(
 ): Promise<GetListResponse<T>> {
   const table = getTable(params.resource);
 
-  // Check if aggregations are requested
+  // 检查是否请求聚合
   if (params.meta?.aggregations) {
     const aggregations: Record<string, any> = {};
 
-    // Build aggregation select
+    // 构建聚合选择
     for (const [key, agg] of Object.entries(params.meta.aggregations)) {
       if (agg.sum) aggregations[key] = sum(table[agg.sum]);
       if (agg.avg) aggregations[key] = avg(table[agg.avg]);
@@ -453,11 +453,11 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
     const query = db.select(aggregations).from(table).$dynamic();
 
-    // Apply filters
+    // 应用过滤条件
     const where = filtersToWhere(params.filters, table);
     if (where) query.where(where);
 
-    // Apply groupBy
+    // 应用 groupBy
     if (params.meta.groupBy) {
       const groupByColumns = params.meta.groupBy.map((field) => table[field]);
       query.groupBy(...groupByColumns);
@@ -467,51 +467,51 @@ async function getList<T extends BaseRecord = BaseRecord>(
     return { data: data as T[], total: data.length };
   }
 
-  // Standard query without aggregations
-  // ... existing implementation
+  // 不带聚合的标准查询
+  // ... 现有实现
 }
 ```
 
 ---
 
-### 5. Field Selection (Select/Projection)
+### 5. 字段选择（Select/投影）
 
-**Status**: 🚧 Planned for v0.4.0
+**状态**: 🚧 计划在 v0.4.0 实现
 
-Optimize performance by selecting only the fields you need.
+通过仅选择所需的字段来优化性能。
 
-#### Usage Examples
+#### 使用示例
 
-**Select Specific Fields**:
+**选择特定字段**:
 
 ```typescript
 const { data } = await dataProvider.getList<User>({
   resource: 'users',
   meta: {
-    select: ['id', 'name', 'email'], // Only fetch these fields
+    select: ['id', 'name', 'email'], // 仅获取这些字段
   },
 });
 
-// Result:
+// 结果:
 // [
 //   { id: 1, name: "John", email: "john@example.com" },
 //   { id: 2, name: "Jane", email: "jane@example.com" }
 // ]
-// Note: No other fields like created_at, updated_at, etc.
+// 注意：没有其他字段如 created_at、updated_at 等
 ```
 
-**Exclude Fields**:
+**排除字段**:
 
 ```typescript
 const { data } = await dataProvider.getList<User>({
   resource: 'users',
   meta: {
-    exclude: ['password', 'secret_token'], // Exclude sensitive fields
+    exclude: ['password', 'secret_token'], // 排除敏感字段
   },
 });
 ```
 
-**With Relations**:
+**结合关系使用**:
 
 ```typescript
 const { data } = await dataProvider.getOne<User>({
@@ -521,14 +521,14 @@ const { data } = await dataProvider.getOne<User>({
     select: ['id', 'name'],
     include: {
       posts: {
-        select: ['id', 'title'], // Only fetch post ID and title
+        select: ['id', 'title'], // 仅获取帖子 ID 和标题
       },
     },
   },
 });
 ```
 
-#### Implementation
+#### 实现
 
 ```typescript
 async function getList<T extends BaseRecord = BaseRecord>(
@@ -538,7 +538,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
   let query;
 
-  // Build select with specific fields
+  // 使用特定字段构建 select
   if (params.meta?.select) {
     const selectFields = params.meta.select.reduce(
       (acc, field) => {
@@ -550,7 +550,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
     query = db.select(selectFields).from(table).$dynamic();
   } else if (params.meta?.exclude) {
-    // Get all columns except excluded ones
+    // 获取除排除字段外的所有列
     const allColumns = Object.keys(table).filter(
       (key) => !params.meta.exclude.includes(key),
     );
@@ -567,26 +567,26 @@ async function getList<T extends BaseRecord = BaseRecord>(
     query = db.select().from(table).$dynamic();
   }
 
-  // ... rest of implementation (filters, sorting, pagination)
+  // ... 其余实现（过滤、排序、分页）
 }
 ```
 
-**Benefits**:
+**优势**:
 
-- Reduced network payload
-- Better performance for large datasets
-- Security: easily exclude sensitive fields
-- Native Drizzle support
+- 减少网络负载
+- 大型数据集的更好性能
+- 安全性：轻松排除敏感字段
+- 原生 Drizzle 支持
 
 ---
 
-### 6. Soft Delete Support
+### 6. 软删除支持
 
-**Status**: 🚧 Planned for v0.4.0
+**状态**: 🚧 计划在 v0.4.0 实现
 
-Implement soft deletes for data safety and audit trails.
+实现软删除以保证数据安全和审计跟踪。
 
-#### Configuration
+#### 配置
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -594,17 +594,17 @@ const dataProvider = await createRefineSQL({
   schema,
   softDelete: {
     enabled: true,
-    field: 'deleted_at', // Default field name
+    field: 'deleted_at', // 默认字段名
   },
 });
 ```
 
-#### Usage Examples
+#### 使用示例
 
-**Soft Delete**:
+**软删除**:
 
 ```typescript
-// This sets deleted_at = NOW() instead of actually deleting
+// 这将设置 deleted_at = NOW()，而不是实际删除
 const { data } = await dataProvider.deleteOne({
   resource: 'posts',
   id: 1,
@@ -612,30 +612,30 @@ const { data } = await dataProvider.deleteOne({
 });
 ```
 
-**Hard Delete (Override)**:
+**硬删除（覆盖）**:
 
 ```typescript
 const { data } = await dataProvider.deleteOne({
   resource: 'posts',
   id: 1,
   meta: {
-    softDelete: false, // Force hard delete
+    softDelete: false, // 强制硬删除
   },
 });
 ```
 
-**Include Deleted Records**:
+**包含已删除记录**:
 
 ```typescript
 const { data, total } = await dataProvider.getList({
   resource: 'posts',
   meta: {
-    includeDeleted: true, // Show soft-deleted records
+    includeDeleted: true, // 显示软删除的记录
   },
 });
 ```
 
-**Only Deleted Records**:
+**仅查询已删除记录**:
 
 ```typescript
 const { data, total } = await dataProvider.getList({
@@ -644,10 +644,10 @@ const { data, total } = await dataProvider.getList({
 });
 ```
 
-**Restore Deleted Record**:
+**恢复已删除记录**:
 
 ```typescript
-// Custom operation to restore
+// 自定义操作以恢复
 const { data } = await dataProvider.custom({
   url: 'restore',
   method: 'post',
@@ -655,7 +655,7 @@ const { data } = await dataProvider.custom({
 });
 ```
 
-#### Implementation
+#### 实现
 
 ```typescript
 async function deleteOne<T extends BaseRecord = BaseRecord>(
@@ -666,12 +666,12 @@ async function deleteOne<T extends BaseRecord = BaseRecord>(
   const softDeleteField =
     params.meta?.deletedAtField ?? config.softDelete?.field ?? 'deleted_at';
 
-  // Check if soft delete is enabled
+  // 检查是否启用软删除
   const shouldSoftDelete =
     params.meta?.softDelete ?? config.softDelete?.enabled ?? false;
 
   if (shouldSoftDelete) {
-    // Soft delete: update deleted_at field
+    // 软删除：更新 deleted_at 字段
     const [result] = await db
       .update(table)
       .set({ [softDeleteField]: new Date() } as any)
@@ -682,7 +682,7 @@ async function deleteOne<T extends BaseRecord = BaseRecord>(
     return { data: result as T };
   }
 
-  // Hard delete: actually remove the record
+  // 硬删除：实际移除记录
   const [result] = await db
     .delete(table)
     .where(eq(table[idColumn], params.id))
@@ -692,7 +692,7 @@ async function deleteOne<T extends BaseRecord = BaseRecord>(
   return { data: result as T };
 }
 
-// Automatically filter out soft-deleted records in getList/getOne
+// 在 getList/getOne 中自动过滤软删除的记录
 async function getList<T extends BaseRecord = BaseRecord>(
   params: GetListParams,
 ): Promise<GetListResponse<T>> {
@@ -701,7 +701,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
   const query = db.select().from(table).$dynamic();
 
-  // Apply soft delete filter unless explicitly requested
+  // 除非明确请求，否则应用软删除过滤
   if (config.softDelete?.enabled && !params.meta?.includeDeleted) {
     if (params.meta?.onlyDeleted) {
       query.where(isNotNull(table[softDeleteField]));
@@ -710,41 +710,41 @@ async function getList<T extends BaseRecord = BaseRecord>(
     }
   }
 
-  // ... rest of implementation
+  // ... 其余实现
 }
 ```
 
-**Schema Requirements**:
+**Schema 要求**:
 
 ```typescript
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   title: text('title').notNull(),
   content: text('content'),
-  deleted_at: integer('deleted_at', { mode: 'timestamp' }), // Required for soft delete
+  deleted_at: integer('deleted_at', { mode: 'timestamp' }), // 软删除所需
 });
 ```
 
 ---
 
-## Breaking Changes
+## 破坏性变更
 
-None. All new features are opt-in via `meta` parameter.
+无。所有新功能都通过 `meta` 参数选择启用。
 
 ---
 
-## Migration Guide
+## 迁移指南
 
-### From v0.3.x to v0.4.0
+### 从 v0.3.x 到 v0.4.0
 
-**No breaking changes** - all existing code will continue to work.
+**无破坏性变更** - 所有现有代码将继续工作。
 
-#### Opt-in to New Features
+#### 选择性启用新功能
 
-**Enable Custom Queries**:
+**启用自定义查询**:
 
 ```typescript
-// Just use the new custom() method
+// 只需使用新的 custom() 方法
 const result = await dataProvider.custom({
   url: 'query',
   method: 'post',
@@ -752,28 +752,28 @@ const result = await dataProvider.custom({
 });
 ```
 
-**Enable Soft Deletes**:
+**启用软删除**:
 
 ```typescript
 const dataProvider = await createRefineSQL({
   connection: db,
   schema,
   softDelete: {
-    enabled: true, // Opt-in
+    enabled: true, // 选择启用
     field: 'deleted_at',
   },
 });
 ```
 
-**Use Relations** (requires schema definition):
+**使用关系**（需要 schema 定义）:
 
 ```typescript
-// 1. Define relations in schema
+// 1. 在 schema 中定义关系
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
 }));
 
-// 2. Use in queries
+// 2. 在查询中使用
 const { data } = await dataProvider.getOne({
   resource: 'users',
   id: 1,
@@ -783,31 +783,31 @@ const { data } = await dataProvider.getOne({
 
 ---
 
-## Development Roadmap
+## 开发路线图
 
-| Feature          | Status         | Target Date |
-| ---------------- | -------------- | ----------- |
-| getApiUrl()      | ✅ Completed   | v0.3.2      |
-| custom() method  | 🚧 In Progress | Q1 2025     |
-| Nested Relations | 🚧 In Progress | Q1 2025     |
-| Aggregations     | 🚧 In Progress | Q1 2025     |
-| Field Selection  | 📋 Planned     | Q1 2025     |
-| Soft Delete      | 📋 Planned     | Q1 2025     |
-
----
-
-## Contributing
-
-We welcome contributions! Priority areas for v0.4.0:
-
-1. **custom() method implementation** - Core functionality
-2. **Relations loading** - High value for users
-3. **Aggregation support** - Common use case
-4. **Test coverage** - Ensure quality
-
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
+| 功能         | 状态       | 目标日期  |
+| ------------ | ---------- | --------- |
+| getApiUrl()  | ✅ 已完成  | v0.3.2    |
+| custom() 方法 | 🚧 进行中  | 2025年Q1  |
+| 嵌套关系     | 🚧 进行中  | 2025年Q1  |
+| 聚合查询     | 🚧 进行中  | 2025年Q1  |
+| 字段选择     | 📋 已计划  | 2025年Q1  |
+| 软删除       | 📋 已计划  | 2025年Q1  |
 
 ---
 
-**Last Updated**: 2025-01-15
-**Maintainer**: Refine SQLx Team
+## 贡献
+
+我们欢迎贡献！v0.4.0 的优先领域：
+
+1. **custom() 方法实现** - 核心功能
+2. **关系加载** - 对用户高价值
+3. **聚合支持** - 常见用例
+4. **测试覆盖** - 确保质量
+
+查看 [CONTRIBUTING.md](../../CONTRIBUTING.md) 获取指南。
+
+---
+
+**最后更新**: 2025-01-15
+**维护者**: Refine SQLx Team

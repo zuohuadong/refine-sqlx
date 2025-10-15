@@ -13,8 +13,7 @@ docs/
 ├── specs/                             # Technical specifications
 │   └── CLAUDE_SPEC.md                 # Project specifications
 ├── features/                          # Feature documentation
-│   ├── FEATURES_v0.3.0.md             # v0.3.0 release
-│   └── FEATURES_v0.4.0.md             # v0.4.0 release
+│   └── FEATURES_v0.3.0.md             # v0.3.0 release
 ├── analysis/                          # Technical analysis
 │   └── D1_BUNDLE_SIZE_ANALYSIS.md     # Bundle size analysis
 ├── examples/                          # Interactive examples
@@ -70,7 +69,6 @@ Release notes and feature documentation for each version.
 **Files:**
 
 - `FEATURES_v0.3.0.md` - Drizzle ORM integration
-- `FEATURES_v0.4.0.md` - Eloquent-style API (planned)
 
 **Target Audience:** Users, developers evaluating features
 
