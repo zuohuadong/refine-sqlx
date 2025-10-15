@@ -1,11 +1,11 @@
 /**
  * Introspect command - Introspect D1 database and generate schema
  */
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
-import ora from 'ora';
-import chalk from 'chalk';
 import { $ } from 'bun';
+import chalk from 'chalk';
+import ora from 'ora';
 
 interface IntrospectOptions {
   fromD1?: boolean;
@@ -33,8 +33,14 @@ export async function introspect(options: IntrospectOptions) {
   console.log(chalk.bold.blue('\n🔎 Database Introspection\n'));
 
   if (!options.fromD1) {
-    console.log(chalk.red('Error: Only D1 introspection is currently supported'));
-    console.log(chalk.gray('Usage: npx refine-sqlx introspect --from-d1 --database-id=xxx'));
+    console.log(
+      chalk.red('Error: Only D1 introspection is currently supported'),
+    );
+    console.log(
+      chalk.gray(
+        'Usage: npx refine-sqlx introspect --from-d1 --database-id=xxx',
+      ),
+    );
     process.exit(1);
   }
 
@@ -63,7 +69,9 @@ export async function introspect(options: IntrospectOptions) {
     if (tables.length === 0) {
       spinner.warn(chalk.yellow('No tables found in database'));
       console.log(chalk.gray('\nThe database appears to be empty.'));
-      console.log(chalk.gray('Create tables first, then run introspect again.'));
+      console.log(
+        chalk.gray('Create tables first, then run introspect again.'),
+      );
       process.exit(0);
     }
 
@@ -114,10 +122,7 @@ export async function introspect(options: IntrospectOptions) {
       'Review the generated schema in',
       chalk.gray(outputPath),
     );
-    console.log(
-      chalk.cyan('2.'),
-      'Add relations between tables if needed',
-    );
+    console.log(chalk.cyan('2.'), 'Add relations between tables if needed');
     console.log(
       chalk.cyan('3.'),
       'Import the schema in your data provider setup',
@@ -191,7 +196,8 @@ function generateTableSchema(tableName: string, columns: ColumnInfo[]): string {
     fields.push(`  ${fieldDef}`);
   }
 
-  const singularName = tableName.endsWith('s') ? tableName.slice(0, -1) : tableName;
+  const singularName =
+    tableName.endsWith('s') ? tableName.slice(0, -1) : tableName;
   const typeName = toPascalCase(singularName);
 
   return `/**
@@ -206,7 +212,10 @@ export type New${typeName} = typeof ${tableName}.$inferInsert;
 `;
 }
 
-function generateFieldDefinition(col: ColumnInfo, allColumns: ColumnInfo[]): string {
+function generateFieldDefinition(
+  col: ColumnInfo,
+  allColumns: ColumnInfo[],
+): string {
   const sqlType = col.type.toUpperCase();
   let drizzleType: string;
   let options: string[] = [];
@@ -219,9 +228,17 @@ function generateFieldDefinition(col: ColumnInfo, allColumns: ColumnInfo[]): str
     if (col.name.includes('_at') || col.name.includes('At')) {
       options.push("{ mode: 'timestamp' }");
     }
-  } else if (sqlType.includes('TEXT') || sqlType.includes('VARCHAR') || sqlType.includes('CHAR')) {
+  } else if (
+    sqlType.includes('TEXT') ||
+    sqlType.includes('VARCHAR') ||
+    sqlType.includes('CHAR')
+  ) {
     drizzleType = 'text';
-  } else if (sqlType.includes('REAL') || sqlType.includes('FLOAT') || sqlType.includes('DOUBLE')) {
+  } else if (
+    sqlType.includes('REAL') ||
+    sqlType.includes('FLOAT') ||
+    sqlType.includes('DOUBLE')
+  ) {
     drizzleType = 'real';
   } else if (sqlType.includes('BLOB')) {
     drizzleType = 'blob';
@@ -235,8 +252,9 @@ function generateFieldDefinition(col: ColumnInfo, allColumns: ColumnInfo[]): str
   // Add primary key
   if (col.pk === 1) {
     // Check if it's auto-increment
-    const isAutoIncrement = col.type.toUpperCase().includes('AUTOINCREMENT') ||
-                            (col.pk === 1 && drizzleType === 'integer');
+    const isAutoIncrement =
+      col.type.toUpperCase().includes('AUTOINCREMENT') ||
+      (col.pk === 1 && drizzleType === 'integer');
     if (isAutoIncrement) {
       fieldDef += '.primaryKey({ autoIncrement: true })';
     } else {
@@ -254,7 +272,10 @@ function generateFieldDefinition(col: ColumnInfo, allColumns: ColumnInfo[]): str
     // Handle different default value types
     let defaultValue = col.dflt_value;
 
-    if (defaultValue === 'CURRENT_TIMESTAMP' || defaultValue === "CURRENT_TIMESTAMP") {
+    if (
+      defaultValue === 'CURRENT_TIMESTAMP' ||
+      defaultValue === 'CURRENT_TIMESTAMP'
+    ) {
       fieldDef += '.$defaultFn(() => new Date())';
     } else if (defaultValue === '0' || defaultValue === 0) {
       fieldDef += '.default(0)';

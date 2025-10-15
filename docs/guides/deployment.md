@@ -113,7 +113,10 @@ app.get('/health', async (c) => {
   try {
     // Test database connection
     const dataProvider = c.get('dataProvider');
-    await dataProvider.getList({ resource: 'users', pagination: { current: 1, pageSize: 1 } });
+    await dataProvider.getList({
+      resource: 'users',
+      pagination: { current: 1, pageSize: 1 },
+    });
 
     return c.json({
       status: 'healthy',
@@ -121,10 +124,7 @@ app.get('/health', async (c) => {
       database: 'connected',
     });
   } catch (error) {
-    return c.json({
-      status: 'unhealthy',
-      error: error.message,
-    }, 503);
+    return c.json({ status: 'unhealthy', error: error.message }, 503);
   }
 });
 ```
@@ -234,8 +234,8 @@ While `refine-sqlx` is optimized for edge runtimes, you can deploy to traditiona
 
 ```typescript
 // Use better-sqlite3 adapter
-import { createRefineSQL } from 'refine-sqlx';
 import Database from 'better-sqlite3';
+import { createRefineSQL } from 'refine-sqlx';
 
 const db = new Database('./data/app.db');
 const dataProvider = createRefineSQL({ connection: db, schema });

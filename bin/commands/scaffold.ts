@@ -1,10 +1,10 @@
 /**
  * Scaffold command - Generate Drizzle schema templates
  */
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import ora from 'ora';
 import chalk from 'chalk';
+import ora from 'ora';
 
 interface ScaffoldOptions {
   output?: string;
@@ -85,9 +85,8 @@ function generateTableSchema(
   timestamps: boolean,
   softDelete: boolean,
 ): string {
-  const singularName = tableName.endsWith('s')
-    ? tableName.slice(0, -1)
-    : tableName;
+  const singularName =
+    tableName.endsWith('s') ? tableName.slice(0, -1) : tableName;
   const pascalName = toPascalCase(singularName);
 
   let schema = `import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';

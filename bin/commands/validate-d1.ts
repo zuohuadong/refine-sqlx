@@ -3,8 +3,8 @@
  */
 import { existsSync } from 'fs';
 import { pathToFileURL } from 'url';
-import ora from 'ora';
 import chalk from 'chalk';
+import ora from 'ora';
 
 interface ValidateD1Options {
   config?: string;
@@ -16,11 +16,7 @@ interface DrizzleConfig {
   out?: string;
   dialect?: string;
   driver?: string;
-  dbCredentials?: {
-    accountId?: string;
-    databaseId?: string;
-    token?: string;
-  };
+  dbCredentials?: { accountId?: string; databaseId?: string; token?: string };
 }
 
 export async function validateD1(options: ValidateD1Options) {
@@ -50,20 +46,30 @@ export async function validateD1(options: ValidateD1Options) {
     spinner.succeed(chalk.green('Configuration file loaded'));
 
     // Validate configuration
-    const validationResults: Array<{ name: string; status: boolean; message?: string }> = [];
+    const validationResults: Array<{
+      name: string;
+      status: boolean;
+      message?: string;
+    }> = [];
 
     // Check dialect
     validationResults.push({
       name: 'Dialect',
       status: config.dialect === 'sqlite',
-      message: config.dialect !== 'sqlite' ? `Expected 'sqlite', got '${config.dialect}'` : undefined,
+      message:
+        config.dialect !== 'sqlite' ?
+          `Expected 'sqlite', got '${config.dialect}'`
+        : undefined,
     });
 
     // Check driver
     validationResults.push({
       name: 'Driver',
       status: config.driver === 'd1-http',
-      message: config.driver !== 'd1-http' ? `Expected 'd1-http', got '${config.driver}'` : undefined,
+      message:
+        config.driver !== 'd1-http' ?
+          `Expected 'd1-http', got '${config.driver}'`
+        : undefined,
     });
 
     // Check schema path
@@ -81,26 +87,38 @@ export async function validateD1(options: ValidateD1Options) {
     });
 
     // Check environment variables
-    const accountId = config.dbCredentials?.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
-    const databaseId = config.dbCredentials?.databaseId || process.env.CLOUDFLARE_DATABASE_ID;
-    const token = config.dbCredentials?.token || process.env.CLOUDFLARE_API_TOKEN;
+    const accountId =
+      config.dbCredentials?.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
+    const databaseId =
+      config.dbCredentials?.databaseId || process.env.CLOUDFLARE_DATABASE_ID;
+    const token =
+      config.dbCredentials?.token || process.env.CLOUDFLARE_API_TOKEN;
 
     validationResults.push({
       name: 'Account ID',
       status: !!accountId && accountId !== 'your-account-id',
-      message: !accountId ? 'CLOUDFLARE_ACCOUNT_ID not set' : accountId === 'your-account-id' ? 'Placeholder value detected' : undefined,
+      message:
+        !accountId ? 'CLOUDFLARE_ACCOUNT_ID not set'
+        : accountId === 'your-account-id' ? 'Placeholder value detected'
+        : undefined,
     });
 
     validationResults.push({
       name: 'Database ID',
       status: !!databaseId && databaseId !== 'your-database-id',
-      message: !databaseId ? 'CLOUDFLARE_DATABASE_ID not set' : databaseId === 'your-database-id' ? 'Placeholder value detected' : undefined,
+      message:
+        !databaseId ? 'CLOUDFLARE_DATABASE_ID not set'
+        : databaseId === 'your-database-id' ? 'Placeholder value detected'
+        : undefined,
     });
 
     validationResults.push({
       name: 'API Token',
       status: !!token && token !== 'your-api-token',
-      message: !token ? 'CLOUDFLARE_API_TOKEN not set' : token === 'your-api-token' ? 'Placeholder value detected' : undefined,
+      message:
+        !token ? 'CLOUDFLARE_API_TOKEN not set'
+        : token === 'your-api-token' ? 'Placeholder value detected'
+        : undefined,
     });
 
     // Display results
@@ -129,7 +147,9 @@ export async function validateD1(options: ValidateD1Options) {
       console.log(
         chalk.cyan('   export CLOUDFLARE_DATABASE_ID="your-database-id"'),
       );
-      console.log(chalk.cyan('   export CLOUDFLARE_API_TOKEN="your-api-token"'));
+      console.log(
+        chalk.cyan('   export CLOUDFLARE_API_TOKEN="your-api-token"'),
+      );
       console.log(
         chalk.gray('\n2. Get your credentials from Cloudflare dashboard:'),
       );
@@ -211,5 +231,5 @@ function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Math.round(bytes / Math.pow(k, i) * 100) / 100} ${sizes[i]}`;
+  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
 }

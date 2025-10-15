@@ -3,8 +3,8 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import ora from 'ora';
 import chalk from 'chalk';
+import ora from 'ora';
 import prompts from 'prompts';
 
 interface InitOptions {
@@ -132,9 +132,7 @@ export default defineConfig({
   writeFileSync('drizzle.config.ts', configContent);
 
   // Generate schema
-  const schemaContent = includeExample
-    ? getExampleSchema()
-    : getBasicSchema();
+  const schemaContent = includeExample ? getExampleSchema() : getBasicSchema();
   writeFileSync('src/schema/index.ts', schemaContent);
 
   // Generate .env.example
@@ -175,9 +173,7 @@ export default defineConfig({
 
   writeFileSync('drizzle.config.ts', configContent);
 
-  const schemaContent = includeExample
-    ? getExampleSchema()
-    : getBasicSchema();
+  const schemaContent = includeExample ? getExampleSchema() : getBasicSchema();
   writeFileSync('src/schema/index.ts', schemaContent);
 
   const envExample = `DATABASE_URL=./data.db
@@ -202,9 +198,7 @@ export default defineConfig({
 
   writeFileSync('drizzle.config.ts', configContent);
 
-  const schemaContent = includeExample
-    ? getExampleSchema()
-    : getBasicSchema();
+  const schemaContent = includeExample ? getExampleSchema() : getBasicSchema();
   writeFileSync('src/schema/index.ts', schemaContent);
 
   const envExample = `DATABASE_URL=./data.db
@@ -229,9 +223,7 @@ export default defineConfig({
 
   writeFileSync('drizzle.config.ts', configContent);
 
-  const schemaContent = includeExample
-    ? getExampleSchema()
-    : getBasicSchema();
+  const schemaContent = includeExample ? getExampleSchema() : getBasicSchema();
   writeFileSync('src/schema/index.ts', schemaContent);
 
   const envExample = `DATABASE_URL=./data.db

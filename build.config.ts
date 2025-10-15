@@ -57,8 +57,26 @@ export default defineBuildConfig({
           target: 'es2022',
           banner: '#!/usr/bin/env node',
         },
-        output: {
-          format: 'esm',
+        output: { format: 'esm' },
+        // Use Rollup's external option to exclude CLI dependencies
+        external: (id: string) => {
+          // Externalize all runtime dependencies for CLI
+          const cliDeps = [
+            'ora',
+            'chalk',
+            'commander',
+            'prompts',
+            'drizzle-kit',
+            'better-sqlite3',
+            'bun:sqlite',
+            'node:sqlite',
+            'string-width', // Explicitly exclude to avoid RegExp v flag issues
+          ];
+          return (
+            cliDeps.some((dep) => id === dep || id.startsWith(`${dep}/`)) ||
+            id.startsWith('node:') ||
+            id.startsWith('bun:')
+          );
         },
       },
     },

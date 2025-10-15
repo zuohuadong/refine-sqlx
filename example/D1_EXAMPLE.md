@@ -18,10 +18,9 @@ All D1 features are available in **both** packages with 100% identical APIs:
 
 ```typescript
 // Option 1: Main package (smallest bundle, all DB support)
-import { createRefineSQL, batchInsert } from 'refine-sqlx';
-
+import { batchInsert, createRefineSQL } from 'refine-sqlx';
 // Option 2: D1-optimized package (self-contained, includes Drizzle ORM)
-import { createRefineSQL, batchInsert } from 'refine-sqlx/d1';
+import { batchInsert, createRefineSQL } from 'refine-sqlx/d1';
 
 // ✅ Code is identical - only import path differs!
 ```
@@ -147,27 +146,42 @@ The batch operations automatically handle D1's 50-statement batch limit:
 
 ```typescript
 // Works with both 'refine-sqlx' and 'refine-sqlx/d1'
-import { createRefineSQL, batchInsert, batchUpdate, batchDelete } from 'refine-sqlx/d1';
+import {
+  batchDelete,
+  batchInsert,
+  batchUpdate,
+  createRefineSQL,
+} from 'refine-sqlx/d1';
 
 // Create data provider
 const dataProvider = await createRefineSQL({
   connection: env.DB,
   schema,
   d1Options: {
-    batch: { maxSize: 50 } // Optional: customize batch size
-  }
+    batch: { maxSize: 50 }, // Optional: customize batch size
+  },
 });
 
 // Batch insert - automatically chunks into optimal batches
 const users = await batchInsert(dataProvider, 'users', [
-  { name: 'User 1', email: 'user1@example.com', status: 'active', createdAt: new Date() },
-  { name: 'User 2', email: 'user2@example.com', status: 'active', createdAt: new Date() },
+  {
+    name: 'User 1',
+    email: 'user1@example.com',
+    status: 'active',
+    createdAt: new Date(),
+  },
+  {
+    name: 'User 2',
+    email: 'user2@example.com',
+    status: 'active',
+    createdAt: new Date(),
+  },
   // ... up to thousands of items
 ]);
 
 // Batch update
 const updated = await batchUpdate(dataProvider, 'users', [1, 2, 3, 4], {
-  status: 'inactive'
+  status: 'inactive',
 });
 
 // Batch delete
@@ -188,9 +202,9 @@ const dataProvider = await createRefineSQL({
   d1Options: {
     timeTravel: {
       enabled: true,
-      bookmark: 'before-migration' // or Unix timestamp
-    }
-  }
+      bookmark: 'before-migration', // or Unix timestamp
+    },
+  },
 });
 ```
 

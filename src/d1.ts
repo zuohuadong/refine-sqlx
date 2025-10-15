@@ -28,13 +28,13 @@
 import type { DataProvider } from '@refinedev/core';
 import { count, eq, inArray, sql } from 'drizzle-orm';
 import { createD1Adapter } from './adapters/d1';
-import { validateD1Options } from './utils/validation';
 import {
   calculatePagination,
   filtersToWhere,
   sortersToOrderBy,
 } from './filters';
 import type { RefineSQLConfig } from './types';
+import { validateD1Options } from './utils/validation';
 
 export type {
   RefineSQLConfig,

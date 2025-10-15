@@ -16,7 +16,9 @@ try {
   isBetterSQLite3Available = true;
 } catch (error) {
   // better-sqlite3 not available or native module compilation issue
-  console.warn(`better-sqlite3 unavailable: ${error instanceof Error ? error.message : String(error)}`);
+  console.warn(
+    `better-sqlite3 unavailable: ${error instanceof Error ? error.message : String(error)}`,
+  );
   isBetterSQLite3Available = false;
 }
 

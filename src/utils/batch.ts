@@ -67,10 +67,7 @@ export async function batchInsert<T extends Record<string, any>>(
   // Execute batches in parallel for better performance
   const results = await Promise.all(
     batches.map((batch) =>
-      dataProvider.createMany!({
-        resource,
-        variables: batch as any,
-      }),
+      dataProvider.createMany!({ resource, variables: batch as any }),
     ),
   );
 
@@ -165,10 +162,7 @@ export async function batchDelete<T extends Record<string, any>>(
   // Execute batches in parallel
   const results = await Promise.all(
     batches.map((batchIds) =>
-      dataProvider.deleteMany!({
-        resource,
-        ids: batchIds,
-      }),
+      dataProvider.deleteMany!({ resource, ids: batchIds }),
     ),
   );
 

@@ -20,7 +20,9 @@ const testSuite =
           const db = new DatabaseSync(':memory:');
           return createNodeSQLiteAdapter(db);
         } catch (error) {
-          throw new Error(`Node.js SQLite not available: ${error instanceof Error ? error.message : String(error)}`);
+          throw new Error(
+            `Node.js SQLite not available: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
       },
       async (client: any) => {

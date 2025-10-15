@@ -4,6 +4,7 @@
  */
 
 import type { DataProvider } from '@refinedev/core';
+import type { D1Options } from '../src/types';
 import {
   batchDelete,
   batchInsert,
@@ -11,7 +12,6 @@ import {
   DEFAULT_BATCH_SIZE,
 } from '../src/utils/batch';
 import { getBatchSize, validateD1Options } from '../src/utils/validation';
-import type { D1Options } from '../src/types';
 
 describe('Batch Operations (Main Package)', () => {
   describe('batchInsert', () => {
@@ -28,9 +28,7 @@ describe('Batch Operations (Main Package)', () => {
       }));
 
       const mockDataProvider: Partial<DataProvider> = {
-        createMany: jest.fn().mockResolvedValue({
-          data: items.slice(0, 50),
-        }),
+        createMany: jest.fn().mockResolvedValue({ data: items.slice(0, 50) }),
       };
 
       const result = await batchInsert(
@@ -49,9 +47,7 @@ describe('Batch Operations (Main Package)', () => {
       }));
 
       const mockDataProvider: Partial<DataProvider> = {
-        createMany: jest.fn().mockResolvedValue({
-          data: items.slice(0, 25),
-        }),
+        createMany: jest.fn().mockResolvedValue({ data: items.slice(0, 25) }),
       };
 
       await batchInsert(mockDataProvider as DataProvider, 'users', items, {
@@ -102,9 +98,11 @@ describe('Batch Operations (Main Package)', () => {
       const ids = Array.from({ length: 120 }, (_, i) => i + 1);
 
       const mockDataProvider: Partial<DataProvider> = {
-        updateMany: jest.fn().mockResolvedValue({
-          data: ids.slice(0, 50).map((id) => ({ id, status: 'active' })),
-        }),
+        updateMany: jest
+          .fn()
+          .mockResolvedValue({
+            data: ids.slice(0, 50).map((id) => ({ id, status: 'active' })),
+          }),
       };
 
       await batchUpdate(mockDataProvider as DataProvider, 'users', ids, {
@@ -150,9 +148,9 @@ describe('Batch Operations (Main Package)', () => {
       const ids = Array.from({ length: 100 }, (_, i) => i + 1);
 
       const mockDataProvider: Partial<DataProvider> = {
-        deleteMany: jest.fn().mockResolvedValue({
-          data: ids.slice(0, 50).map((id) => ({ id })),
-        }),
+        deleteMany: jest
+          .fn()
+          .mockResolvedValue({ data: ids.slice(0, 50).map((id) => ({ id })) }),
       };
 
       await batchDelete(mockDataProvider as DataProvider, 'users', ids);
@@ -191,9 +189,7 @@ describe('Validation Utilities', () => {
     });
 
     it('should return custom batch size from options', () => {
-      const options: D1Options = {
-        batch: { maxSize: 25 },
-      };
+      const options: D1Options = { batch: { maxSize: 25 } };
       expect(getBatchSize(options)).toBe(25);
     });
 
@@ -213,9 +209,7 @@ describe('Validation Utilities', () => {
     });
 
     it('should not throw for valid batch size', () => {
-      expect(() =>
-        validateD1Options({ batch: { maxSize: 50 } }),
-      ).not.toThrow();
+      expect(() => validateD1Options({ batch: { maxSize: 50 } })).not.toThrow();
     });
 
     it('should throw for invalid batch size (zero)', () => {

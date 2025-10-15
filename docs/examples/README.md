@@ -58,8 +58,8 @@ export default {
     const db = drizzle(env.DB, { schema });
     const users = await db.select().from(schema.users);
     return Response.json(users);
-  }
-}
+  },
+};
 ```
 
 ```typescript
@@ -70,8 +70,8 @@ export default {
   async fetch(request: Request, env: { DB: D1Database }) {
     const provider = createRefineSQL({ connection: env.DB, schema });
     // This adds unnecessary abstraction!
-  }
-}
+  },
+};
 ```
 
 ## Resources

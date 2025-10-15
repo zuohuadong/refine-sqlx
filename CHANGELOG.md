@@ -172,12 +172,15 @@ If you were using `DEFAULT_D1_BATCH_SIZE`:
 
 ```typescript
 // Before
-import { DEFAULT_D1_BATCH_SIZE } from 'refine-sqlx/d1';
 
-// After
-import { DEFAULT_BATCH_SIZE, DEFAULT_D1_BATCH_SIZE } from 'refine-sqlx/d1';
 // or
 import { DEFAULT_BATCH_SIZE } from 'refine-sqlx';
+// After
+import {
+  DEFAULT_BATCH_SIZE,
+  DEFAULT_D1_BATCH_SIZE,
+  DEFAULT_D1_BATCH_SIZE,
+} from 'refine-sqlx/d1';
 ```
 
 All other APIs remain unchanged. The value is still `50`.

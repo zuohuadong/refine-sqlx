@@ -1769,7 +1769,9 @@ import {
   expect,
   it,
   test,
-} from 'bun:test'; // or '@jest/globals'
+} from 'bun:test';
+
+// or '@jest/globals'
 
 describe('My Tests', () => {
   beforeEach(() => {
@@ -2609,32 +2611,32 @@ export interface DataProviderBatchOps<TData = any> {
   batchInsert<T = TData>(
     resource: string,
     items: T[],
-    options?: BatchOperationOptions
+    options?: BatchOperationOptions,
   ): Promise<T[]>;
 
   batchUpdate<T = TData>(
     resource: string,
     ids: (string | number)[],
     updates: Partial<T>,
-    options?: BatchOperationOptions
+    options?: BatchOperationOptions,
   ): Promise<T[]>;
 
   batchDelete<T = TData>(
     resource: string,
     ids: (string | number)[],
-    options?: BatchOperationOptions
+    options?: BatchOperationOptions,
   ): Promise<T[]>;
 }
 
 // 2. Implement for main export (src/provider.ts)
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
-  config: RefineSQLConfig<TSchema>
+  config: RefineSQLConfig<TSchema>,
 ): Promise<DataProvider & DataProviderBatchOps> {
   // Implementation with Drizzle for all runtimes
   async function batchInsert<T>(
     resource: string,
     items: T[],
-    options?: BatchOperationOptions
+    options?: BatchOperationOptions,
   ): Promise<T[]> {
     const table = getTable(resource);
     const maxSize = options?.maxSize ?? 50;
@@ -2661,13 +2663,13 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
 // 3. Implement for D1 export (src/d1.ts)
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
-  config: RefineSQLConfig<TSchema>
+  config: RefineSQLConfig<TSchema>,
 ): Promise<DataProvider & DataProviderBatchOps> {
   // D1-optimized implementation with identical API
   async function batchInsert<T>(
     resource: string,
     items: T[],
-    options?: BatchOperationOptions
+    options?: BatchOperationOptions,
   ): Promise<T[]> {
     const table = getTable(resource);
     const maxSize = options?.maxSize ?? 50; // D1 batch limit
@@ -2679,10 +2681,12 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     for (const batch of batches) {
       // Use D1 batch API for atomic operations
       const statements = batch.map((item) =>
-        db.insert(table).values(item).returning()
+        db.insert(table).values(item).returning(),
       );
 
-      const batchResults = await (config.connection as D1Database).batch(statements);
+      const batchResults = await (config.connection as D1Database).batch(
+        statements,
+      );
       results.push(...(batchResults.flat() as T[]));
     }
 
@@ -2703,7 +2707,7 @@ export async function batchInsert<T>(
   dataProvider: DataProvider & DataProviderBatchOps,
   resource: string,
   items: T[],
-  options?: BatchOperationOptions
+  options?: BatchOperationOptions,
 ): Promise<T[]> {
   return dataProvider.batchInsert(resource, items, options);
 }
@@ -2744,8 +2748,8 @@ async function batchInsert<T>(resource: string, items: T[]) {
 // D1 export: Optimized using D1 native batch API
 async function batchInsert<T>(resource: string, items: T[]) {
   // Use D1's atomic batch API for better performance
-  const statements = items.map(item =>
-    db.insert(table).values(item).returning()
+  const statements = items.map((item) =>
+    db.insert(table).values(item).returning(),
   );
   await d1Database.batch(statements);
 }
@@ -2810,7 +2814,11 @@ describe('API Compatibility Across Entry Points', () => {
   });
 
   it('should provide same DataProvider methods from all entry points', async () => {
-    const schema = { users: sqliteTable('users', { /* ... */ }) };
+    const schema = {
+      users: sqliteTable('users', {
+        /* ... */
+      }),
+    };
 
     // Create providers from different entry points
     const mainProvider = await mainExport.createRefineSQL({
@@ -2825,11 +2833,18 @@ describe('API Compatibility Across Entry Points', () => {
 
     // Verify both have same methods
     const requiredMethods = [
-      'getList', 'getMany', 'getOne',
-      'create', 'createMany',
-      'update', 'updateMany',
-      'deleteOne', 'deleteMany',
-      'batchInsert', 'batchUpdate', 'batchDelete'
+      'getList',
+      'getMany',
+      'getOne',
+      'create',
+      'createMany',
+      'update',
+      'updateMany',
+      'deleteOne',
+      'deleteMany',
+      'batchInsert',
+      'batchUpdate',
+      'batchDelete',
     ];
 
     for (const method of requiredMethods) {
@@ -2986,13 +3001,15 @@ export interface RefineSQLConfig<TSchema extends Record<string, unknown>> {
 **Step 2: Implement in Main Export** (`src/provider.ts`):
 
 ```typescript
-export async function createRefineSQL<TSchema>(config: RefineSQLConfig<TSchema>) {
+export async function createRefineSQL<TSchema>(
+  config: RefineSQLConfig<TSchema>,
+) {
   // Validate D1-specific options
   if (config.d1Options?.timeTravel?.enabled) {
     if (!isD1Database(config.connection)) {
       console.warn(
         '[refine-sqlx] Time Travel is only supported in D1 environment. ' +
-        'Option will be ignored in current runtime.'
+          'Option will be ignored in current runtime.',
       );
     }
   }
@@ -3012,7 +3029,7 @@ export function createRefineSQL<TSchema>(config: RefineSQLConfig<TSchema>) {
   if (config.d1Options?.timeTravel?.enabled) {
     console.info(
       '[refine-sqlx] Time Travel is configured. ' +
-      'Use wrangler CLI for database restoration.'
+        'Use wrangler CLI for database restoration.',
     );
   }
 
@@ -3058,7 +3075,7 @@ describe('Time Travel Configuration', () => {
     const config = {
       connection: mockD1,
       schema,
-      d1Options: { timeTravel: { enabled: true } }
+      d1Options: { timeTravel: { enabled: true } },
     };
 
     expect(() => createRefineSQL(config)).not.toThrow();
@@ -3068,14 +3085,14 @@ describe('Time Travel Configuration', () => {
     const config = {
       connection: bunDatabase, // Not D1
       schema,
-      d1Options: { timeTravel: { enabled: true } }
+      d1Options: { timeTravel: { enabled: true } },
     };
 
     const consoleSpy = createSpyOn(console, 'warn');
     createRefineSQL(config);
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Time Travel is only supported in D1')
+      expect.stringContaining('Time Travel is only supported in D1'),
     );
   });
 });
