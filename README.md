@@ -364,7 +364,7 @@ type UserInsert = InferInsertModel<typeof users>;
 - **TypeScript**: 5.0+
 - **Node.js**: 20.0+ (24.0+ recommended for native SQLite)
 - **Bun**: 1.0+ (optional)
-- **Peer Dependencies**: `@refinedev/core ^4.57.10`
+- **Peer Dependencies**: `@refinedev/core ^5.0.0`, `@tanstack/react-query ^5.0.0`
 - **Dependencies**: `drizzle-orm ^0.44.0`
 - **Optional**: `better-sqlite3 ^12.0.0` (fallback for Node.js < 24)
 

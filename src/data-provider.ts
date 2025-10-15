@@ -73,6 +73,11 @@ export default function (
     updateMany,
     deleteOne,
     deleteMany,
+    getApiUrl() {
+      // SQL databases don't have a traditional API URL
+      // Return a placeholder or configuration-based value
+      return '';
+    },
   } as DataProvider;
 
   async function resolveClient() {

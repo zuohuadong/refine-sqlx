@@ -13,8 +13,6 @@ v0.3.0 是一个**完全重写**的现代化版本，专注于**优雅**、**易
 
 **发布日期**: 2025-Q1
 
-**目标**: 为 v0.4.0 的 Eloquent 风格 ORM 打下坚实基础
-
 ---
 
 ## 🎯 核心目标
@@ -603,31 +601,7 @@ await dataProvider.transaction(async (tx) => {
 
 ---
 
-### 5. TypeScript 5.0+ 高级特性
-
-#### 5.1 装饰器支持（为 v0.4.0 准备）
-
-```typescript
-// v0.3.0 架构已准备好支持 v0.4.0 的装饰器模型
-import { Model, Column, PrimaryKey, Relation } from 'refine-sqlx'; // v0.4.0
-
-@Model()
-class User {
-  @PrimaryKey({ autoIncrement: true })
-  id: number;
-
-  @Column({ type: 'text', notNull: true })
-  name: string;
-
-  @Column({ type: 'text', unique: true })
-  email: string;
-
-  @Relation(() => Post, 'userId')
-  posts: Post[];
-}
-```
-
-#### 5.2 高级类型推断
+### 5. TypeScript 5.0+ 高级类型推断
 
 ```typescript
 // 条件类型推断
@@ -1048,7 +1022,7 @@ const dataProvider = createRefineSQL({
 });
 ```
 
-**原因**：Schema 定义是类型安全的基础，为 v0.4.0 的模型层做准备。
+**原因**：Schema 定义是类型安全的基础，提供完整的类型推断和编译时验证。
 
 #### 2. TypeScript 5.0+ 必需
 
@@ -1171,40 +1145,6 @@ const dataProvider = createRefineSQL({ connection: env.DB, schema });
 ✅ **更好的 IDE 支持** - 智能提示、自动补全
 ✅ **更优雅的 API** - 简洁、可读、易维护
 ✅ **更好的性能** - 优化的查询构建和执行
-✅ **为未来做准备** - v0.4.0 Eloquent ORM 的基础
-
----
-
-## 📈 v0.4.0 路线图
-
-v0.3.0 的架构设计为 v0.4.0 的高级特性打下基础：
-
-### 计划特性
-
-1. **Eloquent 风格 ORM**
-   - 链式查询 API
-   - 模型装饰器
-   - 自动关联加载
-
-2. **关系管理**
-   - 一对一 (hasOne / belongsTo)
-   - 一对多 (hasMany)
-   - 多对多 (belongsToMany)
-   - 远程一对多 (hasManyThrough)
-
-3. **多态关联**
-   - morphOne / morphMany
-   - morphToMany
-   - 自动类型推断
-
-4. **高级特性**
-   - 查询作用域 (Query Scopes)
-   - 全局作用域 (Global Scopes)
-   - 模型观察者 (Observers)
-   - 软删除 (Soft Deletes)
-   - 属性转换 (Casts)
-
-参见: [v0.4.0 功能规划](./FEATURES_v0.4.0.md)
 
 ---
 
@@ -1322,5 +1262,3 @@ MIT License
 **发布日期**: 2025-Q1
 **维护者**: Refine SQLx Team
 **状态**: 🚀 稳定版
-
-**下一个版本**: [v0.4.0 功能规划](./FEATURES_v0.4.0.md)

@@ -9,8 +9,7 @@ docs/
 ├── specs/              # Technical specifications and standards
 │   └── CLAUDE_SPEC.md      # Claude Code project specifications
 ├── features/           # Feature documentation and release notes
-│   ├── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
-│   └── FEATURES_v0.4.0.md  # v0.4.0 feature documentation
+│   └── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
 ├── analysis/           # Technical analysis and research
 │   └── D1_BUNDLE_SIZE_ANALYSIS.md  # D1 bundle size analysis
 ├── examples/           # Interactive examples and templates
@@ -69,15 +68,6 @@ Click to open examples in your browser:
 - D1 environment optimized build (16KB gzipped)
 - Cross-platform improvements
 - Migration guide from v0.2.x
-
-**[FEATURES_v0.4.0.md](./features/FEATURES_v0.4.0.md)** - v0.4.0 Feature Documentation
-
-- Eloquent-style chainable query API
-- Automatic relationship management
-- Polymorphic relations
-- Dynamic relations
-- Installation and usage guide
-- Migration guide from Drizzle ORM
 
 **Target Audience**: End users, npm package consumers, developers
 
@@ -156,7 +146,7 @@ When adding new documentation:
 
 4. **Naming Convention**:
    - Use descriptive names: `FEATURE_NAME.md`
-   - Include version for releases: `FEATURES_v0.4.0.md`
+   - Include version for releases: `FEATURES_vX.Y.Z.md` (e.g., `FEATURES_v0.3.0.md`)
    - Use UPPERCASE for important docs: `CLAUDE_SPEC.md`
    - Use snake_case for analysis: `bundle_size_analysis.md`
 
