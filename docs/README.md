@@ -10,8 +10,14 @@ docs/
 │   └── CLAUDE_SPEC.md      # Claude Code project specifications
 ├── features/           # Feature documentation and release notes
 │   ├── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
-│   ├── FEATURES_v0.4.0.md  # v0.4.0 roadmap (P0/P1 features)
-│   └── FEATURES_v0.5.0.md  # v0.5.0 roadmap (P2/P3 features)
+│   ├── FEATURES_v0.4.0.md  # v0.4.0 complete features
+│   └── FEATURES_v0.4.0_zh-CN.md  # v0.4.0 中文文档
+├── v0.5.0/             # v0.5.0 complete documentation
+│   ├── README.md            # v0.5.0 entry point
+│   ├── FINAL_REPORT.md      # Implementation report
+│   ├── FEATURES.md          # Feature specifications (EN)
+│   ├── FEATURES_zh-CN.md    # Feature specifications (中文)
+│   └── USAGE_EXAMPLES.md    # Complete usage examples
 ├── analysis/           # Technical analysis and research
 │   └── D1_BUNDLE_SIZE_ANALYSIS.md  # D1 bundle size analysis
 ├── examples/           # Interactive examples and templates
@@ -71,25 +77,27 @@ Click to open examples in your browser:
 - Cross-platform improvements
 - Migration guide from v0.2.x
 
-**[FEATURES_v0.4.0.md](./features/FEATURES_v0.4.0.md)** - v0.4.0 Roadmap (Planned Q1 2025)
+**[FEATURES_v0.4.0.md](./features/FEATURES_v0.4.0.md)** - v0.4.0 Complete Features
 
-- P0: custom() method for raw SQL queries
-- P0: getApiUrl() method (✅ completed in v0.3.2)
-- P1: Nested relations loading with Drizzle
-- P1: Aggregation query support
-- P1: Field selection/projection
-- P1: Soft delete support
+- ✅ custom() method for raw SQL queries
+- ✅ getApiUrl() method
+- ✅ Nested relations loading with Drizzle
+- ✅ Aggregation query support with GROUP BY and HAVING
+- ✅ Field selection/projection
+- ✅ Soft delete support
+- ✅ Time Travel for SQLite databases
+- ✅ Multi-database support (MySQL, PostgreSQL)
 
-**[FEATURES_v0.5.0.md](./features/FEATURES_v0.5.0.md)** - v0.5.0 Roadmap (Planned Q2-Q3 2025)
+**[v0.5.0 Documentation](./v0.5.0/README.md)** - v0.5.0 Complete Implementation
 
-- P2: Optimistic locking for concurrency control
-- P2: Live queries / real-time subscriptions
-- P2: Multi-tenancy / row-level security
-- P2: Query caching (memory, Redis, Cloudflare KV)
-- P3: TypeScript schema generator
-- P3: Data validation integration (Zod)
-- P3: Enhanced logging & debugging
-- P3: Migration management tools
+- ✅ Optimistic locking for concurrency control
+- ✅ Live queries / real-time subscriptions
+- ✅ Multi-tenancy / row-level security
+- ✅ Query caching (memory, Redis)
+- ✅ TypeScript schema generator (CLI)
+- ✅ Data validation integration (Zod)
+- ✅ Enhanced logging & debugging
+- ✅ Migration management tools
 
 **Target Audience**: End users, npm package consumers, developers
 
