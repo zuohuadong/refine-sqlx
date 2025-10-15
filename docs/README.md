@@ -11,7 +11,8 @@ docs/
 ├── features/           # Feature documentation and release notes
 │   ├── FEATURES_v0.3.0.md  # v0.3.0 feature documentation
 │   ├── FEATURES_v0.4.0.md  # v0.4.0 complete features
-│   └── FEATURES_v0.4.0_zh-CN.md  # v0.4.0 中文文档
+│   ├── FEATURES_v0.4.0_zh-CN.md  # v0.4.0 中文文档
+│   └── FEATURES_v0.5.0_zh-CN.md  # v0.5.0 中文文档
 ├── v0.5.0/             # v0.5.0 complete documentation
 │   ├── README.md            # v0.5.0 entry point
 │   ├── FINAL_REPORT.md      # Implementation report
@@ -87,6 +88,10 @@ Click to open examples in your browser:
 - ✅ Soft delete support
 - ✅ Time Travel for SQLite databases
 - ✅ Multi-database support (MySQL, PostgreSQL)
+
+**[FEATURES_v0.4.0_zh-CN.md](./features/FEATURES_v0.4.0_zh-CN.md)** - v0.4.0 功能路线图（中文版）
+
+**[FEATURES_v0.5.0_zh-CN.md](./features/FEATURES_v0.5.0_zh-CN.md)** - v0.5.0 企业级与开发者体验（中文版）
 
 **[v0.5.0 Documentation](./v0.5.0/README.md)** - v0.5.0 Complete Implementation
 
