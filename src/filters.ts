@@ -36,7 +36,10 @@ export function filtersToWhere<T extends Record<string, SQLiteColumn>>(
 
   for (const filter of filters) {
     // Handle logical operators (OR/AND with nested filters)
-    if ('operator' in filter && (filter.operator === 'or' || filter.operator === 'and')) {
+    if (
+      'operator' in filter &&
+      (filter.operator === 'or' || filter.operator === 'and')
+    ) {
       if (!Array.isArray(filter.value)) {
         continue;
       }

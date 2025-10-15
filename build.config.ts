@@ -27,11 +27,7 @@ export default defineBuildConfig({
       builder: 'rollup',
       declaration: false, // Skip declaration for D1 build to avoid Cloudflare types issues
       rollup: {
-        esbuild: {
-          minify: true,
-          target: 'es2022',
-          treeShaking: true,
-        },
+        esbuild: { minify: true, target: 'es2022', treeShaking: true },
         output: {
           exports: 'named',
           format: 'esm',
@@ -48,15 +44,29 @@ export default defineBuildConfig({
         },
       },
     },
+    // CLI entry point
+    {
+      input: 'bin/refine-sqlx',
+      outDir: 'dist',
+      name: 'refine-sqlx',
+      builder: 'rollup',
+      declaration: false,
+      rollup: {
+        esbuild: {
+          minify: false,
+          target: 'es2022',
+          banner: '#!/usr/bin/env node',
+        },
+        output: {
+          format: 'esm',
+        },
+      },
+    },
   ],
   outDir: 'dist',
   declaration: false, // Disabled globally for now - will re-enable after D1 bundling works
   rollup: {
-    esbuild: {
-      minify: true,
-      target: 'es2022',
-      treeShaking: true,
-    },
+    esbuild: { minify: true, target: 'es2022', treeShaking: true },
     emitCJS: false, // ESM only for v0.3.0
     preserveDynamicImports: false,
   },

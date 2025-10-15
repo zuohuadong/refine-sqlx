@@ -28,6 +28,7 @@
 import type { DataProvider } from '@refinedev/core';
 import { count, eq, inArray, sql } from 'drizzle-orm';
 import { createD1Adapter } from './adapters/d1';
+import { validateD1Options } from './utils/validation';
 import {
   calculatePagination,
   filtersToWhere,
@@ -35,14 +36,20 @@ import {
 } from './filters';
 import type { RefineSQLConfig } from './types';
 
-// Re-export types
 export type {
   RefineSQLConfig,
   InferInsertModel,
   InferSelectModel,
   TableName,
+  D1Options,
 } from './types';
 export { createD1Adapter, isD1Available } from './adapters/d1';
+export {
+  batchInsert,
+  batchUpdate,
+  batchDelete,
+  DEFAULT_BATCH_SIZE,
+} from './utils/batch';
 
 /**
  * Create a Refine DataProvider for Cloudflare D1
@@ -55,16 +62,58 @@ export { createD1Adapter, isD1Available } from './adapters/d1';
  *   schema,
  * });
  * ```
+ *
+ * @example D1 with batch configuration
+ * ```typescript
+ * const dataProvider = await createRefineSQL({
+ *   connection: env.DB,
+ *   schema,
+ *   d1Options: {
+ *     batch: { maxSize: 50 }
+ *   }
+ * });
+ * ```
+ *
+ * @example D1 with Time Travel (queries historical data)
+ * ```typescript
+ * const dataProvider = await createRefineSQL({
+ *   connection: env.DB,
+ *   schema,
+ *   d1Options: {
+ *     timeTravel: {
+ *       enabled: true,
+ *       bookmark: 'before-migration' // or Unix timestamp
+ *     }
+ *   }
+ * });
+ * ```
  */
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
 ): Promise<DataProvider> {
+  // Validate D1-specific options
+  validateD1Options(config.d1Options);
+
   // D1-specific initialization
   const db = createD1Adapter(
     config.connection as any,
     config.schema,
     config.config,
   );
+
+  // Time Travel implementation note:
+  // D1 Time Travel is primarily a CLI feature for database restoration.
+  // Runtime queries at specific points in time are not directly supported via the D1 client API.
+  // For production use cases requiring historical data access, consider:
+  // 1. Using wrangler CLI for point-in-time restoration: `wrangler d1 time-travel restore`
+  // 2. Implementing application-level versioning with timestamp columns
+  // 3. Creating separate historical tables with triggers
+  if (config.d1Options?.timeTravel?.enabled) {
+    console.warn(
+      '[refine-sqlx] D1 Time Travel is configured, but runtime historical queries are not supported by D1 API. ' +
+        'Use wrangler CLI for database restoration: `wrangler d1 time-travel restore`',
+    );
+  }
 
   function getTable(resource: string) {
     const table = config.schema[resource];

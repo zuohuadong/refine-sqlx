@@ -1,0 +1,126 @@
+#:schema node_modules/wrangler/config-schema.json
+# Cloudflare Workers + D1 Configuration
+# @see https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "refine-sqlx-worker"
+main = "example/d1-worker.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Account ID (get from Cloudflare dashboard)
+# account_id = "your-account-id-here"
+
+# Worker configuration
+workers_dev = true
+
+# D1 Database bindings
+[[d1_databases]]
+binding = "DB"
+database_name = "refine-sqlx-db"
+database_id = "your-database-id-here"
+# Create D1 database with: wrangler d1 create refine-sqlx-db
+
+# Environment variables (optional)
+[vars]
+NODE_ENV = "production"
+LOG_LEVEL = "info"
+
+# Development configuration
+[env.development]
+name = "refine-sqlx-worker-dev"
+workers_dev = true
+
+[env.development.vars]
+NODE_ENV = "development"
+LOG_LEVEL = "debug"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "refine-sqlx-db-dev"
+database_id = "your-dev-database-id-here"
+
+# Production configuration
+[env.production]
+name = "refine-sqlx-worker-prod"
+workers_dev = false
+
+[env.production.vars]
+NODE_ENV = "production"
+LOG_LEVEL = "warn"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "refine-sqlx-db-prod"
+database_id = "your-prod-database-id-here"
+
+# Build configuration
+[build]
+command = "bun run build"
+
+# Observability (optional)
+[observability]
+enabled = true
+
+# Limits (optional)
+[limits]
+cpu_ms = 50
+
+# ============================================================================
+# Setup Instructions
+# ============================================================================
+#
+# 1. Install Wrangler CLI:
+#    npm install -g wrangler
+#    # or
+#    bun add -g wrangler
+#
+# 2. Login to Cloudflare:
+#    wrangler login
+#
+# 3. Create D1 databases:
+#    # Development
+#    wrangler d1 create refine-sqlx-db-dev
+#
+#    # Production
+#    wrangler d1 create refine-sqlx-db-prod
+#
+# 4. Update this file with your database IDs (from step 3 output)
+#
+# 5. Generate and apply migrations:
+#    # Generate migrations from schema
+#    bun run db:generate:d1
+#
+#    # Apply migrations to development
+#    wrangler d1 execute refine-sqlx-db-dev --file=./drizzle/d1/0000_initial.sql
+#
+#    # Or use the migration script
+#    D1_DATABASE_NAME=refine-sqlx-db-dev bun run db:migrate:d1
+#
+# 6. Test locally:
+#    wrangler dev
+#
+# 7. Deploy to production:
+#    wrangler deploy --env production
+#
+# ============================================================================
+# Common Commands
+# ============================================================================
+#
+# List databases:
+#   wrangler d1 list
+#
+# Execute SQL:
+#   wrangler d1 execute DB --command="SELECT * FROM users"
+#
+# View database info:
+#   wrangler d1 info DB
+#
+# Backup database:
+#   wrangler d1 export DB --output=backup.sql
+#
+# Restore database:
+#   wrangler d1 execute DB --file=backup.sql
+#
+# Open Drizzle Studio:
+#   bun run db:studio:d1
+#

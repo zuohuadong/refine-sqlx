@@ -3,8 +3,8 @@
  * Custom build script for D1 bundle with Drizzle ORM inlined
  * This ensures D1 Workers don't need external dependencies
  */
-import * as esbuild from 'esbuild';
 import { writeFileSync } from 'fs';
+import * as esbuild from 'esbuild';
 
 async function buildD1() {
   console.log('Building D1 bundle with inlined Drizzle ORM...');
@@ -32,7 +32,7 @@ async function buildD1() {
 
     if (output.imports.length > 0) {
       console.log('  External imports:');
-      output.imports.forEach(imp => {
+      output.imports.forEach((imp) => {
         if (imp.external) {
           console.log(`    - ${imp.path}`);
         }
@@ -43,11 +43,17 @@ async function buildD1() {
   // Check bundle size and warn if too large
   const bundleSize = outputs['dist/d1.mjs'].bytes;
   if (bundleSize > 1000 * 1024) {
-    console.warn(`⚠ Warning: Bundle size (${(bundleSize / 1024).toFixed(2)} KB) exceeds 1MB limit for Workers`);
+    console.warn(
+      `⚠ Warning: Bundle size (${(bundleSize / 1024).toFixed(2)} KB) exceeds 1MB limit for Workers`,
+    );
   } else if (bundleSize > 250 * 1024) {
-    console.warn(`⚠ Warning: Bundle size (${(bundleSize / 1024).toFixed(2)} KB) exceeds recommended 250KB`);
+    console.warn(
+      `⚠ Warning: Bundle size (${(bundleSize / 1024).toFixed(2)} KB) exceeds recommended 250KB`,
+    );
   } else {
-    console.log(`✓ Bundle size (${(bundleSize / 1024).toFixed(2)} KB) is within limits`);
+    console.log(
+      `✓ Bundle size (${(bundleSize / 1024).toFixed(2)} KB) is within limits`,
+    );
   }
 
   // Write metafile for analysis
@@ -55,7 +61,7 @@ async function buildD1() {
   console.log('✓ Metafile written to dist/d1-meta.json');
 }
 
-buildD1().catch(err => {
+buildD1().catch((err) => {
   console.error('Build failed:', err);
   process.exit(1);
 });

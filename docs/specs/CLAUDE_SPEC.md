@@ -687,6 +687,7 @@ await db.transaction(async (tx) => {
 **Jest Compatibility Note**:
 
 Bun test's API is designed to be compatible with Jest, making code sharing straightforward. Main compatible APIs:
+
 - `describe`, `it`, `test` - Test structure (identical)
 - `expect` - Assertions (identical)
 - `beforeEach`, `afterEach`, `beforeAll`, `afterAll` - Lifecycle hooks (identical)
@@ -707,17 +708,17 @@ For Bun runtime, **MUST** use **Bun's native test runner**:
 
 Bun's test runner is intentionally Jest-compatible. This means most test code can be shared between Bun and Jest with minimal changes:
 
-| Feature                      | Bun Test API       | Jest API           | Compatible? | Notes                                   |
-| ---------------------------- | ------------------ | ------------------ | ----------- | --------------------------------------- |
-| Test suites                  | `describe()`       | `describe()`       | ✅ Yes      | Identical API                           |
-| Test cases                   | `test()` / `it()`  | `test()` / `it()`  | ✅ Yes      | Identical API                           |
-| Assertions                   | `expect()`         | `expect()`         | ✅ Yes      | Identical API                           |
-| Before/After hooks           | `beforeEach()` etc | `beforeEach()` etc | ✅ Yes      | Identical API                           |
-| Mock functions               | `mock()`           | `jest.fn()`        | ⚠️ Similar  | Different function names, same behavior |
-| Spy functions                | `spyOn()`          | `jest.spyOn()`     | ⚠️ Similar  | Different import paths                  |
-| Mock modules                 | `mock.module()`    | `jest.mock()`      | ⚠️ Different| Different API structure                 |
-| Timers                       | Limited            | `jest.useFakeTimers()` | ⚠️ Different | Jest has more comprehensive timer mocking |
-| Snapshots                    | Basic support      | `expect().toMatchSnapshot()` | ⚠️ Different | Jest has more robust snapshot testing |
+| Feature            | Bun Test API       | Jest API                     | Compatible?  | Notes                                     |
+| ------------------ | ------------------ | ---------------------------- | ------------ | ----------------------------------------- |
+| Test suites        | `describe()`       | `describe()`                 | ✅ Yes       | Identical API                             |
+| Test cases         | `test()` / `it()`  | `test()` / `it()`            | ✅ Yes       | Identical API                             |
+| Assertions         | `expect()`         | `expect()`                   | ✅ Yes       | Identical API                             |
+| Before/After hooks | `beforeEach()` etc | `beforeEach()` etc           | ✅ Yes       | Identical API                             |
+| Mock functions     | `mock()`           | `jest.fn()`                  | ⚠️ Similar   | Different function names, same behavior   |
+| Spy functions      | `spyOn()`          | `jest.spyOn()`               | ⚠️ Similar   | Different import paths                    |
+| Mock modules       | `mock.module()`    | `jest.mock()`                | ⚠️ Different | Different API structure                   |
+| Timers             | Limited            | `jest.useFakeTimers()`       | ⚠️ Different | Jest has more comprehensive timer mocking |
+| Snapshots          | Basic support      | `expect().toMatchSnapshot()` | ⚠️ Different | Jest has more robust snapshot testing     |
 
 **Key Differences**:
 
@@ -725,11 +726,13 @@ Bun's test runner is intentionally Jest-compatible. This means most test code ca
 
 ```typescript
 // Bun test
-import { mock } from 'bun:test';
-const mockFn = mock((x: number) => x * 2);
 
 // Jest
 import { jest } from '@jest/globals';
+import { mock } from 'bun:test';
+
+const mockFn = mock((x: number) => x * 2);
+
 const mockFn = jest.fn((x: number) => x * 2);
 ```
 
@@ -737,13 +740,13 @@ const mockFn = jest.fn((x: number) => x * 2);
 
 ```typescript
 // Bun test
-import { mock } from 'bun:test';
-mock.module('./database', () => ({
-  connect: mock(() => 'mocked connection'),
-}));
 
 // Jest
 import { jest } from '@jest/globals';
+import { mock } from 'bun:test';
+
+mock.module('./database', () => ({ connect: mock(() => 'mocked connection') }));
+
 jest.mock('./database', () => ({
   connect: jest.fn(() => 'mocked connection'),
 }));
@@ -753,8 +756,8 @@ jest.mock('./database', () => ({
 
 ```typescript
 // test/example.test.ts
-import { describe, expect, test } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { describe, expect, test } from 'bun:test';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 
 describe('Bun SQLite Integration', () => {
@@ -873,8 +876,9 @@ jest --coverage
 // test/utils.test.ts - Shared between Bun and Jest
 
 // Conditional import based on runtime
-const testFramework = typeof Bun !== 'undefined'
-  ? await import('bun:test')
+const testFramework =
+  typeof Bun !== 'undefined' ?
+    await import('bun:test')
   : await import('@jest/globals');
 
 const { describe, expect, it } = testFramework;
@@ -902,7 +906,7 @@ Since mock APIs have slight differences, create an adapter to unify them. This i
 
 **Basic Adapter Implementation**:
 
-```typescript
+````typescript
 // test/helpers/test-adapter.ts - Unified test API
 
 /**
@@ -993,7 +997,7 @@ export const isRunningInJest = !isBun;
  * Returns undefined in Bun environment
  */
 export const jest = !isBun ? jestTest!.jest : undefined;
-```
+````
 
 **Why This Pattern Works:**
 
@@ -1007,7 +1011,7 @@ export const jest = !isBun ? jestTest!.jest : undefined;
 
 For production use, you may want a more comprehensive adapter with module mocking, timer utilities, and mock verification helpers:
 
-```typescript
+````typescript
 // test/helpers/test-adapter.ts - Enhanced test adapter with advanced features
 
 const isBun = typeof Bun !== 'undefined';
@@ -1221,10 +1225,13 @@ export function verifyMock<T extends (...args: any[]) => any>(
 ): MockVerification<T> {
   return {
     toHaveBeenCalled: () => expect(mockFn).toHaveBeenCalled(),
-    toHaveBeenCalledTimes: (times) => expect(mockFn).toHaveBeenCalledTimes(times),
-    toHaveBeenCalledWith: (...args) => expect(mockFn).toHaveBeenCalledWith(...args),
+    toHaveBeenCalledTimes: (times) =>
+      expect(mockFn).toHaveBeenCalledTimes(times),
+    toHaveBeenCalledWith: (...args) =>
+      expect(mockFn).toHaveBeenCalledWith(...args),
     toHaveReturnedWith: (value) => expect(mockFn).toHaveReturnedWith(value),
-    toHaveBeenLastCalledWith: (...args) => expect(mockFn).toHaveBeenLastCalledWith(...args),
+    toHaveBeenLastCalledWith: (...args) =>
+      expect(mockFn).toHaveBeenLastCalledWith(...args),
     toHaveBeenNthCalledWith: (nthCall, ...args) =>
       expect(mockFn).toHaveBeenNthCalledWith(nthCall, ...args),
   };
@@ -1319,7 +1326,7 @@ export const jest = !isBun ? jestTest!.jest : undefined;
  * Only available in Bun environment, undefined in Jest
  */
 export const bunMock = isBun ? bunTest!.mock : undefined;
-```
+````
 
 **Key Features of the Advanced Adapter:**
 
@@ -1346,25 +1353,25 @@ Once you have the adapter in place, writing tests becomes simple and framework-a
 ```typescript
 // test/data-provider.test.ts - Works in both Bun and Jest with zero changes
 
+import { createRefineProvider } from '../src';
 import {
-  describe,
-  expect,
-  it,
-  beforeEach,
   afterEach,
+  beforeEach,
+  clearAllMocks,
   createMock,
   createSpyOn,
-  verifyMock,
-  clearAllMocks,
+  describe,
+  expect,
   isRunningInBun,
+  it,
+  verifyMock,
 } from './helpers/test-adapter';
 
 // Import appropriate database driver based on runtime
-const Database = isRunningInBun
-  ? (await import('bun:sqlite')).Database
+const Database =
+  isRunningInBun ?
+    (await import('bun:sqlite')).Database
   : (await import('better-sqlite3')).default;
-
-import { createRefineProvider } from '../src';
 
 describe('Refine Data Provider', () => {
   let db: any;
@@ -1437,10 +1444,7 @@ describe('Refine Data Provider', () => {
 
   describe('getOne', () => {
     it('should return a single user by ID', async () => {
-      const result = await provider.getOne({
-        resource: 'users',
-        id: 1,
-      });
+      const result = await provider.getOne({ resource: 'users', id: 1 });
 
       expect(result.data.id).toBe(1);
       expect(result.data.name).toBe('Alice');
@@ -1448,7 +1452,7 @@ describe('Refine Data Provider', () => {
 
     it('should throw error for non-existent user', async () => {
       await expect(
-        provider.getOne({ resource: 'users', id: 999 })
+        provider.getOne({ resource: 'users', id: 999 }),
       ).rejects.toThrow();
     });
   });
@@ -1541,16 +1545,16 @@ The adapter supports full TypeScript type safety for mock verification:
 ```typescript
 // test/service.test.ts - Type-safe testing with adapter
 import {
+  beforeEach,
+  clearAllMocks,
+  createMock,
   describe,
   expect,
-  it,
-  beforeEach,
-  createMock,
-  verifyMock,
-  clearAllMocks,
-  resolvedPromise,
-  rejectedPromise,
   flushPromises,
+  it,
+  rejectedPromise,
+  resolvedPromise,
+  verifyMock,
 } from './helpers/test-adapter';
 
 // Define typed interfaces for your service
@@ -1575,7 +1579,7 @@ class UserService {
   async createUser(user: Omit<User, 'id'>): Promise<User> {
     const result = await this.db.query<User>(
       'INSERT INTO users (name, email) VALUES (?, ?) RETURNING *',
-      [user.name, user.email]
+      [user.name, user.email],
     );
     return result[0];
   }
@@ -1591,10 +1595,10 @@ describe('User Service (Type-Safe)', () => {
       query: createMock(<T>(sql: string, params?: any[]) =>
         resolvedPromise([
           { id: 1, name: 'Alice', email: 'alice@example.com' } as T,
-        ])
+        ]),
       ),
       execute: createMock((sql: string, params?: any[]) =>
-        resolvedPromise(undefined)
+        resolvedPromise(undefined),
       ),
     };
 
@@ -1617,9 +1621,7 @@ describe('User Service (Type-Safe)', () => {
     const newUser = { name: 'Bob', email: 'bob@example.com' };
 
     // Mock returns a User object
-    mockDb.query = createMock(() =>
-      resolvedPromise([{ id: 2, ...newUser }])
-    );
+    mockDb.query = createMock(() => resolvedPromise([{ id: 2, ...newUser }]));
 
     const result = await service.createUser(newUser);
 
@@ -1629,18 +1631,18 @@ describe('User Service (Type-Safe)', () => {
     const verify = verifyMock(mockDb.query);
     verify.toHaveBeenCalledWith(
       'INSERT INTO users (name, email) VALUES (?, ?) RETURNING *',
-      ['Bob', 'bob@example.com']
+      ['Bob', 'bob@example.com'],
     );
   });
 
   it('should handle errors gracefully', async () => {
     // Mock error scenario with type-safe rejected promise
     mockDb.query = createMock(() =>
-      rejectedPromise(new Error('Database connection failed'))
+      rejectedPromise(new Error('Database connection failed')),
     );
 
     await expect(service.getUsers()).rejects.toThrow(
-      'Database connection failed'
+      'Database connection failed',
     );
 
     const verify = verifyMock(mockDb.query);
@@ -1683,14 +1685,14 @@ describe('User Service (Type-Safe)', () => {
 
 **Why the Adapter Pattern is Recommended:**
 
-| Aspect | Without Adapter | With Adapter |
-|--------|----------------|--------------|
-| **Code duplication** | Separate test files for Bun/Jest | Single test file for both |
-| **Maintenance** | Update tests in multiple places | Update once, works everywhere |
-| **Type safety** | Manual type casting needed | Automatic type inference |
-| **Readability** | Runtime checks in every test | Clean, framework-agnostic tests |
-| **Onboarding** | Developers need to learn both frameworks | Single unified API to learn |
-| **Refactoring** | High risk of breaking one environment | Low risk, adapter handles differences |
+| Aspect               | Without Adapter                          | With Adapter                          |
+| -------------------- | ---------------------------------------- | ------------------------------------- |
+| **Code duplication** | Separate test files for Bun/Jest         | Single test file for both             |
+| **Maintenance**      | Update tests in multiple places          | Update once, works everywhere         |
+| **Type safety**      | Manual type casting needed               | Automatic type inference              |
+| **Readability**      | Runtime checks in every test             | Clean, framework-agnostic tests       |
+| **Onboarding**       | Developers need to learn both frameworks | Single unified API to learn           |
+| **Refactoring**      | High risk of breaking one environment    | Low risk, adapter handles differences |
 
 **Implementation Checklist:**
 
@@ -1735,30 +1737,39 @@ describe('User Service (Type-Safe)', () => {
 
 **Complete API Comparison Table**:
 
-| Feature                | Bun Test                     | Jest                        | Notes                                   |
-| ---------------------- | ---------------------------- | --------------------------- | --------------------------------------- |
-| **Imports**            | `bun:test`                   | `@jest/globals`             | Conditional import required             |
-| **Test Suites**        | `describe(name, fn)`         | `describe(name, fn)`        | ✅ Identical                            |
-| **Test Cases**         | `test(name, fn)` / `it()`    | `test(name, fn)` / `it()`   | ✅ Identical                            |
-| **Assertions**         | `expect(value)`              | `expect(value)`             | ✅ Identical                            |
-| **beforeEach**         | `beforeEach(fn)`             | `beforeEach(fn)`            | ✅ Identical                            |
-| **afterEach**          | `afterEach(fn)`              | `afterEach(fn)`             | ✅ Identical                            |
-| **beforeAll**          | `beforeAll(fn)`              | `beforeAll(fn)`             | ✅ Identical                            |
-| **afterAll**           | `afterAll(fn)`               | `afterAll(fn)`              | ✅ Identical                            |
-| **Mock Creation**      | `mock(fn)`                   | `jest.fn(fn)`               | ⚠️ Different API (use adapter)          |
-| **Spy Creation**       | `spyOn(obj, method)`         | `jest.spyOn(obj, method)`   | ⚠️ Different import path                |
-| **Module Mocking**     | `mock.module(path, factory)` | `jest.mock(path, factory)`  | ⚠️ Different API (use adapter)          |
-| **Clear Mocks**        | Auto-cleared                 | `jest.clearAllMocks()`      | Bun auto-clears between tests           |
-| **Reset Mocks**        | Auto-reset                   | `jest.resetAllMocks()`      | Bun auto-resets between tests           |
-| **Restore Mocks**      | N/A                          | `jest.restoreAllMocks()`    | Jest-specific                           |
-| **Mock Timers**        | Limited support              | `jest.useFakeTimers()`      | Jest has more complete timer support    |
-| **Snapshot Testing**   | Limited support              | `expect().toMatchSnapshot()`| Jest has more robust snapshot support   |
+| Feature              | Bun Test                     | Jest                         | Notes                                 |
+| -------------------- | ---------------------------- | ---------------------------- | ------------------------------------- |
+| **Imports**          | `bun:test`                   | `@jest/globals`              | Conditional import required           |
+| **Test Suites**      | `describe(name, fn)`         | `describe(name, fn)`         | ✅ Identical                          |
+| **Test Cases**       | `test(name, fn)` / `it()`    | `test(name, fn)` / `it()`    | ✅ Identical                          |
+| **Assertions**       | `expect(value)`              | `expect(value)`              | ✅ Identical                          |
+| **beforeEach**       | `beforeEach(fn)`             | `beforeEach(fn)`             | ✅ Identical                          |
+| **afterEach**        | `afterEach(fn)`              | `afterEach(fn)`              | ✅ Identical                          |
+| **beforeAll**        | `beforeAll(fn)`              | `beforeAll(fn)`              | ✅ Identical                          |
+| **afterAll**         | `afterAll(fn)`               | `afterAll(fn)`               | ✅ Identical                          |
+| **Mock Creation**    | `mock(fn)`                   | `jest.fn(fn)`                | ⚠️ Different API (use adapter)        |
+| **Spy Creation**     | `spyOn(obj, method)`         | `jest.spyOn(obj, method)`    | ⚠️ Different import path              |
+| **Module Mocking**   | `mock.module(path, factory)` | `jest.mock(path, factory)`   | ⚠️ Different API (use adapter)        |
+| **Clear Mocks**      | Auto-cleared                 | `jest.clearAllMocks()`       | Bun auto-clears between tests         |
+| **Reset Mocks**      | Auto-reset                   | `jest.resetAllMocks()`       | Bun auto-resets between tests         |
+| **Restore Mocks**    | N/A                          | `jest.restoreAllMocks()`     | Jest-specific                         |
+| **Mock Timers**      | Limited support              | `jest.useFakeTimers()`       | Jest has more complete timer support  |
+| **Snapshot Testing** | Limited support              | `expect().toMatchSnapshot()` | Jest has more robust snapshot support |
 
 **Shared Compatible APIs (No Adapter Needed)**:
 
 ```typescript
 // These work identically in both Bun and Jest
-import { describe, it, test, expect, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test'; // or '@jest/globals'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+} from 'bun:test'; // or '@jest/globals'
 
 describe('My Tests', () => {
   beforeEach(() => {
@@ -1769,7 +1780,9 @@ describe('My Tests', () => {
     expect(2 + 2).toBe(4);
     expect([1, 2, 3]).toHaveLength(3);
     expect({ name: 'Alice' }).toEqual({ name: 'Alice' });
-    expect(() => { throw new Error('fail'); }).toThrow('fail');
+    expect(() => {
+      throw new Error('fail');
+    }).toThrow('fail');
   });
 
   afterEach(() => {
@@ -2460,9 +2473,7 @@ bun test
 
 ```json
 {
-  "scripts": {
-    "prepare": "husky install"
-  },
+  "scripts": { "prepare": "husky install" },
   "lint-staged": {
     "*.ts": ["prettier --write", "eslint --fix", "tsc --noEmit"]
   }
@@ -2530,6 +2541,612 @@ Before marking any task as complete, verify:
 
 ---
 
+### 14. 100% API Compatibility Requirement
+
+**MANDATORY**: All features and APIs MUST be 100% compatible across ALL package entry points and runtime environments.
+
+#### 14.1 Core Principle
+
+**Unified API Surface**: Any feature implemented in one entry point (main package, D1 build, or specific adapter) MUST be available and work identically across ALL entry points where it's applicable.
+
+**Requirements**:
+
+- ✅ **MUST** maintain 100% API compatibility across all package exports
+- ✅ **MUST** implement features in all applicable runtime environments
+- ✅ **MUST** ensure identical function signatures across all exports
+- ✅ **MUST** provide consistent behavior regardless of entry point
+- ✅ **MUST** test features in all supported runtime environments
+- ❌ **DO NOT** create environment-specific APIs without cross-platform equivalents
+- ❌ **DO NOT** implement features in only one entry point if applicable to others
+- ❌ **DO NOT** allow API drift between different package exports
+
+#### 14.2 Package Entry Points
+
+The package provides multiple entry points that MUST maintain API compatibility:
+
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./d1": {
+      "types": "./dist/d1.d.mts",
+      "workerd": "./dist/d1.mjs",
+      "import": "./dist/d1.mjs"
+    }
+  }
+}
+```
+
+**Compatibility Rules**:
+
+1. **Main Export (`.`)**: Full-featured implementation with all runtimes
+2. **D1 Export (`./d1`)**: Optimized build with 100% feature parity (where D1 supports it)
+3. **Any future exports**: Must maintain 100% API compatibility
+
+#### 14.3 Feature Implementation Workflow
+
+**When Adding a New Feature**:
+
+**Step 1: Design Phase**
+- [ ] Define the feature API interface
+- [ ] Document function signatures and types
+- [ ] Identify which environments support the feature
+- [ ] Plan cross-platform implementation strategy
+
+**Step 2: Implementation Phase**
+
+```typescript
+// Example: Adding batch operations
+
+// 1. Define shared interface (src/types.ts)
+export interface BatchOperationOptions {
+  maxSize?: number;
+  atomic?: boolean;
+}
+
+export interface DataProviderBatchOps<TData = any> {
+  batchInsert<T = TData>(
+    resource: string,
+    items: T[],
+    options?: BatchOperationOptions
+  ): Promise<T[]>;
+
+  batchUpdate<T = TData>(
+    resource: string,
+    ids: (string | number)[],
+    updates: Partial<T>,
+    options?: BatchOperationOptions
+  ): Promise<T[]>;
+
+  batchDelete<T = TData>(
+    resource: string,
+    ids: (string | number)[],
+    options?: BatchOperationOptions
+  ): Promise<T[]>;
+}
+
+// 2. Implement for main export (src/provider.ts)
+export async function createRefineSQL<TSchema extends Record<string, unknown>>(
+  config: RefineSQLConfig<TSchema>
+): Promise<DataProvider & DataProviderBatchOps> {
+  // Implementation with Drizzle for all runtimes
+  async function batchInsert<T>(
+    resource: string,
+    items: T[],
+    options?: BatchOperationOptions
+  ): Promise<T[]> {
+    const table = getTable(resource);
+    const maxSize = options?.maxSize ?? 50;
+
+    // Generic implementation using Drizzle batch API
+    const batches = chunk(items, maxSize);
+    const results: T[] = [];
+
+    for (const batch of batches) {
+      const inserted = await db.insert(table).values(batch).returning();
+      results.push(...(inserted as T[]));
+    }
+
+    return results;
+  }
+
+  return {
+    ...standardDataProviderMethods,
+    batchInsert,
+    batchUpdate,
+    batchDelete,
+  };
+}
+
+// 3. Implement for D1 export (src/d1.ts)
+export async function createRefineSQL<TSchema extends Record<string, unknown>>(
+  config: RefineSQLConfig<TSchema>
+): Promise<DataProvider & DataProviderBatchOps> {
+  // D1-optimized implementation with identical API
+  async function batchInsert<T>(
+    resource: string,
+    items: T[],
+    options?: BatchOperationOptions
+  ): Promise<T[]> {
+    const table = getTable(resource);
+    const maxSize = options?.maxSize ?? 50; // D1 batch limit
+
+    // D1-specific optimization using native batch API
+    const batches = chunk(items, maxSize);
+    const results: T[] = [];
+
+    for (const batch of batches) {
+      // Use D1 batch API for atomic operations
+      const statements = batch.map((item) =>
+        db.insert(table).values(item).returning()
+      );
+
+      const batchResults = await (config.connection as D1Database).batch(statements);
+      results.push(...(batchResults.flat() as T[]));
+    }
+
+    return results;
+  }
+
+  return {
+    ...standardDataProviderMethods,
+    batchInsert,
+    batchUpdate,
+    batchDelete,
+  };
+}
+
+// 4. Export helper functions for convenience (src/batch.ts)
+// These MUST work with data providers from ANY entry point
+export async function batchInsert<T>(
+  dataProvider: DataProvider & DataProviderBatchOps,
+  resource: string,
+  items: T[],
+  options?: BatchOperationOptions
+): Promise<T[]> {
+  return dataProvider.batchInsert(resource, items, options);
+}
+```
+
+**Step 3: Testing Phase**
+- [ ] Test in Bun runtime with main export
+- [ ] Test in Node.js runtime with main export
+- [ ] Test in D1 environment with D1 export
+- [ ] Verify identical behavior across all environments
+- [ ] Test helper functions with all data provider types
+
+**Step 4: Documentation Phase**
+- [ ] Update README with feature documentation
+- [ ] Add examples for all entry points
+- [ ] Document any environment-specific optimizations
+- [ ] Update TypeScript type exports
+
+#### 14.4 Environment-Specific Optimizations
+
+**Permitted**: Different implementations for performance optimization
+**Required**: Identical external API and behavior
+
+**Example: D1 Batch Operations**
+
+```typescript
+// Main export: Generic implementation
+async function batchInsert<T>(resource: string, items: T[]) {
+  // Use Drizzle's standard insert().values() with chunking
+  const chunks = chunk(items, 50);
+  for (const chunk of chunks) {
+    await db.insert(table).values(chunk).returning();
+  }
+}
+
+// D1 export: Optimized using D1 native batch API
+async function batchInsert<T>(resource: string, items: T[]) {
+  // Use D1's atomic batch API for better performance
+  const statements = items.map(item =>
+    db.insert(table).values(item).returning()
+  );
+  await d1Database.batch(statements);
+}
+
+// BOTH implementations MUST:
+// ✅ Accept same parameters: (resource: string, items: T[])
+// ✅ Return same type: Promise<T[]>
+// ✅ Have same error behavior
+// ✅ Support same options
+```
+
+#### 14.5 Breaking Change Policy
+
+**Before Removing or Changing an API**:
+
+1. **Deprecation Phase** (minimum 1 major version):
+   ```typescript
+   /**
+    * @deprecated Use batchInsert instead. Will be removed in v2.0.0
+    */
+   export function bulkInsert<T>(...args: any[]): Promise<T[]> {
+     console.warn('bulkInsert is deprecated. Use batchInsert instead.');
+     return batchInsert(...args);
+   }
+   ```
+
+2. **Migration Guide**:
+   - Document in CHANGELOG.md
+   - Provide clear migration path
+   - Include code examples for old → new API
+
+3. **Cross-Platform Consistency**:
+   - Apply deprecation to ALL entry points
+   - Ensure replacement API works everywhere
+   - Test migration path in all environments
+
+#### 14.6 API Compatibility Testing
+
+**Test Matrix Requirements**:
+
+```typescript
+// test/api-compatibility.test.ts
+import { describe, expect, it } from './helpers/test-adapter';
+
+describe('API Compatibility Across Entry Points', () => {
+  it('should have identical API surface between main and D1 exports', async () => {
+    // Import from both entry points
+    const mainExport = await import('../src/index');
+    const d1Export = await import('../src/d1');
+
+    // Both should export createRefineSQL
+    expect(typeof mainExport.createRefineSQL).toBe('function');
+    expect(typeof d1Export.createRefineSQL).toBe('function');
+
+    // Both should export batch helpers
+    expect(typeof mainExport.batchInsert).toBe('function');
+    expect(typeof d1Export.batchInsert).toBe('function');
+
+    // Verify function signatures match
+    expect(mainExport.batchInsert.length).toBe(d1Export.batchInsert.length);
+  });
+
+  it('should provide same DataProvider methods from all entry points', async () => {
+    const schema = { users: sqliteTable('users', { /* ... */ }) };
+
+    // Create providers from different entry points
+    const mainProvider = await mainExport.createRefineSQL({
+      connection: bunDatabase,
+      schema,
+    });
+
+    const d1Provider = await d1Export.createRefineSQL({
+      connection: d1Database,
+      schema,
+    });
+
+    // Verify both have same methods
+    const requiredMethods = [
+      'getList', 'getMany', 'getOne',
+      'create', 'createMany',
+      'update', 'updateMany',
+      'deleteOne', 'deleteMany',
+      'batchInsert', 'batchUpdate', 'batchDelete'
+    ];
+
+    for (const method of requiredMethods) {
+      expect(typeof mainProvider[method]).toBe('function');
+      expect(typeof d1Provider[method]).toBe('function');
+    }
+  });
+
+  it('should behave identically across runtimes', async () => {
+    // Setup test data
+    const testUsers = [
+      { name: 'Alice', email: 'alice@example.com', status: 'active' },
+      { name: 'Bob', email: 'bob@example.com', status: 'active' },
+    ];
+
+    // Test main export
+    const mainResults = await mainProvider.batchInsert('users', testUsers);
+
+    // Test D1 export
+    const d1Results = await d1Provider.batchInsert('users', testUsers);
+
+    // Both should return same structure
+    expect(mainResults).toHaveLength(testUsers.length);
+    expect(d1Results).toHaveLength(testUsers.length);
+
+    // Both should have same properties
+    expect(mainResults[0]).toHaveProperty('id');
+    expect(d1Results[0]).toHaveProperty('id');
+  });
+});
+```
+
+**Integration Tests**:
+
+```bash
+# Run compatibility tests across all environments
+bun test test/api-compatibility.test.ts           # Bun + main export
+bun test test/integration/d1.test.ts             # D1 + D1 export
+jest test/api-compatibility.test.ts              # Node.js + main export
+```
+
+#### 14.7 Documentation Requirements
+
+**README.md Structure**:
+
+```markdown
+## Features
+
+- ✅ Feature 1 (Available in: main, D1)
+- ✅ Feature 2 (Available in: main, D1)
+- ⚠️ Feature 3 (Available in: main only - D1 API limitation)
+
+## API Reference
+
+### `batchInsert<T>(resource, items, options?)`
+
+**Availability**: ✅ Main export, ✅ D1 export
+
+**Parameters**:
+- `resource` (string): Table name
+- `items` (T[]): Records to insert
+- `options?` (BatchOperationOptions): Configuration
+
+**Returns**: `Promise<T[]>`
+
+**Example (Main Export)**:
+\`\`\`typescript
+import { createRefineSQL, batchInsert } from 'refine-sqlx';
+const provider = await createRefineSQL({ connection: db, schema });
+const users = await batchInsert(provider, 'users', [...]);
+\`\`\`
+
+**Example (D1 Export)**:
+\`\`\`typescript
+import { createRefineSQL, batchInsert } from 'refine-sqlx/d1';
+const provider = createRefineSQL({ connection: env.DB, schema });
+const users = await batchInsert(provider, 'users', [...]);
+\`\`\`
+
+**Environment-Specific Notes**:
+- **D1**: Uses native batch API for atomic operations (max 50 statements)
+- **Other runtimes**: Uses Drizzle batch API with automatic chunking
+```
+
+#### 14.8 Compliance Checklist for New Features
+
+Before merging any new feature:
+
+- [ ] **API Design**
+  - [ ] Feature API defined in shared types
+  - [ ] Function signatures documented
+  - [ ] Return types clearly specified
+
+- [ ] **Implementation**
+  - [ ] Implemented in main export (`src/index.ts`)
+  - [ ] Implemented in D1 export (`src/d1.ts`)
+  - [ ] Identical function signatures across all exports
+  - [ ] Identical behavior (tested)
+  - [ ] Environment-specific optimizations documented
+
+- [ ] **Testing**
+  - [ ] Unit tests for all implementations
+  - [ ] Integration tests in Bun runtime
+  - [ ] Integration tests in Node.js runtime
+  - [ ] Integration tests in D1 environment
+  - [ ] API compatibility tests across entry points
+  - [ ] Behavior consistency verified
+
+- [ ] **Documentation**
+  - [ ] README updated with feature description
+  - [ ] Code examples for all entry points
+  - [ ] TypeScript types exported
+  - [ ] Environment-specific notes documented
+  - [ ] Migration guide (if breaking change)
+
+- [ ] **Type Safety**
+  - [ ] TypeScript types match across exports
+  - [ ] Type checking passes for all entry points
+  - [ ] No `any` types introduced
+
+- [ ] **Version Management**
+  - [ ] Changeset created
+  - [ ] Version bump planned
+  - [ ] Breaking changes documented (if any)
+
+#### 14.9 Example: Complete Feature Implementation
+
+**Scenario**: Adding Time Travel support for D1
+
+**Step 1: Define Interface** (`src/types.ts`):
+
+```typescript
+export interface TimeTravelOptions {
+  enabled: boolean;
+  bookmark?: string;
+  timestamp?: number;
+}
+
+export interface RefineSQLConfig<TSchema extends Record<string, unknown>> {
+  connection: /* ... */;
+  schema: TSchema;
+  config?: DrizzleConfig<TSchema>;
+
+  // D1-specific options (ignored in other runtimes)
+  d1Options?: {
+    batch?: { maxSize?: number };
+    timeTravel?: TimeTravelOptions;
+  };
+}
+```
+
+**Step 2: Implement in Main Export** (`src/provider.ts`):
+
+```typescript
+export async function createRefineSQL<TSchema>(config: RefineSQLConfig<TSchema>) {
+  // Validate D1-specific options
+  if (config.d1Options?.timeTravel?.enabled) {
+    if (!isD1Database(config.connection)) {
+      console.warn(
+        '[refine-sqlx] Time Travel is only supported in D1 environment. ' +
+        'Option will be ignored in current runtime.'
+      );
+    }
+  }
+
+  // Standard implementation (no Time Travel in non-D1)
+  return createDataProvider(config);
+}
+```
+
+**Step 3: Implement in D1 Export** (`src/d1.ts`):
+
+```typescript
+export function createRefineSQL<TSchema>(config: RefineSQLConfig<TSchema>) {
+  // Validate Time Travel options
+  validateD1Options(config.d1Options);
+
+  if (config.d1Options?.timeTravel?.enabled) {
+    console.info(
+      '[refine-sqlx] Time Travel is configured. ' +
+      'Use wrangler CLI for database restoration.'
+    );
+  }
+
+  // D1 implementation with Time Travel awareness
+  return createDataProvider(config);
+}
+```
+
+**Step 4: Document** (`README.md`):
+
+```markdown
+### D1 Time Travel Configuration
+
+**Availability**: ⚠️ D1 export only (requires Cloudflare D1)
+
+Configure Time Travel awareness for audit and recovery purposes.
+
+\`\`\`typescript
+import { createRefineSQL } from 'refine-sqlx/d1';
+
+const dataProvider = createRefineSQL({
+  connection: env.DB,
+  schema,
+  d1Options: {
+    timeTravel: {
+      enabled: true,
+      bookmark: 'before-migration'
+    }
+  }
+});
+\`\`\`
+
+**Note**: Time Travel is a D1-specific feature. Configuration is accepted but
+ignored in other runtime environments.
+```
+
+**Step 5: Test**:
+
+```typescript
+// test/d1-time-travel.test.ts
+describe('Time Travel Configuration', () => {
+  it('should accept Time Travel config in D1 export', () => {
+    const config = {
+      connection: mockD1,
+      schema,
+      d1Options: { timeTravel: { enabled: true } }
+    };
+
+    expect(() => createRefineSQL(config)).not.toThrow();
+  });
+
+  it('should warn when Time Travel config used in non-D1 runtime', () => {
+    const config = {
+      connection: bunDatabase, // Not D1
+      schema,
+      d1Options: { timeTravel: { enabled: true } }
+    };
+
+    const consoleSpy = createSpyOn(console, 'warn');
+    createRefineSQL(config);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Time Travel is only supported in D1')
+    );
+  });
+});
+```
+
+#### 14.10 Exceptions and Special Cases
+
+**When 100% API Compatibility is Not Possible**:
+
+**Scenario 1: Platform Limitation**
+
+If a feature is technically impossible in one environment:
+
+```typescript
+// ACCEPTABLE: Document limitation clearly
+/**
+ * D1 Time Travel support
+ *
+ * @availability D1 only (not supported in Bun/Node.js)
+ * @reason D1-specific database feature, no equivalent in SQLite/other DBs
+ */
+export interface D1TimeTravelOptions {
+  enabled: boolean;
+  bookmark?: string;
+}
+
+// In main export: Accept but warn
+if (config.d1Options?.timeTravel) {
+  console.warn('Time Travel requires Cloudflare D1. Option ignored.');
+}
+
+// In D1 export: Fully implement
+if (config.d1Options?.timeTravel?.enabled) {
+  // Configure Time Travel
+}
+```
+
+**Scenario 2: Performance-Critical Optimization**
+
+If implementation differs but API stays identical:
+
+```typescript
+// ACCEPTABLE: Different internals, same API
+// Main export
+async function batchInsert(items: T[]) {
+  // Generic chunked implementation
+}
+
+// D1 export
+async function batchInsert(items: T[]) {
+  // D1 native batch API
+}
+
+// MUST: Same signature, same behavior, same return type
+```
+
+**Scenario 3: Future Features**
+
+If feature is planned but not yet implemented:
+
+```typescript
+// ACCEPTABLE: Mark as experimental
+/**
+ * @experimental
+ * @since v0.4.0
+ * @stability unstable
+ */
+export async function experimentalFeature() {
+  throw new Error('Not yet implemented in D1 build');
+}
+```
+
+---
+
 ## Compliance Checklist
 
 When implementing database features, ensure:
@@ -2566,6 +3183,15 @@ When implementing database features, ensure:
 - [ ] **Changesets created for all user-facing changes**
 - [ ] **Version bumped using `changeset version` before release**
 - [ ] **CHANGELOG.md automatically generated (do not edit manually)**
+- [ ] **✨ NEW: 100% API Compatibility Requirements**
+  - [ ] Feature implemented in ALL applicable entry points (main, D1, etc.)
+  - [ ] Identical function signatures across all exports
+  - [ ] Identical behavior verified through tests
+  - [ ] API compatibility tests written and passing
+  - [ ] Documentation includes examples for all entry points
+  - [ ] TypeScript types match across all exports
+  - [ ] Environment-specific optimizations documented (if any)
+  - [ ] Platform limitations clearly documented (if applicable)
 
 ---
 
@@ -2622,6 +3248,27 @@ When implementing database features, ensure:
 
 ## Version History
 
+- **v2.0.0** (2025-10-15): Added mandatory 100% API compatibility requirement
+  - **MAJOR UPDATE**: Added Section 14 - 100% API Compatibility Requirement
+  - **MANDATORY**: All features MUST be 100% compatible across ALL entry points
+  - Core Principle (14.1): Unified API Surface requirement
+  - Package Entry Points (14.2): Compatibility rules for main and D1 exports
+  - Feature Implementation Workflow (14.3): 4-step process for adding features
+    - Step 1: Design Phase with cross-platform planning
+    - Step 2: Implementation Phase with code examples
+    - Step 3: Testing Phase across all runtimes
+    - Step 4: Documentation Phase with multi-export examples
+  - Environment-Specific Optimizations (14.4): Guidelines for performance optimization
+  - Breaking Change Policy (14.5): Deprecation and migration requirements
+  - API Compatibility Testing (14.6): Test matrix and integration test examples
+  - Documentation Requirements (14.7): README structure with availability indicators
+  - Compliance Checklist for New Features (14.8): 6-category checklist
+  - Complete Feature Implementation Example (14.9): Time Travel support walkthrough
+  - Exceptions and Special Cases (14.10): Platform limitations, optimizations, experimental features
+  - Updated compliance checklist with 8 new API compatibility requirements
+  - Emphasized zero tolerance for API drift between exports
+  - Required API compatibility tests for all new features
+  - Mandated documentation for all entry points with examples
 - **v1.9.0** (2025-10-15): Comprehensive Bun test and Jest compatibility documentation
   - **MAJOR UPDATE**: Added detailed adapter layer pattern documentation
   - Updated Section 9.2: Expanded Bun Test API Compatibility table with Notes column

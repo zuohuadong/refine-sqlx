@@ -48,7 +48,9 @@ export const users = sqliteTable('users', {
 
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
   title: text('title').notNull(),
   content: text('content').notNull(),
   publishedAt: integer('published_at', { mode: 'timestamp' }),
@@ -73,8 +75,7 @@ const App = () => (
     resources={[
       { name: 'users', list: '/users' },
       { name: 'posts', list: '/posts' },
-    ]}
-  >
+    ]}>
     {/* Your app components */}
   </Refine>
 );
@@ -113,10 +114,7 @@ import * as schema from './schema';
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }) {
-    const dataProvider = createRefineSQL({
-      connection: env.DB,
-      schema,
-    });
+    const dataProvider = createRefineSQL({ connection: env.DB, schema });
 
     // Your worker logic here
     return Response.json({ ok: true });
@@ -153,18 +151,15 @@ const dataProvider = createRefineSQL({
 ### With Existing Drizzle Instance
 
 ```typescript
-import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
+import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const sqlite = new Database('./database.sqlite');
 const db = drizzle(sqlite, { schema });
 
-const dataProvider = createRefineSQL({
-  connection: db,
-  schema,
-});
+const dataProvider = createRefineSQL({ connection: db, schema });
 ```
 
 ## 📊 Complete CRUD Examples
@@ -192,8 +187,18 @@ const { data } = await dataProvider.create<User, UserInsert>({
 const { data: users } = await dataProvider.createMany<User, UserInsert>({
   resource: 'users',
   variables: [
-    { name: 'Bob', email: 'bob@example.com', status: 'active', createdAt: new Date() },
-    { name: 'Carol', email: 'carol@example.com', status: 'active', createdAt: new Date() },
+    {
+      name: 'Bob',
+      email: 'bob@example.com',
+      status: 'active',
+      createdAt: new Date(),
+    },
+    {
+      name: 'Carol',
+      email: 'carol@example.com',
+      status: 'active',
+      createdAt: new Date(),
+    },
   ],
 });
 ```
@@ -338,16 +343,13 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
+  InferInsertModel,
   // Infer types from schema
   InferSelectModel,
-  InferInsertModel,
-
   // Configuration
   RefineSQLConfig,
-
   // Runtime detection
   RuntimeEnvironment,
-
   // Table name helper
   TableName,
 } from 'refine-sqlx';

@@ -1,7 +1,10 @@
 .env*
+!.env.example
 
 dist
 node_modules
 prisma/dev.db
 prisma/generated
 .DS_Store
+wrangler.toml
+

@@ -6,11 +6,18 @@
  * - Type-safe schema with Drizzle ORM
  * - Complete CRUD operations in Workers environment
  * - Proper error handling
+ * - D1 batch operations for bulk inserts
+ * - Time Travel configuration
+ *
+ * 📝 Note: All batch operations are 100% API compatible between packages:
+ *    - import { createRefineSQL, batchInsert, DEFAULT_BATCH_SIZE } from 'refine-sqlx';
+ *    - import { createRefineSQL, batchInsert, DEFAULT_BATCH_SIZE } from 'refine-sqlx/d1';
+ *    Both use the exact same API - only the import path differs for bundle optimization!
  */
 
 import type { D1Database } from '@cloudflare/workers-types';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { createRefineSQL } from '../src/d1';
+import { batchInsert, createRefineSQL } from 'refine-sqlx/d1';
 
 // Define schema
 const users = sqliteTable('users', {
@@ -46,8 +53,17 @@ export interface Env {
 // Worker handler
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // Create data provider (optimized D1 build)
-    const dataProvider = createRefineSQL({ connection: env.DB, schema });
+    // Create data provider (optimized D1 build with batch configuration)
+    // Note: You can also use 'refine-sqlx' (main package) with identical API
+    const dataProvider = await createRefineSQL({
+      connection: env.DB,
+      schema,
+      d1Options: {
+        batch: { maxSize: 50 }, // D1 recommended batch size
+        // Uncomment to enable Time Travel awareness
+        // timeTravel: { enabled: true, bookmark: 'before-migration' }
+      },
+    });
 
     const url = new URL(request.url);
     const path = url.pathname;
@@ -157,26 +173,57 @@ export default {
           );
         `);
 
-        // Insert sample data
-        await dataProvider.createMany({
-          resource: 'users',
-          variables: [
-            {
-              name: 'Alice Johnson',
-              email: 'alice@example.com',
-              status: 'active',
-              createdAt: new Date(),
-            },
-            {
-              name: 'Bob Smith',
-              email: 'bob@example.com',
-              status: 'active',
-              createdAt: new Date(),
-            },
-          ],
-        });
+        // Insert sample data using optimized batch operations
+        const sampleUsers = [
+          {
+            name: 'Alice Johnson',
+            email: 'alice@example.com',
+            status: 'active' as const,
+            createdAt: new Date(),
+          },
+          {
+            name: 'Bob Smith',
+            email: 'bob@example.com',
+            status: 'active' as const,
+            createdAt: new Date(),
+          },
+          {
+            name: 'Charlie Brown',
+            email: 'charlie@example.com',
+            status: 'active' as const,
+            createdAt: new Date(),
+          },
+        ];
 
-        return Response.json({ message: 'Database initialized successfully' });
+        // Use batchInsert for optimal performance with large datasets
+        const users = await batchInsert(dataProvider, 'users', sampleUsers);
+
+        return Response.json({
+          message: 'Database initialized successfully',
+          usersCreated: users.length,
+        });
+      }
+
+      // Route: POST /bulk-users - Bulk insert users (demonstrates batch operations)
+      if (path === '/bulk-users' && request.method === 'POST') {
+        const body = (await request.json()) as {
+          users: Array<{ name: string; email: string; status: string }>;
+        };
+
+        // batchInsert automatically handles D1's batch limits
+        const users = await batchInsert(
+          dataProvider,
+          'users',
+          body.users.map((u) => ({ ...u, createdAt: new Date() })),
+        );
+
+        return Response.json(
+          {
+            message: `Successfully created ${users.length} users`,
+            data: users,
+          },
+          { status: 201 },
+        );
       }
 
       // 404 Not Found

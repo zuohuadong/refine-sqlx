@@ -6,6 +6,7 @@ export type {
   RefineSQLConfig,
   RuntimeEnvironment,
   TableName,
+  D1Options,
 } from './types';
 
 // Runtime utilities
@@ -24,6 +25,17 @@ export {
   filtersToWhere,
   sortersToOrderBy,
 } from './filters';
+
+// Batch operations (compatible with all database adapters)
+export {
+  batchInsert,
+  batchUpdate,
+  batchDelete,
+  DEFAULT_BATCH_SIZE,
+} from './utils/batch';
+
+// Validation utilities
+export { validateD1Options, getBatchSize } from './utils/validation';
 
 // Adapters
 export { createBunSQLiteAdapter, isBunSQLiteAvailable } from './adapters/bun';

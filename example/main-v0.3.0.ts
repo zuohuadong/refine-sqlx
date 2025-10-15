@@ -10,7 +10,7 @@
 
 import { Database } from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
-import { createRefineSQL } from '../src/provider';
+import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 import type { NewPost, NewUser, Post, User } from './schema';
 
