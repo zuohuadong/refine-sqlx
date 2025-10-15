@@ -3,16 +3,20 @@ import { createBetterSQLite3Adapter } from '../../src/adapters';
 import type { SqlClient } from '../../src/client';
 import { createIntegrationTestSuite } from '../integration';
 
-// Check if better-sqlite3 is available
+// Check if better-sqlite3 is available and can be loaded
 let Database: any;
 let isBetterSQLite3Available = false;
 
 try {
   Database = await import('better-sqlite3');
   Database = Database.default || Database;
+  // Try to actually instantiate it to catch native module errors
+  const testDb = new Database(':memory:');
+  testDb.close();
   isBetterSQLite3Available = true;
 } catch (error) {
-  // better-sqlite3 not available
+  // better-sqlite3 not available or native module compilation issue
+  console.warn(`better-sqlite3 unavailable: ${error instanceof Error ? error.message : String(error)}`);
   isBetterSQLite3Available = false;
 }
 
