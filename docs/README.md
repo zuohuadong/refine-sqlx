@@ -38,12 +38,12 @@ Jump right in with ready-to-deploy templates:
 
 Click to open examples in your browser:
 
-| Template | Description | Deploy |
-|----------|-------------|--------|
-| D1 REST API | Complete CRUD with filters & pagination | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-rest-api) |
-| D1 + Hono | Lightweight, fast API framework | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-hono) |
-| D1 + GraphQL | Type-safe GraphQL with subscriptions | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-graphql) |
-| D1 + WebSocket | Real-time data with Durable Objects | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-websocket) |
+| Template       | Description                             | Deploy                                                                                                                                                                    |
+| -------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1 REST API    | Complete CRUD with filters & pagination | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-rest-api)  |
+| D1 + Hono      | Lightweight, fast API framework         | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-hono)      |
+| D1 + GraphQL   | Type-safe GraphQL with subscriptions    | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-graphql)   |
+| D1 + WebSocket | Real-time data with Durable Objects     | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/medz/refine-sqlx/tree/main/docs/examples/d1-websocket) |
 
 ## Documents
 
@@ -115,6 +115,7 @@ Complete, production-ready templates for common scenarios:
 4. **WebSocket** - Real-time updates with Durable Objects
 
 Each template includes:
+
 - Complete source code
 - Configuration files
 - Database migrations

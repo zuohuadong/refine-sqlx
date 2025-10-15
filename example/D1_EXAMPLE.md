@@ -6,13 +6,13 @@ This example demonstrates how to use `refine-sqlx` with Cloudflare D1 in a Worke
 
 All D1 features are available in **both** packages with 100% identical APIs:
 
-| Feature | Main Package | D1 Package | Bundle Size |
-|---------|-------------|------------|-------------|
+| Feature             | Main Package  | D1 Package       | Bundle Size    |
+| ------------------- | ------------- | ---------------- | -------------- |
 | `createRefineSQL()` | `refine-sqlx` | `refine-sqlx/d1` | 10 KB vs 67 KB |
-| `batchInsert()` | ✅ | ✅ | Same API |
-| `batchUpdate()` | ✅ | ✅ | Same API |
-| `batchDelete()` | ✅ | ✅ | Same API |
-| `D1Options` | ✅ | ✅ | Same types |
+| `batchInsert()`     | ✅            | ✅               | Same API       |
+| `batchUpdate()`     | ✅            | ✅               | Same API       |
+| `batchDelete()`     | ✅            | ✅               | Same API       |
+| `D1Options`         | ✅            | ✅               | Same types     |
 
 **You can use either:**
 
@@ -208,6 +208,7 @@ wrangler d1 time-travel bookmark create refine-sqlx-demo --name=before-migration
 ```
 
 For runtime historical data access, consider:
+
 1. Using `wrangler d1 time-travel restore` for point-in-time restoration
 2. Implementing application-level versioning with `created_at`/`updated_at` columns
 3. Creating separate historical tables with triggers
@@ -216,10 +217,10 @@ For runtime historical data access, consider:
 
 Choose the package that fits your needs:
 
-| Package | Size | When to Use |
-|---------|------|------------|
-| **refine-sqlx** | 10 KB | Smallest bundle, supports all databases |
-| **refine-sqlx/d1** | 67 KB | D1-only, includes inlined Drizzle ORM |
+| Package            | Size  | When to Use                             |
+| ------------------ | ----- | --------------------------------------- |
+| **refine-sqlx**    | 10 KB | Smallest bundle, supports all databases |
+| **refine-sqlx/d1** | 67 KB | D1-only, includes inlined Drizzle ORM   |
 
 Both packages have **identical APIs** - just different bundle optimizations!
 

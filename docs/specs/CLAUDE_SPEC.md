@@ -2567,10 +2567,7 @@ The package provides multiple entry points that MUST maintain API compatibility:
 ```json
 {
   "exports": {
-    ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs"
-    },
+    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs" },
     "./d1": {
       "types": "./dist/d1.d.mts",
       "workerd": "./dist/d1.mjs",
@@ -2591,6 +2588,7 @@ The package provides multiple entry points that MUST maintain API compatibility:
 **When Adding a New Feature**:
 
 **Step 1: Design Phase**
+
 - [ ] Define the feature API interface
 - [ ] Document function signatures and types
 - [ ] Identify which environments support the feature
@@ -2712,6 +2710,7 @@ export async function batchInsert<T>(
 ```
 
 **Step 3: Testing Phase**
+
 - [ ] Test in Bun runtime with main export
 - [ ] Test in Node.js runtime with main export
 - [ ] Test in D1 environment with D1 export
@@ -2719,6 +2718,7 @@ export async function batchInsert<T>(
 - [ ] Test helper functions with all data provider types
 
 **Step 4: Documentation Phase**
+
 - [ ] Update README with feature documentation
 - [ ] Add examples for all entry points
 - [ ] Document any environment-specific optimizations
@@ -2762,6 +2762,7 @@ async function batchInsert<T>(resource: string, items: T[]) {
 **Before Removing or Changing an API**:
 
 1. **Deprecation Phase** (minimum 1 major version):
+
    ```typescript
    /**
     * @deprecated Use batchInsert instead. Will be removed in v2.0.0
@@ -2888,6 +2889,7 @@ jest test/api-compatibility.test.ts              # Node.js + main export
 **Availability**: ✅ Main export, ✅ D1 export
 
 **Parameters**:
+
 - `resource` (string): Table name
 - `items` (T[]): Records to insert
 - `options?` (BatchOperationOptions): Configuration
@@ -2909,6 +2911,7 @@ const users = await batchInsert(provider, 'users', [...]);
 \`\`\`
 
 **Environment-Specific Notes**:
+
 - **D1**: Uses native batch API for atomic operations (max 50 statements)
 - **Other runtimes**: Uses Drizzle batch API with automatic chunking
 ```
@@ -3031,14 +3034,14 @@ Configure Time Travel awareness for audit and recovery purposes.
 import { createRefineSQL } from 'refine-sqlx/d1';
 
 const dataProvider = createRefineSQL({
-  connection: env.DB,
-  schema,
-  d1Options: {
-    timeTravel: {
-      enabled: true,
-      bookmark: 'before-migration'
-    }
-  }
+connection: env.DB,
+schema,
+d1Options: {
+timeTravel: {
+enabled: true,
+bookmark: 'before-migration'
+}
+}
 });
 \`\`\`
 

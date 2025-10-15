@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-and-typecheck:
-    name: Lint and Typecheck
+  lint-and-build:
+    name: Lint, Typecheck & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -20,22 +24,111 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Format check
         run: bun run format --check
 
+      - name: Typecheck
+        run: bun run typecheck
+
       - name: Build
         run: bun run build
 
-  test:
-    name: Test
+      - name: Check bundle size
+        run: |
+          echo "📦 Bundle sizes:"
+          echo ""
+          echo "Main bundle:"
+          ls -lh dist/index.mjs
+          echo ""
+          echo "D1 bundle:"
+          ls -lh dist/d1.mjs
+          echo ""
+          echo "Total size:"
+          du -sh dist
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  unit-tests:
+    name: Unit Tests (Bun)
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        run: bun test
+
+  integration-bun:
+    name: Integration Tests (Bun SQLite)
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Bun integration tests
+        run: bun run test:integration-bun
+
+  integration-node:
+    name: Integration Tests (Node.js ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
+    needs: lint-and-build
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        node-version: [20.x, 22.x]
+        os: [ubuntu-latest]
+        node-version: [20, 22, 24]
 
     steps:
       - name: Checkout code
@@ -45,24 +138,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
-      - name: Run tests
-        run: bun test
+      - name: Run Node.js native SQLite tests (v24+)
+        if: matrix.node-version >= 24
+        run: npm run test:integration-node
 
-      - name: Run integration tests (better-sqlite3)
-        run: bun run test:integration-better-sqlite3
+      - name: Run better-sqlite3 tests
+        run: npm run test:integration-better-sqlite3
 
-  test-bun:
-    name: Test with Bun
-    runs-on: ubuntu-latest
+  integration-macos:
+    name: Integration Tests (macOS)
+    runs-on: macos-latest
+    needs: lint-and-build
 
     steps:
       - name: Checkout code
@@ -73,44 +177,19 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Run Bun integration tests
         run: bun run test:integration-bun
 
-  build:
-    name: Build and Check Bundle Size
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
-        run: bun run build
-
-      - name: Check bundle size
-        run: |
-          echo "Main bundle size:"
-          ls -lh dist/index.mjs
-          echo ""
-          echo "D1 bundle size:"
-          ls -lh dist/d1.mjs
-          echo ""
-          echo "Total size:"
-          du -sh dist
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
+      - name: Run better-sqlite3 tests
+        run: npm run test:integration-better-sqlite3

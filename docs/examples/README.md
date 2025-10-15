@@ -9,6 +9,7 @@ This directory is reserved for future Refine integration examples.
 ## Core Purpose
 
 This library should **only** be used with Refine applications. It provides:
+
 - DataProvider interface implementation
 - CRUD operations for Refine
 - Filtering, sorting, and pagination
@@ -19,6 +20,7 @@ This library should **only** be used with Refine applications. It provides:
 ### ❌ Not Suitable For
 
 This library is **NOT** intended for:
+
 - Standalone REST APIs (use Drizzle ORM directly)
 - GraphQL servers (use Drizzle ORM directly)
 - WebSocket servers (use Drizzle ORM directly)
@@ -28,6 +30,7 @@ This library is **NOT** intended for:
 ### ✅ Suitable For
 
 This library **IS** intended for:
+
 - Refine admin panels
 - Refine dashboards
 - Refine data tables

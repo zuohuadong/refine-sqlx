@@ -21,6 +21,7 @@ npx refine-sqlx init [options]
 ```
 
 **Options:**
+
 - `--platform <platform>` - Platform to use: `d1`, `bun`, `node`, `better-sqlite3` (default: `d1`)
 - `--typescript` - Use TypeScript (default: `true`)
 - `--example` - Include example schema and data (default: `false`)
@@ -39,6 +40,7 @@ npx refine-sqlx init --platform=node
 ```
 
 **What it does:**
+
 - Creates `drizzle.config.ts` for your platform
 - Generates basic schema in `src/schema/index.ts`
 - Creates `.env.example` with required environment variables
@@ -55,6 +57,7 @@ npx refine-sqlx scaffold <tables...> [options]
 ```
 
 **Options:**
+
 - `-o, --output <path>` - Output directory (default: `./src/schema`)
 - `--timestamps` - Add createdAt and updatedAt fields (default: `true`)
 - `--soft-delete` - Add deletedAt field for soft deletes (default: `false`)
@@ -73,6 +76,7 @@ npx refine-sqlx scaffold categories tags -o ./database/schema
 ```
 
 **Generated files:**
+
 - `src/schema/users.ts`
 - `src/schema/posts.ts`
 - `src/schema/index.ts` (updated to export all tables)
@@ -88,6 +92,7 @@ npx refine-sqlx validate-d1 [options]
 ```
 
 **Options:**
+
 - `-c, --config <path>` - Path to drizzle.config.ts (default: `./drizzle.config.d1.ts`)
 - `--check-connection` - Test D1 database connection (default: `false`)
 
@@ -105,6 +110,7 @@ npx refine-sqlx validate-d1 -c ./config/drizzle.config.ts
 ```
 
 **What it checks:**
+
 - ✓ Dialect is set to `sqlite`
 - ✓ Driver is set to `d1-http`
 - ✓ Schema path is configured
@@ -125,6 +131,7 @@ npx refine-sqlx introspect [options]
 ```
 
 **Options:**
+
 - `--from-d1` - Introspect from D1 database (required)
 - `--database-id <id>` - D1 database ID (or use `CLOUDFLARE_DATABASE_ID` env var)
 - `--account-id <id>` - Cloudflare account ID (or use `CLOUDFLARE_ACCOUNT_ID` env var)
@@ -148,6 +155,7 @@ npx refine-sqlx introspect --from-d1 -o ./src/db/schema.ts
 ```
 
 **What it does:**
+
 - Connects to your D1 database via Cloudflare API
 - Reads table structures (columns, types, constraints)
 - Generates type-safe Drizzle ORM schema

@@ -58,6 +58,7 @@ docs/
 Technical standards and requirements for the project.
 
 **Files:**
+
 - `CLAUDE_SPEC.md` - Complete technical specifications
 
 **Target Audience:** Developers, maintainers, AI assistants
@@ -67,6 +68,7 @@ Technical standards and requirements for the project.
 Release notes and feature documentation for each version.
 
 **Files:**
+
 - `FEATURES_v0.3.0.md` - Drizzle ORM integration
 - `FEATURES_v0.4.0.md` - Eloquent-style API (planned)
 
@@ -77,6 +79,7 @@ Release notes and feature documentation for each version.
 Technical analysis, performance studies, and research.
 
 **Files:**
+
 - `D1_BUNDLE_SIZE_ANALYSIS.md` - Bundle size optimization
 
 **Target Audience:** Performance engineers, maintainers
@@ -86,6 +89,7 @@ Technical analysis, performance studies, and research.
 Production-ready templates and interactive examples.
 
 **Templates:**
+
 - **d1-rest-api** - Complete REST API with CRUD operations
   - Full routing system
   - Input validation
@@ -119,10 +123,12 @@ Production-ready templates and interactive examples.
 Practical how-to guides for common tasks.
 
 **Files:**
+
 - `README.md` - Guides overview
 - `deployment.md` - Production deployment guide
 
 **Planned Guides:**
+
 - Quick start
 - Platform-specific guides (D1, Bun, Node.js)
 - Feature guides (filtering, pagination, transactions)
@@ -136,6 +142,7 @@ Practical how-to guides for common tasks.
 Comprehensive guide for D1-specific features.
 
 **Topics:**
+
 - Batch operations
 - Time Travel configuration
 - Performance optimization
@@ -156,6 +163,7 @@ All templates include Stackblitz badges for one-click deployment:
 ### Quick Start Links
 
 Main documentation includes direct links to:
+
 - Live examples
 - Template repositories
 - Deployment guides
@@ -185,6 +193,7 @@ Each document should include:
 ### Code Examples
 
 All code examples should:
+
 - Be runnable and tested
 - Include necessary imports
 - Show realistic use cases
