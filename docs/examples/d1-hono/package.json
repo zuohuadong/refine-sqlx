@@ -1,0 +1,32 @@
+{
+  "name": "d1-hono-template",
+  "version": "1.0.0",
+  "description": "Hono framework with refine-sqlx and Cloudflare D1",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 execute ${D1_DATABASE_NAME:-my-hono-db} --file=./migrations/0000_initial.sql",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "refine-sqlx": "^0.3.0",
+    "@refinedev/core": "^4.57.10",
+    "drizzle-orm": "^0.44.0",
+    "hono": "^4.7.11",
+    "@hono/zod-validator": "^0.4.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^3.102.0"
+  }
+}

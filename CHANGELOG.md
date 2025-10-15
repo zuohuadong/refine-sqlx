@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **API Unification**: Removed `DEFAULT_D1_BATCH_SIZE` in favor of unified `DEFAULT_BATCH_SIZE` constant
+  - Both `refine-sqlx` and `refine-sqlx/d1` now export the same `DEFAULT_BATCH_SIZE = 50`
+  - Batch operations (`batchInsert`, `batchUpdate`, `batchDelete`) use identical APIs across all packages
+  - Reduced code duplication by ~200 lines
+
+### Removed
+
+- **BREAKING**: `DEFAULT_D1_BATCH_SIZE` constant (use `DEFAULT_BATCH_SIZE` instead)
+- Duplicate implementation in `src/d1-utils.ts` (functionality moved to `src/utils/batch.ts`)
+
+### Migration Guide (Unreleased → Next)
+
+If you were using `DEFAULT_D1_BATCH_SIZE`:
+
+```typescript
+// Before
+import { DEFAULT_D1_BATCH_SIZE } from 'refine-sqlx/d1';
+
+// After
+import { DEFAULT_BATCH_SIZE } from 'refine-sqlx/d1';
+// or
+import { DEFAULT_BATCH_SIZE } from 'refine-sqlx';
+```
+
+All other APIs remain unchanged. The value is still `50`.
+
+---
+
 ## [0.3.0] - 2025-Q1
 
 ### 🎯 Major Rewrite - Drizzle ORM Integration

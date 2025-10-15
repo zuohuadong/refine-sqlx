@@ -9,6 +9,44 @@ import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type { Logger } from './logger';
 
 /**
+ * D1-specific configuration options
+ */
+export interface D1Options {
+  /**
+   * Batch operation settings
+   */
+  batch?: {
+    /**
+     * Maximum number of statements per batch
+     * D1 recommended limit is 50 statements
+     * @default 50
+     */
+    maxSize?: number;
+  };
+
+  /**
+   * Time Travel settings
+   * Note: Actual restoration must be done via wrangler CLI
+   * This option allows querying at a specific point in time
+   */
+  timeTravel?: {
+    /**
+     * Enable Time Travel queries
+     * When enabled, queries will use the specified bookmark or timestamp
+     * @default false
+     */
+    enabled?: boolean;
+
+    /**
+     * Bookmark name or Unix timestamp to query from
+     * - Bookmark: string identifier created by D1
+     * - Timestamp: Unix timestamp (number) or ISO date string
+     */
+    bookmark?: string | number;
+  };
+}
+
+/**
  * Configuration options for createRefineSQL
  */
 export interface RefineSQLConfig<
@@ -60,6 +98,11 @@ export interface RefineSQLConfig<
    * @default false
    */
   logger?: boolean | Logger;
+
+  /**
+   * D1-specific options (only applicable when using D1Database)
+   */
+  d1Options?: D1Options;
 }
 
 /**

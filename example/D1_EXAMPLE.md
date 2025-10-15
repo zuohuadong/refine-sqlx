@@ -2,6 +2,30 @@
 
 This example demonstrates how to use `refine-sqlx` with Cloudflare D1 in a Workers environment.
 
+## 🎯 Package Compatibility
+
+All D1 features are available in **both** packages with 100% identical APIs:
+
+| Feature | Main Package | D1 Package | Bundle Size |
+|---------|-------------|------------|-------------|
+| `createRefineSQL()` | `refine-sqlx` | `refine-sqlx/d1` | 10 KB vs 67 KB |
+| `batchInsert()` | ✅ | ✅ | Same API |
+| `batchUpdate()` | ✅ | ✅ | Same API |
+| `batchDelete()` | ✅ | ✅ | Same API |
+| `D1Options` | ✅ | ✅ | Same types |
+
+**You can use either:**
+
+```typescript
+// Option 1: Main package (smallest bundle, all DB support)
+import { createRefineSQL, batchInsert } from 'refine-sqlx';
+
+// Option 2: D1-optimized package (self-contained, includes Drizzle ORM)
+import { createRefineSQL, batchInsert } from 'refine-sqlx/d1';
+
+// ✅ Code is identical - only import path differs!
+```
+
 ## Features
 
 - ✅ Optimized D1 build (`refine-sqlx/d1`)
@@ -9,6 +33,8 @@ This example demonstrates how to use `refine-sqlx` with Cloudflare D1 in a Worke
 - ✅ Complete REST API for users and posts
 - ✅ Automatic pagination and filtering
 - ✅ Error handling
+- ✅ **Batch operations for bulk inserts/updates**
+- ✅ **Time Travel configuration support**
 
 ## Setup
 
@@ -111,13 +137,91 @@ npm run build
 wrangler deploy
 ```
 
+## D1-Specific Features
+
+### Batch Operations
+
+⚡ **Available in both packages**: `refine-sqlx` and `refine-sqlx/d1`
+
+The batch operations automatically handle D1's 50-statement batch limit:
+
+```typescript
+// Works with both 'refine-sqlx' and 'refine-sqlx/d1'
+import { createRefineSQL, batchInsert, batchUpdate, batchDelete } from 'refine-sqlx/d1';
+
+// Create data provider
+const dataProvider = await createRefineSQL({
+  connection: env.DB,
+  schema,
+  d1Options: {
+    batch: { maxSize: 50 } // Optional: customize batch size
+  }
+});
+
+// Batch insert - automatically chunks into optimal batches
+const users = await batchInsert(dataProvider, 'users', [
+  { name: 'User 1', email: 'user1@example.com', status: 'active', createdAt: new Date() },
+  { name: 'User 2', email: 'user2@example.com', status: 'active', createdAt: new Date() },
+  // ... up to thousands of items
+]);
+
+// Batch update
+const updated = await batchUpdate(dataProvider, 'users', [1, 2, 3, 4], {
+  status: 'inactive'
+});
+
+// Batch delete
+const deleted = await batchDelete(dataProvider, 'users', [10, 11, 12]);
+```
+
+### Time Travel Configuration
+
+⚡ **Available in both packages**: `refine-sqlx` and `refine-sqlx/d1`
+
+D1's Time Travel feature allows you to restore databases to specific points in time. While runtime queries at specific timestamps are not supported by D1's API, you can configure Time Travel awareness:
+
+```typescript
+// Works with both 'refine-sqlx' and 'refine-sqlx/d1'
+const dataProvider = await createRefineSQL({
+  connection: env.DB,
+  schema,
+  d1Options: {
+    timeTravel: {
+      enabled: true,
+      bookmark: 'before-migration' // or Unix timestamp
+    }
+  }
+});
+```
+
+**Note**: For actual database restoration, use the Wrangler CLI:
+
+```bash
+# Restore to specific timestamp
+wrangler d1 time-travel restore refine-sqlx-demo --timestamp=1234567890
+
+# Restore to bookmark
+wrangler d1 time-travel restore refine-sqlx-demo --bookmark=before-migration
+
+# Create bookmark for current state
+wrangler d1 time-travel bookmark create refine-sqlx-demo --name=before-migration
+```
+
+For runtime historical data access, consider:
+1. Using `wrangler d1 time-travel restore` for point-in-time restoration
+2. Implementing application-level versioning with `created_at`/`updated_at` columns
+3. Creating separate historical tables with triggers
+
 ## Bundle Size
 
-The D1-optimized build is extremely small:
+Choose the package that fits your needs:
 
-- **16 KB total** (main + shared chunks)
-- **~5 KB gzipped**
-- Perfect for Cloudflare Workers 1MB limit
+| Package | Size | When to Use |
+|---------|------|------------|
+| **refine-sqlx** | 10 KB | Smallest bundle, supports all databases |
+| **refine-sqlx/d1** | 67 KB | D1-only, includes inlined Drizzle ORM |
+
+Both packages have **identical APIs** - just different bundle optimizations!
 
 ## Performance
 

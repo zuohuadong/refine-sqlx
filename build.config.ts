@@ -44,6 +44,24 @@ export default defineBuildConfig({
         },
       },
     },
+    // CLI entry point
+    {
+      input: 'bin/refine-sqlx',
+      outDir: 'dist',
+      name: 'refine-sqlx',
+      builder: 'rollup',
+      declaration: false,
+      rollup: {
+        esbuild: {
+          minify: false,
+          target: 'es2022',
+          banner: '#!/usr/bin/env node',
+        },
+        output: {
+          format: 'esm',
+        },
+      },
+    },
   ],
   outDir: 'dist',
   declaration: false, // Disabled globally for now - will re-enable after D1 bundling works

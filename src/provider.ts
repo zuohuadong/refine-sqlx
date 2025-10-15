@@ -35,6 +35,7 @@ import {
 } from './filters';
 import { isD1Database, isDrizzleDatabase } from './runtime';
 import type { RefineSQLConfig, TableName } from './types';
+import { validateD1Options } from './utils/validation';
 
 type DrizzleDatabase<TSchema extends Record<string, unknown>> =
   | BunSQLiteDatabase<TSchema>
@@ -58,6 +59,9 @@ type DrizzleDatabase<TSchema extends Record<string, unknown>> =
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
 ): Promise<DataProvider> {
+  // Validate D1-specific options if provided
+  validateD1Options(config.d1Options);
+
   let db: DrizzleDatabase<TSchema>;
 
   // Initialize database connection
@@ -80,6 +84,20 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       config.connection as any,
       config.schema,
       config.config,
+    );
+  }
+
+  // D1 Time Travel implementation note:
+  // Time Travel is primarily a CLI feature for database restoration.
+  // Runtime queries at specific points in time are not directly supported via the D1 client API.
+  // For production use cases requiring historical data access, consider:
+  // 1. Using wrangler CLI for point-in-time restoration: `wrangler d1 time-travel restore`
+  // 2. Implementing application-level versioning with timestamp columns
+  // 3. Creating separate historical tables with triggers
+  if (config.d1Options?.timeTravel?.enabled) {
+    console.warn(
+      '[refine-sqlx] D1 Time Travel is configured, but runtime historical queries are not supported by D1 API. ' +
+        'Use wrangler CLI for database restoration: `wrangler d1 time-travel restore`',
     );
   }
 
