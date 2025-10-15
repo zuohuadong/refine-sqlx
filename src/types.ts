@@ -4,13 +4,16 @@ import type { Database as BunDatabase } from 'bun:sqlite';
 import type { DrizzleConfig } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { D1Database as DrizzleD1Database } from 'drizzle-orm/d1';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
+import type { Logger } from './logger';
 
 /**
  * Configuration options for createRefineSQL
  */
-export interface RefineSQLConfig<TSchema extends Record<string, unknown> = Record<string, unknown>> {
+export interface RefineSQLConfig<
+  TSchema extends Record<string, unknown> = Record<string, unknown>,
+> {
   /**
    * Database connection - can be:
    * - File path string (e.g., './database.sqlite')
@@ -51,9 +54,12 @@ export interface RefineSQLConfig<TSchema extends Record<string, unknown> = Recor
 
   /**
    * Enable query logging
+   * Can be:
+   * - boolean: true to enable console logging, false to disable
+   * - Logger: custom logger instance
    * @default false
    */
-  logger?: boolean;
+  logger?: boolean | Logger;
 }
 
 /**
@@ -64,14 +70,19 @@ export type RuntimeEnvironment = 'bun' | 'node' | 'd1' | 'better-sqlite3';
 /**
  * Table name from schema
  */
-export type TableName<TSchema extends Record<string, unknown>> = Extract<keyof TSchema, string>;
+export type TableName<TSchema extends Record<string, unknown>> = Extract<
+  keyof TSchema,
+  string
+>;
 
 /**
  * Infer select type from table
  */
-export type InferSelectModel<TTable> = TTable extends { $inferSelect: infer T } ? T : never;
+export type InferSelectModel<TTable> =
+  TTable extends { $inferSelect: infer T } ? T : never;
 
 /**
  * Infer insert type from table
  */
-export type InferInsertModel<TTable> = TTable extends { $inferInsert: infer T } ? T : never;
+export type InferInsertModel<TTable> =
+  TTable extends { $inferInsert: infer T } ? T : never;

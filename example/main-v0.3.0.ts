@@ -41,10 +41,7 @@ sqlite.exec(`
 `);
 
 // Create data provider
-const dataProvider = createRefineSQL({
-  connection: sqlite,
-  schema,
-});
+const dataProvider = createRefineSQL({ connection: sqlite, schema });
 
 async function main() {
   console.log('🚀 refine-sqlx v0.3.0 Example\n');
@@ -115,7 +112,7 @@ async function main() {
       },
       {
         title: 'Cloudflare D1 Tutorial',
-        content: 'D1 is Cloudflare\'s serverless database...',
+        content: "D1 is Cloudflare's serverless database...",
         userId: user2.data.id,
         status: 'published',
         publishedAt: new Date(),
@@ -129,9 +126,7 @@ async function main() {
   console.log('🔍 Filtering active users...');
   const activeUsers = await dataProvider.getList<User>({
     resource: 'users',
-    filters: [
-      { field: 'status', operator: 'eq', value: 'active' },
-    ],
+    filters: [{ field: 'status', operator: 'eq', value: 'active' }],
     pagination: { current: 1, pageSize: 10 },
   });
   console.log(`Found ${activeUsers.total} active users:`, activeUsers.data);
@@ -140,13 +135,14 @@ async function main() {
   console.log('\n🔍 Finding users with names containing "a"...');
   const filteredUsers = await dataProvider.getList<User>({
     resource: 'users',
-    filters: [
-      { field: 'name', operator: 'contains', value: 'a' },
-    ],
+    filters: [{ field: 'name', operator: 'contains', value: 'a' }],
     sorters: [{ field: 'name', order: 'asc' }],
     pagination: { current: 1, pageSize: 10 },
   });
-  console.log(`Found ${filteredUsers.total} users:`, filteredUsers.data.map(u => u.name));
+  console.log(
+    `Found ${filteredUsers.total} users:`,
+    filteredUsers.data.map((u) => u.name),
+  );
 
   // ===== GET LIST with Sorting =====
   console.log('\n📊 Getting posts sorted by title...');
@@ -155,15 +151,16 @@ async function main() {
     sorters: [{ field: 'title', order: 'asc' }],
     pagination: { current: 1, pageSize: 10 },
   });
-  console.log(`Found ${posts.total} posts:`, posts.data.map(p => p.title));
+  console.log(
+    `Found ${posts.total} posts:`,
+    posts.data.map((p) => p.title),
+  );
 
   // Filter posts by status
   console.log('\n📊 Getting published posts...');
   const publishedPosts = await dataProvider.getList<Post>({
     resource: 'posts',
-    filters: [
-      { field: 'status', operator: 'eq', value: 'published' },
-    ],
+    filters: [{ field: 'status', operator: 'eq', value: 'published' }],
     pagination: { current: 1, pageSize: 10 },
   });
   console.log(`Found ${publishedPosts.total} published posts`);
@@ -182,17 +179,17 @@ async function main() {
     resource: 'users',
     ids: [user1.data.id, user2.data.id],
   });
-  console.log('Fetched users:', users.data.map(u => u.name));
+  console.log(
+    'Fetched users:',
+    users.data.map((u) => u.name),
+  );
 
   // ===== UPDATE =====
   console.log('\n✏️  Updating user...');
   const updatedUser = await dataProvider.update<User>({
     resource: 'users',
     id: user1.data.id,
-    variables: {
-      status: 'inactive',
-      updatedAt: new Date(),
-    },
+    variables: { status: 'inactive', updatedAt: new Date() },
   });
   console.log('Updated user status:', updatedUser.data.status);
 
@@ -201,9 +198,7 @@ async function main() {
   const updatedUsers = await dataProvider.updateMany<User>({
     resource: 'users',
     ids: [user1.data.id, user2.data.id],
-    variables: {
-      updatedAt: new Date(),
-    },
+    variables: { updatedAt: new Date() },
   });
   console.log(`Updated ${updatedUsers.data.length} users`);
 
@@ -228,7 +223,9 @@ async function main() {
     resource: 'users',
     pagination: { current: 1, pageSize: 100 },
   });
-  console.log(`\n✅ Example complete! Remaining users: ${remainingUsers.total}`);
+  console.log(
+    `\n✅ Example complete! Remaining users: ${remainingUsers.total}`,
+  );
 }
 
 main().catch(console.error);

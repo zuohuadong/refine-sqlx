@@ -1,7 +1,6 @@
 import type { DrizzleConfig } from 'drizzle-orm';
 import { drizzle as drizzleBunSqlite } from 'drizzle-orm/bun-sqlite';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { Database as BunDatabase } from 'bun:sqlite';
 
 /**
  * Create a Drizzle database instance for Bun SQLite
@@ -10,17 +9,25 @@ import type { Database as BunDatabase } from 'bun:sqlite';
  * @param schema - Drizzle schema definition
  * @param config - Optional Drizzle config
  */
-export function createBunSQLiteAdapter<TSchema extends Record<string, unknown>>(
-  connection: BunDatabase | string | ':memory:',
+export async function createBunSQLiteAdapter<
+  TSchema extends Record<string, unknown>,
+>(
+  connection: any | string | ':memory:',
   schema: TSchema,
   config?: DrizzleConfig<TSchema>,
-): BunSQLiteDatabase<TSchema> {
-  let db: BunDatabase;
+): Promise<BunSQLiteDatabase<TSchema>> {
+  let db: any;
 
   // Create or use existing Bun SQLite database
   if (typeof connection === 'string') {
     // Dynamic import for bun:sqlite
-    const { Database } = require('bun:sqlite');
+    if (typeof Bun === 'undefined') {
+      throw new Error(
+        'Bun runtime not detected. Cannot use bun:sqlite adapter.',
+      );
+    }
+
+    const { Database } = await import('bun:sqlite');
     db = new Database(connection);
   } else {
     db = connection;
@@ -34,9 +41,5 @@ export function createBunSQLiteAdapter<TSchema extends Record<string, unknown>>(
  * Check if Bun SQLite is available
  */
 export function isBunSQLiteAvailable(): boolean {
-  try {
-    return typeof Bun !== 'undefined' && typeof require('bun:sqlite') !== 'undefined';
-  } catch {
-    return false;
-  }
+  return typeof Bun !== 'undefined';
 }

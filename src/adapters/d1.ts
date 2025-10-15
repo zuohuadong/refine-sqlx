@@ -1,4 +1,4 @@
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types';
 import type { DrizzleConfig } from 'drizzle-orm';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
@@ -24,7 +24,10 @@ export function createD1Adapter<TSchema extends Record<string, unknown>>(
  */
 export function isD1Available(): boolean {
   try {
-    return typeof globalThis.caches !== 'undefined' && 'default' in globalThis.caches;
+    return (
+      typeof (globalThis as any).caches !== 'undefined' &&
+      'default' in (globalThis as any).caches
+    );
   } catch {
     return false;
   }

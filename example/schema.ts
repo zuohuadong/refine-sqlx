@@ -29,9 +29,7 @@ export const posts = sqliteTable('posts', {
   userId: integer('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  status: text('status', {
-    enum: ['draft', 'published', 'archived'],
-  })
+  status: text('status', { enum: ['draft', 'published', 'archived'] })
     .notNull()
     .default('draft'),
   publishedAt: integer('published_at', { mode: 'timestamp' }),

@@ -85,11 +85,8 @@ import { createRefineSQL } from 'refine-sqlx/d1';
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }) {
-    const dataProvider = createRefineSQL({
-      connection: env.DB,
-      schema,
-    });
-    
+    const dataProvider = createRefineSQL({ connection: env.DB, schema });
+
     return Response.json({ ok: true });
   },
 };

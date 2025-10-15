@@ -14,7 +14,7 @@
     "test:integration-bun": "bun test test/integration/bun.test.ts",
     "test:integration-node": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/integration/node.test.ts",
     "test:integration-better-sqlite3": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/integration/better-sqlite3.test.ts",
-    "build": "unbuild",
+    "build": "unbuild && bun run build-d1.ts",
     "format": "prettier --write .",
     "changeset": "changeset",
     "changeset:version": "changeset version",

@@ -6,7 +6,10 @@ import type { RuntimeEnvironment } from './types';
  */
 export function detectRuntime(): RuntimeEnvironment {
   // Check for Cloudflare Workers / D1
-  if (typeof globalThis.caches !== 'undefined' && 'default' in globalThis.caches) {
+  if (
+    typeof (globalThis as any).caches !== 'undefined' &&
+    'default' in (globalThis as any).caches
+  ) {
     return 'd1';
   }
 
@@ -22,9 +25,8 @@ export function detectRuntime(): RuntimeEnvironment {
     // Node.js 24+ has native SQLite support
     if (nodeVersion >= 24) {
       try {
-        // Check if node:sqlite is available
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        require('node:sqlite');
+        // Try to import node:sqlite to check if it's available
+        // In ESM, we can't use require, so we assume it's available for Node.js 24+
         return 'node';
       } catch {
         // Fall back to better-sqlite3
@@ -44,16 +46,20 @@ export function detectRuntime(): RuntimeEnvironment {
  * Check if the database instance is a Drizzle database
  */
 export function isDrizzleDatabase(db: any): boolean {
-  return db && typeof db === 'object' && '$client' in db && 'query' in db;
+  if (!db || typeof db !== 'object') {
+    return false;
+  }
+  return 'query' in db && 'select' in db;
 }
 
 /**
  * Check if the database instance is a D1 database
  */
 export function isD1Database(db: any): boolean {
+  if (!db || typeof db !== 'object') {
+    return false;
+  }
   return (
-    db &&
-    typeof db === 'object' &&
     'prepare' in db &&
     'dump' in db &&
     'batch' in db &&
@@ -65,19 +71,29 @@ export function isD1Database(db: any): boolean {
  * Check if the database instance is a Bun SQLite database
  */
 export function isBunDatabase(db: any): boolean {
-  return db && typeof db === 'object' && 'prepare' in db && 'query' in db && typeof Bun !== 'undefined';
+  if (!db || typeof db !== 'object') {
+    return false;
+  }
+  return (
+    'prepare' in db &&
+    'query' in db &&
+    typeof Bun !== 'undefined'
+  );
 }
 
 /**
  * Check if the database instance is a Node.js native SQLite database
  */
 export function isNodeDatabase(db: any): boolean {
+  if (!db || typeof db !== 'object') {
+    return false;
+  }
   return (
-    db &&
-    typeof db === 'object' &&
     'prepare' in db &&
     typeof process !== 'undefined' &&
-    process.versions?.node
+    !!process.versions?.node &&
+    !isBetterSqlite3Database(db) &&
+    !isBunDatabase(db)
   );
 }
 
@@ -85,9 +101,10 @@ export function isNodeDatabase(db: any): boolean {
  * Check if the database instance is a better-sqlite3 database
  */
 export function isBetterSqlite3Database(db: any): boolean {
+  if (!db || typeof db !== 'object') {
+    return false;
+  }
   return (
-    db &&
-    typeof db === 'object' &&
     'prepare' in db &&
     'transaction' in db &&
     'pragma' in db

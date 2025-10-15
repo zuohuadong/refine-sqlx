@@ -20,7 +20,7 @@ import type {
   UpdateParams,
   UpdateResponse,
 } from '@refinedev/core';
-import { count, eq, inArray } from 'drizzle-orm';
+import { count, eq, inArray, sql } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
@@ -28,8 +28,12 @@ import type { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
 import { createBetterSQLite3Adapter } from './adapters/better-sqlite3-drizzle';
 import { createBunSQLiteAdapter } from './adapters/bun';
 import { createD1Adapter } from './adapters/d1';
-import { calculatePagination, filtersToWhere, sortersToOrderBy } from './filters';
-import { isDrizzleDatabase, isD1Database } from './runtime';
+import {
+  calculatePagination,
+  filtersToWhere,
+  sortersToOrderBy,
+} from './filters';
+import { isD1Database, isDrizzleDatabase } from './runtime';
 import type { RefineSQLConfig, TableName } from './types';
 
 type DrizzleDatabase<TSchema extends Record<string, unknown>> =
@@ -45,26 +49,38 @@ type DrizzleDatabase<TSchema extends Record<string, unknown>> =
  * import { createRefineSQL } from 'refine-sqlx';
  * import * as schema from './schema';
  *
- * const dataProvider = createRefineSQL({
+ * const dataProvider = await createRefineSQL({
  *   connection: './database.sqlite',
  *   schema,
  * });
  * ```
  */
-export function createRefineSQL<TSchema extends Record<string, unknown>>(
+export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
-): DataProvider {
+): Promise<DataProvider> {
   let db: DrizzleDatabase<TSchema>;
 
   // Initialize database connection
   if (isDrizzleDatabase(config.connection)) {
     db = config.connection as DrizzleDatabase<TSchema>;
   } else if (isD1Database(config.connection)) {
-    db = createD1Adapter(config.connection as any, config.schema, config.config);
+    db = createD1Adapter(
+      config.connection as any,
+      config.schema,
+      config.config,
+    );
   } else if (typeof Bun !== 'undefined') {
-    db = createBunSQLiteAdapter(config.connection as any, config.schema, config.config);
+    db = await createBunSQLiteAdapter(
+      config.connection as any,
+      config.schema,
+      config.config,
+    );
   } else {
-    db = createBetterSQLite3Adapter(config.connection as any, config.schema, config.config);
+    db = await createBetterSQLite3Adapter(
+      config.connection as any,
+      config.schema,
+      config.config,
+    );
   }
 
   /**
@@ -96,10 +112,7 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
     const { offset, limit } = calculatePagination(params.pagination ?? {});
 
     // Execute query
-    const query = db
-      .select()
-      .from(table)
-      .$dynamic();
+    const query = db.select().from(table).$dynamic();
 
     if (where) {
       query.where(where);
@@ -111,22 +124,15 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     const data = await query.limit(limit).offset(offset);
 
-    // Get total count
-    const countQuery = db
-      .select({ count: count() })
+    // Get total count using raw SQL
+    const countResult: Array<Record<string, unknown>> = await (db as any)
+      .select({ total: sql<number>`CAST(COUNT(*) AS INTEGER)` })
       .from(table)
-      .$dynamic();
+      .where(where || sql`1 = 1`);
 
-    if (where) {
-      countQuery.where(where);
-    }
+    const total = Number(countResult[0]?.total ?? 0);
 
-    const [{ count: total }] = await countQuery;
-
-    return {
-      data: data as T[],
-      total,
-    };
+    return { data: data as T[], total };
   }
 
   /**
@@ -165,7 +171,9 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       .where(eq(table[idColumn], params.id));
 
     if (!data) {
-      throw new Error(`Record with id ${params.id} not found in ${params.resource}`);
+      throw new Error(
+        `Record with id ${params.id} not found in ${params.resource}`,
+      );
     }
 
     return { data: data as T };
@@ -223,7 +231,9 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       .returning();
 
     if (!result) {
-      throw new Error(`Record with id ${params.id} not found in ${params.resource}`);
+      throw new Error(
+        `Record with id ${params.id} not found in ${params.resource}`,
+      );
     }
 
     return { data: result as T };
@@ -254,9 +264,10 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
   /**
    * Delete a record
    */
-  async function deleteOne<T extends BaseRecord = BaseRecord>(
-    params: DeleteOneParams,
-  ): Promise<DeleteOneResponse<T>> {
+  async function deleteOne<
+    T extends BaseRecord = BaseRecord,
+    TVariables = {},
+  >(params: DeleteOneParams<TVariables>): Promise<DeleteOneResponse<T>> {
     const table = getTable(params.resource);
     const idColumn = params.meta?.idColumnName ?? 'id';
 
@@ -266,7 +277,9 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       .returning();
 
     if (!result) {
-      throw new Error(`Record with id ${params.id} not found in ${params.resource}`);
+      throw new Error(
+        `Record with id ${params.id} not found in ${params.resource}`,
+      );
     }
 
     return { data: result as T };
@@ -275,9 +288,10 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
   /**
    * Delete multiple records
    */
-  async function deleteMany<T extends BaseRecord = BaseRecord>(
-    params: DeleteManyParams,
-  ): Promise<DeleteManyResponse<T>> {
+  async function deleteMany<
+    T extends BaseRecord = BaseRecord,
+    TVariables = {},
+  >(params: DeleteManyParams<TVariables>): Promise<DeleteManyResponse<T>> {
     if (!params.ids || params.ids.length === 0) {
       return { data: [] };
     }
@@ -303,5 +317,10 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
     updateMany,
     deleteOne,
     deleteMany,
+    getApiUrl() {
+      // SQL databases don't have a traditional API URL
+      // Return a placeholder or configuration-based value
+      return '';
+    },
   };
 }

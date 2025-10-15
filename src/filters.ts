@@ -1,5 +1,24 @@
 import type { CrudFilters, CrudOperators } from '@refinedev/core';
-import { and, between, eq, gt, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notBetween, notInArray, or, SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  between,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lt,
+  lte,
+  ne,
+  notBetween,
+  notInArray,
+  or,
+  SQL,
+} from 'drizzle-orm';
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 
 /**
@@ -13,29 +32,49 @@ export function filtersToWhere<T extends Record<string, SQLiteColumn>>(
     return undefined;
   }
 
-  const conditions = filters
-    .filter((filter): filter is Exclude<typeof filter, { operator: 'or' | 'and' }> =>
-      'field' in filter && 'operator' in filter
-    )
-    .map((filter) => {
+  const conditions: SQL[] = [];
+
+  for (const filter of filters) {
+    // Handle logical operators (OR/AND with nested filters)
+    if ('operator' in filter && (filter.operator === 'or' || filter.operator === 'and')) {
+      if (!Array.isArray(filter.value)) {
+        continue;
+      }
+
+      // Recursively process nested filters
+      const nestedConditions = filter.value
+        .filter((f): f is any => 'field' in f && 'operator' in f)
+        .map((f) => {
+          const column = columns[f.field as keyof T];
+          if (!column) {
+            throw new Error(`Column "${String(f.field)}" not found in schema`);
+          }
+          return filterToCondition(column, f.operator, f.value);
+        });
+
+      if (nestedConditions.length > 0) {
+        if (filter.operator === 'or') {
+          conditions.push(or(...nestedConditions)!);
+        } else {
+          conditions.push(and(...nestedConditions)!);
+        }
+      }
+    } else if ('field' in filter && 'operator' in filter) {
+      // Handle regular field filters
       const column = columns[filter.field as keyof T];
       if (!column) {
         throw new Error(`Column "${String(filter.field)}" not found in schema`);
       }
 
-      return filterToCondition(column, filter.operator, filter.value);
-    });
+      conditions.push(filterToCondition(column, filter.operator, filter.value));
+    }
+  }
 
   if (conditions.length === 0) {
     return undefined;
   }
 
-  // Check for OR/AND logic in filters
-  const orFilter = filters.find((f) => 'operator' in f && f.operator === 'or');
-  if (orFilter) {
-    return or(...conditions);
-  }
-
+  // Combine all conditions with AND
   return and(...conditions);
 }
 
@@ -139,14 +178,11 @@ export function sortersToOrderBy<T extends Record<string, SQLiteColumn>>(
       throw new Error(`Column "${sorter.field}" not found in schema`);
     }
 
-    // Drizzle uses asc(column) and desc(column) functions
+    // Use asc/desc functions from drizzle-orm
     if (sorter.order === 'desc') {
-      // Import desc from drizzle-orm
-      const { desc } = require('drizzle-orm');
       return desc(column);
     }
 
-    const { asc } = require('drizzle-orm');
     return asc(column);
   });
 }
@@ -157,12 +193,16 @@ export function sortersToOrderBy<T extends Record<string, SQLiteColumn>>(
 export function calculatePagination(pagination: {
   current?: number;
   pageSize?: number;
+  mode?: 'off' | 'server' | 'client';
 }): { offset: number; limit: number } {
+  // Handle pagination mode
+  if (pagination?.mode === 'off' || pagination?.mode === 'client') {
+    // No pagination - return all results
+    return { offset: 0, limit: 999999 };
+  }
+
   const current = pagination?.current ?? 1;
   const pageSize = pagination?.pageSize ?? 10;
 
-  return {
-    offset: (current - 1) * pageSize,
-    limit: pageSize,
-  };
+  return { offset: (current - 1) * pageSize, limit: pageSize };
 }

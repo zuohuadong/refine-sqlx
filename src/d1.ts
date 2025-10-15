@@ -14,7 +14,7 @@
  *
  * export default {
  *   async fetch(request: Request, env: { DB: D1Database }) {
- *     const dataProvider = createRefineSQL({
+ *     const dataProvider = await createRefineSQL({
  *       connection: env.DB,
  *       schema,
  *     });
@@ -26,24 +26,45 @@
  */
 
 import type { DataProvider } from '@refinedev/core';
-import { count, eq, inArray } from 'drizzle-orm/sqlite-core';
+import { count, eq, inArray, sql } from 'drizzle-orm';
 import { createD1Adapter } from './adapters/d1';
-import { calculatePagination, filtersToWhere, sortersToOrderBy } from './filters';
+import {
+  calculatePagination,
+  filtersToWhere,
+  sortersToOrderBy,
+} from './filters';
 import type { RefineSQLConfig } from './types';
 
 // Re-export types
-export type { RefineSQLConfig, InferInsertModel, InferSelectModel, TableName } from './types';
+export type {
+  RefineSQLConfig,
+  InferInsertModel,
+  InferSelectModel,
+  TableName,
+} from './types';
 export { createD1Adapter, isD1Available } from './adapters/d1';
 
 /**
  * Create a Refine DataProvider for Cloudflare D1
  * Optimized build with minimal dependencies
+ *
+ * @example
+ * ```typescript
+ * const dataProvider = await createRefineSQL({
+ *   connection: env.DB,
+ *   schema,
+ * });
+ * ```
  */
-export function createRefineSQL<TSchema extends Record<string, unknown>>(
+export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
-): DataProvider {
+): Promise<DataProvider> {
   // D1-specific initialization
-  const db = createD1Adapter(config.connection as any, config.schema, config.config);
+  const db = createD1Adapter(
+    config.connection as any,
+    config.schema,
+    config.config,
+  );
 
   function getTable(resource: string) {
     const table = config.schema[resource];
@@ -65,9 +86,13 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       if (orderBy.length > 0) query.orderBy(...orderBy);
 
       const data = await query.limit(limit).offset(offset);
-      const countQuery = db.select({ count: count() }).from(table).$dynamic();
-      if (where) countQuery.where(where);
-      const [{ count: total }] = await countQuery;
+
+      // Get total count using raw SQL
+      const countResult: Array<Record<string, unknown>> = await (db as any)
+        .select({ total: sql<number>`CAST(COUNT(*) AS INTEGER)` })
+        .from(table)
+        .where(where || sql`1 = 1`);
+      const total = Number(countResult[0]?.total ?? 0);
 
       return { data: data as any[], total };
     },
@@ -76,35 +101,51 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       if (!params.ids?.length) return { data: [] };
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const data = await db.select().from(table).where(inArray(table[idColumn], params.ids));
+      const data = await db
+        .select()
+        .from(table)
+        .where(inArray(table[idColumn], params.ids));
       return { data: data as any[] };
     },
 
     async getOne(params) {
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const [data] = await db.select().from(table).where(eq(table[idColumn], params.id));
+      const [data] = await db
+        .select()
+        .from(table)
+        .where(eq(table[idColumn], params.id));
       if (!data) throw new Error(`Record with id ${params.id} not found`);
       return { data: data as any };
     },
 
     async create(params) {
       const table = getTable(params.resource);
-      const [result] = await db.insert(table).values(params.variables as any).returning();
+      const [result] = await db
+        .insert(table)
+        .values(params.variables as any)
+        .returning();
       return { data: result as any };
     },
 
     async createMany(params) {
       if (!params.variables?.length) return { data: [] };
       const table = getTable(params.resource);
-      const data = await db.insert(table).values(params.variables as any[]).returning();
+      const data = await db
+        .insert(table)
+        .values(params.variables as any[])
+        .returning();
       return { data: data as any[] };
     },
 
     async update(params) {
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const [result] = await db.update(table).set(params.variables as any).where(eq(table[idColumn], params.id)).returning();
+      const [result] = await db
+        .update(table)
+        .set(params.variables as any)
+        .where(eq(table[idColumn], params.id))
+        .returning();
       if (!result) throw new Error(`Record with id ${params.id} not found`);
       return { data: result as any };
     },
@@ -113,14 +154,21 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       if (!params.ids?.length) return { data: [] };
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const data = await db.update(table).set(params.variables as any).where(inArray(table[idColumn], params.ids)).returning();
+      const data = await db
+        .update(table)
+        .set(params.variables as any)
+        .where(inArray(table[idColumn], params.ids))
+        .returning();
       return { data: data as any[] };
     },
 
     async deleteOne(params) {
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const [result] = await db.delete(table).where(eq(table[idColumn], params.id)).returning();
+      const [result] = await db
+        .delete(table)
+        .where(eq(table[idColumn], params.id))
+        .returning();
       if (!result) throw new Error(`Record with id ${params.id} not found`);
       return { data: result as any };
     },
@@ -129,8 +177,17 @@ export function createRefineSQL<TSchema extends Record<string, unknown>>(
       if (!params.ids?.length) return { data: [] };
       const table = getTable(params.resource);
       const idColumn = params.meta?.idColumnName ?? 'id';
-      const data = await db.delete(table).where(inArray(table[idColumn], params.ids)).returning();
+      const data = await db
+        .delete(table)
+        .where(inArray(table[idColumn], params.ids))
+        .returning();
       return { data: data as any[] };
+    },
+
+    getApiUrl() {
+      // D1 doesn't have a traditional API URL
+      // Return a placeholder or configuration-based value
+      return '';
     },
   };
 }
