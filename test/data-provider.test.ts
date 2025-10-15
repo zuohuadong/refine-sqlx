@@ -1,12 +1,12 @@
-import { describe, it, expect, jest } from '@jest/globals';
-import createRefineSQL from '../src/data-provider';
-import type { SqlClient } from '../src/client';
+import { describe, expect, it, jest } from '@jest/globals';
 import type {
-  GetListParams,
   CreateParams,
-  UpdateParams,
   DeleteOneParams,
+  GetListParams,
+  UpdateParams,
 } from '@refinedev/core';
+import type { SqlClient } from '../src/client';
+import createRefineSQL from '../src/data-provider';
 
 // Mock SQL client
 const createMockClient = (): SqlClient => ({

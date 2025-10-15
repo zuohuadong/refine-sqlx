@@ -8,7 +8,7 @@ This project uses a structured testing approach with separate unit and integrati
 
 - **Location**: `test/*.test.ts`
 - **Purpose**: Test individual components in isolation with mocks
-- **Command**: `npm test` or `bun test --exclude="test/integration/**"`
+- **Command**: `npm test` or `bun test`
 - **Files**:
   - `adapters.test.ts` - Mock-based adapter tests
   - `data-provider.test.ts` - Data provider logic tests
@@ -29,27 +29,31 @@ This project uses a structured testing approach with separate unit and integrati
 ```bash
 # Run unit tests only (default)
 npm test
-bun test --exclude="test/integration/**"
+bun test
 
 # Run all integration tests
-npm run test:integration
-vitest test/integration
+npm run test:integration-bun
+npm run test:integration-node
+npm run test:integration-better-sqlite3
 
 # Run specific platform integration tests
-npm run test:bun
+bun run test:integration-bun
 bun test test/integration/bun.test.ts
 
-npm run test:node-integration
-vitest test/integration/node.test.ts
+npm run test:integration-node
+node --experimental-vm-modules node_modules/jest/bin/jest.js test/integration/node.test.ts
+
+npm run test:integration-better-sqlite3
+node --experimental-vm-modules node_modules/jest/bin/jest.js test/integration/better-sqlite3.test.ts
 ```
 
 ## CI/CD Integration
 
-The GitHub workflow (`.github/workflows/sqlx-test.yml`) runs:
+The GitHub workflow (`.github/workflows/ci.yml`) runs:
 
-1. **Unit Tests**: Bun-based unit tests + build verification
+1. **Unit Tests**: Jest for Node.js, Bun test for Bun runtime
 2. **Bun Integration**: Real Bun SQLite database tests
-3. **Node.js Integration**: Node.js v24+ SQLite tests (when available)
+3. **Node.js Integration**: Node.js v24+ SQLite tests and better-sqlite3 tests
 4. **Format Check**: Code formatting validation
 
 ## Platform-Specific Notes

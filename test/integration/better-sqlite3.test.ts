@@ -1,7 +1,7 @@
 import { describe, it } from '@jest/globals';
 import { createBetterSQLite3Adapter } from '../../src/adapters';
-import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';
+import { createIntegrationTestSuite } from '../integration';
 
 // Check if better-sqlite3 is available
 let Database: any;

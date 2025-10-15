@@ -1,7 +1,7 @@
 import { describe, it } from '@jest/globals';
 import { createNodeSQLiteAdapter } from '../../src/adapters';
-import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';
+import { createIntegrationTestSuite } from '../integration';
 
 // Skip tests if Node.js version is not v24+ or if running in Bun
 const nodeVersion = typeof process !== 'undefined' ? process.version : '';

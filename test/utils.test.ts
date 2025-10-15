@@ -1,6 +1,6 @@
-import { createCrudFilters, createCrudSorting } from '../src/utils';
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import type { CrudFilters, CrudSorting } from '@refinedev/core';
+import { createCrudFilters, createCrudSorting } from '../src/utils';
 
 describe('createCrudSorting', () => {
   it('should return undefined for empty array', () => {

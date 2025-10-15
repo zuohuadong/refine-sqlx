@@ -20,6 +20,7 @@ docs/
 ### Specifications
 
 **[CLAUDE_SPEC.md](./specs/CLAUDE_SPEC.md)** - Claude Code Project Specifications
+
 - Technical standards for the project
 - TypeScript 5.0+ decorator requirements
 - Database driver requirements (Bun, Node.js, Cloudflare D1)
@@ -32,6 +33,7 @@ docs/
 ### Features
 
 **[FEATURES_v0.3.0.md](./features/FEATURES_v0.3.0.md)** - v0.3.0 Feature Documentation
+
 - Drizzle ORM integration and migration
 - Type-safe query builder
 - D1 environment optimized build (16KB gzipped)
@@ -39,6 +41,7 @@ docs/
 - Migration guide from v0.2.x
 
 **[FEATURES_v0.4.0.md](./features/FEATURES_v0.4.0.md)** - v0.4.0 Feature Documentation
+
 - Eloquent-style chainable query API
 - Automatic relationship management
 - Polymorphic relations
@@ -51,6 +54,7 @@ docs/
 ### Analysis
 
 **[D1_BUNDLE_SIZE_ANALYSIS.md](./analysis/D1_BUNDLE_SIZE_ANALYSIS.md)** - D1 Bundle Size Analysis
+
 - Bundle size breakdown and estimates
 - Optimization strategies
 - Build configuration examples

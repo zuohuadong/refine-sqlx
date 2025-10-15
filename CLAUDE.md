@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- `bun test` or `vitest` - Run tests using Vitest
+- `bun test` - Run tests using Bun's test runner
+- `npm test` or `jest` - Run tests using Jest (for Node.js environment)
 - `bun run build` or `unbuild` - Build the library using unbuild
 - `prettier --write .` - Format code (Prettier with import sorting plugin)
 

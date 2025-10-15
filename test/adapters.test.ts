@@ -1,36 +1,43 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import {
-  createCloudflareD1Adapter,
-  createBunSQLiteAdapter,
-  createNodeSQLiteAdapter,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  createMock,
+  clearAllMocks,
+} from './helpers/test-adapter';
+import {
   createBetterSQLite3Adapter,
+  createBunSQLiteAdapter,
+  createCloudflareD1Adapter,
+  createNodeSQLiteAdapter,
 } from '../src/adapters';
 import type { SqlQuery } from '../src/client';
 
 // Mock implementations
-const mockD1 = { prepare: jest.fn(), batch: jest.fn() };
+const mockD1 = { prepare: createMock(), batch: createMock() };
 
-const mockBunDB = { prepare: jest.fn() };
+const mockBunDB = { prepare: createMock() };
 
-const mockNodeDB = { prepare: jest.fn() };
+const mockNodeDB = { prepare: createMock() };
 
-const mockBetterSQLite3DB = { prepare: jest.fn() };
+const mockBetterSQLite3DB = { prepare: createMock() };
 
 describe('Cloudflare D1 Adapter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      bind: jest.fn().mockReturnThis(),
-      raw: jest.fn().mockResolvedValue([
+      bind: createMock(function (this: any) { return this; }),
+      raw: createMock(() => Promise.resolve([
         ['id', 'name'], // column names
         [1, 'John'], // first row
         [2, 'Jane'], // second row
-      ]),
+      ])),
     };
-    mockD1.prepare.mockReturnValue(mockStmt);
+    (mockD1.prepare as any).mockReturnValue(mockStmt);
 
     const client = createCloudflareD1Adapter(mockD1 as any);
     const query: SqlQuery = { sql: 'SELECT * FROM users', args: [] };
@@ -51,12 +58,10 @@ describe('Cloudflare D1 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: jest.fn().mockReturnThis(),
-      run: vi
-        .fn()
-        .mockResolvedValue({ meta: { changes: 1, last_row_id: 123 } }),
+      bind: createMock(function (this: any) { return this; }),
+      run: createMock(() => Promise.resolve({ meta: { changes: 1, last_row_id: 123 } })),
     };
-    mockD1.prepare.mockReturnValue(mockStmt);
+    (mockD1.prepare as any).mockReturnValue(mockStmt);
 
     const client = createCloudflareD1Adapter(mockD1 as any);
     const query: SqlQuery = {
@@ -72,9 +77,9 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch operations', async () => {
-    const mockStmt = { bind: jest.fn().mockReturnThis() };
-    mockD1.prepare.mockReturnValue(mockStmt);
-    mockD1.batch.mockResolvedValue([
+    const mockStmt = { bind: createMock(function (this: any) { return this; }) };
+    (mockD1.prepare as any).mockReturnValue(mockStmt);
+    (mockD1.batch as any).mockResolvedValue([
       { success: true, meta: { changes: 1, last_row_id: 1 } },
       {
         success: true,
@@ -100,9 +105,9 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch failures', async () => {
-    const mockStmt = { bind: jest.fn().mockReturnThis() };
-    mockD1.prepare.mockReturnValue(mockStmt);
-    mockD1.batch.mockResolvedValue([{ success: false, error: 'Syntax error' }]);
+    const mockStmt = { bind: createMock(function (this: any) { return this; }) };
+    (mockD1.prepare as any).mockReturnValue(mockStmt);
+    (mockD1.batch as any).mockResolvedValue([{ success: false, error: 'Syntax error' }]);
 
     const client = createCloudflareD1Adapter(mockD1 as any);
     const queries: SqlQuery[] = [{ sql: 'INVALID SQL', args: [] }];
@@ -115,18 +120,18 @@ describe('Cloudflare D1 Adapter', () => {
 
 describe('Bun SQLite Adapter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      values: jest.fn().mockReturnValue([
+      values: createMock(() => [
         [1, 'John'],
         [2, 'Jane'],
       ]),
       columnNames: ['id', 'name'],
     };
-    mockBunDB.prepare.mockReturnValue(mockStmt);
+    (mockBunDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBunSQLiteAdapter(mockBunDB as any);
     const query: SqlQuery = { sql: 'SELECT * FROM users', args: [] };
@@ -144,9 +149,9 @@ describe('Bun SQLite Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      run: createMock(() => ({ changes: 1, lastInsertRowid: 123 })),
     };
-    mockBunDB.prepare.mockReturnValue(mockStmt);
+    (mockBunDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBunSQLiteAdapter(mockBunDB as any);
     const query: SqlQuery = {
@@ -160,14 +165,16 @@ describe('Bun SQLite Adapter', () => {
   });
 
   it('should handle transactions', async () => {
+    let callCount = 0;
     const mockStmt = {
-      run: vi
-        .fn()
-        .mockReturnValueOnce({ changes: 0 }) // BEGIN
-        .mockReturnValueOnce({ changes: 1, lastInsertRowid: 1 }) // INSERT
-        .mockReturnValueOnce({ changes: 0 }), // COMMIT
+      run: createMock(() => {
+        callCount++;
+        if (callCount === 1) return { changes: 0 }; // BEGIN
+        if (callCount === 2) return { changes: 1, lastInsertRowid: 1 }; // INSERT
+        return { changes: 0 }; // COMMIT
+      }),
     };
-    mockBunDB.prepare.mockReturnValue(mockStmt);
+    (mockBunDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBunSQLiteAdapter(mockBunDB as any);
 
@@ -185,16 +192,16 @@ describe('Bun SQLite Adapter', () => {
   });
 
   it('should rollback on transaction failure', async () => {
+    let callCount = 0;
     const mockStmt = {
-      run: vi
-        .fn()
-        .mockReturnValueOnce({ changes: 0 }) // BEGIN
-        .mockImplementationOnce(() => {
-          throw new Error('DB Error');
-        }) // INSERT fails
-        .mockReturnValueOnce({ changes: 0 }), // ROLLBACK
+      run: createMock(() => {
+        callCount++;
+        if (callCount === 1) return { changes: 0 }; // BEGIN
+        if (callCount === 2) throw new Error('DB Error'); // INSERT fails
+        return { changes: 0 }; // ROLLBACK
+      }),
     };
-    mockBunDB.prepare.mockReturnValue(mockStmt);
+    (mockBunDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBunSQLiteAdapter(mockBunDB as any);
 
@@ -214,18 +221,18 @@ describe('Bun SQLite Adapter', () => {
 
 describe('Node SQLite Adapter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      all: jest.fn().mockReturnValue([
+      all: createMock(() => [
         { id: 1, name: 'John' },
         { id: 2, name: 'Jane' },
       ]),
-      columns: jest.fn().mockReturnValue([{ column: 'id' }, { column: 'name' }]),
+      columns: createMock(() => [{ column: 'id' }, { column: 'name' }]),
     };
-    mockNodeDB.prepare.mockReturnValue(mockStmt);
+    (mockNodeDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createNodeSQLiteAdapter(mockNodeDB as any);
     const query: SqlQuery = { sql: 'SELECT * FROM users', args: [] };
@@ -243,9 +250,9 @@ describe('Node SQLite Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      run: createMock(() => ({ changes: 1, lastInsertRowid: 123 })),
     };
-    mockNodeDB.prepare.mockReturnValue(mockStmt);
+    (mockNodeDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createNodeSQLiteAdapter(mockNodeDB as any);
     const query: SqlQuery = {
@@ -259,14 +266,16 @@ describe('Node SQLite Adapter', () => {
   });
 
   it('should handle transactions', async () => {
+    let callCount = 0;
     const mockStmt = {
-      run: vi
-        .fn()
-        .mockReturnValueOnce({ changes: 0 }) // BEGIN
-        .mockReturnValueOnce({ changes: 1, lastInsertRowid: 1 }) // INSERT
-        .mockReturnValueOnce({ changes: 0 }), // COMMIT
+      run: createMock(() => {
+        callCount++;
+        if (callCount === 1) return { changes: 0 }; // BEGIN
+        if (callCount === 2) return { changes: 1, lastInsertRowid: 1 }; // INSERT
+        return { changes: 0 }; // COMMIT
+      }),
     };
-    mockNodeDB.prepare.mockReturnValue(mockStmt);
+    (mockNodeDB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createNodeSQLiteAdapter(mockNodeDB as any);
 
@@ -286,22 +295,22 @@ describe('Node SQLite Adapter', () => {
 
 describe('better-sqlite3 Adapter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    clearAllMocks();
   });
 
   it('should query data correctly', async () => {
     const mockRawStmt = {
-      all: jest.fn().mockReturnValue([
+      all: createMock(() => [
         [1, 'John'],
         [2, 'Jane'],
       ]),
     };
     const mockStmt = {
-      bind: jest.fn().mockReturnThis(),
-      columns: jest.fn().mockReturnValue([{ name: 'id' }, { name: 'name' }]),
-      raw: jest.fn().mockReturnValue(mockRawStmt),
+      bind: createMock(function (this: any) { return this; }),
+      columns: createMock(() => [{ name: 'id' }, { name: 'name' }]),
+      raw: createMock(() => mockRawStmt),
     };
-    mockBetterSQLite3DB.prepare.mockReturnValue(mockStmt);
+    (mockBetterSQLite3DB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBetterSQLite3Adapter(mockBetterSQLite3DB as any);
     const query: SqlQuery = { sql: 'SELECT * FROM users', args: [] };
@@ -320,10 +329,10 @@ describe('better-sqlite3 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: jest.fn().mockReturnThis(),
-      run: jest.fn().mockReturnValue({ changes: 1, lastInsertRowid: 123 }),
+      bind: createMock(function (this: any) { return this; }),
+      run: createMock(() => ({ changes: 1, lastInsertRowid: 123 })),
     };
-    mockBetterSQLite3DB.prepare.mockReturnValue(mockStmt);
+    (mockBetterSQLite3DB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBetterSQLite3Adapter(mockBetterSQLite3DB as any);
     const query: SqlQuery = {
@@ -338,15 +347,17 @@ describe('better-sqlite3 Adapter', () => {
   });
 
   it('should handle transactions', async () => {
+    let callCount = 0;
     const mockStmt = {
-      bind: jest.fn().mockReturnThis(),
-      run: vi
-        .fn()
-        .mockReturnValueOnce({ changes: 0 }) // BEGIN
-        .mockReturnValueOnce({ changes: 1, lastInsertRowid: 1 }) // INSERT
-        .mockReturnValueOnce({ changes: 0 }), // COMMIT
+      bind: createMock(function (this: any) { return this; }),
+      run: createMock(() => {
+        callCount++;
+        if (callCount === 1) return { changes: 0 }; // BEGIN
+        if (callCount === 2) return { changes: 1, lastInsertRowid: 1 }; // INSERT
+        return { changes: 0 }; // COMMIT
+      }),
     };
-    mockBetterSQLite3DB.prepare.mockReturnValue(mockStmt);
+    (mockBetterSQLite3DB.prepare as any).mockReturnValue(mockStmt);
 
     const client = createBetterSQLite3Adapter(mockBetterSQLite3DB as any);
 

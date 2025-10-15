@@ -1,9 +1,9 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { SqlAffected, SqlClient, SqlQuery, SqlResult } from '../client';
 import {
+  convertObjectRowsToArrayRows,
   createSqlAffected,
   createTransactionWrapper,
-  convertObjectRowsToArrayRows,
 } from './utils';
 
 export default function createNodeSQLiteAdapter(db: DatabaseSync): SqlClient {

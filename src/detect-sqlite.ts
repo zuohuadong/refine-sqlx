@@ -1,17 +1,17 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import type BetterSqlite3 from 'better-sqlite3';
 import type { Database as BunDatabase } from 'bun:sqlite';
 import type {
   DatabaseSync as NodeDatabase,
   DatabaseSyncOptions as NodeDatabaseOptions,
 } from 'node:sqlite';
-import type BetterSqlite3 from 'better-sqlite3';
-import type { SqlClient, SqlClientFactory } from './client';
 import {
   createBetterSQLite3Adapter,
   createBunSQLiteAdapter,
   createCloudflareD1Adapter,
   createNodeSQLiteAdapter,
 } from './adapters';
+import type { SqlClient, SqlClientFactory } from './client';
 
 export type SQLiteOptions = {
   bun?: ConstructorParameters<typeof BunDatabase>['1'];

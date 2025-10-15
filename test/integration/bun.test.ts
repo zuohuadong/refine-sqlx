@@ -1,8 +1,8 @@
 import { describe } from '@jest/globals';
 import { Database } from 'bun:sqlite';
 import { createBunSQLiteAdapter } from '../../src/adapters';
-import { createIntegrationTestSuite } from '../integration';
 import type { SqlClient } from '../../src/client';
+import { createIntegrationTestSuite } from '../integration';
 
 describe(
   'Bun SQLite Integration Tests',

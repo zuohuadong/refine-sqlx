@@ -15,6 +15,7 @@ refine-sqlx v0.4.0 引入了类似 Laravel Eloquent ORM 的链式调用 API 和�
 提供流畅的、可读性强的查询构建器 API。
 
 **特点**:
+
 - ✅ 流畅的链式语法
 - ✅ 自动类型推断
 - ✅ 延迟执行（惰性求值）
@@ -37,24 +38,19 @@ class User extends Model {
 }
 
 // 链式查询
-const activeUsers = await User
-  .where('status', 'active')
+const activeUsers = await User.where('status', 'active')
   .orderBy('createdAt', 'desc')
   .limit(10)
   .get();
 
 // 条件查询
-const user = await User
-  .where('email', 'user@example.com')
-  .first();
+const user = await User.where('email', 'user@example.com').first();
 
 // 复杂条件
-const users = await User
-  .where('status', 'active')
+const users = await User.where('status', 'active')
   .where('createdAt', '>', new Date('2024-01-01'))
   .orWhere((query) => {
-    query.where('role', 'admin')
-         .where('verified', true);
+    query.where('role', 'admin').where('verified', true);
   })
   .get();
 
@@ -66,39 +62,39 @@ const total = await User.sum('credits');
 
 **支持的链式方法**:
 
-| 方法 | 说明 | 示例 |
-|------|------|------|
-| `where(column, operator?, value?)` | 条件过滤 | `.where('age', '>', 18)` |
-| `orWhere(column, value)` | OR 条件 | `.orWhere('role', 'admin')` |
-| `whereIn(column, values)` | IN 查询 | `.whereIn('id', [1, 2, 3])` |
-| `whereNull(column)` | NULL 检查 | `.whereNull('deleted_at')` |
-| `whereBetween(column, [min, max])` | 范围查询 | `.whereBetween('age', [18, 65])` |
-| `orderBy(column, direction?)` | 排序 | `.orderBy('created_at', 'desc')` |
-| `limit(n)` | 限制数量 | `.limit(10)` |
-| `offset(n)` | 偏移量 | `.offset(20)` |
-| `with(...relations)` | 预加载关联 | `.with('posts', 'comments')` |
-| `select(...columns)` | 选择字段 | `.select('id', 'name', 'email')` |
-| `groupBy(...columns)` | 分组 | `.groupBy('status')` |
-| `having(column, operator, value)` | HAVING 子句 | `.having('count', '>', 5)` |
-| `join(table, on)` | 连接表 | `.join('posts', 'users.id', 'posts.user_id')` |
-| `distinct()` | 去重 | `.distinct()` |
+| 方法                               | 说明        | 示例                                          |
+| ---------------------------------- | ----------- | --------------------------------------------- |
+| `where(column, operator?, value?)` | 条件过滤    | `.where('age', '>', 18)`                      |
+| `orWhere(column, value)`           | OR 条件     | `.orWhere('role', 'admin')`                   |
+| `whereIn(column, values)`          | IN 查询     | `.whereIn('id', [1, 2, 3])`                   |
+| `whereNull(column)`                | NULL 检查   | `.whereNull('deleted_at')`                    |
+| `whereBetween(column, [min, max])` | 范围查询    | `.whereBetween('age', [18, 65])`              |
+| `orderBy(column, direction?)`      | 排序        | `.orderBy('created_at', 'desc')`              |
+| `limit(n)`                         | 限制数量    | `.limit(10)`                                  |
+| `offset(n)`                        | 偏移量      | `.offset(20)`                                 |
+| `with(...relations)`               | 预加载关联  | `.with('posts', 'comments')`                  |
+| `select(...columns)`               | 选择字段    | `.select('id', 'name', 'email')`              |
+| `groupBy(...columns)`              | 分组        | `.groupBy('status')`                          |
+| `having(column, operator, value)`  | HAVING 子句 | `.having('count', '>', 5)`                    |
+| `join(table, on)`                  | 连接表      | `.join('posts', 'users.id', 'posts.user_id')` |
+| `distinct()`                       | 去重        | `.distinct()`                                 |
 
 **执行方法**:
 
-| 方法 | 说明 | 返回值 |
-|------|------|--------|
-| `get()` | 获取所有结果 | `Promise<T[]>` |
-| `first()` | 获取第一条 | `Promise<T \| null>` |
-| `find(id)` | 通过 ID 查找 | `Promise<T \| null>` |
-| `findOrFail(id)` | 查找或抛出异常 | `Promise<T>` |
-| `count()` | 计数 | `Promise<number>` |
-| `sum(column)` | 求和 | `Promise<number>` |
-| `avg(column)` | 平均值 | `Promise<number>` |
-| `min(column)` | 最小值 | `Promise<number>` |
-| `max(column)` | 最大值 | `Promise<number>` |
-| `exists()` | 检查存在 | `Promise<boolean>` |
-| `paginate(page, perPage)` | 分页 | `Promise<Paginated<T>>` |
-| `chunk(size, callback)` | 分块处理 | `Promise<void>` |
+| 方法                      | 说明           | 返回值                  |
+| ------------------------- | -------------- | ----------------------- |
+| `get()`                   | 获取所有结果   | `Promise<T[]>`          |
+| `first()`                 | 获取第一条     | `Promise<T \| null>`    |
+| `find(id)`                | 通过 ID 查找   | `Promise<T \| null>`    |
+| `findOrFail(id)`          | 查找或抛出异常 | `Promise<T>`            |
+| `count()`                 | 计数           | `Promise<number>`       |
+| `sum(column)`             | 求和           | `Promise<number>`       |
+| `avg(column)`             | 平均值         | `Promise<number>`       |
+| `min(column)`             | 最小值         | `Promise<number>`       |
+| `max(column)`             | 最大值         | `Promise<number>`       |
+| `exists()`                | 检查存在       | `Promise<boolean>`      |
+| `paginate(page, perPage)` | 分页           | `Promise<Paginated<T>>` |
+| `chunk(size, callback)`   | 分块处理       | `Promise<void>`         |
 
 ---
 
@@ -135,7 +131,7 @@ const profile = await user.profile().first(); // 自动关联
 
 // 预加载（避免 N+1 问题）
 const users = await User.with('profile').get();
-users.forEach(user => {
+users.forEach((user) => {
   console.log(user.profile.bio); // 已预加载
 });
 ```
@@ -174,9 +170,7 @@ const publishedPosts = await user
   .get();
 
 // 嵌套预加载
-const users = await User
-  .with('posts.comments')
-  .get();
+const users = await User.with('posts.comments').get();
 ```
 
 #### 2.3 多对多 (Belongs To Many)
@@ -206,15 +200,14 @@ const user = await User.find(1);
 const roles = await user.roles().get();
 
 // 访问中间表数据
-roles.forEach(role => {
+roles.forEach((role) => {
   console.log(role.pivot.assigned_at); // 中间表字段
 });
 
 // 附加关联（插入中间表）
-await user.roles().attach([1, 2, 3], {
-  assigned_at: new Date(),
-  assigned_by: 'admin'
-});
+await user
+  .roles()
+  .attach([1, 2, 3], { assigned_at: new Date(), assigned_by: 'admin' });
 
 // 移除关联
 await user.roles().detach([2]);
@@ -318,10 +311,7 @@ const post = await Post.find(1);
 const comments = await post.comments().get();
 
 // 创建多态关联
-await post.comments().create({
-  content: 'Great post!',
-  user_id: 1
-});
+await post.comments().create({ content: 'Great post!', user_id: 1 });
 ```
 
 #### 3.3 多对多多态 (Morph To Many)
@@ -375,6 +365,7 @@ const videos = await tag.videos().get();
 运行时动态定义和扩展模型关联。
 
 **特点**:
+
 - ✅ 运行时添加关联
 - ✅ 条件关联
 - ✅ 动态作用域
@@ -384,7 +375,7 @@ const videos = await tag.videos().get();
 
 ```typescript
 // 运行时动态添加关联
-User.addDynamicRelation('recentPosts', function() {
+User.addDynamicRelation('recentPosts', function () {
   return this.hasMany(Post, 'user_id')
     .where('created_at', '>', Date.now() - 7 * 24 * 60 * 60 * 1000)
     .orderBy('created_at', 'desc');
@@ -440,15 +431,10 @@ class Post extends Model {
 }
 
 // 使用作用域
-const posts = await Post
-  .published()
-  .popular(5000)
-  .recent(30)
-  .get();
+const posts = await Post.published().popular(5000).recent(30).get();
 
 // 组合作用域
-const trendingPosts = await Post
-  .published()
+const trendingPosts = await Post.published()
   .popular()
   .orderBy('views', 'desc')
   .limit(10)
@@ -495,14 +481,11 @@ const trashedPosts = await Post.onlyTrashed().get();
 const user = await User.create({
   name: 'John Doe',
   email: 'john@example.com',
-  profile: {
-    bio: 'Software Developer',
-    avatar: 'avatar.jpg'
-  },
+  profile: { bio: 'Software Developer', avatar: 'avatar.jpg' },
   posts: [
     { title: 'First Post', content: '...' },
-    { title: 'Second Post', content: '...' }
-  ]
+    { title: 'Second Post', content: '...' },
+  ],
 });
 
 // 自动创建 profile 和 posts 记录
@@ -516,13 +499,11 @@ const user = await User.find(1);
 // 更新用户及关联数据
 await user.update({
   name: 'Jane Doe',
-  profile: {
-    bio: 'Updated bio'
-  },
+  profile: { bio: 'Updated bio' },
   posts: [
     { id: 1, title: 'Updated Title' }, // 更新已存在的
-    { title: 'New Post' }               // 创建新的
-  ]
+    { title: 'New Post' }, // 创建新的
+  ],
 });
 
 // 自动 UPSERT 处理
@@ -552,10 +533,7 @@ class UserObserver {
   // 创建之后
   created(user) {
     // 自动创建关联的 profile
-    user.profile().create({
-      bio: '',
-      avatar: 'default.jpg'
-    });
+    user.profile().create({ bio: '', avatar: 'default.jpg' });
   }
 
   // 更新之前
@@ -582,14 +560,12 @@ User.observe(UserObserver);
 
 ```typescript
 // 启用查询缓存
-const users = await User
-  .where('status', 'active')
+const users = await User.where('status', 'active')
   .remember(60) // 缓存 60 秒
   .get();
 
 // 标记缓存
-const posts = await Post
-  .where('featured', true)
+const posts = await Post.where('featured', true)
   .cacheTags(['featured', 'posts'])
   .remember(300)
   .get();
@@ -625,14 +601,14 @@ class User extends Model {
     is_admin: 'boolean',
     settings: 'json',
     birth_date: 'date',
-    salary: 'number'
+    salary: 'number',
   };
 }
 
 const user = await User.find(1);
 console.log(typeof user.is_admin); // boolean
-console.log(user.settings);         // Object (自动解析 JSON)
-console.log(user.birth_date);       // Date 对象
+console.log(user.settings); // Object (自动解析 JSON)
+console.log(user.birth_date); // Date 对象
 ```
 
 #### 6.4 访问器和修改器
@@ -738,7 +714,7 @@ const dataProvider = createRefineSQL({
   // connection: './database.sqlite',
 
   // 注册模型
-  models: [User, Post, Comment, Tag]
+  models: [User, Post, Comment, Tag],
 });
 
 // 3. 在 Refine 中使用
@@ -752,13 +728,12 @@ import { Refine } from '@refinedev/core';
       list: '/users',
       create: '/users/create',
       edit: '/users/edit/:id',
-    }
+    },
   ]}
-/>
+/>;
 
 // 4. 使用 Eloquent API
-const users = await User
-  .with('posts.comments', 'posts.tags')
+const users = await User.with('posts.comments', 'posts.tags')
   .where('status', 'active')
   .orderBy('created_at', 'desc')
   .paginate(1, 20);
@@ -769,7 +744,7 @@ const users = await User
 完整的 TypeScript 类型支持，自动类型推断：
 
 ```typescript
-import { Model, InferModel } from '@refine-sqlx/core';
+import { InferModel, Model } from '@refine-sqlx/core';
 
 class User extends Model {
   declare id: number;
@@ -806,10 +781,7 @@ const users = await db
   .limit(10);
 
 // 现在：使用 refine-sqlx
-const users = await User
-  .where('status', 'active')
-  .limit(10)
-  .get();
+const users = await User.where('status', 'active').limit(10).get();
 ```
 
 ### 从原生 SQL 迁移
@@ -824,10 +796,7 @@ const query = `
 `;
 
 // 现在：自动关联
-const users = await User
-  .with('posts')
-  .where('status', 'active')
-  .get();
+const users = await User.with('posts').where('status', 'active').get();
 ```
 
 ---
@@ -845,7 +814,7 @@ for (const user of users) {
 
 // ✅ 正确：使用预加载
 const users = await User.with('posts').get(); // 2 次查询
-users.forEach(user => {
+users.forEach((user) => {
   console.log(user.posts); // 已加载
 });
 ```
@@ -853,15 +822,11 @@ users.forEach(user => {
 ### 条件预加载
 
 ```typescript
-const users = await User
-  .with({
-    posts: (query) => {
-      query.where('status', 'published')
-           .orderBy('created_at', 'desc')
-           .limit(5);
-    }
-  })
-  .get();
+const users = await User.with({
+  posts: (query) => {
+    query.where('status', 'published').orderBy('created_at', 'desc').limit(5);
+  },
+}).get();
 ```
 
 ### 延迟加载
@@ -879,12 +844,12 @@ if (needPosts) {
 
 ## 兼容性
 
-| 运行时 | 支持 | 数据库 |
-|--------|------|--------|
-| Bun | ✅ | SQLite, MySQL, PostgreSQL |
-| Node.js | ✅ | SQLite, MySQL, PostgreSQL |
-| Cloudflare D1 | ✅ | D1 (SQLite) |
-| Deno | ⏳ | 计划支持 |
+| 运行时        | 支持 | 数据库                    |
+| ------------- | ---- | ------------------------- |
+| Bun           | ✅   | SQLite, MySQL, PostgreSQL |
+| Node.js       | ✅   | SQLite, MySQL, PostgreSQL |
+| Cloudflare D1 | ✅   | D1 (SQLite)               |
+| Deno          | ⏳   | 计划支持                  |
 
 ---
 
