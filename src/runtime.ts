@@ -59,12 +59,7 @@ export function isD1Database(db: any): boolean {
   if (!db || typeof db !== 'object') {
     return false;
   }
-  return (
-    'prepare' in db &&
-    'dump' in db &&
-    'batch' in db &&
-    'exec' in db
-  );
+  return 'prepare' in db && 'dump' in db && 'batch' in db && 'exec' in db;
 }
 
 /**
@@ -74,11 +69,7 @@ export function isBunDatabase(db: any): boolean {
   if (!db || typeof db !== 'object') {
     return false;
   }
-  return (
-    'prepare' in db &&
-    'query' in db &&
-    typeof Bun !== 'undefined'
-  );
+  return 'prepare' in db && 'query' in db && typeof Bun !== 'undefined';
 }
 
 /**
@@ -104,9 +95,5 @@ export function isBetterSqlite3Database(db: any): boolean {
   if (!db || typeof db !== 'object') {
     return false;
   }
-  return (
-    'prepare' in db &&
-    'transaction' in db &&
-    'pragma' in db
-  );
+  return 'prepare' in db && 'transaction' in db && 'pragma' in db;
 }

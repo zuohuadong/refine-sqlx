@@ -20,7 +20,14 @@
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
     "version": "changeset version && bun install --lockfile-only",
-    "release": "bun run build && changeset publish"
+    "release": "bun run build && changeset publish",
+    "db:generate": "drizzle-kit generate",
+    "db:generate:d1": "drizzle-kit generate --config=drizzle.config.d1.ts",
+    "db:push": "drizzle-kit push",
+    "db:push:d1": "drizzle-kit push --config=drizzle.config.d1.ts",
+    "db:studio": "drizzle-kit studio",
+    "db:studio:d1": "drizzle-kit studio --config=drizzle.config.d1.ts",
+    "db:migrate:d1": "bun run scripts/migrate-d1.ts"
   },
   "exports": {
     ".": {

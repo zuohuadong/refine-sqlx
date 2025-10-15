@@ -1,15 +1,15 @@
 /**
  * Runtime detection and adapter tests for v0.3.0
  */
-import { describe, expect, it } from './helpers/test-adapter';
 import {
   detectRuntime,
-  isDrizzleDatabase,
-  isD1Database,
-  isBunDatabase,
-  isNodeDatabase,
   isBetterSqlite3Database,
+  isBunDatabase,
+  isD1Database,
+  isDrizzleDatabase,
+  isNodeDatabase,
 } from '../src/runtime';
+import { describe, expect, it } from './helpers/test-adapter';
 
 describe('Runtime Detection - v0.3.0', () => {
   describe('detectRuntime', () => {
@@ -41,10 +41,7 @@ describe('Runtime Detection - v0.3.0', () => {
     });
 
     it('should return false for non-Drizzle object', () => {
-      const notDrizzle = {
-        prepare: () => ({}),
-        execute: () => ({}),
-      };
+      const notDrizzle = { prepare: () => ({}), execute: () => ({}) };
 
       expect(isDrizzleDatabase(notDrizzle)).toBe(false);
     });
@@ -99,10 +96,7 @@ describe('Runtime Detection - v0.3.0', () => {
     it('should detect Bun database-like object in Bun runtime', () => {
       // Only valid in Bun runtime
       if (typeof Bun !== 'undefined') {
-        const mockBunDB = {
-          prepare: () => ({}),
-          query: () => [],
-        };
+        const mockBunDB = { prepare: () => ({}), query: () => [] };
 
         expect(isBunDatabase(mockBunDB)).toBe(true);
       } else {
@@ -112,10 +106,7 @@ describe('Runtime Detection - v0.3.0', () => {
 
     it('should return false in non-Bun runtime', () => {
       if (typeof Bun === 'undefined') {
-        const mockDB = {
-          prepare: () => ({}),
-          query: () => [],
-        };
+        const mockDB = { prepare: () => ({}), query: () => [] };
 
         expect(isBunDatabase(mockDB)).toBe(false);
       } else {
@@ -131,9 +122,7 @@ describe('Runtime Detection - v0.3.0', () => {
   describe('isNodeDatabase', () => {
     it('should detect Node database-like object in Node runtime', () => {
       if (typeof process !== 'undefined' && process.versions?.node) {
-        const mockNodeDB = {
-          prepare: () => ({}),
-        };
+        const mockNodeDB = { prepare: () => ({}) };
 
         // Will return true only if it's actually a Node.js database
         const result = isNodeDatabase(mockNodeDB);

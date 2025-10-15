@@ -45,10 +45,6 @@ export const comments = sqliteTable('comments', {
     .$defaultFn(() => new Date()),
 });
 
-export const schema = {
-  users,
-  posts,
-  comments,
-};
+export const schema = { users, posts, comments };
 
 export type Schema = typeof schema;

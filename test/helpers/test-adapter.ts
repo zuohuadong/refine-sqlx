@@ -33,9 +33,7 @@ export const isBun = typeof Bun !== 'undefined';
 // ============================================================================
 
 // Use require for Jest (CommonJS) and conditional imports for Bun
-const testFramework = isBun
-  ? require('bun:test')
-  : require('@jest/globals');
+const testFramework = isBun ? require('bun:test') : require('@jest/globals');
 
 // ============================================================================
 // CORE TEST APIs (100% Compatible - No Adaptation Needed)
@@ -296,8 +294,10 @@ export function verifyMock<T extends (...args: any[]) => any>(
 ): MockVerification<T> {
   return {
     toHaveBeenCalled: () => expect(mockFn).toHaveBeenCalled(),
-    toHaveBeenCalledTimes: (times) => expect(mockFn).toHaveBeenCalledTimes(times),
-    toHaveBeenCalledWith: (...args) => expect(mockFn).toHaveBeenCalledWith(...args),
+    toHaveBeenCalledTimes: (times) =>
+      expect(mockFn).toHaveBeenCalledTimes(times),
+    toHaveBeenCalledWith: (...args) =>
+      expect(mockFn).toHaveBeenCalledWith(...args),
     toHaveReturnedWith: (value) => expect(mockFn).toHaveReturnedWith(value),
     toHaveBeenLastCalledWith: (...args) =>
       expect(mockFn).toHaveBeenLastCalledWith(...args),

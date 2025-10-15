@@ -2,19 +2,25 @@
  * Comprehensive integration test suite for v0.3.0
  * Tests all CRUD operations with Drizzle ORM integration
  */
-import { describe, expect, it, beforeAll, isRunningInBun } from './helpers/test-adapter';
 import type { DataProvider } from '@refinedev/core';
 import { createRefineSQL } from '../src/provider';
-import { schema, users, posts, comments } from './fixtures/schema';
-import { seedUsers, seedPosts, seedComments } from './fixtures/seed';
+import { comments, posts, schema, users } from './fixtures/schema';
+import { seedComments, seedPosts, seedUsers } from './fixtures/seed';
+import {
+  beforeAll,
+  describe,
+  expect,
+  isRunningInBun,
+  it,
+} from './helpers/test-adapter';
 
 // Import appropriate database driver based on runtime using require for compatibility
-const Database = isRunningInBun
-  ? require('bun:sqlite').Database
-  : require('better-sqlite3');
+const Database =
+  isRunningInBun ? require('bun:sqlite').Database : require('better-sqlite3');
 
-const drizzle = isRunningInBun
-  ? require('drizzle-orm/bun-sqlite').drizzle
+const drizzle =
+  isRunningInBun ?
+    require('drizzle-orm/bun-sqlite').drizzle
   : require('drizzle-orm/better-sqlite3').drizzle;
 
 describe('refine-sqlx v0.3.0 Integration Tests', () => {
@@ -62,10 +68,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
     `);
 
     // Create data provider
-    dataProvider = await createRefineSQL({
-      connection: db,
-      schema,
-    });
+    dataProvider = await createRefineSQL({ connection: db, schema });
 
     // Seed data
     const insertedUsers = await db.insert(users).values(seedUsers).returning();
@@ -74,7 +77,10 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
       ...post,
       userId: insertedUsers[i % insertedUsers.length].id,
     }));
-    const insertedPosts = await db.insert(posts).values(postsWithUserId).returning();
+    const insertedPosts = await db
+      .insert(posts)
+      .values(postsWithUserId)
+      .returning();
 
     const commentsWithIds = seedComments.map((comment, i) => ({
       ...comment,
@@ -154,7 +160,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
 
       expect(result.data.length).toBe(4);
       expect(
-        result.data.every((u: any) => ['active', 'pending'].includes(u.status))
+        result.data.every((u: any) => ['active', 'pending'].includes(u.status)),
       ).toBe(true);
     });
 
@@ -194,10 +200,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
 
   describe('getOne', () => {
     it('should get single user by id', async () => {
-      const result = await dataProvider.getOne({
-        resource: 'users',
-        id: 1,
-      });
+      const result = await dataProvider.getOne({ resource: 'users', id: 1 });
 
       expect(result.data).toBeDefined();
       expect(result.data.id).toBe(1);
@@ -206,10 +209,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
 
     it('should throw error for non-existent id', async () => {
       await expect(
-        dataProvider.getOne({
-          resource: 'users',
-          id: 9999,
-        })
+        dataProvider.getOne({ resource: 'users', id: 9999 }),
       ).rejects.toThrow();
     });
   });
@@ -226,10 +226,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
     });
 
     it('should return empty array for empty ids', async () => {
-      const result = await dataProvider.getMany({
-        resource: 'users',
-        ids: [],
-      });
+      const result = await dataProvider.getMany({ resource: 'users', ids: [] });
 
       expect(result.data).toEqual([]);
     });
@@ -315,7 +312,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
           resource: 'users',
           id: 9999,
           variables: { age: 30 },
-        })
+        }),
       ).rejects.toThrow();
     });
   });
@@ -365,19 +362,13 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
 
       // Verify deleted
       await expect(
-        dataProvider.getOne({
-          resource: 'users',
-          id: created.data.id,
-        })
+        dataProvider.getOne({ resource: 'users', id: created.data.id }),
       ).rejects.toThrow();
     });
 
     it('should throw error for non-existent id', async () => {
       await expect(
-        dataProvider.deleteOne({
-          resource: 'users',
-          id: 9999,
-        })
+        dataProvider.deleteOne({ resource: 'users', id: 9999 }),
       ).rejects.toThrow();
     });
   });
@@ -404,10 +395,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
       });
 
       const ids = created.data.map((u: any) => u.id);
-      const result = await dataProvider.deleteMany({
-        resource: 'users',
-        ids,
-      });
+      const result = await dataProvider.deleteMany({ resource: 'users', ids });
 
       expect(result.data.length).toBe(2);
       expect(result.data.map((u: any) => u.id)).toEqual(ids);
@@ -425,9 +413,7 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
 
   describe('Type Safety', () => {
     it('should infer types from schema', async () => {
-      const result = await dataProvider.getList({
-        resource: 'users',
-      });
+      const result = await dataProvider.getList({ resource: 'users' });
 
       // TypeScript should understand the structure
       const user = result.data[0];

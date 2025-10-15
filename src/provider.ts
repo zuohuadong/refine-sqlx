@@ -264,10 +264,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   /**
    * Delete a record
    */
-  async function deleteOne<
-    T extends BaseRecord = BaseRecord,
-    TVariables = {},
-  >(params: DeleteOneParams<TVariables>): Promise<DeleteOneResponse<T>> {
+  async function deleteOne<T extends BaseRecord = BaseRecord, TVariables = {}>(
+    params: DeleteOneParams<TVariables>,
+  ): Promise<DeleteOneResponse<T>> {
     const table = getTable(params.resource);
     const idColumn = params.meta?.idColumnName ?? 'id';
 
@@ -288,10 +287,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   /**
    * Delete multiple records
    */
-  async function deleteMany<
-    T extends BaseRecord = BaseRecord,
-    TVariables = {},
-  >(params: DeleteManyParams<TVariables>): Promise<DeleteManyResponse<T>> {
+  async function deleteMany<T extends BaseRecord = BaseRecord, TVariables = {}>(
+    params: DeleteManyParams<TVariables>,
+  ): Promise<DeleteManyResponse<T>> {
     if (!params.ids || params.ids.length === 0) {
       return { data: [] };
     }

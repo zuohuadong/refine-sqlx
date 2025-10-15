@@ -1,18 +1,18 @@
 import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  createMock,
-  clearAllMocks,
-} from './helpers/test-adapter';
-import {
   createBetterSQLite3Adapter,
   createBunSQLiteAdapter,
   createCloudflareD1Adapter,
   createNodeSQLiteAdapter,
 } from '../src/adapters';
 import type { SqlQuery } from '../src/client';
+import {
+  beforeEach,
+  clearAllMocks,
+  createMock,
+  describe,
+  expect,
+  it,
+} from './helpers/test-adapter';
 
 // Mock implementations
 const mockD1 = { prepare: createMock(), batch: createMock() };
@@ -30,12 +30,16 @@ describe('Cloudflare D1 Adapter', () => {
 
   it('should query data correctly', async () => {
     const mockStmt = {
-      bind: createMock(function (this: any) { return this; }),
-      raw: createMock(() => Promise.resolve([
-        ['id', 'name'], // column names
-        [1, 'John'], // first row
-        [2, 'Jane'], // second row
-      ])),
+      bind: createMock(function (this: any) {
+        return this;
+      }),
+      raw: createMock(() =>
+        Promise.resolve([
+          ['id', 'name'], // column names
+          [1, 'John'], // first row
+          [2, 'Jane'], // second row
+        ]),
+      ),
     };
     (mockD1.prepare as any).mockReturnValue(mockStmt);
 
@@ -58,8 +62,12 @@ describe('Cloudflare D1 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: createMock(function (this: any) { return this; }),
-      run: createMock(() => Promise.resolve({ meta: { changes: 1, last_row_id: 123 } })),
+      bind: createMock(function (this: any) {
+        return this;
+      }),
+      run: createMock(() =>
+        Promise.resolve({ meta: { changes: 1, last_row_id: 123 } }),
+      ),
     };
     (mockD1.prepare as any).mockReturnValue(mockStmt);
 
@@ -77,7 +85,11 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch operations', async () => {
-    const mockStmt = { bind: createMock(function (this: any) { return this; }) };
+    const mockStmt = {
+      bind: createMock(function (this: any) {
+        return this;
+      }),
+    };
     (mockD1.prepare as any).mockReturnValue(mockStmt);
     (mockD1.batch as any).mockResolvedValue([
       { success: true, meta: { changes: 1, last_row_id: 1 } },
@@ -105,9 +117,15 @@ describe('Cloudflare D1 Adapter', () => {
   });
 
   it('should handle batch failures', async () => {
-    const mockStmt = { bind: createMock(function (this: any) { return this; }) };
+    const mockStmt = {
+      bind: createMock(function (this: any) {
+        return this;
+      }),
+    };
     (mockD1.prepare as any).mockReturnValue(mockStmt);
-    (mockD1.batch as any).mockResolvedValue([{ success: false, error: 'Syntax error' }]);
+    (mockD1.batch as any).mockResolvedValue([
+      { success: false, error: 'Syntax error' },
+    ]);
 
     const client = createCloudflareD1Adapter(mockD1 as any);
     const queries: SqlQuery[] = [{ sql: 'INVALID SQL', args: [] }];
@@ -306,7 +324,9 @@ describe('better-sqlite3 Adapter', () => {
       ]),
     };
     const mockStmt = {
-      bind: createMock(function (this: any) { return this; }),
+      bind: createMock(function (this: any) {
+        return this;
+      }),
       columns: createMock(() => [{ name: 'id' }, { name: 'name' }]),
       raw: createMock(() => mockRawStmt),
     };
@@ -329,7 +349,9 @@ describe('better-sqlite3 Adapter', () => {
 
   it('should execute queries correctly', async () => {
     const mockStmt = {
-      bind: createMock(function (this: any) { return this; }),
+      bind: createMock(function (this: any) {
+        return this;
+      }),
       run: createMock(() => ({ changes: 1, lastInsertRowid: 123 })),
     };
     (mockBetterSQLite3DB.prepare as any).mockReturnValue(mockStmt);
@@ -349,7 +371,9 @@ describe('better-sqlite3 Adapter', () => {
   it('should handle transactions', async () => {
     let callCount = 0;
     const mockStmt = {
-      bind: createMock(function (this: any) { return this; }),
+      bind: createMock(function (this: any) {
+        return this;
+      }),
       run: createMock(() => {
         callCount++;
         if (callCount === 1) return { changes: 0 }; // BEGIN

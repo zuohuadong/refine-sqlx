@@ -2,10 +2,27 @@
  * Comprehensive filter and sorter tests for v0.3.0
  * Tests all Refine filter operators and sorting combinations
  */
-import { describe, expect, it } from './helpers/test-adapter';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { filtersToWhere, sortersToOrderBy, calculatePagination } from '../src/filters';
-import { asc, desc, eq, gte, lte, like, inArray, isNull, isNotNull, and, or, sql } from 'drizzle-orm';
+import {
+  calculatePagination,
+  filtersToWhere,
+  sortersToOrderBy,
+} from '../src/filters';
+import { describe, expect, it } from './helpers/test-adapter';
 
 describe('Filters and Sorters - v0.3.0', () => {
   // Test table
@@ -21,7 +38,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle eq operator', () => {
       const result = filtersToWhere(
         [{ field: 'status', operator: 'eq', value: 'active' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -30,7 +47,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle ne operator', () => {
       const result = filtersToWhere(
         [{ field: 'status', operator: 'ne', value: 'deleted' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -39,7 +56,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle lt operator', () => {
       const result = filtersToWhere(
         [{ field: 'age', operator: 'lt', value: 30 }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -48,7 +65,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle lte operator', () => {
       const result = filtersToWhere(
         [{ field: 'age', operator: 'lte', value: 30 }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -57,7 +74,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle gt operator', () => {
       const result = filtersToWhere(
         [{ field: 'age', operator: 'gt', value: 18 }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -66,7 +83,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle gte operator', () => {
       const result = filtersToWhere(
         [{ field: 'age', operator: 'gte', value: 18 }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -75,7 +92,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle in operator', () => {
       const result = filtersToWhere(
         [{ field: 'status', operator: 'in', value: ['active', 'pending'] }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -84,7 +101,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle nin operator', () => {
       const result = filtersToWhere(
         [{ field: 'status', operator: 'nin', value: ['deleted', 'banned'] }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -93,7 +110,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle contains operator (case-insensitive)', () => {
       const result = filtersToWhere(
         [{ field: 'name', operator: 'contains', value: 'john' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -102,7 +119,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle ncontains operator', () => {
       const result = filtersToWhere(
         [{ field: 'name', operator: 'ncontains', value: 'spam' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -111,7 +128,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle containss operator (case-sensitive)', () => {
       const result = filtersToWhere(
         [{ field: 'name', operator: 'containss', value: 'John' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -120,7 +137,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle startswith operator', () => {
       const result = filtersToWhere(
         [{ field: 'email', operator: 'startswith', value: 'admin' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -129,7 +146,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle endswith operator', () => {
       const result = filtersToWhere(
         [{ field: 'email', operator: 'endswith', value: '@example.com' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -138,7 +155,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle null operator', () => {
       const result = filtersToWhere(
         [{ field: 'email', operator: 'null', value: true }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -147,7 +164,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle nnull operator', () => {
       const result = filtersToWhere(
         [{ field: 'email', operator: 'nnull', value: true }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -156,7 +173,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle between operator', () => {
       const result = filtersToWhere(
         [{ field: 'age', operator: 'between', value: [18, 65] }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -168,7 +185,7 @@ describe('Filters and Sorters - v0.3.0', () => {
           { field: 'status', operator: 'eq', value: 'active' },
           { field: 'age', operator: 'gte', value: 18 },
         ],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -197,7 +214,7 @@ describe('Filters and Sorters - v0.3.0', () => {
             ],
           },
         ],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -214,7 +231,7 @@ describe('Filters and Sorters - v0.3.0', () => {
             ],
           },
         ],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -225,7 +242,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle ascending sort', () => {
       const result = sortersToOrderBy(
         [{ field: 'name', order: 'asc' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeInstanceOf(Array);
@@ -235,7 +252,7 @@ describe('Filters and Sorters - v0.3.0', () => {
     it('should handle descending sort', () => {
       const result = sortersToOrderBy(
         [{ field: 'age', order: 'desc' }],
-        testTable
+        testTable,
       );
 
       expect(result).toBeInstanceOf(Array);
@@ -249,7 +266,7 @@ describe('Filters and Sorters - v0.3.0', () => {
           { field: 'age', order: 'desc' },
           { field: 'name', order: 'asc' },
         ],
-        testTable
+        testTable,
       );
 
       expect(result.length).toBe(3);
@@ -339,7 +356,7 @@ describe('Filters and Sorters - v0.3.0', () => {
             ],
           },
         ],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();
@@ -353,7 +370,7 @@ describe('Filters and Sorters - v0.3.0', () => {
           { field: 'name', operator: 'contains', value: 'test' },
           { field: 'email', operator: 'nnull', value: true },
         ],
-        testTable
+        testTable,
       );
 
       expect(result).toBeDefined();

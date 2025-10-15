@@ -687,6 +687,7 @@ await db.transaction(async (tx) => {
 **Jest Compatibility Note**:
 
 Bun test's API is designed to be compatible with Jest, making code sharing straightforward. Main compatible APIs:
+
 - `describe`, `it`, `test` - Test structure (identical)
 - `expect` - Assertions (identical)
 - `beforeEach`, `afterEach`, `beforeAll`, `afterAll` - Lifecycle hooks (identical)
@@ -707,17 +708,17 @@ For Bun runtime, **MUST** use **Bun's native test runner**:
 
 Bun's test runner is intentionally Jest-compatible. This means most test code can be shared between Bun and Jest with minimal changes:
 
-| Feature                      | Bun Test API       | Jest API           | Compatible? | Notes                                   |
-| ---------------------------- | ------------------ | ------------------ | ----------- | --------------------------------------- |
-| Test suites                  | `describe()`       | `describe()`       | ✅ Yes      | Identical API                           |
-| Test cases                   | `test()` / `it()`  | `test()` / `it()`  | ✅ Yes      | Identical API                           |
-| Assertions                   | `expect()`         | `expect()`         | ✅ Yes      | Identical API                           |
-| Before/After hooks           | `beforeEach()` etc | `beforeEach()` etc | ✅ Yes      | Identical API                           |
-| Mock functions               | `mock()`           | `jest.fn()`        | ⚠️ Similar  | Different function names, same behavior |
-| Spy functions                | `spyOn()`          | `jest.spyOn()`     | ⚠️ Similar  | Different import paths                  |
-| Mock modules                 | `mock.module()`    | `jest.mock()`      | ⚠️ Different| Different API structure                 |
-| Timers                       | Limited            | `jest.useFakeTimers()` | ⚠️ Different | Jest has more comprehensive timer mocking |
-| Snapshots                    | Basic support      | `expect().toMatchSnapshot()` | ⚠️ Different | Jest has more robust snapshot testing |
+| Feature            | Bun Test API       | Jest API                     | Compatible?  | Notes                                     |
+| ------------------ | ------------------ | ---------------------------- | ------------ | ----------------------------------------- |
+| Test suites        | `describe()`       | `describe()`                 | ✅ Yes       | Identical API                             |
+| Test cases         | `test()` / `it()`  | `test()` / `it()`            | ✅ Yes       | Identical API                             |
+| Assertions         | `expect()`         | `expect()`                   | ✅ Yes       | Identical API                             |
+| Before/After hooks | `beforeEach()` etc | `beforeEach()` etc           | ✅ Yes       | Identical API                             |
+| Mock functions     | `mock()`           | `jest.fn()`                  | ⚠️ Similar   | Different function names, same behavior   |
+| Spy functions      | `spyOn()`          | `jest.spyOn()`               | ⚠️ Similar   | Different import paths                    |
+| Mock modules       | `mock.module()`    | `jest.mock()`                | ⚠️ Different | Different API structure                   |
+| Timers             | Limited            | `jest.useFakeTimers()`       | ⚠️ Different | Jest has more comprehensive timer mocking |
+| Snapshots          | Basic support      | `expect().toMatchSnapshot()` | ⚠️ Different | Jest has more robust snapshot testing     |
 
 **Key Differences**:
 
@@ -725,11 +726,13 @@ Bun's test runner is intentionally Jest-compatible. This means most test code ca
 
 ```typescript
 // Bun test
-import { mock } from 'bun:test';
-const mockFn = mock((x: number) => x * 2);
 
 // Jest
 import { jest } from '@jest/globals';
+import { mock } from 'bun:test';
+
+const mockFn = mock((x: number) => x * 2);
+
 const mockFn = jest.fn((x: number) => x * 2);
 ```
 
@@ -737,13 +740,13 @@ const mockFn = jest.fn((x: number) => x * 2);
 
 ```typescript
 // Bun test
-import { mock } from 'bun:test';
-mock.module('./database', () => ({
-  connect: mock(() => 'mocked connection'),
-}));
 
 // Jest
 import { jest } from '@jest/globals';
+import { mock } from 'bun:test';
+
+mock.module('./database', () => ({ connect: mock(() => 'mocked connection') }));
+
 jest.mock('./database', () => ({
   connect: jest.fn(() => 'mocked connection'),
 }));
@@ -753,8 +756,8 @@ jest.mock('./database', () => ({
 
 ```typescript
 // test/example.test.ts
-import { describe, expect, test } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { describe, expect, test } from 'bun:test';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 
 describe('Bun SQLite Integration', () => {
@@ -873,8 +876,9 @@ jest --coverage
 // test/utils.test.ts - Shared between Bun and Jest
 
 // Conditional import based on runtime
-const testFramework = typeof Bun !== 'undefined'
-  ? await import('bun:test')
+const testFramework =
+  typeof Bun !== 'undefined' ?
+    await import('bun:test')
   : await import('@jest/globals');
 
 const { describe, expect, it } = testFramework;
@@ -902,7 +906,7 @@ Since mock APIs have slight differences, create an adapter to unify them. This i
 
 **Basic Adapter Implementation**:
 
-```typescript
+````typescript
 // test/helpers/test-adapter.ts - Unified test API
 
 /**
@@ -993,7 +997,7 @@ export const isRunningInJest = !isBun;
  * Returns undefined in Bun environment
  */
 export const jest = !isBun ? jestTest!.jest : undefined;
-```
+````
 
 **Why This Pattern Works:**
 
@@ -1007,7 +1011,7 @@ export const jest = !isBun ? jestTest!.jest : undefined;
 
 For production use, you may want a more comprehensive adapter with module mocking, timer utilities, and mock verification helpers:
 
-```typescript
+````typescript
 // test/helpers/test-adapter.ts - Enhanced test adapter with advanced features
 
 const isBun = typeof Bun !== 'undefined';
@@ -1221,10 +1225,13 @@ export function verifyMock<T extends (...args: any[]) => any>(
 ): MockVerification<T> {
   return {
     toHaveBeenCalled: () => expect(mockFn).toHaveBeenCalled(),
-    toHaveBeenCalledTimes: (times) => expect(mockFn).toHaveBeenCalledTimes(times),
-    toHaveBeenCalledWith: (...args) => expect(mockFn).toHaveBeenCalledWith(...args),
+    toHaveBeenCalledTimes: (times) =>
+      expect(mockFn).toHaveBeenCalledTimes(times),
+    toHaveBeenCalledWith: (...args) =>
+      expect(mockFn).toHaveBeenCalledWith(...args),
     toHaveReturnedWith: (value) => expect(mockFn).toHaveReturnedWith(value),
-    toHaveBeenLastCalledWith: (...args) => expect(mockFn).toHaveBeenLastCalledWith(...args),
+    toHaveBeenLastCalledWith: (...args) =>
+      expect(mockFn).toHaveBeenLastCalledWith(...args),
     toHaveBeenNthCalledWith: (nthCall, ...args) =>
       expect(mockFn).toHaveBeenNthCalledWith(nthCall, ...args),
   };
@@ -1319,7 +1326,7 @@ export const jest = !isBun ? jestTest!.jest : undefined;
  * Only available in Bun environment, undefined in Jest
  */
 export const bunMock = isBun ? bunTest!.mock : undefined;
-```
+````
 
 **Key Features of the Advanced Adapter:**
 
@@ -1346,25 +1353,25 @@ Once you have the adapter in place, writing tests becomes simple and framework-a
 ```typescript
 // test/data-provider.test.ts - Works in both Bun and Jest with zero changes
 
+import { createRefineProvider } from '../src';
 import {
-  describe,
-  expect,
-  it,
-  beforeEach,
   afterEach,
+  beforeEach,
+  clearAllMocks,
   createMock,
   createSpyOn,
-  verifyMock,
-  clearAllMocks,
+  describe,
+  expect,
   isRunningInBun,
+  it,
+  verifyMock,
 } from './helpers/test-adapter';
 
 // Import appropriate database driver based on runtime
-const Database = isRunningInBun
-  ? (await import('bun:sqlite')).Database
+const Database =
+  isRunningInBun ?
+    (await import('bun:sqlite')).Database
   : (await import('better-sqlite3')).default;
-
-import { createRefineProvider } from '../src';
 
 describe('Refine Data Provider', () => {
   let db: any;
@@ -1437,10 +1444,7 @@ describe('Refine Data Provider', () => {
 
   describe('getOne', () => {
     it('should return a single user by ID', async () => {
-      const result = await provider.getOne({
-        resource: 'users',
-        id: 1,
-      });
+      const result = await provider.getOne({ resource: 'users', id: 1 });
 
       expect(result.data.id).toBe(1);
       expect(result.data.name).toBe('Alice');
@@ -1448,7 +1452,7 @@ describe('Refine Data Provider', () => {
 
     it('should throw error for non-existent user', async () => {
       await expect(
-        provider.getOne({ resource: 'users', id: 999 })
+        provider.getOne({ resource: 'users', id: 999 }),
       ).rejects.toThrow();
     });
   });
@@ -1541,16 +1545,16 @@ The adapter supports full TypeScript type safety for mock verification:
 ```typescript
 // test/service.test.ts - Type-safe testing with adapter
 import {
+  beforeEach,
+  clearAllMocks,
+  createMock,
   describe,
   expect,
-  it,
-  beforeEach,
-  createMock,
-  verifyMock,
-  clearAllMocks,
-  resolvedPromise,
-  rejectedPromise,
   flushPromises,
+  it,
+  rejectedPromise,
+  resolvedPromise,
+  verifyMock,
 } from './helpers/test-adapter';
 
 // Define typed interfaces for your service
@@ -1575,7 +1579,7 @@ class UserService {
   async createUser(user: Omit<User, 'id'>): Promise<User> {
     const result = await this.db.query<User>(
       'INSERT INTO users (name, email) VALUES (?, ?) RETURNING *',
-      [user.name, user.email]
+      [user.name, user.email],
     );
     return result[0];
   }
@@ -1591,10 +1595,10 @@ describe('User Service (Type-Safe)', () => {
       query: createMock(<T>(sql: string, params?: any[]) =>
         resolvedPromise([
           { id: 1, name: 'Alice', email: 'alice@example.com' } as T,
-        ])
+        ]),
       ),
       execute: createMock((sql: string, params?: any[]) =>
-        resolvedPromise(undefined)
+        resolvedPromise(undefined),
       ),
     };
 
@@ -1617,9 +1621,7 @@ describe('User Service (Type-Safe)', () => {
     const newUser = { name: 'Bob', email: 'bob@example.com' };
 
     // Mock returns a User object
-    mockDb.query = createMock(() =>
-      resolvedPromise([{ id: 2, ...newUser }])
-    );
+    mockDb.query = createMock(() => resolvedPromise([{ id: 2, ...newUser }]));
 
     const result = await service.createUser(newUser);
 
@@ -1629,18 +1631,18 @@ describe('User Service (Type-Safe)', () => {
     const verify = verifyMock(mockDb.query);
     verify.toHaveBeenCalledWith(
       'INSERT INTO users (name, email) VALUES (?, ?) RETURNING *',
-      ['Bob', 'bob@example.com']
+      ['Bob', 'bob@example.com'],
     );
   });
 
   it('should handle errors gracefully', async () => {
     // Mock error scenario with type-safe rejected promise
     mockDb.query = createMock(() =>
-      rejectedPromise(new Error('Database connection failed'))
+      rejectedPromise(new Error('Database connection failed')),
     );
 
     await expect(service.getUsers()).rejects.toThrow(
-      'Database connection failed'
+      'Database connection failed',
     );
 
     const verify = verifyMock(mockDb.query);
@@ -1683,14 +1685,14 @@ describe('User Service (Type-Safe)', () => {
 
 **Why the Adapter Pattern is Recommended:**
 
-| Aspect | Without Adapter | With Adapter |
-|--------|----------------|--------------|
-| **Code duplication** | Separate test files for Bun/Jest | Single test file for both |
-| **Maintenance** | Update tests in multiple places | Update once, works everywhere |
-| **Type safety** | Manual type casting needed | Automatic type inference |
-| **Readability** | Runtime checks in every test | Clean, framework-agnostic tests |
-| **Onboarding** | Developers need to learn both frameworks | Single unified API to learn |
-| **Refactoring** | High risk of breaking one environment | Low risk, adapter handles differences |
+| Aspect               | Without Adapter                          | With Adapter                          |
+| -------------------- | ---------------------------------------- | ------------------------------------- |
+| **Code duplication** | Separate test files for Bun/Jest         | Single test file for both             |
+| **Maintenance**      | Update tests in multiple places          | Update once, works everywhere         |
+| **Type safety**      | Manual type casting needed               | Automatic type inference              |
+| **Readability**      | Runtime checks in every test             | Clean, framework-agnostic tests       |
+| **Onboarding**       | Developers need to learn both frameworks | Single unified API to learn           |
+| **Refactoring**      | High risk of breaking one environment    | Low risk, adapter handles differences |
 
 **Implementation Checklist:**
 
@@ -1735,30 +1737,39 @@ describe('User Service (Type-Safe)', () => {
 
 **Complete API Comparison Table**:
 
-| Feature                | Bun Test                     | Jest                        | Notes                                   |
-| ---------------------- | ---------------------------- | --------------------------- | --------------------------------------- |
-| **Imports**            | `bun:test`                   | `@jest/globals`             | Conditional import required             |
-| **Test Suites**        | `describe(name, fn)`         | `describe(name, fn)`        | ✅ Identical                            |
-| **Test Cases**         | `test(name, fn)` / `it()`    | `test(name, fn)` / `it()`   | ✅ Identical                            |
-| **Assertions**         | `expect(value)`              | `expect(value)`             | ✅ Identical                            |
-| **beforeEach**         | `beforeEach(fn)`             | `beforeEach(fn)`            | ✅ Identical                            |
-| **afterEach**          | `afterEach(fn)`              | `afterEach(fn)`             | ✅ Identical                            |
-| **beforeAll**          | `beforeAll(fn)`              | `beforeAll(fn)`             | ✅ Identical                            |
-| **afterAll**           | `afterAll(fn)`               | `afterAll(fn)`              | ✅ Identical                            |
-| **Mock Creation**      | `mock(fn)`                   | `jest.fn(fn)`               | ⚠️ Different API (use adapter)          |
-| **Spy Creation**       | `spyOn(obj, method)`         | `jest.spyOn(obj, method)`   | ⚠️ Different import path                |
-| **Module Mocking**     | `mock.module(path, factory)` | `jest.mock(path, factory)`  | ⚠️ Different API (use adapter)          |
-| **Clear Mocks**        | Auto-cleared                 | `jest.clearAllMocks()`      | Bun auto-clears between tests           |
-| **Reset Mocks**        | Auto-reset                   | `jest.resetAllMocks()`      | Bun auto-resets between tests           |
-| **Restore Mocks**      | N/A                          | `jest.restoreAllMocks()`    | Jest-specific                           |
-| **Mock Timers**        | Limited support              | `jest.useFakeTimers()`      | Jest has more complete timer support    |
-| **Snapshot Testing**   | Limited support              | `expect().toMatchSnapshot()`| Jest has more robust snapshot support   |
+| Feature              | Bun Test                     | Jest                         | Notes                                 |
+| -------------------- | ---------------------------- | ---------------------------- | ------------------------------------- |
+| **Imports**          | `bun:test`                   | `@jest/globals`              | Conditional import required           |
+| **Test Suites**      | `describe(name, fn)`         | `describe(name, fn)`         | ✅ Identical                          |
+| **Test Cases**       | `test(name, fn)` / `it()`    | `test(name, fn)` / `it()`    | ✅ Identical                          |
+| **Assertions**       | `expect(value)`              | `expect(value)`              | ✅ Identical                          |
+| **beforeEach**       | `beforeEach(fn)`             | `beforeEach(fn)`             | ✅ Identical                          |
+| **afterEach**        | `afterEach(fn)`              | `afterEach(fn)`              | ✅ Identical                          |
+| **beforeAll**        | `beforeAll(fn)`              | `beforeAll(fn)`              | ✅ Identical                          |
+| **afterAll**         | `afterAll(fn)`               | `afterAll(fn)`               | ✅ Identical                          |
+| **Mock Creation**    | `mock(fn)`                   | `jest.fn(fn)`                | ⚠️ Different API (use adapter)        |
+| **Spy Creation**     | `spyOn(obj, method)`         | `jest.spyOn(obj, method)`    | ⚠️ Different import path              |
+| **Module Mocking**   | `mock.module(path, factory)` | `jest.mock(path, factory)`   | ⚠️ Different API (use adapter)        |
+| **Clear Mocks**      | Auto-cleared                 | `jest.clearAllMocks()`       | Bun auto-clears between tests         |
+| **Reset Mocks**      | Auto-reset                   | `jest.resetAllMocks()`       | Bun auto-resets between tests         |
+| **Restore Mocks**    | N/A                          | `jest.restoreAllMocks()`     | Jest-specific                         |
+| **Mock Timers**      | Limited support              | `jest.useFakeTimers()`       | Jest has more complete timer support  |
+| **Snapshot Testing** | Limited support              | `expect().toMatchSnapshot()` | Jest has more robust snapshot support |
 
 **Shared Compatible APIs (No Adapter Needed)**:
 
 ```typescript
 // These work identically in both Bun and Jest
-import { describe, it, test, expect, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test'; // or '@jest/globals'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+} from 'bun:test'; // or '@jest/globals'
 
 describe('My Tests', () => {
   beforeEach(() => {
@@ -1769,7 +1780,9 @@ describe('My Tests', () => {
     expect(2 + 2).toBe(4);
     expect([1, 2, 3]).toHaveLength(3);
     expect({ name: 'Alice' }).toEqual({ name: 'Alice' });
-    expect(() => { throw new Error('fail'); }).toThrow('fail');
+    expect(() => {
+      throw new Error('fail');
+    }).toThrow('fail');
   });
 
   afterEach(() => {
@@ -2460,9 +2473,7 @@ bun test
 
 ```json
 {
-  "scripts": {
-    "prepare": "husky install"
-  },
+  "scripts": { "prepare": "husky install" },
   "lint-staged": {
     "*.ts": ["prettier --write", "eslint --fix", "tsc --noEmit"]
   }
