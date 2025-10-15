@@ -45,12 +45,20 @@ export default defineBuildConfig({
       },
     },
     // CLI entry point
+    // Note: CLI dependencies are intentionally bundled for standalone execution
     {
       input: 'bin/refine-sqlx',
       outDir: 'dist',
       name: 'refine-sqlx',
       builder: 'rollup',
       declaration: false,
+      externals: [
+        // Only externalize runtime-specific modules that can't be bundled
+        'drizzle-kit',
+        'better-sqlite3',
+        'bun:sqlite',
+        'node:sqlite',
+      ],
       rollup: {
         esbuild: {
           minify: false,
@@ -58,25 +66,22 @@ export default defineBuildConfig({
           banner: '#!/usr/bin/env node',
         },
         output: { format: 'esm' },
-        // Use Rollup's external option to exclude CLI dependencies
+        // Explicitly mark which dependencies to bundle vs externalize
         external: (id: string) => {
-          // Externalize all runtime dependencies for CLI
-          const cliDeps = [
-            'ora',
-            'chalk',
-            'commander',
-            'prompts',
-            'drizzle-kit',
-            'better-sqlite3',
-            'bun:sqlite',
-            'node:sqlite',
-            'string-width', // Explicitly exclude to avoid RegExp v flag issues
-          ];
-          return (
-            cliDeps.some((dep) => id === dep || id.startsWith(`${dep}/`)) ||
-            id.startsWith('node:') ||
-            id.startsWith('bun:')
-          );
+          // Externalize native modules and runtime-specific packages
+          if (
+            id === 'drizzle-kit' ||
+            id.startsWith('drizzle-kit/') ||
+            id === 'better-sqlite3' ||
+            id.startsWith('better-sqlite3/') ||
+            id.startsWith('bun:') ||
+            id.startsWith('node:')
+          ) {
+            return true;
+          }
+          // Bundle everything else (ora, chalk, commander, prompts, etc.)
+          // for standalone CLI execution
+          return false;
         },
       },
     },
