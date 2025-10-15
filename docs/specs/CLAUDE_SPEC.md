@@ -683,6 +683,278 @@ src/
 
 ---
 
+### 12. Version Management with Changesets
+
+**MANDATORY**: This project MUST use **Changesets** for version management and publishing.
+
+#### 12.1 Why Changesets?
+
+Changesets provides:
+- ✅ **Automated versioning** based on semantic versioning
+- ✅ **Automated changelog generation** from changeset files
+- ✅ **Multi-package monorepo support** (future-proof)
+- ✅ **CI/CD integration** for automated releases
+- ✅ **Clear change documentation** before merging PRs
+
+#### 12.2 Installation and Setup
+
+**Install Changesets**:
+```bash
+bun add -D @changesets/cli
+bunx changeset init
+```
+
+**Configuration (.changeset/config.json)**:
+```json
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
+```
+
+**Add npm scripts (package.json)**:
+```json
+{
+  "scripts": {
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "version": "changeset version && bun install --lockfile-only",
+    "release": "bun run build && changeset publish"
+  }
+}
+```
+
+#### 12.3 Development Workflow
+
+**1. Making Changes**:
+
+When you make changes that should be included in the next release:
+
+```bash
+# Create a changeset
+bun changeset
+
+# CLI will prompt:
+# - Select change type: major | minor | patch
+# - Write a summary of the changes
+```
+
+Example changeset file (`.changeset/cool-feature.md`):
+```markdown
+---
+"refine-sqlx": minor
+---
+
+Add support for Cloudflare D1 transaction API wrapper
+```
+
+**Change Type Guidelines**:
+- **major** (1.0.0 → 2.0.0): Breaking changes
+- **minor** (1.0.0 → 1.1.0): New features, backwards compatible
+- **patch** (1.0.0 → 1.0.1): Bug fixes, backwards compatible
+
+**2. Committing Changesets**:
+
+```bash
+# Stage the changeset file
+git add .changeset/cool-feature.md
+
+# Commit with descriptive message
+git commit -m "feat: add D1 transaction wrapper
+
+- Implement transaction API for D1 using batch
+- Provide consistent API across all runtimes
+- Add documentation and examples
+"
+```
+
+**3. Version Bump**:
+
+Before releasing, consume all changesets:
+
+```bash
+# This will:
+# 1. Update package.json version
+# 2. Update CHANGELOG.md
+# 3. Delete consumed changeset files
+bun run changeset:version
+
+# Commit version changes
+git add .
+git commit -m "chore: release v0.3.0"
+```
+
+**4. Publishing**:
+
+```bash
+# Build and publish to npm
+bun run release
+
+# Or manual steps:
+bun run build
+bun run changeset:publish
+```
+
+#### 12.4 CI/CD Integration (GitHub Actions)
+
+**Automated Release Workflow** (`.github/workflows/release.yml`):
+
+```yaml
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build
+        run: bun run build
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: bun run release
+          version: bun run version
+          commit: "chore: release package"
+          title: "chore: release package"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+**Required GitHub Secrets**:
+- `GITHUB_TOKEN`: Automatically provided by GitHub
+- `NPM_TOKEN`: Create at https://www.npmjs.com/settings/tokens
+
+#### 12.5 Changeset Examples
+
+**Example 1: Bug Fix (patch)**:
+```bash
+bun changeset
+```
+```markdown
+---
+"refine-sqlx": patch
+---
+
+Fix D1 batch query error handling to properly propagate exceptions
+```
+
+**Example 2: New Feature (minor)**:
+```bash
+bun changeset
+```
+```markdown
+---
+"refine-sqlx": minor
+---
+
+Add PostgreSQL support with postgres-js driver integration
+```
+
+**Example 3: Breaking Change (major)**:
+```bash
+bun changeset
+```
+```markdown
+---
+"refine-sqlx": major
+---
+
+BREAKING: Remove deprecated `createRefineSQL` string overload
+
+Migration guide:
+- Old: `createRefineSQL('./db.sqlite')`
+- New: `createRefineSQL({ connection: './db.sqlite', schema })`
+```
+
+#### 12.6 Changelog Generation
+
+Changesets automatically generates `CHANGELOG.md`:
+
+```markdown
+# refine-sqlx
+
+## 0.3.0
+
+### Minor Changes
+
+- abc123: Add support for Cloudflare D1 transaction API wrapper
+- def456: Add PostgreSQL support with postgres-js driver integration
+
+### Patch Changes
+
+- ghi789: Fix D1 batch query error handling to properly propagate exceptions
+
+## 0.2.1
+
+### Patch Changes
+
+- jkl012: Fix transaction rollback on error
+```
+
+#### 12.7 Best Practices
+
+**DO**:
+- ✅ Create one changeset per PR
+- ✅ Write clear, user-facing summaries
+- ✅ Use semantic versioning correctly
+- ✅ Include migration guides for breaking changes
+- ✅ Commit changeset files with your code changes
+
+**DON'T**:
+- ❌ Manually edit `package.json` version
+- ❌ Manually edit `CHANGELOG.md`
+- ❌ Skip creating changesets for user-facing changes
+- ❌ Create changesets for internal changes (tests, docs)
+- ❌ Publish directly without running `changeset version`
+
+#### 12.8 Monorepo Support (Future)
+
+If the project becomes a monorepo:
+
+```json
+{
+  "packages": ["packages/*"],
+  "version": "independent"
+}
+```
+
+Create changesets for specific packages:
+```bash
+bun changeset
+# Select: @refine-sqlx/core, @refine-sqlx/d1, etc.
+```
+
+---
+
 ## Dependencies
 
 ### Required Dependencies
@@ -695,6 +967,7 @@ src/
   "devDependencies": {
     "typescript": "^5.0.0",
     "@cloudflare/workers-types": "^4.x.x",
+    "@changesets/cli": "^2.x.x",
     "wrangler": "^3.x.x",
     "unbuild": "^2.x.x",
     "bundlesize": "^0.18.x"
@@ -738,6 +1011,9 @@ When implementing database features, ensure:
 - [ ] Transactions used for multi-step operations
 - [ ] Tests written and passing
 - [ ] Documentation updated
+- [ ] **Changesets created for all user-facing changes**
+- [ ] **Version bumped using `changeset version` before release**
+- [ ] **CHANGELOG.md automatically generated (do not edit manually)**
 
 ---
 
@@ -779,10 +1055,26 @@ When implementing database features, ensure:
 - [mysql2](https://github.com/sidorares/node-mysql2) - MySQL driver
 - [postgres-js](https://github.com/porsager/postgres) - PostgreSQL driver
 
+**Version Management**:
+- [Changesets Documentation](https://github.com/changesets/changesets) - Automated version management
+- [Changesets GitHub Action](https://github.com/changesets/action) - CI/CD integration
+
 ---
 
 ## Version History
 
+- **v1.5.0** (2025-10-15): Added Changesets version management requirements
+  - Added mandatory Changesets requirement for version management
+  - Documented installation and setup process
+  - Provided complete development workflow (create, commit, version, publish)
+  - Added CI/CD integration with GitHub Actions
+  - Included changeset examples for patch, minor, and major changes
+  - Documented changelog generation process
+  - Added best practices and anti-patterns
+  - Included monorepo support documentation for future use
+  - Updated dependencies to include @changesets/cli
+  - Updated compliance checklist with Changesets requirements
+  - Added Changesets documentation references
 - **v1.4.0** (2025-10-14): Added Cloudflare D1 build optimization requirements
   - Added dedicated D1 environment section (3.3)
   - Specified tree-shaking and bundle size optimization requirements
