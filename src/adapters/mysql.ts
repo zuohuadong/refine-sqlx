@@ -79,7 +79,7 @@ export async function createMySQLAdapter<
   });
 
   // Create Drizzle database instance
-  const db = drizzle(pool, { schema, ...config });
+  const db = drizzle(pool, { schema, mode: 'default', ...config });
 
   return db;
 }

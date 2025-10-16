@@ -96,6 +96,21 @@ export interface D1Options {
      */
     maxSize?: number;
   };
+
+  /**
+   * Time Travel settings (for backward compatibility)
+   * Note: D1 Time Travel is primarily managed through CLI
+   */
+  timeTravel?: {
+    /**
+     * Enable Time Travel
+     */
+    enabled: boolean;
+    /**
+     * Bookmark or timestamp for point-in-time queries
+     */
+    bookmark?: string | number;
+  };
 }
 
 /**
@@ -220,6 +235,35 @@ export interface RefineSQLConfig<
    * ```
    */
   timeTravel?: TimeTravelOptions;
+
+  /**
+   * Soft delete configuration
+   *
+   * @example
+   * ```typescript
+   * const dataProvider = await createRefineSQL({
+   *   connection: './database.sqlite',
+   *   schema,
+   *   softDelete: {
+   *     enabled: true,
+   *     field: 'deleted_at',  // Field name for soft delete timestamp
+   *   }
+   * });
+   * ```
+   */
+  softDelete?: {
+    /**
+     * Enable soft delete
+     * @default false
+     */
+    enabled: boolean;
+
+    /**
+     * Field name for deleted timestamp
+     * @default 'deleted_at'
+     */
+    field?: string;
+  };
 }
 
 /**
@@ -263,4 +307,137 @@ export interface RefineSQLMeta {
    * @default 'id'
    */
   idColumnName?: string;
+
+  /**
+   * Include related records (nested relations)
+   * Uses Drizzle's relational query API
+   *
+   * @example
+   * ```typescript
+   * meta: {
+   *   include: {
+   *     posts: true,  // Load all posts
+   *     // Or with nested relations
+   *     posts: {
+   *       include: {
+   *         comments: true
+   *       }
+   *     }
+   *   }
+   * }
+   * ```
+   */
+  include?: Record<string, boolean | { include?: Record<string, any> }>;
+
+  /**
+   * Select specific fields only
+   * @example ['id', 'name', 'email']
+   */
+  select?: string[];
+
+  /**
+   * Exclude specific fields
+   * @example ['password', 'secret_token']
+   */
+  exclude?: string[];
+
+  /**
+   * Aggregation operations
+   */
+  aggregations?: {
+    [key: string]: {
+      sum?: string;
+      avg?: string;
+      count?: string | '*';
+      min?: string;
+      max?: string;
+    };
+  };
+
+  /**
+   * Group by fields for aggregations
+   */
+  groupBy?: string[];
+
+  /**
+   * Soft delete configuration
+   */
+  softDelete?: boolean;
+
+  /**
+   * Deleted at field name for soft delete
+   * @default 'deleted_at'
+   */
+  deletedAtField?: string;
+
+  /**
+   * Include soft-deleted records
+   * @default false
+   */
+  includeDeleted?: boolean;
+
+  /**
+   * Only return soft-deleted records
+   * @default false
+   */
+  onlyDeleted?: boolean;
+}
+
+/**
+ * Custom query parameters for DataProvider.custom() method
+ * Allows execution of raw SQL queries and complex database operations
+ */
+export interface CustomParams {
+  /**
+   * Operation type/URL identifier
+   * - 'query': Execute SELECT queries
+   * - 'execute': Execute INSERT/UPDATE/DELETE
+   * - 'drizzle': Execute Drizzle query builder
+   */
+  url: string;
+
+  /**
+   * HTTP method (for API compatibility)
+   */
+  method: 'get' | 'delete' | 'head' | 'options' | 'post' | 'put' | 'patch';
+
+  /**
+   * Query payload containing SQL or Drizzle query
+   */
+  payload?: {
+    /**
+     * Raw SQL query string
+     */
+    sql?: string;
+
+    /**
+     * SQL query arguments/parameters
+     */
+    args?: any[];
+
+    /**
+     * Drizzle query builder instance
+     */
+    query?: any;
+  };
+
+  /**
+   * Query parameters (for API compatibility)
+   */
+  query?: Record<string, any>;
+
+  /**
+   * HTTP headers (for API compatibility)
+   */
+  headers?: Record<string, string>;
+}
+
+/**
+ * Custom query response
+ */
+export interface CustomResponse<T = any> {
+  /**
+   * Query result data
+   */
+  data: T;
 }
