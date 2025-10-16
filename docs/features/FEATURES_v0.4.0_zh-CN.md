@@ -35,7 +35,7 @@ console.log(dataProvider.getApiUrl()); // ""
 
 ### 2. custom() 方法 ⭐
 
-**状态**: 🚧 计划在 v0.4.0 实现
+**状态**: ✅ 已在 v0.4.0 完成
 
 执行自定义 SQL 查询或超出标准 CRUD 的复杂数据库操作。
 
@@ -174,7 +174,7 @@ async function custom<T = any>(
 
 ### 3. 嵌套关系加载
 
-**状态**: 🚧 计划在 v0.4.0 实现
+**状态**: ✅ 已在 v0.4.0 完成
 
 利用 Drizzle ORM 的关系查询 API 在单个查询中加载嵌套数据。
 
@@ -332,7 +332,7 @@ async function getOne<T extends BaseRecord = BaseRecord>(
 
 ### 4. 聚合查询支持
 
-**状态**: 🚧 计划在 v0.4.0 实现
+**状态**: ✅ 已在 v0.4.0 完成
 
 使用内置聚合函数执行统计分析和报告。
 
@@ -476,7 +476,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
 ### 5. 字段选择（Select/投影）
 
-**状态**: 🚧 计划在 v0.4.0 实现
+**状态**: ✅ 已在 v0.4.0 完成
 
 通过仅选择所需的字段来优化性能。
 
@@ -582,7 +582,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
 ### 6. 软删除支持
 
-**状态**: 🚧 计划在 v0.4.0 实现
+**状态**: ✅ 已在 v0.4.0 完成
 
 实现软删除以保证数据安全和审计跟踪。
 
@@ -727,6 +727,120 @@ export const posts = sqliteTable('posts', {
 
 ---
 
+### 7. Time Travel（时光旅行 - SQLite & D1）⭐
+
+**状态**: ✅ 可用 (已在 v0.3.x 实现)
+
+为 SQLite 数据库提供自动备份和时间点恢复功能。对于 Cloudflare D1，Time Travel 是内置的并由 Cloudflare 管理。
+
+#### SQLite Time Travel
+
+对于本地 SQLite 数据库，Time Travel 提供基于文件的自动备份，具有可配置的间隔和保留策略。
+
+**配置**:
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+  timeTravel: {
+    enabled: true,
+    backupDir: './.time-travel',     // 备份目录
+    intervalSeconds: 60,              // 每 60 秒备份一次
+    retentionDays: 30,                // 保留备份 30 天
+  },
+});
+```
+
+**使用示例**:
+
+```typescript
+// 列出所有可用的快照
+const snapshots = await dataProvider.listSnapshots();
+console.log(snapshots);
+// [
+//   { timestamp: '2025-01-15T10:30:00.000Z', path: './.time-travel/snapshot-2025-01-15T10-30-00-000Z.db', createdAt: 1705318200000 },
+//   { timestamp: '2025-01-15T10:29:00.000Z', path: './.time-travel/snapshot-2025-01-15T10-29-00-000Z.db', createdAt: 1705318140000 },
+// ]
+
+// 创建手动快照
+const snapshot = await dataProvider.createSnapshot('before-migration');
+console.log(`快照创建于: ${snapshot.timestamp}`);
+
+// 恢复到特定时间戳
+await dataProvider.restoreToTimestamp('2025-01-15T10:30:00.000Z');
+
+// 恢复到某个日期之前最近的快照
+await dataProvider.restoreToDate(new Date('2025-01-15T10:00:00.000Z'));
+
+// 清理旧快照（在计划备份期间自动执行）
+const deletedCount = await dataProvider.cleanupSnapshots();
+console.log(`删除了 ${deletedCount} 个旧快照`);
+
+// 完成后停止自动备份
+dataProvider.stopAutoBackup();
+```
+
+#### Cloudflare D1 Time Travel
+
+对于 Cloudflare D1 数据库，Time Travel 是内置的，可通过 Cloudflare 控制面板或 `wrangler` CLI 管理：
+
+```bash
+# 列出可用的恢复点
+wrangler d1 time-travel list --database=my-database
+
+# 恢复到特定时间戳
+wrangler d1 time-travel restore --database=my-database --timestamp=2025-01-15T10:30:00Z
+
+# 恢复到特定书签
+wrangler d1 time-travel restore --database=my-database --bookmark=BOOKMARK_ID
+```
+
+**重要说明**:
+
+- **SQLite**: Time Travel 需要基于文件的数据库（不支持 `:memory:`）
+- **D1**: 不支持通过 D1 客户端 API 在特定时间点进行运行时查询
+- **D1**: 使用 `wrangler` CLI 进行数据库恢复
+- **自动清理**: 根据保留策略自动清理旧快照
+
+#### 实现细节
+
+SQLite Time Travel 实现在 `src/time-travel-simple.ts`：
+
+```typescript
+export class TimeTravelManager {
+  constructor(dbPath: string, options: TimeTravelOptions);
+
+  // 创建手动快照
+  async createSnapshot(label?: string): Promise<TimeTravelSnapshot>;
+
+  // 列出所有可用快照
+  async listSnapshots(): Promise<TimeTravelSnapshot[]>;
+
+  // 恢复到特定时间戳
+  async restoreToTimestamp(timestamp: string): Promise<void>;
+
+  // 恢复到日期之前最近的快照
+  async restoreToDate(date: Date): Promise<void>;
+
+  // 清理旧快照
+  async cleanupSnapshots(): Promise<number>;
+
+  // 停止自动备份调度器
+  stopAutoBackup(): void;
+}
+```
+
+**优势**:
+
+- **数据安全**: 自动备份防止意外数据丢失
+- **时间点恢复**: 恢复到任何先前状态
+- **零配置**: 开箱即用，具有合理的默认值
+- **高效存储**: 可配置的保留策略防止磁盘空间问题
+- **D1 原生支持**: Cloudflare D1 内置 Time Travel
+
+---
+
 ## 破坏性变更
 
 无。所有新功能都通过 `meta` 参数选择启用。
@@ -785,14 +899,15 @@ const { data } = await dataProvider.getOne({
 
 ## 开发路线图
 
-| 功能          | 状态      | 目标日期 |
+| 功能          | 状态      | 完成版本 |
 | ------------- | --------- | -------- |
 | getApiUrl()   | ✅ 已完成 | v0.3.2   |
-| custom() 方法 | 🚧 进行中 | 2025年Q1 |
-| 嵌套关系      | 🚧 进行中 | 2025年Q1 |
-| 聚合查询      | 🚧 进行中 | 2025年Q1 |
-| 字段选择      | 📋 已计划 | 2025年Q1 |
-| 软删除        | 📋 已计划 | 2025年Q1 |
+| custom() 方法 | ✅ 已完成 | v0.4.0   |
+| 嵌套关系      | ✅ 已完成 | v0.4.0   |
+| 聚合查询      | ✅ 已完成 | v0.4.0   |
+| 字段选择      | ✅ 已完成 | v0.4.0   |
+| 软删除        | ✅ 已完成 | v0.4.0   |
+| Time Travel   | ✅ 可用   | v0.3.x   |
 
 ---
 

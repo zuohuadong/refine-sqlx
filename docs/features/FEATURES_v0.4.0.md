@@ -35,7 +35,7 @@ console.log(dataProvider.getApiUrl()); // ""
 
 ### 2. custom() Method ⭐
 
-**Status**: 🚧 Planned for v0.4.0
+**Status**: ✅ Completed in v0.4.0
 
 Execute custom SQL queries or complex database operations that go beyond standard CRUD.
 
@@ -174,7 +174,7 @@ async function custom<T = any>(
 
 ### 3. Nested Relations Loading
 
-**Status**: 🚧 Planned for v0.4.0
+**Status**: ✅ Completed in v0.4.0
 
 Leverage Drizzle ORM's relational query API to load nested data in a single query.
 
@@ -332,7 +332,7 @@ async function getOne<T extends BaseRecord = BaseRecord>(
 
 ### 4. Aggregation Query Support
 
-**Status**: 🚧 Planned for v0.4.0
+**Status**: ✅ Completed in v0.4.0
 
 Perform statistical analysis and reporting with built-in aggregation functions.
 
@@ -476,7 +476,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
 ### 5. Field Selection (Select/Projection)
 
-**Status**: 🚧 Planned for v0.4.0
+**Status**: ✅ Completed in v0.4.0
 
 Optimize performance by selecting only the fields you need.
 
@@ -582,7 +582,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
 ### 6. Soft Delete Support
 
-**Status**: 🚧 Planned for v0.4.0
+**Status**: ✅ Completed in v0.4.0
 
 Implement soft deletes for data safety and audit trails.
 
@@ -727,6 +727,120 @@ export const posts = sqliteTable('posts', {
 
 ---
 
+### 7. Time Travel (SQLite & D1) ⭐
+
+**Status**: ✅ Available (Implemented in v0.3.x)
+
+Automatic backup and point-in-time restore functionality for SQLite databases. For Cloudflare D1, Time Travel is built-in and managed by Cloudflare.
+
+#### SQLite Time Travel
+
+For local SQLite databases, Time Travel provides automatic file-based backups with configurable intervals and retention policies.
+
+**Configuration**:
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+  timeTravel: {
+    enabled: true,
+    backupDir: './.time-travel',     // Backup directory
+    intervalSeconds: 60,              // Backup every 60 seconds
+    retentionDays: 30,                // Keep backups for 30 days
+  },
+});
+```
+
+**Usage Examples**:
+
+```typescript
+// List all available snapshots
+const snapshots = await dataProvider.listSnapshots();
+console.log(snapshots);
+// [
+//   { timestamp: '2025-01-15T10:30:00.000Z', path: './.time-travel/snapshot-2025-01-15T10-30-00-000Z.db', createdAt: 1705318200000 },
+//   { timestamp: '2025-01-15T10:29:00.000Z', path: './.time-travel/snapshot-2025-01-15T10-29-00-000Z.db', createdAt: 1705318140000 },
+// ]
+
+// Create a manual snapshot
+const snapshot = await dataProvider.createSnapshot('before-migration');
+console.log(`Snapshot created at: ${snapshot.timestamp}`);
+
+// Restore to a specific timestamp
+await dataProvider.restoreToTimestamp('2025-01-15T10:30:00.000Z');
+
+// Restore to the most recent snapshot before a date
+await dataProvider.restoreToDate(new Date('2025-01-15T10:00:00.000Z'));
+
+// Cleanup old snapshots (automatic during scheduled backups)
+const deletedCount = await dataProvider.cleanupSnapshots();
+console.log(`Deleted ${deletedCount} old snapshots`);
+
+// Stop automatic backups when done
+dataProvider.stopAutoBackup();
+```
+
+#### Cloudflare D1 Time Travel
+
+For Cloudflare D1 databases, Time Travel is built-in and managed through the Cloudflare dashboard or `wrangler` CLI:
+
+```bash
+# List available restore points
+wrangler d1 time-travel list --database=my-database
+
+# Restore to a specific timestamp
+wrangler d1 time-travel restore --database=my-database --timestamp=2025-01-15T10:30:00Z
+
+# Restore to a specific bookmark
+wrangler d1 time-travel restore --database=my-database --bookmark=BOOKMARK_ID
+```
+
+**Important Notes**:
+
+- **SQLite**: Time Travel requires a file-based database (not `:memory:`)
+- **D1**: Runtime queries at specific points in time are not supported via the D1 client API
+- **D1**: Use `wrangler` CLI for database restoration
+- **Automatic Cleanup**: Old snapshots are automatically cleaned up based on retention policy
+
+#### Implementation Details
+
+SQLite Time Travel is implemented in `src/time-travel-simple.ts`:
+
+```typescript
+export class TimeTravelManager {
+  constructor(dbPath: string, options: TimeTravelOptions);
+
+  // Create a manual snapshot
+  async createSnapshot(label?: string): Promise<TimeTravelSnapshot>;
+
+  // List all available snapshots
+  async listSnapshots(): Promise<TimeTravelSnapshot[]>;
+
+  // Restore to specific timestamp
+  async restoreToTimestamp(timestamp: string): Promise<void>;
+
+  // Restore to most recent snapshot before date
+  async restoreToDate(date: Date): Promise<void>;
+
+  // Cleanup old snapshots
+  async cleanupSnapshots(): Promise<number>;
+
+  // Stop automatic backup scheduler
+  stopAutoBackup(): void;
+}
+```
+
+**Benefits**:
+
+- **Data Safety**: Automatic backups protect against accidental data loss
+- **Point-in-Time Recovery**: Restore to any previous state
+- **Zero Configuration**: Works out of the box with sensible defaults
+- **Efficient Storage**: Configurable retention policy prevents disk space issues
+- **D1 Native Support**: Built-in Time Travel for Cloudflare D1
+
+---
+
 ## Breaking Changes
 
 None. All new features are opt-in via `meta` parameter.
@@ -785,14 +899,15 @@ const { data } = await dataProvider.getOne({
 
 ## Development Roadmap
 
-| Feature          | Status         | Target Date |
-| ---------------- | -------------- | ----------- |
-| getApiUrl()      | ✅ Completed   | v0.3.2      |
-| custom() method  | 🚧 In Progress | Q1 2025     |
-| Nested Relations | 🚧 In Progress | Q1 2025     |
-| Aggregations     | 🚧 In Progress | Q1 2025     |
-| Field Selection  | 📋 Planned     | Q1 2025     |
-| Soft Delete      | 📋 Planned     | Q1 2025     |
+| Feature          | Status       | Completed |
+| ---------------- | ------------ | --------- |
+| getApiUrl()      | ✅ Completed | v0.3.2    |
+| custom() method  | ✅ Completed | v0.4.0    |
+| Nested Relations | ✅ Completed | v0.4.0    |
+| Aggregations     | ✅ Completed | v0.4.0    |
+| Field Selection  | ✅ Completed | v0.4.0    |
+| Soft Delete      | ✅ Completed | v0.4.0    |
+| Time Travel      | ✅ Available | v0.3.x    |
 
 ---
 

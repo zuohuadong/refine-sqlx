@@ -96,6 +96,21 @@ export interface D1Options {
      */
     maxSize?: number;
   };
+
+  /**
+   * Time Travel settings (for backward compatibility)
+   * Note: D1 Time Travel is primarily managed through CLI
+   */
+  timeTravel?: {
+    /**
+     * Enable Time Travel
+     */
+    enabled: boolean;
+    /**
+     * Bookmark or timestamp for point-in-time queries
+     */
+    bookmark?: string | number;
+  };
 }
 
 /**
@@ -220,6 +235,35 @@ export interface RefineSQLConfig<
    * ```
    */
   timeTravel?: TimeTravelOptions;
+
+  /**
+   * Soft delete configuration
+   *
+   * @example
+   * ```typescript
+   * const dataProvider = await createRefineSQL({
+   *   connection: './database.sqlite',
+   *   schema,
+   *   softDelete: {
+   *     enabled: true,
+   *     field: 'deleted_at',  // Field name for soft delete timestamp
+   *   }
+   * });
+   * ```
+   */
+  softDelete?: {
+    /**
+     * Enable soft delete
+     * @default false
+     */
+    enabled: boolean;
+
+    /**
+     * Field name for deleted timestamp
+     * @default 'deleted_at'
+     */
+    field?: string;
+  };
 }
 
 /**
@@ -263,6 +307,80 @@ export interface RefineSQLMeta {
    * @default 'id'
    */
   idColumnName?: string;
+
+  /**
+   * Include related records (nested relations)
+   * Uses Drizzle's relational query API
+   *
+   * @example
+   * ```typescript
+   * meta: {
+   *   include: {
+   *     posts: true,  // Load all posts
+   *     // Or with nested relations
+   *     posts: {
+   *       include: {
+   *         comments: true
+   *       }
+   *     }
+   *   }
+   * }
+   * ```
+   */
+  include?: Record<string, boolean | { include?: Record<string, any> }>;
+
+  /**
+   * Select specific fields only
+   * @example ['id', 'name', 'email']
+   */
+  select?: string[];
+
+  /**
+   * Exclude specific fields
+   * @example ['password', 'secret_token']
+   */
+  exclude?: string[];
+
+  /**
+   * Aggregation operations
+   */
+  aggregations?: {
+    [key: string]: {
+      sum?: string;
+      avg?: string;
+      count?: string | '*';
+      min?: string;
+      max?: string;
+    };
+  };
+
+  /**
+   * Group by fields for aggregations
+   */
+  groupBy?: string[];
+
+  /**
+   * Soft delete configuration
+   */
+  softDelete?: boolean;
+
+  /**
+   * Deleted at field name for soft delete
+   * @default 'deleted_at'
+   */
+  deletedAtField?: string;
+
+  /**
+   * Include soft-deleted records
+   * @default false
+   */
+  includeDeleted?: boolean;
+
+  /**
+   * Only return soft-deleted records
+   * @default false
+   */
+  onlyDeleted?: boolean;
 }
 
 /**
@@ -323,4 +441,3 @@ export interface CustomResponse<T = any> {
    */
   data: T;
 }
-

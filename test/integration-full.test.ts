@@ -1,5 +1,5 @@
 /**
- * Comprehensive integration test suite for v0.3.0
+ * Comprehensive integration test suite for v0.4.0
  * Tests all CRUD operations with Drizzle ORM integration
  */
 import type { DataProvider } from '@refinedev/core';
@@ -14,16 +14,19 @@ import {
   it,
 } from './helpers/test-adapter';
 
-// Import appropriate database driver based on runtime using require for compatibility
-const Database =
-  isRunningInBun ? require('bun:sqlite').Database : require('better-sqlite3');
+// Import appropriate database driver based on runtime
+let Database: any;
+let drizzle: any;
 
-const drizzle =
-  isRunningInBun ?
-    require('drizzle-orm/bun-sqlite').drizzle
-  : require('drizzle-orm/better-sqlite3').drizzle;
+if (isRunningInBun) {
+  Database = require('bun:sqlite').Database;
+  drizzle = require('drizzle-orm/bun-sqlite').drizzle;
+} else {
+  Database = require('better-sqlite3');
+  drizzle = require('drizzle-orm/better-sqlite3').drizzle;
+}
 
-describe('refine-sqlx v0.3.0 Integration Tests', () => {
+describe('refine-sqlx v0.4.0 Integration Tests', () => {
   let dataProvider: DataProvider;
   let db: any;
   let sqlite: any;
@@ -421,6 +424,167 @@ describe('refine-sqlx v0.3.0 Integration Tests', () => {
       expect(typeof user.name).toBe('string');
       expect(typeof user.email).toBe('string');
       expect(['active', 'inactive', 'pending']).toContain(user.status);
+    });
+  });
+
+  // v0.4.0 Features
+  describe('custom() method - v0.4.0', () => {
+    it('should execute raw SQL query', async () => {
+      const result = await dataProvider.custom({
+        url: 'query',
+        method: 'post',
+        payload: {
+          sql: 'SELECT * FROM users WHERE age > 30',
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.every((u: any) => u.age > 30)).toBe(true);
+    });
+
+    it('should execute raw SQL with parameters', async () => {
+      const result = await dataProvider.custom({
+        url: 'query',
+        method: 'post',
+        payload: {
+          sql: 'SELECT * FROM users WHERE status = ? AND age >= ?',
+          args: ['active', 30],
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.every((u: any) => u.status === 'active')).toBe(true);
+    });
+
+    it('should execute INSERT/UPDATE/DELETE statements', async () => {
+      const result = await dataProvider.custom({
+        url: 'execute',
+        method: 'post',
+        payload: {
+          sql: 'UPDATE users SET status = ? WHERE id = ?',
+          args: ['active', 1],
+        },
+      });
+
+      expect(result.data).toBeDefined();
+    });
+
+    it('should throw error for unsupported operations', async () => {
+      await expect(
+        dataProvider.custom({
+          url: 'unsupported',
+          method: 'post',
+          payload: {},
+        }),
+      ).rejects.toThrow(/Unsupported custom operation/);
+    });
+  });
+
+  describe('Field Selection - v0.4.0', () => {
+    it('should select specific fields', async () => {
+      const result = await dataProvider.getList({
+        resource: 'users',
+        meta: {
+          select: ['id', 'name', 'email'],
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBeGreaterThan(0);
+      const user = result.data[0];
+      expect(user.id).toBeDefined();
+      expect(user.name).toBeDefined();
+      expect(user.email).toBeDefined();
+      // age should not be present
+      expect(user.age).toBeUndefined();
+    });
+
+    it('should exclude specific fields', async () => {
+      const result = await dataProvider.getList({
+        resource: 'users',
+        meta: {
+          exclude: ['age', 'status'],
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBeGreaterThan(0);
+      const user = result.data[0];
+      expect(user.id).toBeDefined();
+      expect(user.name).toBeDefined();
+      expect(user.email).toBeDefined();
+      // age and status should not be present
+      expect(user.age).toBeUndefined();
+      expect(user.status).toBeUndefined();
+    });
+  });
+
+  describe('Aggregation Queries - v0.4.0', () => {
+    it('should perform basic aggregations', async () => {
+      const result = await dataProvider.getList({
+        resource: 'users',
+        meta: {
+          aggregations: {
+            totalUsers: { count: '*' },
+            avgAge: { avg: 'age' },
+            minAge: { min: 'age' },
+            maxAge: { max: 'age' },
+          },
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBe(1);
+      const stats = result.data[0];
+      expect(stats.totalUsers).toBeGreaterThan(0);
+      expect(Number(stats.avgAge)).toBeGreaterThan(0);
+      expect(stats.minAge).toBeDefined();
+      expect(stats.maxAge).toBeDefined();
+    });
+
+    it('should perform aggregations with groupBy', async () => {
+      const result = await dataProvider.getList({
+        resource: 'users',
+        meta: {
+          aggregations: {
+            count: { count: '*' },
+            avgAge: { avg: 'age' },
+          },
+          groupBy: ['status'],
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBeGreaterThan(1);
+      // Each group should have status and aggregation results
+      result.data.forEach((group: any) => {
+        expect(group.status).toBeDefined();
+        expect(group.count).toBeGreaterThan(0);
+        if (group.avgAge !== null) {
+          expect(Number(group.avgAge)).toBeGreaterThan(0);
+        }
+      });
+    });
+
+    it('should perform aggregations with filters', async () => {
+      const result = await dataProvider.getList({
+        resource: 'users',
+        filters: [{ field: 'status', operator: 'eq', value: 'active' }],
+        meta: {
+          aggregations: {
+            totalActive: { count: '*' },
+            avgAge: { avg: 'age' },
+          },
+        },
+      });
+
+      expect(result.data).toBeInstanceOf(Array);
+      expect(result.data.length).toBe(1);
+      const stats = result.data[0];
+      // Should count active users only
+      expect(stats.totalActive).toBeGreaterThan(0);
+      expect(Number(stats.avgAge)).toBeGreaterThan(0);
     });
   });
 });
