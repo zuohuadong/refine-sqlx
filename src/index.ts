@@ -13,6 +13,8 @@ export type {
   PostgreSQLConfig,
   DatabaseType,
   TimeTravelOptions,
+  CustomParams,
+  CustomResponse,
 } from './types';
 
 // Runtime utilities

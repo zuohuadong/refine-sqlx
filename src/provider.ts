@@ -42,9 +42,16 @@ import {
 import { isD1Database, isDrizzleDatabase } from './runtime';
 import type { TimeTravelSnapshot } from './time-travel-simple';
 import { TimeTravelManager } from './time-travel-simple';
-import type { RefineSQLConfig, RefineSQLMeta, TableName } from './types';
+import type {
+  CustomParams,
+  CustomResponse,
+  RefineSQLConfig,
+  RefineSQLMeta,
+  TableName,
+} from './types';
 import { detectDatabaseType, parseConnectionString } from './utils/connection';
 import { validateD1Options } from './utils/validation';
+import { UnsupportedOperatorError } from './errors';
 
 type DrizzleDatabase<TSchema extends Record<string, unknown>> =
   | BunSQLiteDatabase<TSchema>
@@ -419,6 +426,39 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     return { data: data as T[] };
   }
 
+  /**
+   * Execute custom SQL queries or complex database operations
+   * @param params - Custom query parameters
+   * @returns Query result
+   */
+  async function custom<T = any>(
+    params: CustomParams,
+  ): Promise<CustomResponse<T>> {
+    const { url, payload } = params;
+
+    // Execute raw SQL query (SELECT)
+    if (url === 'query' && payload?.sql) {
+      const result = await db.execute(sql.raw(payload.sql));
+      return { data: result.rows as T };
+    }
+
+    // Execute raw SQL statement (INSERT/UPDATE/DELETE)
+    if (url === 'execute' && payload?.sql) {
+      const result = await db.execute(sql.raw(payload.sql));
+      return { data: result as T };
+    }
+
+    // Execute Drizzle query builder
+    if (url === 'drizzle' && payload?.query) {
+      const result = await payload.query;
+      return { data: result as T };
+    }
+
+    throw new UnsupportedOperatorError(
+      `Unsupported custom operation: ${url}. Supported operations: 'query', 'execute', 'drizzle'`,
+    );
+  }
+
   // Create base data provider
   const dataProvider: DataProvider = {
     getList,
@@ -430,6 +470,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     updateMany,
     deleteOne,
     deleteMany,
+    custom,
     getApiUrl() {
       // SQL databases don't have a traditional API URL
       // Return a placeholder or configuration-based value

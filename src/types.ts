@@ -264,3 +264,63 @@ export interface RefineSQLMeta {
    */
   idColumnName?: string;
 }
+
+/**
+ * Custom query parameters for DataProvider.custom() method
+ * Allows execution of raw SQL queries and complex database operations
+ */
+export interface CustomParams {
+  /**
+   * Operation type/URL identifier
+   * - 'query': Execute SELECT queries
+   * - 'execute': Execute INSERT/UPDATE/DELETE
+   * - 'drizzle': Execute Drizzle query builder
+   */
+  url: string;
+
+  /**
+   * HTTP method (for API compatibility)
+   */
+  method: 'get' | 'delete' | 'head' | 'options' | 'post' | 'put' | 'patch';
+
+  /**
+   * Query payload containing SQL or Drizzle query
+   */
+  payload?: {
+    /**
+     * Raw SQL query string
+     */
+    sql?: string;
+
+    /**
+     * SQL query arguments/parameters
+     */
+    args?: any[];
+
+    /**
+     * Drizzle query builder instance
+     */
+    query?: any;
+  };
+
+  /**
+   * Query parameters (for API compatibility)
+   */
+  query?: Record<string, any>;
+
+  /**
+   * HTTP headers (for API compatibility)
+   */
+  headers?: Record<string, string>;
+}
+
+/**
+ * Custom query response
+ */
+export interface CustomResponse<T = any> {
+  /**
+   * Query result data
+   */
+  data: T;
+}
+
