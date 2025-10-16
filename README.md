@@ -9,14 +9,17 @@ A type-safe, cross-platform SQL data provider for [Refine](https://refine.dev) p
 ## ✨ Features
 
 - 🎯 **Drizzle ORM Integration** - Full type safety with schema-driven development
-- 🔄 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare D1, better-sqlite3
+- 🔄 **Multi-Database Support** - SQLite, MySQL, PostgreSQL, and Cloudflare D1
+- 🌐 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare Workers, better-sqlite3
 - 📦 **Optimized D1 Build** - Tree-shaken bundle (~18KB gzipped) for Cloudflare Workers
 - 🛡️ **Type Inference** - Automatic type inference from Drizzle schemas
+- 🔌 **Unified API** - Single interface for all database types with automatic detection
 - 🔍 **Advanced Filtering** - Full Refine filter operators support
 - 💾 **Transaction Support** - D1 batch API wrapper for atomic operations
+- ⏰ **Time Travel** - Automatic backup and restore for SQLite databases
 - 📊 **Full CRUD** - Complete Create, Read, Update, Delete operations
 - 🚀 **ESM Only** - Modern ES Module architecture
-- 🎛️ **Automatic Runtime Detection** - Intelligently selects the best SQLite driver
+- 🎛️ **Automatic Detection** - Intelligently selects the best driver based on connection string
 
 ## 📦 Installation
 
@@ -30,6 +33,28 @@ npm install refine-sqlx drizzle-orm
 # Using pnpm
 pnpm add refine-sqlx drizzle-orm
 ```
+
+### Optional Database Drivers
+
+**SQLite** (auto-installed as optional dependency):
+
+```bash
+npm install better-sqlite3  # For Node.js < 24
+```
+
+**MySQL**:
+
+```bash
+npm install mysql2
+```
+
+**PostgreSQL**:
+
+```bash
+npm install postgres
+```
+
+Note: Bun and Node.js 24+ have native SQLite support. Cloudflare D1 is built-in.
 
 ## 🚀 Quick Start
 
@@ -59,13 +84,64 @@ export const posts = sqliteTable('posts', {
 
 ### 2. Create Data Provider
 
+**Unified API - Automatic Database Type Detection**
+
 ```typescript
 import { Refine } from '@refinedev/core';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
-const dataProvider = createRefineSQL({
-  connection: './database.sqlite', // or ':memory:'
+// SQLite - File path or :memory:
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+});
+
+// MySQL - Connection string (auto-detected)
+const dataProvider = await createRefineSQL({
+  connection: 'mysql://user:pass@localhost:3306/mydb',
+  schema,
+});
+
+// MySQL - Config object
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'secret',
+    database: 'mydb',
+  },
+  schema,
+});
+
+// PostgreSQL - Connection string (auto-detected)
+const dataProvider = await createRefineSQL({
+  connection: 'postgresql://user:pass@localhost:5432/mydb',
+  schema,
+});
+
+// PostgreSQL - Config object
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: 'secret',
+    database: 'mydb',
+  },
+  schema,
+});
+
+// Cloudflare D1 - Database instance
+const dataProvider = await createRefineSQL({
+  connection: env.DB, // D1Database instance
+  schema,
+});
+
+// Drizzle Instance - Any database (most flexible)
+const dataProvider = await createRefineSQL({
+  connection: drizzleInstance,
   schema,
 });
 
@@ -103,6 +179,125 @@ const { data } = await dataProvider.create<User>({
 ```
 
 ## 🏗️ Platform-Specific Usage
+
+### SQLite (All Runtimes)
+
+**Schema Definition:**
+
+```typescript
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  status: text('status', { enum: ['active', 'inactive'] }).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+```
+
+**Usage:**
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// File path
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+});
+
+// In-memory
+const dataProvider = await createRefineSQL({ connection: ':memory:', schema });
+```
+
+### MySQL
+
+**Schema Definition:**
+
+```typescript
+import { int, mysqlTable, timestamp, varchar } from 'drizzle-orm/mysql-core';
+
+export const users = mysqlTable('users', {
+  id: int('id').primaryKey().autoincrement(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  status: varchar('status', { length: 20 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+```
+
+**Usage:**
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// Connection string
+const dataProvider = await createRefineSQL({
+  connection: 'mysql://root:password@localhost:3306/mydb',
+  schema,
+});
+
+// Config object with advanced options
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'password',
+    database: 'mydb',
+    ssl: { rejectUnauthorized: false },
+    pool: { max: 20, min: 5 },
+  },
+  schema,
+});
+```
+
+### PostgreSQL
+
+**Schema Definition:**
+
+```typescript
+import { pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  status: varchar('status', { length: 20 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+```
+
+**Usage:**
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// Connection string
+const dataProvider = await createRefineSQL({
+  connection: 'postgresql://postgres:password@localhost:5432/mydb',
+  schema,
+});
+
+// Config object with advanced options
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: 'password',
+    database: 'mydb',
+    ssl: true,
+    max: 20,
+    idle_timeout: 30,
+  },
+  schema,
+});
+```
 
 ### Cloudflare D1 (Optimized Build)
 
@@ -264,6 +459,63 @@ const { data: users } = await dataProvider.deleteMany<User>({
 });
 ```
 
+## ⏰ Time Travel (SQLite Only)
+
+Enable automatic backup and restore functionality for SQLite databases:
+
+```typescript
+import { createRefineSQL, type DataProviderWithTimeTravel } from 'refine-sqlx';
+import * as schema from './schema';
+
+const dataProvider: DataProviderWithTimeTravel = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+  timeTravel: {
+    enabled: true,
+    backupDir: './.time-travel', // Backup directory (default: './.time-travel')
+    intervalSeconds: 60, // Backup interval in seconds (default: 60)
+    retentionDays: 30, // Keep backups for 30 days (default: 30)
+  },
+});
+
+// List all available snapshots
+const snapshots = await dataProvider.listSnapshots?.();
+console.log(snapshots);
+// [
+//   {
+//     timestamp: '2025-10-16T10:30:00.000Z',
+//     path: './.time-travel/snapshot-2025-10-16T10-30-00-000Z-auto.db',
+//     createdAt: 1729077000000
+//   }
+// ]
+
+// Create a manual snapshot
+const snapshot = await dataProvider.createSnapshot?.('before-migration');
+
+// Restore to a specific timestamp
+await dataProvider.restoreToTimestamp?.('2025-10-16T10:30:00.000Z');
+
+// Restore to the most recent snapshot before a date
+await dataProvider.restoreToDate?.(new Date('2025-10-16'));
+
+// Cleanup old snapshots
+const deletedCount = await dataProvider.cleanupSnapshots?.();
+
+// Stop automatic backups (when shutting down)
+dataProvider.stopAutoBackup?.();
+```
+
+### Time Travel Features
+
+- 🔄 **Automatic Backups**: Configurable interval-based snapshots
+- 📸 **Manual Snapshots**: Create labeled snapshots on demand
+- 🕰️ **Point-in-Time Restore**: Restore to specific timestamps or dates
+- 🧹 **Automatic Cleanup**: Retention policy for old snapshots
+- 🔒 **Pre-Restore Backup**: Automatically creates backup before restoration
+- 📁 **File-Based**: Simple, efficient file system operations
+
+**Note**: Time Travel is only available for SQLite databases with file-based storage (not `:memory:`).
+
 ## 🔍 Advanced Filtering
 
 Supports all standard Refine filter operators:
@@ -343,6 +595,8 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
+  // Extended DataProvider with Time Travel
+  DataProviderWithTimeTravel,
   InferInsertModel,
   // Infer types from schema
   InferSelectModel,
@@ -352,6 +606,9 @@ import type {
   RuntimeEnvironment,
   // Table name helper
   TableName,
+  // Time Travel
+  TimeTravelOptions,
+  TimeTravelSnapshot,
 } from 'refine-sqlx';
 
 // Usage

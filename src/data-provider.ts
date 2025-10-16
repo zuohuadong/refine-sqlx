@@ -27,6 +27,7 @@ import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type { SqlClient, SqlClientFactory, SqlResult } from './client';
 import type { SQLiteOptions } from './detect-sqlite';
 import detectSqlite from './detect-sqlite';
+import type { RefineSQLMeta } from './types';
 import {
   createCrudFilters,
   createCrudSorting,

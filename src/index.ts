@@ -1,12 +1,18 @@
 // v0.3.0 - Drizzle ORM integration
 export { createRefineSQL } from './provider';
+export type { DataProviderWithTimeTravel } from './provider';
 export type {
   InferInsertModel,
   InferSelectModel,
   RefineSQLConfig,
+  RefineSQLMeta,
   RuntimeEnvironment,
   TableName,
   D1Options,
+  MySQLConfig,
+  PostgreSQLConfig,
+  DatabaseType,
+  TimeTravelOptions,
 } from './types';
 
 // Runtime utilities
@@ -37,13 +43,37 @@ export {
 // Validation utilities
 export { validateD1Options, getBatchSize } from './utils/validation';
 
-// Adapters
-export { createBunSQLiteAdapter, isBunSQLiteAvailable } from './adapters/bun';
+// Adapters - Export from unified adapters directory
 export {
+  // SQL Client adapters (SqlClient interface)
+  createBunSQLiteAdapter,
+  createNodeSQLiteAdapter,
+  createCloudflareD1Adapter,
   createBetterSQLite3Adapter,
+  // Drizzle ORM adapters (Drizzle database instances)
+  createBunDrizzleAdapter,
+  createBetterSQLite3DrizzleAdapter,
+  createD1Adapter,
+  createMySQLAdapter,
+  createPostgreSQLAdapter,
+  // Helper functions
+  isBunSQLiteAvailable,
   isBetterSQLite3Available,
-} from './adapters/better-sqlite3-drizzle';
-export { createD1Adapter, d1Transaction, isD1Available } from './adapters/d1';
+  isD1Available,
+  isMySQLAvailable,
+  isPostgreSQLAvailable,
+  d1Transaction,
+} from './adapters';
+
+// Connection utilities
+export {
+  parseConnectionString,
+  detectDatabaseType,
+  buildMySQLConnectionString,
+  buildPostgreSQLConnectionString,
+  validateMySQLConfig,
+  validatePostgreSQLConfig,
+} from './utils/connection';
 
 // Errors
 export {
@@ -60,3 +90,6 @@ export {
 // Logging
 export type { Logger } from './logger';
 export { ConsoleLogger, NoOpLogger, createLogger } from './logger';
+
+// Time Travel (SQLite only)
+export type { TimeTravelSnapshot } from './time-travel-simple';

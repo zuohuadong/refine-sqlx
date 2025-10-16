@@ -450,9 +450,7 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
     if (!(tenantField in table)) {
       if (config.multiTenancy.strictMode) {
-        throw new Error(
-          `表 ${params.resource} 缺少租户字段：${tenantField}`,
-        );
+        throw new Error(`表 ${params.resource} 缺少租户字段：${tenantField}`);
       }
     } else {
       query.where(eq(table[tenantField], tenantId));
@@ -897,16 +895,16 @@ refine-sqlx migrate status
 
 ## 开发路线图
 
-| 功能         | 优先级 | 目标日期  | 依赖项                 |
-| ------------ | ------ | --------- | ---------------------- |
-| 乐观锁       | P2     | 2025年Q2  | 无                     |
-| 实时查询     | P2     | 2025年Q2  | WebSocket 基础设施     |
-| 多租户       | P2     | 2025年Q2  | 无                     |
-| 查询缓存     | P2     | 2025年Q2  | 缓存适配器             |
-| 类型生成器   | P3     | 2025年Q3  | CLI 框架               |
-| 验证         | P3     | 2025年Q3  | Zod 集成               |
-| 增强日志     | P3     | 2025年Q3  | 无                     |
-| 迁移工具     | P3     | 2025年Q3  | Drizzle Kit            |
+| 功能       | 优先级 | 目标日期 | 依赖项             |
+| ---------- | ------ | -------- | ------------------ |
+| 乐观锁     | P2     | 2025年Q2 | 无                 |
+| 实时查询   | P2     | 2025年Q2 | WebSocket 基础设施 |
+| 多租户     | P2     | 2025年Q2 | 无                 |
+| 查询缓存   | P2     | 2025年Q2 | 缓存适配器         |
+| 类型生成器 | P3     | 2025年Q3 | CLI 框架           |
+| 验证       | P3     | 2025年Q3 | Zod 集成           |
+| 增强日志   | P3     | 2025年Q3 | 无                 |
+| 迁移工具   | P3     | 2025年Q3 | Drizzle Kit        |
 
 ---
 
