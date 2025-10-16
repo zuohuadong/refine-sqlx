@@ -208,12 +208,28 @@ describe('Time Travel功能测试', () => {
     });
 
     it('应该恢复到指定日期之前最近的快照', async () => {
+      // 重新启用 Time Travel
+      if (sqlite) {
+        sqlite.close();
+      }
+      sqlite = new Database(testDbPath);
+      db = drizzle(sqlite, { schema });
+
+      const providerWithTT = (await createRefineSQL({
+        connection: testDbPath,
+        schema,
+        timeTravel: {
+          enabled: true,
+          backupDir,
+        },
+      })) as DataProviderWithTimeTravel;
+
       // 创建快照
-      const snapshot = await dataProvider.createSnapshot!('date-test');
+      const snapshot = await providerWithTT.createSnapshot!('date-test');
       const targetDate = new Date(snapshot.createdAt + 1000); // 1秒后
 
       // 添加数据
-      await dataProvider.create({
+      await providerWithTT.create({
         resource: 'users',
         variables: {
           name: 'Date Test User',
@@ -224,21 +240,46 @@ describe('Time Travel功能测试', () => {
       });
 
       // 恢复到目标日期之前
-      await dataProvider.restoreToDate!(targetDate);
+      await providerWithTT.restoreToDate!(targetDate);
 
       // 验证恢复成功（这里只是确保方法不抛出错误）
-      const list = await dataProvider.getList({ resource: 'users' });
+      const list = await providerWithTT.getList({ resource: 'users' });
       expect(list.data).toBeInstanceOf(Array);
+
+      providerWithTT.stopAutoBackup!();
+
+      // 关闭并重新打开数据库
+      if (sqlite) {
+        sqlite.close();
+      }
+      sqlite = new Database(testDbPath);
+      db = drizzle(sqlite, { schema });
     });
 
     it('应该在恢复前创建pre-restore快照', async () => {
-      const snapshot = await dataProvider.createSnapshot!('test-pre-restore');
+      // 重新启用 Time Travel
+      if (sqlite) {
+        sqlite.close();
+      }
+      sqlite = new Database(testDbPath);
+      db = drizzle(sqlite, { schema });
+
+      const providerWithTT = (await createRefineSQL({
+        connection: testDbPath,
+        schema,
+        timeTravel: {
+          enabled: true,
+          backupDir,
+        },
+      })) as DataProviderWithTimeTravel;
+
+      const snapshot = await providerWithTT.createSnapshot!('test-pre-restore');
 
       // 等待快照完成
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // 获取快照列表
-      const snapshots = await dataProvider.listSnapshots!();
+      const snapshots = await providerWithTT.listSnapshots!();
       const targetSnapshot = snapshots.find((s) =>
         s.path.includes('test-pre-restore'),
       );
@@ -248,33 +289,52 @@ describe('Time Travel功能测试', () => {
       }
 
       // 执行恢复
-      await dataProvider.restoreToTimestamp!(targetSnapshot.timestamp);
+      await providerWithTT.restoreToTimestamp!(targetSnapshot.timestamp);
 
       // 检查是否创建了pre-restore快照
-      const snapshotsAfter = await dataProvider.listSnapshots!();
+      const snapshotsAfter = await providerWithTT.listSnapshots!();
       const preRestoreSnapshots = snapshotsAfter.filter((s) =>
         s.path.includes('pre-restore'),
       );
 
       expect(preRestoreSnapshots.length).toBeGreaterThan(0);
+
+      providerWithTT.stopAutoBackup!();
     });
   });
 
   describe('清理快照', () => {
     it('应该清理旧快照', async () => {
+      // 重新启用 Time Travel
+      if (sqlite) {
+        sqlite.close();
+      }
+      sqlite = new Database(testDbPath);
+      db = drizzle(sqlite, { schema });
+
+      const providerWithTT = (await createRefineSQL({
+        connection: testDbPath,
+        schema,
+        timeTravel: {
+          enabled: true,
+          backupDir,
+          retentionDays: 1,
+        },
+      })) as DataProviderWithTimeTravel;
+
       // 获取清理前的快照数量
-      const snapshotsBefore = await dataProvider.listSnapshots!();
+      const snapshotsBefore = await providerWithTT.listSnapshots!();
       const countBefore = snapshotsBefore.length;
 
       // 执行清理（由于retentionDays=1，所有旧快照都应被保留或清理）
-      const deletedCount = await dataProvider.cleanupSnapshots!();
+      const deletedCount = await providerWithTT.cleanupSnapshots!();
 
       // 验证清理函数可以正常执行
       expect(typeof deletedCount).toBe('number');
       expect(deletedCount).toBeGreaterThanOrEqual(0);
 
       // 获取清理后的快照
-      const snapshotsAfter = await dataProvider.listSnapshots!();
+      const snapshotsAfter = await providerWithTT.listSnapshots!();
 
       // 验证pre-restore快照不会被删除
       const preRestoreAfter = snapshotsAfter.filter((s) =>
@@ -284,6 +344,8 @@ describe('Time Travel功能测试', () => {
         s.path.includes('pre-restore'),
       );
       expect(preRestoreAfter.length).toBe(preRestoreBefore.length);
+
+      providerWithTT.stopAutoBackup!();
     });
   });
 
