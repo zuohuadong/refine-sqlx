@@ -98,3 +98,23 @@ export class InvalidConfigurationError extends RefineSQLError {
     this.name = 'InvalidConfigurationError';
   }
 }
+
+/**
+ * Error thrown when optimistic lock conflict occurs
+ */
+export class OptimisticLockError extends RefineSQLError {
+  constructor(
+    public resource: string,
+    public id: any,
+    public expectedVersion: number | string,
+    public currentVersion?: number | string,
+  ) {
+    super(
+      `Optimistic lock conflict: ${resource}#${id} ` +
+        `(expected version ${expectedVersion}, current version ${currentVersion})`,
+      'OPTIMISTIC_LOCK_ERROR',
+      { resource, id, expectedVersion, currentVersion },
+    );
+    this.name = 'OptimisticLockError';
+  }
+}

@@ -1,24 +1,77 @@
-# Refine SQLx v0.5.0 - 企业级与开发者体验
+# Refine SQLx v0.5.0 - Enterprise & Developer Experience
 
-**状态**: 已计划
-**目标发布**: 2025年第二/三季度
-**Refine 版本**: 5.0+
+**Status**: Planned
+**Target Release**: Q2-Q3 2025
+**Refine Version**: 5.0+
 
-## 概述
+## Overview
 
-版本 0.5.0 专注于企业级功能（P2）和开发者体验改进（P3），使 refine-sqlx 为大规模应用的生产环境做好准备。
+Version 0.5.0 focuses on enterprise-grade features (P2) and developer experience improvements (P3) to make refine-sqlx production-ready for large-scale applications.
 
 ---
 
-## 优先级 P2 - 企业级功能
+## Priority P1 - Core Integration
 
-### 1. 乐观锁（并发控制）
+### 0. Integrate Feature Modules into DataProvider
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-在并发环境中使用基于版本的乐观锁防止更新丢失。
+Consolidate all feature modules from v0.4.0 (relations, aggregations, transactions, JSON support) into the main DataProvider implementation.
 
-#### Schema 设置
+#### Current State
+
+Currently, v0.4.0 features are implemented as separate modules:
+- `src/relations/` - Relation query support
+- `src/aggregations/` - Aggregation functions
+- `src/transactions/` - Transaction management
+- `src/json/` - JSON field support
+- `src/views/` - Database view support
+
+#### Target Architecture
+
+All features should be integrated into the main DataProvider:
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  features: {
+    relations: { enabled: true, maxDepth: 3 },
+    aggregations: { enabled: true },
+    transactions: { enabled: true, isolationLevel: 'serializable' },
+    json: { enabled: true },
+    views: { enabled: true },
+  },
+});
+```
+
+#### Implementation Tasks
+
+1. **Merge Query Builders**: Consolidate relation and aggregation query builders into core getList/getOne
+2. **Transaction Integration**: Make transaction support a first-class DataProvider feature
+3. **JSON Field Handling**: Automatically detect and handle JSON columns in schema
+4. **View Detection**: Automatically detect views vs tables in schema
+5. **Unified Configuration**: Single configuration interface for all features
+
+#### Benefits
+
+- Simpler API surface
+- Better feature discoverability
+- Unified error handling
+- Improved performance (fewer abstraction layers)
+- Easier testing and maintenance
+
+---
+
+## Priority P2 - Enterprise Features
+
+### 1. Optimistic Locking (Concurrency Control)
+
+**Status**: 📋 Planned for v0.5.0
+
+Prevent lost updates in concurrent environments with version-based optimistic locking.
+
+#### Schema Setup
 
 ```typescript
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
@@ -28,12 +81,12 @@ export const products = sqliteTable('products', {
   name: text('name').notNull(),
   price: integer('price').notNull(),
   stock: integer('stock').notNull(),
-  version: integer('version').notNull().default(1), // 乐观锁的版本字段
+  version: integer('version').notNull().default(1), // Version field for optimistic locking
   updated_at: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
 ```
 
-#### 配置
+#### Configuration
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -41,66 +94,66 @@ const dataProvider = await createRefineSQL({
   schema,
   optimisticLocking: {
     enabled: true,
-    versionField: 'version', // 默认字段名
-    strategy: 'version', // 或 'timestamp'
+    versionField: 'version', // Default field name
+    strategy: 'version', // or 'timestamp'
   },
 });
 ```
 
-#### 使用示例
+#### Usage Examples
 
-**带版本检查的更新**:
+**Update with Version Check**:
 
 ```typescript
-// 用户 A 读取产品（version = 5）
+// User A reads product (version = 5)
 const { data: product } = await dataProvider.getOne({
   resource: 'products',
   id: 1,
 });
 // product = { id: 1, name: "Widget", price: 100, version: 5 }
 
-// 用户 A 尝试更新
+// User A tries to update
 const { data } = await dataProvider.update({
   resource: 'products',
   id: 1,
   variables: { price: 120 },
   meta: {
-    version: 5, // 包含当前版本
+    version: 5, // Include current version
   },
 });
 
-// 成功！返回更新后的记录，version = 6
+// Success! Returns updated record with version = 6
 ```
 
-**冲突检测**:
+**Conflict Detection**:
 
 ```typescript
-// 用户 B 在用户 A 编辑时更新了同一产品
-// 版本从 5 变为 6
+// User B updates the same product while User A is editing
+// Version changes from 5 to 6
 
-// 用户 A 的更新尝试（仍使用版本 5）
+// User A's update attempt (still using version 5)
 try {
   await dataProvider.update({
     resource: 'products',
     id: 1,
     variables: { price: 120 },
     meta: {
-      version: 5, // 过期版本！
+      version: 5, // Stale version!
     },
   });
 } catch (error) {
-  // 抛出 OptimisticLockError
-  console.error('检测到冲突！其他人更新了此记录。');
+  // Throws OptimisticLockError
+  console.error('Conflict detected! Someone else updated this record.');
   console.log(error.currentVersion); // 6
   console.log(error.expectedVersion); // 5
 
-  // 处理冲突：重新获取、合并或询问用户
+  // Handle conflict: refetch, merge, or ask user
   const latest = await dataProvider.getOne({ resource: 'products', id: 1 });
-  // 显示冲突解决 UI
+  // Show conflict resolution UI
 }
 ```
 
-**基于时间戳的锁定**（替代方案）:
+**Timestamp-based Locking** (Alternative):
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -121,7 +174,7 @@ await dataProvider.update({
 });
 ```
 
-#### 实现
+#### Implementation
 
 ```typescript
 import { OptimisticLockError } from './errors';
@@ -134,23 +187,23 @@ async function update<T extends BaseRecord = BaseRecord>(
   const versionField = config.optimisticLocking?.versionField ?? 'version';
 
   if (config.optimisticLocking?.enabled && params.meta?.version !== undefined) {
-    // 使用版本检查构建更新
+    // Build update with version check
     const [result] = await db
       .update(table)
       .set({
         ...params.variables,
-        [versionField]: sql`${table[versionField]} + 1`, // 增加版本
+        [versionField]: sql`${table[versionField]} + 1`, // Increment version
       } as any)
       .where(
         and(
           eq(table[idColumn], params.id),
-          eq(table[versionField], params.meta.version), // 版本检查
+          eq(table[versionField], params.meta.version), // Version check
         ),
       )
       .returning();
 
     if (!result) {
-      // 版本不匹配 - 获取当前版本
+      // Version mismatch - fetch current version
       const [current] = await db
         .select({ version: table[versionField] })
         .from(table)
@@ -167,12 +220,12 @@ async function update<T extends BaseRecord = BaseRecord>(
     return { data: result as T };
   }
 
-  // 不带版本检查的标准更新
-  // ... 现有实现
+  // Standard update without version check
+  // ... existing implementation
 }
 ```
 
-**错误处理**:
+**Error Handling**:
 
 ```typescript
 export class OptimisticLockError extends RefineSQLError {
@@ -183,30 +236,30 @@ export class OptimisticLockError extends RefineSQLError {
     currentVersion?: number,
   ) {
     super(
-      `乐观锁冲突：${resource}#${id} ` +
-        `(期望版本 ${expectedVersion}，当前版本 ${currentVersion})`,
+      `Optimistic lock conflict: ${resource}#${id} ` +
+        `(expected version ${expectedVersion}, current version ${currentVersion})`,
     );
     this.name = 'OptimisticLockError';
   }
 }
 ```
 
-**优势**:
+**Benefits**:
 
-- 在并发环境中防止更新丢失
-- 比悲观锁更好（无数据库锁定）
-- 与 Refine 的 useForm 乐观更新配合良好
-- 行业标准模式
+- Prevent lost updates in concurrent environments
+- Better than pessimistic locking (no database locks)
+- Works great with Refine's useForm optimistic updates
+- Industry-standard pattern
 
 ---
 
-### 2. 实时查询/实时订阅
+### 2. Live Queries / Real-time Subscriptions
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-使用 Refine 的实时提供者接口启用实时数据更新。
+Enable real-time data updates using Refine's live provider interface.
 
-#### 配置
+#### Configuration
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
@@ -216,12 +269,12 @@ const dataProvider = await createRefineSQL({
   schema,
   liveMode: {
     enabled: true,
-    strategy: 'polling', // 或 'websocket'（仅 Bun/Node）
-    pollingInterval: 5000, // 5秒
+    strategy: 'polling', // or 'websocket' (Bun/Node only)
+    pollingInterval: 5000, // 5 seconds
   },
 });
 
-// WebSocket 支持（Bun/Node.js）
+// For WebSocket support (Bun/Node.js)
 const dataProvider = await createRefineSQL({
   connection: db,
   schema,
@@ -229,7 +282,7 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-#### 与 Refine Hooks 一起使用
+#### Usage with Refine Hooks
 
 ```typescript
 import { useList } from '@refinedev/core';
@@ -237,10 +290,10 @@ import { useList } from '@refinedev/core';
 function NotificationsList() {
   const { data, isLoading } = useList({
     resource: 'notifications',
-    liveMode: 'auto', // 启用实时更新
+    liveMode: 'auto', // Enable real-time updates
   });
 
-  // 数据库更改时数据自动更新
+  // Data automatically updates when database changes
   return (
     <ul>
       {data?.data.map(notification => (
@@ -251,12 +304,12 @@ function NotificationsList() {
 }
 ```
 
-#### 实现策略
+#### Implementation Strategies
 
-**策略 1：轮询**（所有平台）:
+**Strategy 1: Polling** (All platforms):
 
 ```typescript
-// 自动后台轮询
+// Automatic background polling
 setInterval(async () => {
   const latestData = await db.select().from(table).where(updatedSince);
   if (hasChanges(latestData)) {
@@ -265,12 +318,12 @@ setInterval(async () => {
 }, config.liveMode.pollingInterval);
 ```
 
-**策略 2：WebSocket**（Bun/Node.js）:
+**Strategy 2: WebSocket** (Bun/Node.js):
 
 ```typescript
 import { Server } from 'bun';
 
-// 使用 SQLite 触发器监视数据库更改
+// Watch database changes using SQLite triggers
 const watcher = db.prepare(`
   CREATE TRIGGER IF NOT EXISTS notify_changes
   AFTER INSERT OR UPDATE OR DELETE ON users
@@ -279,7 +332,7 @@ const watcher = db.prepare(`
   END
 `);
 
-// 广播到 WebSocket 客户端
+// Broadcast to WebSocket clients
 websocketServer.publish('users', {
   type: 'UPDATE',
   resource: 'users',
@@ -287,11 +340,11 @@ websocketServer.publish('users', {
 });
 ```
 
-**策略 3：Cloudflare D1**（有限支持）:
+**Strategy 3: Cloudflare D1** (Limited support):
 
 ```typescript
-// D1 原生不支持实时查询
-// 回退到轮询或外部 pub/sub（Durable Objects、Queue）
+// D1 doesn't support real-time queries natively
+// Fallback to polling or external pub/sub (Durable Objects, Queue)
 
 const dataProvider = await createRefineSQL({
   connection: env.DB,
@@ -304,7 +357,7 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-#### Live Provider 接口
+#### Live Provider Interface
 
 ```typescript
 import { LiveProvider } from '@refinedev/core';
@@ -330,28 +383,28 @@ export const liveProvider: LiveProvider = {
 };
 ```
 
-**优势**:
+**Benefits**:
 
-- 无需手动刷新的实时 UI 更新
-- 协作应用的更好用户体验
-- Refine 的内置实时提供者支持
-- 多种实现策略
+- Real-time UI updates without manual refresh
+- Better UX for collaborative apps
+- Refine's built-in live provider support
+- Multiple implementation strategies
 
-**限制**:
+**Limitations**:
 
-- Cloudflare D1：无原生支持（需要变通方法）
-- 轮询：更高的数据库负载
-- WebSocket：额外的基础设施
+- Cloudflare D1: No native support (requires workarounds)
+- Polling: Higher database load
+- WebSocket: Additional infrastructure
 
 ---
 
-### 3. 多租户/行级安全
+### 3. Multi-tenancy / Row-Level Security
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-为 SaaS 应用自动将所有查询限定到特定租户。
+Automatically scope all queries to a specific tenant for SaaS applications.
 
-#### 配置
+#### Configuration
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -359,45 +412,45 @@ const dataProvider = await createRefineSQL({
   schema,
   multiTenancy: {
     enabled: true,
-    tenantField: 'organization_id', // 所有表中的字段名
-    tenantId: 'org_123', // 当前租户 ID
-    strictMode: true, // 如果缺少 tenantField 则抛出错误
+    tenantField: 'organization_id', // Field name in all tables
+    tenantId: 'org_123', // Current tenant ID
+    strictMode: true, // Throw error if tenantField is missing
   },
 });
 ```
 
-#### Schema 设置
+#### Schema Setup
 
 ```typescript
-// 所有表必须包含租户字段
+// All tables must include tenant field
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  organization_id: text('organization_id').notNull(), // 租户字段
+  organization_id: text('organization_id').notNull(), // Tenant field
   name: text('name').notNull(),
   email: text('email').notNull(),
 });
 
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  organization_id: text('organization_id').notNull(), // 租户字段
+  organization_id: text('organization_id').notNull(), // Tenant field
   user_id: integer('user_id').notNull(),
   title: text('title').notNull(),
 });
 ```
 
-#### 自动租户范围
+#### Automatic Tenant Scoping
 
 ```typescript
-// 所有查询自动包含租户过滤
+// All queries automatically include tenant filter
 const { data, total } = await dataProvider.getList({
   resource: 'users',
-  // 自动添加：WHERE organization_id = 'org_123'
+  // Automatically adds: WHERE organization_id = 'org_123'
 });
 
 const { data } = await dataProvider.getOne({
   resource: 'users',
   id: 1,
-  // 自动添加：WHERE id = 1 AND organization_id = 'org_123'
+  // Automatically adds: WHERE id = 1 AND organization_id = 'org_123'
 });
 
 const { data } = await dataProvider.create({
@@ -405,32 +458,32 @@ const { data } = await dataProvider.create({
   variables: {
     title: 'New Post',
     content: 'Hello world',
-    // organization_id 自动注入
+    // organization_id automatically injected
   },
 });
 ```
 
-#### 动态租户切换
+#### Dynamic Tenant Switching
 
 ```typescript
-// 每个请求切换租户
+// Switch tenant per request
 const { data } = await dataProvider.getList({
   resource: 'users',
   meta: {
-    tenantId: 'org_456', // 覆盖默认租户
+    tenantId: 'org_456', // Override default tenant
   },
 });
 
-// 禁用租户范围（管理员查询）
+// Disable tenant scoping (admin queries)
 const { data } = await dataProvider.getList({
   resource: 'users',
   meta: {
-    bypassTenancy: true, // 需要管理员权限
+    bypassTenancy: true, // Requires admin permission
   },
 });
 ```
 
-#### 实现
+#### Implementation
 
 ```typescript
 async function getList<T extends BaseRecord = BaseRecord>(
@@ -442,26 +495,28 @@ async function getList<T extends BaseRecord = BaseRecord>(
 
   const query = db.select().from(table).$dynamic();
 
-  // 应用租户过滤
+  // Apply tenant filter
   if (config.multiTenancy?.enabled && !params.meta?.bypassTenancy) {
     if (!tenantId) {
-      throw new Error('多租户模式下需要租户 ID');
+      throw new Error('Tenant ID is required in multi-tenancy mode');
     }
 
     if (!(tenantField in table)) {
       if (config.multiTenancy.strictMode) {
-        throw new Error(`表 ${params.resource} 缺少租户字段：${tenantField}`);
+        throw new Error(
+          `Table ${params.resource} missing tenant field: ${tenantField}`,
+        );
       }
     } else {
       query.where(eq(table[tenantField], tenantId));
     }
   }
 
-  // 应用用户过滤
+  // Apply user filters
   const where = filtersToWhere(params.filters, table);
   if (where) query.where(where);
 
-  // ... 其余实现
+  // ... rest of implementation
 }
 
 async function create<T extends BaseRecord = BaseRecord>(
@@ -471,7 +526,7 @@ async function create<T extends BaseRecord = BaseRecord>(
   const tenantField = config.multiTenancy?.tenantField;
   const tenantId = config.multiTenancy?.tenantId;
 
-  // 自动注入租户 ID
+  // Automatically inject tenant ID
   const dataWithTenant = {
     ...params.variables,
     ...(config.multiTenancy?.enabled && tenantId ?
@@ -488,28 +543,28 @@ async function create<T extends BaseRecord = BaseRecord>(
 }
 ```
 
-**优势**:
+**Benefits**:
 
-- 每个租户的数据隔离
-- 防止数据泄漏
-- 简化应用逻辑
-- SaaS 平台必备
+- Data isolation per tenant
+- Prevents data leaks
+- Simplified application logic
+- Essential for SaaS platforms
 
-**安全考虑**:
+**Security Considerations**:
 
-- 始终验证来自经过身份验证的用户的租户 ID
-- 切勿信任来自客户端输入的租户 ID
-- 如果可用，使用数据库级 RLS（PostgreSQL）
+- Always validate tenant ID from authenticated user
+- Never trust tenant ID from client input
+- Use database-level RLS if available (PostgreSQL)
 
 ---
 
-### 4. 查询缓存
+### 4. Query Caching
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-通过缓存频繁访问的数据来减少数据库负载。
+Reduce database load by caching frequently accessed data.
 
-#### 配置
+#### Configuration
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -517,16 +572,16 @@ const dataProvider = await createRefineSQL({
   schema,
   cache: {
     enabled: true,
-    adapter: 'memory', // 或 'redis'、'cloudflare-kv'
-    ttl: 300, // 默认 TTL（秒）
-    maxSize: 1000, // 最大缓存项（内存适配器）
+    adapter: 'memory', // or 'redis', 'cloudflare-kv'
+    ttl: 300, // Default TTL in seconds
+    maxSize: 1000, // Max cached items (memory adapter)
   },
 });
 ```
 
-#### 使用示例
+#### Usage Examples
 
-**缓存静态数据**:
+**Cache Static Data**:
 
 ```typescript
 const { data } = await dataProvider.getList({
@@ -534,50 +589,50 @@ const { data } = await dataProvider.getList({
   meta: {
     cache: {
       enabled: true,
-      ttl: 3600, // 缓存 1 小时
-      key: 'all-categories', // 自定义缓存键
+      ttl: 3600, // Cache for 1 hour
+      key: 'all-categories', // Custom cache key
     },
   },
 });
 ```
 
-**禁用动态数据缓存**:
+**Disable Cache for Dynamic Data**:
 
 ```typescript
 const { data } = await dataProvider.getList({
   resource: 'notifications',
   meta: {
     cache: {
-      enabled: false, // 不缓存
+      enabled: false, // Don't cache
     },
   },
 });
 ```
 
-**缓存失效**:
+**Cache Invalidation**:
 
 ```typescript
-// 写操作时自动失效
+// Automatically invalidate on write operations
 await dataProvider.create({
   resource: 'categories',
   variables: { name: 'New Category' },
-  // 自动清除 'categories' 缓存
+  // Automatically clears 'categories' cache
 });
 
-// 手动失效
+// Manual invalidation
 await dataProvider.custom({
   url: 'cache/invalidate',
   method: 'post',
   payload: {
     resource: 'categories',
-    pattern: 'categories:*', // 清除所有分类缓存
+    pattern: 'categories:*', // Clear all category caches
   },
 });
 ```
 
-#### 缓存适配器
+#### Cache Adapters
 
-**内存适配器**（默认）:
+**Memory Adapter** (Default):
 
 ```typescript
 class MemoryCacheAdapter {
@@ -606,7 +661,7 @@ class MemoryCacheAdapter {
 }
 ```
 
-**Cloudflare KV 适配器**:
+**Cloudflare KV Adapter**:
 
 ```typescript
 class CloudflareKVAdapter {
@@ -628,7 +683,7 @@ class CloudflareKVAdapter {
 }
 ```
 
-**实现**:
+**Implementation**:
 
 ```typescript
 async function getList<T extends BaseRecord = BaseRecord>(
@@ -641,14 +696,14 @@ async function getList<T extends BaseRecord = BaseRecord>(
     const cached = await cacheAdapter.get<GetListResponse<T>>(cacheKey);
 
     if (cached) {
-      return cached; // 返回缓存结果
+      return cached; // Return cached result
     }
   }
 
-  // 执行查询
+  // Execute query
   const result = await executeGetListQuery(params);
 
-  // 缓存结果
+  // Cache result
   if (cacheConfig?.enabled) {
     const cacheKey = generateCacheKey('getList', params);
     await cacheAdapter.set(cacheKey, result, cacheConfig.ttl);
@@ -658,37 +713,37 @@ async function getList<T extends BaseRecord = BaseRecord>(
 }
 ```
 
-**优势**:
+**Benefits**:
 
-- 减少数据库负载
-- 更快的响应时间
-- 节省成本（特别是 D1）
-- 可按资源配置
+- Reduced database load
+- Faster response times
+- Cost savings (especially for D1)
+- Configurable per-resource
 
 ---
 
-## 优先级 P3 - 开发者体验
+## Priority P3 - Developer Experience
 
-### 5. TypeScript Schema 生成器
+### 5. TypeScript Schema Generator
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-自动为 Refine 资源生成 TypeScript 类型。
+Automatically generate TypeScript types for Refine resources.
 
-#### CLI 命令
+#### CLI Command
 
 ```bash
-# 从 Drizzle schema 生成类型
+# Generate types from Drizzle schema
 refine-sqlx generate-types
 
-# 带选项
+# With options
 refine-sqlx generate-types \
   --schema ./src/schema.ts \
   --output ./src/types/resources.ts \
   --format refine
 ```
 
-#### 生成输出
+#### Generated Output
 
 ```typescript
 // src/types/resources.generated.ts
@@ -696,7 +751,7 @@ import type { BaseRecord } from '@refinedev/core';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import * as schema from '../schema';
 
-// 资源类型
+// Resource types
 export interface User extends BaseRecord {
   id: number;
   name: string;
@@ -713,20 +768,20 @@ export interface Post extends BaseRecord {
   published_at: Date | null;
 }
 
-// 插入类型（用于创建操作）
+// Insert types (for create operations)
 export type UserInsert = InferInsertModel<typeof schema.users>;
 export type PostInsert = InferInsertModel<typeof schema.posts>;
 
-// 资源名称类型
+// Resource name type
 export type ResourceName = 'users' | 'posts';
 
-// 资源映射
+// Resource map
 export interface ResourceMap {
   users: User;
   posts: Post;
 }
 
-// 类型安全资源助手
+// Type-safe resource helper
 export function getResourceType<T extends ResourceName>(
   resource: T,
 ): ResourceMap[T] {
@@ -734,14 +789,14 @@ export function getResourceType<T extends ResourceName>(
 }
 ```
 
-#### 在应用中使用
+#### Usage in Application
 
 ```typescript
 import { useList, useCreate } from '@refinedev/core';
 import type { User, UserInsert } from './types/resources.generated';
 
 function UsersList() {
-  // 完全类型化
+  // Fully typed
   const { data } = useList<User>({
     resource: 'users',
   });
@@ -754,7 +809,7 @@ function UsersList() {
       values: {
         name: 'John',
         email: 'john@example.com',
-        status: 'active', // 类型安全枚举
+        status: 'active', // Type-safe enum
         created_at: new Date(),
       }
     });
@@ -766,30 +821,30 @@ function UsersList() {
 
 ---
 
-### 6. 数据验证集成
+### 6. Data Validation Integration
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-与 Zod 或 Drizzle 的验证集成以实现类型安全的数据操作。
+Integrate with Zod or Drizzle's validation for type-safe data operations.
 
-#### 带验证的 Schema
+#### Schema with Validation
 
 ```typescript
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './schema';
 
-// 从 Drizzle 生成 Zod schema
+// Generate Zod schemas from Drizzle
 export const insertUserSchema = createInsertSchema(users, {
-  email: z.string().email('无效的电子邮件格式'),
-  name: z.string().min(2, '名称至少需要 2 个字符'),
+  email: z.string().email('Invalid email format'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   status: z.enum(['active', 'inactive']),
 });
 
 export const selectUserSchema = createSelectSchema(users);
 ```
 
-#### 带验证的使用
+#### Usage with Validation
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -804,35 +859,35 @@ const dataProvider = await createRefineSQL({
   },
 });
 
-// 自动验证
+// Automatic validation
 try {
   await dataProvider.create({
     resource: 'users',
     variables: {
-      name: 'A', // 太短！
-      email: 'invalid-email', // 无效格式！
+      name: 'A', // Too short!
+      email: 'invalid-email', // Invalid format!
       status: 'active',
     },
   });
 } catch (error) {
-  // ValidationError 包含详细消息
+  // ValidationError with detailed messages
   console.log(error.issues);
   // [
-  //   { path: ['name'], message: '名称至少需要 2 个字符' },
-  //   { path: ['email'], message: '无效的电子邮件格式' }
+  //   { path: ['name'], message: 'Name must be at least 2 characters' },
+  //   { path: ['email'], message: 'Invalid email format' }
   // ]
 }
 ```
 
 ---
 
-### 7. 增强的日志记录和调试
+### 7. Enhanced Logging & Debugging
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-详细的日志记录和性能监控。
+Detailed logging and performance monitoring.
 
-#### 配置
+#### Configuration
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -843,12 +898,12 @@ const dataProvider = await createRefineSQL({
     level: 'debug', // 'debug' | 'info' | 'warn' | 'error'
     logQueries: true,
     logPerformance: true,
-    slowQueryThreshold: 1000, // 记录 > 1s 的查询
+    slowQueryThreshold: 1000, // Log queries > 1s
     onQuery: (event) => {
       console.log(`[${event.duration}ms] ${event.sql}`);
-      console.log('参数:', event.params);
+      console.log('Params:', event.params);
 
-      // 发送到监控服务
+      // Send to monitoring service
       analytics.track('database_query', {
         resource: event.resource,
         operation: event.operation,
@@ -859,79 +914,80 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-#### 日志输出
+#### Log Output
 
 ```
-[DEBUG] [12ms] getList(users) - 过滤器: status=active, 分页: 1-10
+[DEBUG] [12ms] getList(users) - Filters: status=active, Pagination: 1-10
 [DEBUG] SQL: SELECT * FROM users WHERE status = ? LIMIT ? OFFSET ?
-[DEBUG] 参数: ['active', 10, 0]
-[INFO] 查询在 12ms 内完成
-[WARN] 检测到慢查询: getList(orders) 耗时 1250ms
+[DEBUG] Params: ['active', 10, 0]
+[INFO] Query completed in 12ms
+[WARN] Slow query detected: getList(orders) took 1250ms
 ```
 
 ---
 
-### 8. 迁移管理
+### 8. Migration Management
 
-**状态**: 📋 计划在 v0.5.0 实现
+**Status**: 📋 Planned for v0.5.0
 
-集成的数据库迁移工具。
+Integrated database migration tooling.
 
 ```bash
-# 创建迁移
+# Create migration
 refine-sqlx migrate create add_users_table
 
-# 应用迁移
+# Apply migrations
 refine-sqlx migrate up
 
-# 回滚
+# Rollback
 refine-sqlx migrate rollback
 
-# 状态
+# Status
 refine-sqlx migrate status
 ```
 
 ---
 
-## 开发路线图
+## Development Roadmap
 
-| 功能       | 优先级 | 目标日期 | 依赖项             |
-| ---------- | ------ | -------- | ------------------ |
-| 乐观锁     | P2     | 2025年Q2 | 无                 |
-| 实时查询   | P2     | 2025年Q2 | WebSocket 基础设施 |
-| 多租户     | P2     | 2025年Q2 | 无                 |
-| 查询缓存   | P2     | 2025年Q2 | 缓存适配器         |
-| 类型生成器 | P3     | 2025年Q3 | CLI 框架           |
-| 验证       | P3     | 2025年Q3 | Zod 集成           |
-| 增强日志   | P3     | 2025年Q3 | 无                 |
-| 迁移工具   | P3     | 2025年Q3 | Drizzle Kit        |
-
----
-
-## 破坏性变更
-
-**计划最小破坏性变更：**
-
-1. **配置结构** 可能为了清晰而重组
-2. **错误类** 可能为了更好的类型安全而重构
-3. **v0.4.0 的废弃方法** 可能被移除
-
-发布前将提供迁移指南。
+| Feature                    | Priority | Target Date | Dependencies             |
+| -------------------------- | -------- | ----------- | ------------------------ |
+| Feature Module Integration | P1       | Q1 2025     | v0.4.0 completion        |
+| Optimistic Locking         | P2       | Q2 2025     | None                     |
+| Live Queries               | P2       | Q2 2025     | WebSocket infrastructure |
+| Multi-tenancy              | P2       | Q2 2025     | None                     |
+| Query Caching              | P2       | Q2 2025     | Cache adapters           |
+| Type Generator             | P3       | Q3 2025     | CLI framework            |
+| Validation                 | P3       | Q3 2025     | Zod integration          |
+| Enhanced Logging           | P3       | Q3 2025     | None                     |
+| Migration Tools            | P3       | Q3 2025     | Drizzle Kit              |
 
 ---
 
-## 贡献
+## Breaking Changes
 
-v0.5.0 的优先贡献：
+**Minimal breaking changes planned:**
 
-1. **缓存适配器** - Redis、Cloudflare KV 实现
-2. **实时查询策略** - WebSocket、轮询优化
-3. **多租户** - 跨不同租户场景的测试
-4. **文档** - 企业部署指南
+1. **Configuration structure** may be reorganized for clarity
+2. **Error classes** may be refactored for better type safety
+3. **Deprecated methods** from v0.4.0 may be removed
 
-查看 [CONTRIBUTING.md](../../CONTRIBUTING.md) 获取指南。
+Migration guide will be provided before release.
 
 ---
 
-**最后更新**: 2025-01-15
-**维护者**: Refine SQLx Team
+## Contributing
+
+Priority contributions for v0.5.0:
+
+1. **Cache adapters** - Redis, Cloudflare KV implementations
+2. **Live query strategies** - WebSocket, polling optimizations
+3. **Multi-tenancy** - Testing across different tenant scenarios
+4. **Documentation** - Enterprise deployment guides
+
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
+
+---
+
+**Last Updated**: 2025-01-15
+**Maintainer**: Refine SQLx Team

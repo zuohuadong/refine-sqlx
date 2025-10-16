@@ -91,18 +91,21 @@ Click to open examples in your browser:
 
 **[FEATURES_v0.4.0_zh-CN.md](./features/FEATURES_v0.4.0_zh-CN.md)** - v0.4.0 功能路线图（中文版）
 
-**[FEATURES_v0.5.0_zh-CN.md](./features/FEATURES_v0.5.0_zh-CN.md)** - v0.5.0 企业级与开发者体验（中文版）
-
 **[v0.5.0 Documentation](./v0.5.0/README.md)** - v0.5.0 Complete Implementation
 
-- ✅ Optimistic locking for concurrency control
-- ✅ Live queries / real-time subscriptions
-- ✅ Multi-tenancy / row-level security
-- ✅ Query caching (memory, Redis)
-- ✅ TypeScript schema generator (CLI)
-- ✅ Data validation integration (Zod)
-- ✅ Enhanced logging & debugging
-- ✅ Migration management tools
+- ✅ P1: Core integration (100%)
+- ✅ P2: Enterprise features (100%)
+  - Optimistic locking
+  - Live queries / real-time subscriptions
+  - Multi-tenancy / row-level security
+  - Query caching (Memory, Redis)
+- ✅ P3: Developer experience (100%)
+  - TypeScript type generator (CLI)
+  - Data validation (Zod integration)
+  - Enhanced logging & debugging
+  - Migration management (Drizzle Kit)
+
+**[v0.5.0/FEATURES_zh-CN.md](./v0.5.0/FEATURES_zh-CN.md)** - v0.5.0 功能文档（中文版）
 
 **Target Audience**: End users, npm package consumers, developers
 

@@ -5,81 +5,8 @@ import type { DrizzleConfig } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type { MySql2Database } from 'drizzle-orm/mysql2';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type { Logger } from './logger';
-
-/**
- * Database type detection
- */
-export type DatabaseType = 'sqlite' | 'mysql' | 'postgresql' | 'd1';
-
-/**
- * MySQL connection configuration
- */
-export interface MySQLConfig {
-  host: string;
-  port?: number;
-  user: string;
-  password: string;
-  database: string;
-  ssl?: any;
-  /** Connection pool settings */
-  pool?: { min?: number; max?: number };
-}
-
-/**
- * PostgreSQL connection configuration
- */
-export interface PostgreSQLConfig {
-  host: string;
-  port?: number;
-  user: string;
-  password: string;
-  database: string;
-  ssl?: boolean | any;
-  /** Connection pool settings */
-  max?: number;
-  idle_timeout?: number;
-  connect_timeout?: number;
-}
-
-/**
- * Time Travel configuration for SQLite and D1
- * Provides point-in-time backup and restore functionality
- *
- * Note: D1 Time Travel is built-in and managed by Cloudflare.
- * For SQLite, this enables automatic backup creation similar to D1's behavior.
- */
-export interface TimeTravelOptions {
-  /**
-   * Enable Time Travel automatic backups
-   * @default false
-   */
-  enabled: boolean;
-
-  /**
-   * Backup directory path (SQLite only)
-   * Where to store time-travel backups
-   * @default './.time-travel'
-   */
-  backupDir?: string;
-
-  /**
-   * Backup interval in seconds (SQLite only)
-   * How often to create automatic backups
-   * @default 60 (1 minute, matching D1's granularity)
-   */
-  intervalSeconds?: number;
-
-  /**
-   * Retention period in days (SQLite only)
-   * How long to keep backups
-   * @default 30 (matching D1's default retention)
-   */
-  retentionDays?: number;
-}
 
 /**
  * D1-specific configuration options
@@ -98,90 +25,290 @@ export interface D1Options {
   };
 
   /**
-   * Time Travel settings (for backward compatibility)
-   * Note: D1 Time Travel is primarily managed through CLI
+   * Time Travel settings
+   * Note: Actual restoration must be done via wrangler CLI
+   * This option allows querying at a specific point in time
    */
   timeTravel?: {
     /**
-     * Enable Time Travel
+     * Enable Time Travel queries
+     * When enabled, queries will use the specified bookmark or timestamp
+     * @default false
      */
-    enabled: boolean;
+    enabled?: boolean;
+
     /**
-     * Bookmark or timestamp for point-in-time queries
+     * Bookmark name or Unix timestamp to query from
+     * - Bookmark: string identifier created by D1
+     * - Timestamp: Unix timestamp (number) or ISO date string
      */
     bookmark?: string | number;
   };
 }
 
 /**
+ * Optimistic locking configuration
+ */
+export interface OptimisticLockingConfig {
+  /**
+   * Enable optimistic locking
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Version field name in tables
+   * @default 'version'
+   */
+  versionField?: string;
+
+  /**
+   * Locking strategy
+   * - 'version': Use integer version field
+   * - 'timestamp': Use timestamp field
+   * @default 'version'
+   */
+  strategy?: 'version' | 'timestamp';
+
+  /**
+   * Timestamp field name (when strategy is 'timestamp')
+   * @default 'updated_at'
+   */
+  timestampField?: string;
+}
+
+/**
+ * Multi-tenancy configuration
+ */
+export interface MultiTenancyConfig {
+  /**
+   * Enable multi-tenancy
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Tenant field name in all tables
+   * @default 'tenant_id'
+   */
+  tenantField?: string;
+
+  /**
+   * Current tenant ID
+   * Can be overridden per-request via meta.tenantId
+   */
+  tenantId?: string | number;
+
+  /**
+   * Strict mode - throw error if tenant field is missing
+   * @default true
+   */
+  strictMode?: boolean;
+}
+
+/**
+ * Cache adapter interface
+ */
+export interface CacheAdapter {
+  /**
+   * Get cached value by key
+   */
+  get<T = any>(key: string): Promise<T | null>;
+
+  /**
+   * Set cached value with TTL in seconds
+   */
+  set(key: string, value: any, ttl: number): Promise<void>;
+
+  /**
+   * Delete cached values matching pattern
+   * Supports wildcards like 'users:*'
+   */
+  delete(pattern: string): Promise<void>;
+
+  /**
+   * Clear all cached values
+   */
+  clear?(): Promise<void>;
+}
+
+/**
+ * Query caching configuration
+ */
+export interface CacheConfig {
+  /**
+   * Enable query caching
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Cache adapter
+   * @default 'memory'
+   */
+  adapter?: 'memory' | CacheAdapter;
+
+  /**
+   * Default TTL in seconds
+   * @default 300 (5 minutes)
+   */
+  ttl?: number;
+
+  /**
+   * Maximum cached items (memory adapter only)
+   * @default 1000
+   */
+  maxSize?: number;
+
+  /**
+   * Key prefix for all cache keys
+   * @default 'refine-sqlx:'
+   */
+  keyPrefix?: string;
+}
+
+/**
+ * Enhanced logging configuration
+ */
+export interface LoggingConfig {
+  /**
+   * Enable logging
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Log level
+   * @default 'info'
+   */
+  level?: 'debug' | 'info' | 'warn' | 'error';
+
+  /**
+   * Log SQL queries
+   * @default true
+   */
+  logQueries?: boolean;
+
+  /**
+   * Log performance metrics
+   * @default true
+   */
+  logPerformance?: boolean;
+
+  /**
+   * Slow query threshold in milliseconds
+   * Queries slower than this will be logged as warnings
+   * @default 1000
+   */
+  slowQueryThreshold?: number;
+
+  /**
+   * Custom query logger callback
+   */
+  onQuery?: (event: QueryLogEvent) => void;
+}
+
+/**
+ * Query log event
+ */
+export interface QueryLogEvent {
+  /**
+   * SQL query string
+   */
+  sql: string;
+
+  /**
+   * Query parameters
+   */
+  params?: any[];
+
+  /**
+   * Query duration in milliseconds
+   */
+  duration: number;
+
+  /**
+   * Resource name
+   */
+  resource?: string;
+
+  /**
+   * Operation type
+   */
+  operation: 'getList' | 'getOne' | 'getMany' | 'create' | 'createMany' | 'update' | 'updateMany' | 'deleteOne' | 'deleteMany';
+
+  /**
+   * Timestamp
+   */
+  timestamp: Date;
+}
+
+/**
+ * Data validation configuration
+ */
+export interface ValidationConfig {
+  /**
+   * Enable validation
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Validation schemas per resource
+   * Key: resource name
+   * Value: { insert?: ZodSchema, update?: ZodSchema, select?: ZodSchema }
+   */
+  schemas?: Record<string, {
+    insert?: any; // ZodSchema - avoid hard dependency
+    update?: any; // ZodSchema
+    select?: any; // ZodSchema
+  }>;
+
+  /**
+   * Throw error on validation failure
+   * If false, validation errors will be logged only
+   * @default true
+   */
+  throwOnError?: boolean;
+}
+
+/**
+ * Live mode configuration (v0.5.0)
+ */
+export type { LiveModeConfig } from './live';
+
+/**
+ * Feature configuration (v0.5.0)
+ * Import from config module to avoid circular dependencies
+ */
+export type { FeaturesConfig } from './config';
+
+/**
  * Configuration options for createRefineSQL
- *
- * @example
- * ```typescript
- * // SQLite - file path
- * { connection: 'database.sqlite', schema }
- *
- * // SQLite - in-memory
- * { connection: ':memory:', schema }
- *
- * // MySQL - connection string
- * { connection: 'mysql://user:pass@localhost:3306/mydb', schema }
- *
- * // MySQL - config object
- * { connection: { host: 'localhost', user: 'root', password: 'secret', database: 'mydb' }, schema }
- *
- * // PostgreSQL - connection string
- * { connection: 'postgresql://user:pass@localhost:5432/mydb', schema }
- *
- * // PostgreSQL - config object
- * { connection: { host: 'localhost', user: 'postgres', password: 'secret', database: 'mydb' }, schema }
- *
- * // Cloudflare D1
- * { connection: env.DB, schema }
- *
- * // Drizzle instance (any database)
- * { connection: drizzleInstance, schema }
- * ```
  */
 export interface RefineSQLConfig<
   TSchema extends Record<string, unknown> = Record<string, unknown>,
 > {
   /**
-   * Database connection - supports multiple formats:
-   *
-   * **SQLite**:
-   * - File path: `'database.sqlite'` or `'data/app.db'`
-   * - Memory: `':memory:'`
-   * - Native instances: BunDatabase, NodeDatabase, BetterSqlite3.Database
-   *
-   * **MySQL**:
-   * - Connection string: `'mysql://user:pass@host:3306/db'`
-   * - Config object: `{ host, user, password, database, ... }`
-   *
-   * **PostgreSQL**:
-   * - Connection string: `'postgresql://user:pass@host:5432/db'` or `'postgres://...'`
-   * - Config object: `{ host, user, password, database, ... }`
-   *
-   * **Cloudflare D1**:
-   * - D1Database instance: `env.DB`
-   *
-   * **Drizzle ORM** (most flexible):
-   * - Any Drizzle database instance (auto-detected)
+   * Database connection - can be:
+   * - File path string (e.g., './database.sqlite')
+   * - ':memory:' for in-memory database
+   * - D1Database instance (Cloudflare D1)
+   * - BunDatabase instance (Bun SQLite)
+   * - NodeDatabase instance (Node.js >= 24)
+   * - BetterSqlite3.Database instance (Node.js < 24)
+   * - Drizzle database instance
    */
   connection:
     | string
     | ':memory:'
-    | MySQLConfig
-    | PostgreSQLConfig
     | D1Database
     | BunDatabase
     | NodeDatabase
     | BetterSqlite3.Database
     | BunSQLiteDatabase<TSchema>
     | BetterSQLite3Database<TSchema>
-    | DrizzleD1Database<TSchema>
-    | MySql2Database<TSchema>
-    | PostgresJsDatabase<TSchema>;
+    | DrizzleD1Database<TSchema>;
 
   /**
    * Drizzle ORM schema definition
@@ -215,67 +342,47 @@ export interface RefineSQLConfig<
   d1Options?: D1Options;
 
   /**
-   * Time Travel configuration (SQLite and D1)
-   *
-   * - **D1**: Time Travel is built-in, no configuration needed
-   * - **SQLite**: Enables automatic backups for point-in-time restore
-   *
-   * @example
-   * ```typescript
-   * // SQLite with Time Travel
-   * const dataProvider = await createRefineSQL({
-   *   connection: './database.sqlite',
-   *   schema,
-   *   timeTravel: {
-   *     enabled: true,
-   *     intervalSeconds: 60,    // Backup every minute
-   *     retentionDays: 30,      // Keep 30 days of backups
-   *   }
-   * });
-   * ```
+   * Optimistic locking configuration (v0.5.0)
    */
-  timeTravel?: TimeTravelOptions;
+  optimisticLocking?: OptimisticLockingConfig;
 
   /**
-   * Soft delete configuration
-   *
-   * @example
-   * ```typescript
-   * const dataProvider = await createRefineSQL({
-   *   connection: './database.sqlite',
-   *   schema,
-   *   softDelete: {
-   *     enabled: true,
-   *     field: 'deleted_at',  // Field name for soft delete timestamp
-   *   }
-   * });
-   * ```
+   * Multi-tenancy configuration (v0.5.0)
    */
-  softDelete?: {
-    /**
-     * Enable soft delete
-     * @default false
-     */
-    enabled: boolean;
+  multiTenancy?: MultiTenancyConfig;
 
-    /**
-     * Field name for deleted timestamp
-     * @default 'deleted_at'
-     */
-    field?: string;
-  };
+  /**
+   * Query caching configuration (v0.5.0)
+   */
+  cache?: CacheConfig;
+
+  /**
+   * Enhanced logging configuration (v0.5.0)
+   */
+  logging?: LoggingConfig;
+
+  /**
+   * Data validation configuration (v0.5.0)
+   */
+  validation?: ValidationConfig;
+
+  /**
+   * Live mode configuration (v0.5.0)
+   * Enable real-time updates
+   */
+  liveMode?: import('./live').LiveModeConfig;
+
+  /**
+   * Feature configuration (v0.5.0)
+   * Unified configuration for relations, aggregations, transactions, JSON, and views
+   */
+  features?: import('./config').FeaturesConfig;
 }
 
 /**
  * Runtime environment types
  */
-export type RuntimeEnvironment =
-  | 'bun'
-  | 'node'
-  | 'd1'
-  | 'better-sqlite3'
-  | 'mysql'
-  | 'postgresql';
+export type RuntimeEnvironment = 'bun' | 'node' | 'd1' | 'better-sqlite3';
 
 /**
  * Table name from schema
@@ -298,146 +405,120 @@ export type InferInsertModel<TTable> =
   TTable extends { $inferInsert: infer T } ? T : never;
 
 /**
- * Metadata for Refine SQL operations
- * Used to customize behavior of CRUD operations
+ * Transaction context for executing multiple operations
  */
-export interface RefineSQLMeta {
+export interface TransactionContext<TSchema extends Record<string, unknown>> {
   /**
-   * Custom ID column name
-   * @default 'id'
+   * Execute a query within the transaction
    */
-  idColumnName?: string;
+  query<T>(fn: (db: any) => Promise<T>): Promise<T>;
+}
+
+/**
+ * Aggregation function parameters
+ */
+export interface AggregateParams {
+  /**
+   * Resource name to aggregate
+   */
+  resource: string;
 
   /**
-   * Include related records (nested relations)
-   * Uses Drizzle's relational query API
-   *
-   * @example
-   * ```typescript
-   * meta: {
-   *   include: {
-   *     posts: true,  // Load all posts
-   *     // Or with nested relations
-   *     posts: {
-   *       include: {
-   *         comments: true
-   *       }
-   *     }
-   *   }
-   * }
-   * ```
+   * Aggregation functions to apply
    */
-  include?: Record<string, boolean | { include?: Record<string, any> }>;
+  functions: Array<{
+    /**
+     * Aggregation function type
+     */
+    type: 'count' | 'sum' | 'avg' | 'min' | 'max';
+
+    /**
+     * Field to aggregate (not needed for count)
+     */
+    field?: string;
+
+    /**
+     * Result alias
+     */
+    alias?: string;
+  }>;
 
   /**
-   * Select specific fields only
-   * @example ['id', 'name', 'email']
-   */
-  select?: string[];
-
-  /**
-   * Exclude specific fields
-   * @example ['password', 'secret_token']
-   */
-  exclude?: string[];
-
-  /**
-   * Aggregation operations
-   */
-  aggregations?: {
-    [key: string]: {
-      sum?: string;
-      avg?: string;
-      count?: string | '*';
-      min?: string;
-      max?: string;
-    };
-  };
-
-  /**
-   * Group by fields for aggregations
+   * GROUP BY fields
    */
   groupBy?: string[];
 
   /**
-   * Soft delete configuration
+   * HAVING conditions (optional)
    */
-  softDelete?: boolean;
+  having?: any;
 
   /**
-   * Deleted at field name for soft delete
-   * @default 'deleted_at'
+   * Filters to apply before aggregation
    */
-  deletedAtField?: string;
+  filters?: any;
 
   /**
-   * Include soft-deleted records
-   * @default false
+   * Additional metadata
    */
-  includeDeleted?: boolean;
-
-  /**
-   * Only return soft-deleted records
-   * @default false
-   */
-  onlyDeleted?: boolean;
+  meta?: Record<string, any>;
 }
 
 /**
- * Custom query parameters for DataProvider.custom() method
- * Allows execution of raw SQL queries and complex database operations
+ * Aggregation result
  */
-export interface CustomParams {
-  /**
-   * Operation type/URL identifier
-   * - 'query': Execute SELECT queries
-   * - 'execute': Execute INSERT/UPDATE/DELETE
-   * - 'drizzle': Execute Drizzle query builder
-   */
-  url: string;
-
-  /**
-   * HTTP method (for API compatibility)
-   */
-  method: 'get' | 'delete' | 'head' | 'options' | 'post' | 'put' | 'patch';
-
-  /**
-   * Query payload containing SQL or Drizzle query
-   */
-  payload?: {
-    /**
-     * Raw SQL query string
-     */
-    sql?: string;
-
-    /**
-     * SQL query arguments/parameters
-     */
-    args?: any[];
-
-    /**
-     * Drizzle query builder instance
-     */
-    query?: any;
-  };
-
-  /**
-   * Query parameters (for API compatibility)
-   */
-  query?: Record<string, any>;
-
-  /**
-   * HTTP headers (for API compatibility)
-   */
-  headers?: Record<string, string>;
+export interface AggregateResult {
+  [key: string]: number | string | null;
 }
 
 /**
- * Custom query response
+ * Extended DataProvider with transaction support
  */
-export interface CustomResponse<T = any> {
+export interface DataProviderWithTransactions extends Omit<import('@refinedev/core').DataProvider, 'transaction'> {
   /**
-   * Query result data
+   * Execute multiple operations within a transaction
+   * All operations will be rolled back if any operation fails
+   *
+   * @example
+   * ```typescript
+   * await dataProvider.transaction(async (tx) => {
+   *   await tx.query(db => db.insert(users).values({ name: 'John' }));
+   *   await tx.query(db => db.insert(posts).values({ title: 'Hello' }));
+   * });
+   * ```
    */
-  data: T;
+  transaction<T>(
+    callback: (tx: TransactionContext<any>) => Promise<T>,
+  ): Promise<T>;
 }
+
+/**
+ * Extended DataProvider with aggregation support
+ */
+export interface DataProviderWithAggregations extends Omit<import('@refinedev/core').DataProvider, 'aggregate'> {
+  /**
+   * Execute aggregation queries
+   *
+   * @example
+   * ```typescript
+   * const result = await dataProvider.aggregate({
+   *   resource: 'orders',
+   *   functions: [
+   *     { type: 'count', alias: 'total' },
+   *     { type: 'sum', field: 'amount', alias: 'revenue' }
+   *   ],
+   *   groupBy: ['status']
+   * });
+   * ```
+   */
+  aggregate<T = AggregateResult>(
+    params: AggregateParams,
+  ): Promise<{ data: T[] }>;
+}
+
+/**
+ * Extended DataProvider with all features
+ */
+export interface ExtendedDataProvider
+  extends DataProviderWithTransactions,
+    DataProviderWithAggregations {}
