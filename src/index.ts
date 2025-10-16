@@ -1,21 +1,63 @@
-// v0.3.0 - Drizzle ORM integration
+// v0.5.0 - Unified feature integration
 export { createRefineSQL } from './provider';
-export type { DataProviderWithTimeTravel } from './provider';
+
+// Core configuration types
 export type {
-  InferInsertModel,
-  InferSelectModel,
   RefineSQLConfig,
-  RefineSQLMeta,
   RuntimeEnvironment,
   TableName,
   D1Options,
-  MySQLConfig,
-  PostgreSQLConfig,
-  DatabaseType,
-  TimeTravelOptions,
-  CustomParams,
-  CustomResponse,
+  OptimisticLockingConfig,
+  MultiTenancyConfig,
+  CacheConfig,
+  CacheAdapter,
+  LoggingConfig,
+  QueryLogEvent,
+  ValidationConfig,
+  InferInsertModel,
+  InferSelectModel,
+  FeaturesConfig,
 } from './types';
+
+// Feature configuration and validation (v0.5.0)
+export {
+  validateConfig,
+  validateFeaturesConfig,
+  type RelationsConfig,
+  type AggregationsConfig,
+  type TransactionsConfig,
+  type JSONConfig,
+  type ViewsConfig,
+  type ValidatedFeaturesConfig,
+} from './config';
+
+// Extended DataProvider types (v0.5.0)
+export type {
+  DataProviderWithTransactions,
+  DataProviderWithAggregations,
+  ExtendedDataProvider,
+  TransactionContext,
+  AggregateParams,
+  AggregateResult,
+} from './types';
+
+// Feature executors and types (v0.5.0)
+export {
+  AggregationsExecutor,
+  JSONParser,
+  RelationsExecutor,
+  TransactionManager,
+  ViewDetector,
+  FeatureRegistry,
+  type FeatureExecutor,
+  type FeatureContext,
+  type AggregateFunction,
+  type AggregateResponse,
+  type HavingCondition,
+  type HavingLogical,
+  type HavingOperator,
+  type RelationInclude,
+} from './features';
 
 // Runtime utilities
 export {
@@ -45,37 +87,26 @@ export {
 // Validation utilities
 export { validateD1Options, getBatchSize } from './utils/validation';
 
-// Adapters - Export from unified adapters directory
+// Adapters
+export { createBunSQLiteAdapter, isBunSQLiteAvailable } from './adapters/bun';
 export {
-  // SQL Client adapters (SqlClient interface)
-  createBunSQLiteAdapter,
-  createNodeSQLiteAdapter,
-  createCloudflareD1Adapter,
   createBetterSQLite3Adapter,
-  // Drizzle ORM adapters (Drizzle database instances)
-  createBunDrizzleAdapter,
-  createBetterSQLite3DrizzleAdapter,
-  createD1Adapter,
-  createMySQLAdapter,
-  createPostgreSQLAdapter,
-  // Helper functions
-  isBunSQLiteAvailable,
   isBetterSQLite3Available,
-  isD1Available,
-  isMySQLAvailable,
-  isPostgreSQLAvailable,
-  d1Transaction,
-} from './adapters';
+} from './adapters/better-sqlite3-drizzle';
+export { createD1Adapter, d1Transaction, isD1Available } from './adapters/d1';
 
-// Connection utilities
+// Cache (v0.5.0)
+export { MemoryCacheAdapter, CacheManager, RedisCacheAdapter } from './cache';
+export type { RedisClient, RedisCacheAdapterOptions } from './cache/redis-adapter';
+
+// Live Queries (v0.5.0)
 export {
-  parseConnectionString,
-  detectDatabaseType,
-  buildMySQLConnectionString,
-  buildPostgreSQLConnectionString,
-  validateMySQLConfig,
-  validatePostgreSQLConfig,
-} from './utils/connection';
+  createLiveProvider,
+  LiveEventEmitter,
+  PollingStrategy,
+  WebSocketStrategy,
+} from './live';
+export type { LiveModeConfig } from './live';
 
 // Errors
 export {
@@ -87,11 +118,20 @@ export {
   UnsupportedOperatorError,
   UnsupportedRuntimeError,
   InvalidConfigurationError,
+  OptimisticLockError,
 } from './errors';
 
 // Logging
 export type { Logger } from './logger';
 export { ConsoleLogger, NoOpLogger, createLogger } from './logger';
 
-// Time Travel (SQLite only)
-export type { TimeTravelSnapshot } from './time-travel-simple';
+// Validation (v0.5.0)
+export {
+  Validator,
+  ValidationError,
+  createValidationConfig,
+} from './validation';
+export type { ValidationSchema } from './validation';
+
+// CLI (v0.5.0)
+export * from './cli';
