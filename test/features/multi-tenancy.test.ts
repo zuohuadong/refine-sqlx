@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { createRefineSQL } from '../../src/provider';
+import { describeIfBetterSqlite3Available } from '../helpers/better-sqlite3-check';
 
 // Test schema with tenant field
 const users = sqliteTable('users', {
@@ -28,7 +29,7 @@ const categories = sqliteTable('categories', {
 
 const schema = { users, posts, categories };
 
-describe('Multi-Tenancy', () => {
+describeIfBetterSqlite3Available('Multi-Tenancy', () => {
   let sqlite: Database.Database;
   let db: ReturnType<typeof drizzle>;
 

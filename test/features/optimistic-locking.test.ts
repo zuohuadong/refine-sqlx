@@ -4,6 +4,7 @@ import Database from 'better-sqlite3';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { createRefineSQL } from '../../src/provider';
 import { OptimisticLockError } from '../../src/errors';
+import { describeIfBetterSqlite3Available } from '../helpers/better-sqlite3-check';
 
 // Test schema with version field
 const products = sqliteTable('products', {
@@ -23,7 +24,7 @@ const orders = sqliteTable('orders', {
 
 const schema = { products, orders };
 
-describe('Optimistic Locking', () => {
+describeIfBetterSqlite3Available('Optimistic Locking', () => {
   let sqlite: Database.Database;
   let db: ReturnType<typeof drizzle>;
 

@@ -5,6 +5,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import Database from 'better-sqlite3';
 import { AggregationsExecutor } from '../../src/features/aggregations/executor';
 import type { AggregationsConfig } from '../../src/config';
+import { describeIfBetterSqlite3Available } from '../helpers/better-sqlite3-check';
 
 /**
  * Test schema for aggregations
@@ -19,7 +20,7 @@ const orders = sqliteTable('orders', {
 
 const schema = { orders };
 
-describe('Aggregations with HAVING clause', () => {
+describeIfBetterSqlite3Available('Aggregations with HAVING clause', () => {
   let sqliteDb: Database.Database;
   let db: BetterSQLite3Database<typeof schema>;
   let executor: AggregationsExecutor;
