@@ -43,7 +43,7 @@ describe('Data Provider Integration', () => {
     expect(result.data).toHaveLength(2);
     expect(result.total).toBe(2);
     expect(mockClient.query).toHaveBeenCalledWith({
-      sql: 'SELECT * FROM users WHERE "name" LIKE ? ORDER BY name ASC LIMIT ? OFFSET ?',
+      sql: 'SELECT * FROM "users" WHERE "name" LIKE ? ORDER BY "name" ASC LIMIT ? OFFSET ?',
       args: ['%J%', 10, 0],
     });
   });
@@ -117,7 +117,7 @@ describe('Data Provider Integration', () => {
 
     expect(result.data).toEqual({ id: 1, name: 'John Updated' });
     expect(mockClient.execute).toHaveBeenCalledWith({
-      sql: 'UPDATE users SET name = ? WHERE "id" = ?',
+      sql: 'UPDATE "users" SET "name" = ? WHERE "id" = ?',
       args: ['John Updated', 1],
     });
   });
@@ -138,7 +138,7 @@ describe('Data Provider Integration', () => {
 
     expect(result.data).toEqual({ id: 1, name: 'John' });
     expect(mockClient.execute).toHaveBeenCalledWith({
-      sql: 'DELETE FROM users WHERE "id" = ?',
+      sql: 'DELETE FROM "users" WHERE "id" = ?',
       args: [1],
     });
   });
@@ -164,7 +164,7 @@ describe('Data Provider Integration', () => {
     });
 
     expect(mockClient.query).toHaveBeenCalledWith({
-      sql: 'SELECT * FROM users WHERE "uuid" = ?',
+      sql: 'SELECT * FROM "users" WHERE "uuid" = ?',
       args: ['123e4567-e89b-12d3-a456-426614174000'],
     });
   });

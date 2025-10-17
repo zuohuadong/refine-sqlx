@@ -6,17 +6,30 @@ import type {
 } from '@refinedev/core';
 import type { SqlQuery, SqlResult } from './client';
 
+/**
+ * Escapes SQL identifiers (table names, column names) to prevent SQL injection.
+ * Wraps identifiers in double quotes and escapes any existing double quotes.
+ * @param identifier - The SQL identifier to escape
+ * @returns The safely escaped identifier
+ */
+export function escapeIdentifier(identifier: string): string {
+  // Remove any potentially dangerous characters and escape existing quotes
+  return `"${identifier.replace(/"/g, '""')}"`;
+}
+
 export function createInsertQuery<T extends Record<string, any>>(
   table: string,
   data: T,
 ): SqlQuery {
-  const columns = Object.keys(data).join(', ');
+  const columns = Object.keys(data)
+    .map((col) => escapeIdentifier(col))
+    .join(', ');
   const placeholders = Object.keys(data)
     .map(() => '?')
     .join(', ');
 
   return {
-    sql: `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`,
+    sql: `INSERT INTO ${escapeIdentifier(table)} (${columns}) VALUES (${placeholders})`,
     args: Object.values(data),
   };
 }
@@ -27,9 +40,11 @@ export function createUpdateQuery<T extends Record<string, any>>(
   data: T,
 ): SqlQuery {
   const columns = Object.keys(data);
-  const placeholders = columns.map((key) => `${key} = ?`).join(', ');
+  const placeholders = columns
+    .map((key) => `${escapeIdentifier(key)} = ?`)
+    .join(', ');
   const where = createCrudFilters([filter])!;
-  const sql = `UPDATE ${table} SET ${placeholders} WHERE ${where.sql}`;
+  const sql = `UPDATE ${escapeIdentifier(table)} SET ${placeholders} WHERE ${where.sql}`;
   const args = [...Object.values(data), ...where.args];
 
   return { sql, args };
@@ -40,7 +55,7 @@ export function createDeleteQuery(
   filter: LogicalFilter,
 ): SqlQuery {
   const where = createCrudFilters([filter])!;
-  const sql = `DELETE FROM ${table} WHERE ${where.sql}`;
+  const sql = `DELETE FROM ${escapeIdentifier(table)} WHERE ${where.sql}`;
   const args = where.args;
 
   return { sql, args };
@@ -51,7 +66,7 @@ export function createSelectQuery(
   filter: LogicalFilter,
 ): SqlQuery {
   const where = createCrudFilters([filter])!;
-  const sql = `SELECT * FROM ${table} WHERE ${where.sql}`;
+  const sql = `SELECT * FROM ${escapeIdentifier(table)} WHERE ${where.sql}`;
   const args = where.args;
 
   return { sql, args };
@@ -81,7 +96,7 @@ export function createCrudSorting(sort?: CrudSorting): SqlQuery | undefined {
   if (!sort?.length) return void 0;
 
   const sql = sort
-    .map(({ field, order }) => `${field} ${order.toUpperCase()}`)
+    .map(({ field, order }) => `${escapeIdentifier(field)} ${order.toUpperCase()}`)
     .join(', ');
   return { sql, args: [] };
 }
@@ -123,97 +138,99 @@ function processFilters(filters: CrudFilters) {
 }
 
 function processLogicalFilter(filter: any) {
+  const escapedField = escapeIdentifier(filter.field);
+
   switch (filter.operator) {
     case 'eq':
-      return { part: `"${filter.field}" = ?`, values: [filter.value] };
+      return { part: `${escapedField} = ?`, values: [filter.value] };
     case 'ne':
-      return { part: `"${filter.field}" != ?`, values: [filter.value] };
+      return { part: `${escapedField} != ?`, values: [filter.value] };
     case 'lt':
-      return { part: `"${filter.field}" < ?`, values: [filter.value] };
+      return { part: `${escapedField} < ?`, values: [filter.value] };
     case 'gt':
-      return { part: `"${filter.field}" > ?`, values: [filter.value] };
+      return { part: `${escapedField} > ?`, values: [filter.value] };
     case 'lte':
-      return { part: `"${filter.field}" <= ?`, values: [filter.value] };
+      return { part: `${escapedField} <= ?`, values: [filter.value] };
     case 'gte':
-      return { part: `"${filter.field}" >= ?`, values: [filter.value] };
+      return { part: `${escapedField} >= ?`, values: [filter.value] };
     case 'in':
     case 'ina':
       return {
-        part: `"${filter.field}" IN (${filter.value.map(() => '?').join(', ')})`,
+        part: `${escapedField} IN (${filter.value.map(() => '?').join(', ')})`,
         values: [...filter.value],
       };
     case 'nin':
     case 'nina':
       return {
-        part: `"${filter.field}" NOT IN (${filter.value.map(() => '?').join(', ')})`,
+        part: `${escapedField} NOT IN (${filter.value.map(() => '?').join(', ')})`,
         values: [...filter.value],
       };
     case 'contains':
       return {
-        part: `"${filter.field}" LIKE ?`,
+        part: `${escapedField} LIKE ?`,
         values: [`%${filter.value}%`],
       };
     case 'ncontains':
       return {
-        part: `"${filter.field}" NOT LIKE ?`,
+        part: `${escapedField} NOT LIKE ?`,
         values: [`%${filter.value}%`],
       };
     case 'containss':
       return {
-        part: `"${filter.field}" LIKE ? COLLATE BINARY`,
+        part: `${escapedField} LIKE ? COLLATE BINARY`,
         values: [`%${filter.value}%`],
       };
     case 'ncontainss':
       return {
-        part: `"${filter.field}" NOT LIKE ? COLLATE BINARY`,
+        part: `${escapedField} NOT LIKE ? COLLATE BINARY`,
         values: [`%${filter.value}%`],
       };
     case 'null':
-      return { part: `"${filter.field}" IS NULL`, values: [] };
+      return { part: `${escapedField} IS NULL`, values: [] };
     case 'nnull':
-      return { part: `"${filter.field}" IS NOT NULL`, values: [] };
+      return { part: `${escapedField} IS NOT NULL`, values: [] };
     case 'startswith':
-      return { part: `"${filter.field}" LIKE ?`, values: [`${filter.value}%`] };
+      return { part: `${escapedField} LIKE ?`, values: [`${filter.value}%`] };
     case 'nstartswith':
       return {
-        part: `"${filter.field}" NOT LIKE ?`,
+        part: `${escapedField} NOT LIKE ?`,
         values: [`${filter.value}%`],
       };
     case 'startswiths':
       return {
-        part: `"${filter.field}" LIKE ? COLLATE BINARY`,
+        part: `${escapedField} LIKE ? COLLATE BINARY`,
         values: [`${filter.value}%`],
       };
     case 'nstartswiths':
       return {
-        part: `"${filter.field}" NOT LIKE ? COLLATE BINARY`,
+        part: `${escapedField} NOT LIKE ? COLLATE BINARY`,
         values: [`${filter.value}%`],
       };
     case 'endswith':
-      return { part: `"${filter.field}" LIKE ?`, values: [`%${filter.value}`] };
+      return { part: `${escapedField} LIKE ?`, values: [`%${filter.value}`] };
     case 'nendswith':
       return {
-        part: `"${filter.field}" NOT LIKE ?`,
+        part: `${escapedField} NOT LIKE ?`,
         values: [`%${filter.value}`],
       };
     case 'endswiths':
       return {
-        part: `"${filter.field}" LIKE ? COLLATE BINARY`,
+        part: `${escapedField} LIKE ? COLLATE BINARY`,
         values: [`%${filter.value}`],
       };
     case 'nendswiths':
       return {
-        part: `"${filter.field}" NOT LIKE ? COLLATE BINARY`,
+        part: `${escapedField} NOT LIKE ? COLLATE BINARY`,
         values: [`%${filter.value}`],
       };
     case 'between':
       return {
-        part: `"${filter.field}" BETWEEN ? AND ?`,
+        part: `${escapedField} BETWEEN ? AND ?`,
         values: [filter.value[0], filter.value[1]],
       };
     case 'nbetween':
       return {
-        part: `"${filter.field}" NOT BETWEEN ? AND ?`,
+        part: `${escapedField} NOT BETWEEN ? AND ?`,
         values: [filter.value[0], filter.value[1]],
       };
     default:

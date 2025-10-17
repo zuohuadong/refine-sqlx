@@ -11,7 +11,7 @@ describe('createCrudSorting', () => {
   it('should handle single sort field', () => {
     const sort: CrudSorting = [{ field: 'name', order: 'asc' }];
     const result = createCrudSorting(sort);
-    expect(result).toEqual({ sql: 'name ASC', args: [] });
+    expect(result).toEqual({ sql: '"name" ASC', args: [] });
   });
 
   it('should handle multiple sort fields', () => {
@@ -20,7 +20,7 @@ describe('createCrudSorting', () => {
       { field: 'created_at', order: 'desc' },
     ];
     const result = createCrudSorting(sort);
-    expect(result).toEqual({ sql: 'name ASC, created_at DESC', args: [] });
+    expect(result).toEqual({ sql: '"name" ASC, "created_at" DESC', args: [] });
   });
 
   it('should convert order to uppercase', () => {
@@ -29,7 +29,7 @@ describe('createCrudSorting', () => {
       { field: 'age', order: 'desc' },
     ];
     const result = createCrudSorting(sort);
-    expect(result).toEqual({ sql: 'name ASC, age DESC', args: [] });
+    expect(result).toEqual({ sql: '"name" ASC, "age" DESC', args: [] });
   });
 });
 

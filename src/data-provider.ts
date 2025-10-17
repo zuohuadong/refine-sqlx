@@ -37,6 +37,7 @@ import {
   createSelectQuery,
   createUpdateQuery,
   deserializeSqlResult,
+  escapeIdentifier,
 } from './utils';
 
 export default function (client: SqlClient): DataProvider;
@@ -104,7 +105,7 @@ export default function (
     params: GetListParams,
   ): Promise<GetListResponse<T>> {
     const client = await resolveClient();
-    const sqlParts: string[] = ['SELECT * FROM', params.resource];
+    const sqlParts: string[] = ['SELECT * FROM', escapeIdentifier(params.resource)];
     const sqlValues: unknown[] = [];
 
     const where = createCrudFilters(params.filters);
@@ -131,7 +132,7 @@ export default function (
     const {
       rows: [[count]],
     } = await client.query({
-      sql: `SELECT COUNT(*) FROM ${params.resource}`,
+      sql: `SELECT COUNT(*) FROM ${escapeIdentifier(params.resource)}`,
       args: [],
     });
 
