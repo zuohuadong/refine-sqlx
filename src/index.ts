@@ -16,13 +16,13 @@ export type {
   ValidationConfig,
   InferInsertModel,
   InferSelectModel,
-  FeaturesConfig,
 } from './types';
 
 // Feature configuration and validation (v0.5.0)
 export {
   validateConfig,
   validateFeaturesConfig,
+  type FeaturesConfig,
   type RelationsConfig,
   type AggregationsConfig,
   type TransactionsConfig,
@@ -36,10 +36,14 @@ export type {
   DataProviderWithTransactions,
   DataProviderWithAggregations,
   ExtendedDataProvider,
-  TransactionContext,
+} from './types/provider';
+
+// Re-export TransactionContext and Aggregate types from their respective modules
+export type { TransactionContext } from './features/transactions/manager';
+export type {
   AggregateParams,
-  AggregateResult,
-} from './types';
+  AggregateResponse,
+} from './features/aggregations/executor';
 
 // Feature executors and types (v0.5.0)
 export {
@@ -52,7 +56,6 @@ export {
   type FeatureExecutor,
   type FeatureContext,
   type AggregateFunction,
-  type AggregateResponse,
   type HavingCondition,
   type HavingLogical,
   type HavingOperator,

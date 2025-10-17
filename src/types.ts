@@ -10,6 +10,9 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type { Logger } from './logger';
 
+// Import FeaturesConfig as a type to avoid circular dependency
+import type { FeaturesConfig } from './config';
+
 /**
  * Database type detection
  */
@@ -264,6 +267,25 @@ export interface RefineSQLConfig<
      */
     field?: string;
   };
+
+  /**
+   * Feature configuration for v0.5.0+
+   * Enables advanced features like relations, aggregations, transactions, etc.
+   *
+   * @example
+   * ```typescript
+   * const dataProvider = await createRefineSQL({
+   *   connection: './database.sqlite',
+   *   schema,
+   *   features: {
+   *     relations: { enabled: true },
+   *     aggregations: { enabled: true },
+   *     transactions: { enabled: true }
+   *   }
+   * });
+   * ```
+   */
+  features?: FeaturesConfig;
 }
 
 /**
@@ -441,3 +463,185 @@ export interface CustomResponse<T = any> {
    */
   data: T;
 }
+
+/**
+ * Cache adapter interface for implementing custom cache backends
+ */
+export interface CacheAdapter {
+  /**
+   * Get a value from cache
+   */
+  get<T = any>(key: string): Promise<T | null>;
+
+  /**
+   * Set a value in cache
+   */
+  set(key: string, value: any, ttl: number): Promise<void>;
+
+  /**
+   * Delete a value or pattern from cache
+   */
+  delete(pattern: string): Promise<void>;
+
+  /**
+   * Clear all cache entries (optional)
+   */
+  clear?(): Promise<void>;
+}
+
+/**
+ * Cache configuration
+ */
+export interface CacheConfig {
+  /**
+   * Enable caching
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Cache adapter instance or type
+   * @default 'memory'
+   */
+  adapter?: CacheAdapter | 'memory' | 'redis';
+
+  /**
+   * Cache key prefix
+   * @default 'refine-sqlx:'
+   */
+  keyPrefix?: string;
+
+  /**
+   * Default TTL in seconds
+   * @default 300
+   */
+  ttl?: number;
+
+  /**
+   * Maximum cache size for memory adapter
+   * @default 1000
+   */
+  maxSize?: number;
+
+  /**
+   * Redis connection options (when adapter is 'redis')
+   */
+  redis?: {
+    host?: string;
+    port?: number;
+    password?: string;
+    db?: number;
+  };
+}
+
+/**
+ * Optimistic locking configuration
+ */
+export interface OptimisticLockingConfig {
+  /**
+   * Enable optimistic locking
+   * @default false
+   */
+  enabled: boolean;
+
+  /**
+   * Version field name
+   * @default 'version'
+   */
+  versionField?: string;
+}
+
+/**
+ * Multi-tenancy configuration
+ */
+export interface MultiTenancyConfig {
+  /**
+   * Enable multi-tenancy
+   * @default false
+   */
+  enabled: boolean;
+
+  /**
+   * Tenant ID field name
+   * @default 'tenant_id'
+   */
+  tenantField?: string;
+
+  /**
+   * Tenant ID provider function
+   */
+  getTenantId?: () => string | number | Promise<string | number>;
+}
+
+/**
+ * Query log event
+ */
+export interface QueryLogEvent {
+  /**
+   * SQL query string
+   */
+  query: string;
+
+  /**
+   * Query parameters
+   */
+  params?: any[];
+
+  /**
+   * Execution time in milliseconds
+   */
+  duration: number;
+
+  /**
+   * Timestamp
+   */
+  timestamp: Date;
+
+  /**
+   * Error if query failed
+   */
+  error?: Error;
+}
+
+/**
+ * Logging configuration
+ */
+export interface LoggingConfig {
+  /**
+   * Enable query logging
+   * @default false
+   */
+  enabled: boolean;
+
+  /**
+   * Log handler function
+   */
+  handler?: (event: QueryLogEvent) => void;
+
+  /**
+   * Log slow queries only (threshold in ms)
+   */
+  slowQueryThreshold?: number;
+}
+
+/**
+ * Validation configuration
+ */
+export interface ValidationConfig {
+  /**
+   * Enable validation
+   * @default false
+   */
+  enabled: boolean;
+
+  /**
+   * Validation schema or function
+   */
+  schema?: any;
+
+  /**
+   * Custom validator function
+   */
+  validator?: (data: any, resource: string) => Promise<boolean>;
+}
+
