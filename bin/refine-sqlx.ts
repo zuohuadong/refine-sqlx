@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('refine-sqlx')
   .description('CLI tools for refine-sqlx development')
-  .version('0.3.0');
+  .version('0.5.0');
 
 // Init command
 program

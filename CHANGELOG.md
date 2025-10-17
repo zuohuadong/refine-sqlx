@@ -1,5 +1,90 @@
 # Changelog
 
+## 0.5.0
+
+### Major Changes
+
+- **Unified Feature Integration**: Complete integration of all v0.4.0 feature modules into the main DataProvider
+  - Relations, aggregations, transactions, JSON support, and views now fully integrated
+  - Feature-based configuration system with `features` property in RefineSQLConfig
+  - Simplified API with consistent behavior across all features
+
+- **Enhanced Type System**: Complete TypeScript type definitions for all features
+  - Added missing type exports: `CacheAdapter`, `CacheConfig`, `OptimisticLockingConfig`, `MultiTenancyConfig`, etc.
+  - Fixed circular dependencies between type modules
+  - Improved type inference and IDE autocomplete support
+
+- **Feature Configuration**: New unified configuration interface
+  - `features.relations` - Configure relation query behavior
+  - `features.aggregations` - Enable aggregation functions (count, sum, avg, min, max)
+  - `features.transactions` - Transaction management with isolation levels
+  - `features.json` - JSON field handling and parsing
+  - `features.views` - Database view support
+
+### New Features
+
+- **Cache System**: Built-in caching support with multiple adapters
+  - Memory cache adapter (default)
+  - Redis cache adapter for distributed caching
+  - Configurable TTL and cache key management
+
+- **Live Queries**: Real-time data synchronization
+  - Polling strategy for regular data updates
+  - WebSocket strategy for instant updates
+  - Event-driven architecture with LiveEventEmitter
+
+- **Validation Framework**: Input validation system
+  - Schema-based validation
+  - Custom validator functions
+  - Integration with popular validation libraries
+
+- **CLI Tools**: Enhanced command-line interface
+  - `refine-sqlx init` - Initialize new projects
+  - `refine-sqlx scaffold` - Generate schema templates
+  - `refine-sqlx introspect` - Database introspection
+  - `refine-sqlx validate-d1` - D1 configuration validation
+
+### Bug Fixes
+
+- Fixed TypeScript compilation errors in CI/CD pipeline
+- Resolved circular dependencies in type system
+- Fixed missing type exports causing build failures
+- Corrected duplicate type exports in index.ts
+
+### Documentation
+
+- Added comprehensive Chinese (中文) translations for all documentation
+- Updated feature documentation for v0.5.0
+- Added migration guides from v0.4.0 to v0.5.0
+- Improved code examples with real-world use cases
+
+### Breaking Changes
+
+- Configuration now requires `features` property for advanced features
+- Some v0.4.0 APIs have been deprecated (see migration guide)
+- Minimum TypeScript version: 5.0+
+
+### Migration from v0.4.0
+
+```typescript
+// Before (v0.4.0)
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+});
+
+// After (v0.5.0)
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+  features: {
+    relations: { enabled: true },
+    aggregations: { enabled: true },
+    transactions: { enabled: true },
+  },
+});
+```
+
 ## 0.4.0
 
 ### Minor Changes
