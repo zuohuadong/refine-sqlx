@@ -228,7 +228,7 @@ export interface RefineSQLConfig<
    *   schema,
    *   timeTravel: {
    *     enabled: true,
-   *     intervalSeconds: 60,    // Backup every minute
+   *     intervalSeconds: 86400,    // Backup every day (86400 seconds = 1 day)
    *     retentionDays: 30,      // Keep 30 days of backups
    *   }
    * });
