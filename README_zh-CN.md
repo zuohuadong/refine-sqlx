@@ -2,99 +2,99 @@
 
 [English](./README.md) | [中文](./README_zh-CN.md)
 
-A type-safe, cross-platform SQL data provider for [Refine](https://refine.dev) powered by [Drizzle ORM](https://orm.drizzle.team).
+一个类型安全、跨平台的 SQL 数据提供程序，适用于 [Refine](https://refine.dev)，由 [Drizzle ORM](https://orm.drizzle.team) 驱动。
 
 [![npm version](https://img.shields.io/npm/v/refine-sqlx.svg)](https://www.npmjs.com/package/refine-sqlx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-## 🎯 Why Refine SQL X?
+## 🎯 为什么选择 Refine SQL X？
 
-**Refine SQL X** combines the power of [Refine](https://refine.dev) and [Drizzle ORM](https://orm.drizzle.team) to provide:
+**Refine SQL X** 结合了 [Refine](https://refine.dev) 和 [Drizzle ORM](https://orm.drizzle.team) 的强大功能，提供：
 
-- ✅ **Full TypeScript Type Safety** - Catch errors at compile time, not runtime
-- ✅ **Single Source of Truth** - Define your schema once, use it everywhere
-- ✅ **Multi-Database Support** - Same API for SQLite, MySQL, PostgreSQL, and Cloudflare D1
-- ✅ **IntelliSense Everywhere** - Auto-completion for tables, columns, and types
-- ✅ **Zero Runtime Cost** - Type checking happens at build time
+- ✅ **完整的 TypeScript 类型安全** - 在编译时捕获错误，而不是运行时
+- ✅ **单一数据源** - 定义一次模式，到处使用
+- ✅ **多数据库支持** - SQLite、MySQL、PostgreSQL 和 Cloudflare D1 使用相同的 API
+- ✅ **随处可用的智能提示** - 表、列和类型的自动补全
+- ✅ **零运行时成本** - 类型检查在构建时进行
 
-### Why Drizzle ORM?
+### 为什么选择 Drizzle ORM？
 
-This library uses [Drizzle ORM](https://orm.drizzle.team) for schema definitions because it provides:
+本库使用 [Drizzle ORM](https://orm.drizzle.team) 进行模式定义，因为它提供：
 
-1. **Type Safety** - Automatic TypeScript type inference from your schema
-2. **Cross-Database Compatibility** - Write once, run on SQLite, MySQL, or PostgreSQL
-3. **Familiar API** - SQL-like syntax that's easy to learn
-4. **Zero Magic** - Explicit, predictable behavior without hidden abstractions
-5. **Lightweight** - Minimal runtime overhead
+1. **类型安全** - 从模式自动推断 TypeScript 类型
+2. **跨数据库兼容性** - 编写一次，在 SQLite、MySQL 或 PostgreSQL 上运行
+3. **熟悉的 API** - 类似 SQL 的语法，易于学习
+4. **零魔法** - 明确、可预测的行为，没有隐藏的抽象
+5. **轻量级** - 最小的运行时开销
 
-## ✨ Features
+## ✨ 特性
 
-- 🎯 **Schema-Driven Development** - Define your database schema in TypeScript
-- 🔄 **Multi-Database Support** - SQLite, MySQL, PostgreSQL, and Cloudflare D1
-- 🌐 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare Workers, better-sqlite3
-- 📦 **Optimized D1 Build** - Tree-shaken bundle (~18KB gzipped) for Cloudflare Workers
-- 🛡️ **Type Inference** - Automatic type inference from Drizzle schemas
-- 🔌 **Unified API** - Single interface for all database types with automatic detection
-- 🔍 **Advanced Filtering** - Full Refine filter operators support
-- 💾 **Transaction Support** - Batch operations and atomic transactions
-- ⏰ **Time Travel** - Automatic backup and restore for SQLite databases
-- 📊 **Full CRUD** - Complete Create, Read, Update, Delete operations
-- 🚀 **ESM Only** - Modern ES Module architecture
-- 🎛️ **Automatic Detection** - Intelligently selects the best driver based on connection string
+- 🎯 **模式驱动开发** - 在 TypeScript 中定义数据库模式
+- 🔄 **多数据库支持** - SQLite、MySQL、PostgreSQL 和 Cloudflare D1
+- 🌐 **多运行时支持** - Bun、Node.js 24+、Cloudflare Workers、better-sqlite3
+- 📦 **优化的 D1 构建** - 适用于 Cloudflare Workers 的树摇优化包（~18KB gzipped）
+- 🛡️ **类型推断** - 从 Drizzle 模式自动推断类型
+- 🔌 **统一 API** - 所有数据库类型的单一接口，自动检测
+- 🔍 **高级过滤** - 完整支持 Refine 过滤操作符
+- 💾 **事务支持** - 批量操作和原子事务
+- ⏰ **时间旅行** - SQLite 数据库的自动备份和恢复
+- 📊 **完整 CRUD** - 完整的创建、读取、更新、删除操作
+- 🚀 **仅 ESM** - 现代 ES 模块架构
+- 🎛️ **自动检测** - 根据连接字符串智能选择最佳驱动程序
 
-## 📦 Installation
+## 📦 安装
 
 ```bash
-# Using Bun
+# 使用 Bun
 bun add refine-sqlx drizzle-orm
 
-# Using npm
+# 使用 npm
 npm install refine-sqlx drizzle-orm
 
-# Using pnpm
+# 使用 pnpm
 pnpm add refine-sqlx drizzle-orm
 ```
 
-### Optional Database Drivers
+### 可选数据库驱动
 
-**SQLite** (auto-installed as optional dependency):
+**SQLite**（作为可选依赖自动安装）：
 
 ```bash
-npm install better-sqlite3  # For Node.js < 24
+npm install better-sqlite3  # 适用于 Node.js < 24
 ```
 
-**MySQL**:
+**MySQL**：
 
 ```bash
 npm install mysql2
 ```
 
-**PostgreSQL**:
+**PostgreSQL**：
 
 ```bash
 npm install postgres
 ```
 
-Note: Bun and Node.js 24+ have native SQLite support. Cloudflare D1 is built-in.
+注意：Bun 和 Node.js 24+ 具有原生 SQLite 支持。Cloudflare D1 是内置的。
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-Get started in 3 simple steps:
+通过 3 个简单步骤开始：
 
-### 1. Install Dependencies
+### 1. 安装依赖
 
 ```bash
 npm install refine-sqlx drizzle-orm
 ```
 
-### 2. Define Your Schema
+### 2. 定义模式
 
-Create a `schema.ts` file with your database structure using Drizzle ORM.
+使用 Drizzle ORM 创建一个包含数据库结构的 `schema.ts` 文件。
 
-> ⚠️ **Important**: Drizzle ORM uses **database-specific schema functions** (`sqliteTable`, `mysqlTable`, `pgTable`). Choose the one that matches your target database.
+> ⚠️ **重要**：Drizzle ORM 使用**特定于数据库的模式函数**（`sqliteTable`、`mysqlTable`、`pgTable`）。选择与目标数据库匹配的函数。
 
-**For SQLite** (Bun, Node.js, Cloudflare D1):
+**适用于 SQLite**（Bun、Node.js、Cloudflare D1）：
 
 ```typescript
 // schema.ts
@@ -119,7 +119,7 @@ export const posts = sqliteTable('posts', {
 });
 ```
 
-**For MySQL**:
+**适用于 MySQL**：
 
 ```typescript
 // schema.ts
@@ -150,7 +150,7 @@ export const posts = mysqlTable('posts', {
 });
 ```
 
-**For PostgreSQL**:
+**适用于 PostgreSQL**：
 
 ```typescript
 // schema.ts
@@ -182,32 +182,32 @@ export const posts = pgTable('posts', {
 });
 ```
 
-> 💡 **Cross-Database Compatibility**: If you need to support multiple databases, create separate schema files (e.g., `schema.sqlite.ts`, `schema.mysql.ts`) or use environment-based imports.
+> 💡 **跨数据库兼容性**：如果需要支持多个数据库，请创建单独的模式文件（例如，`schema.sqlite.ts`、`schema.mysql.ts`）或使用基于环境的导入。
 >
-> 📚 **Learn More**: [Drizzle Schema Syntax](https://orm.drizzle.team/docs/sql-schema-declaration)
+> 📚 **了解更多**：[Drizzle 模式语法](https://orm.drizzle.team/docs/sql-schema-declaration)
 
-### 3. Create Data Provider
+### 3. 创建数据提供程序
 
-**SQLite Quick Setup** (Most Common)
+**SQLite 快速设置**（最常见）
 
 ```typescript
 import { Refine } from '@refinedev/core';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
-// SQLite - File path or :memory:
+// SQLite - 文件路径或 :memory:
 const dataProvider = await createRefineSQL({
   connection: './database.sqlite',
   schema,
 });
 
-// MySQL - Connection string (auto-detected)
+// MySQL - 连接字符串（自动检测）
 const dataProvider = await createRefineSQL({
   connection: 'mysql://user:pass@localhost:3306/mydb',
   schema,
 });
 
-// MySQL - Config object
+// MySQL - 配置对象
 const dataProvider = await createRefineSQL({
   connection: {
     host: 'localhost',
@@ -219,13 +219,13 @@ const dataProvider = await createRefineSQL({
   schema,
 });
 
-// PostgreSQL - Connection string (auto-detected)
+// PostgreSQL - 连接字符串（自动检测）
 const dataProvider = await createRefineSQL({
   connection: 'postgresql://user:pass@localhost:5432/mydb',
   schema,
 });
 
-// PostgreSQL - Config object
+// PostgreSQL - 配置对象
 const dataProvider = await createRefineSQL({
   connection: {
     host: 'localhost',
@@ -237,13 +237,13 @@ const dataProvider = await createRefineSQL({
   schema,
 });
 
-// Cloudflare D1 - Database instance
+// Cloudflare D1 - 数据库实例
 const dataProvider = await createRefineSQL({
-  connection: env.DB, // D1Database instance
+  connection: env.DB, // D1Database 实例
   schema,
 });
 
-// Drizzle Instance - Any database (most flexible)
+// Drizzle 实例 - 任何数据库（最灵活）
 const dataProvider = await createRefineSQL({
   connection: drizzleInstance,
   schema,
@@ -256,21 +256,21 @@ const App = () => (
       { name: 'users', list: '/users' },
       { name: 'posts', list: '/posts' },
     ]}>
-    {/* Your app components */}
+    {/* 你的应用组件 */}
   </Refine>
 );
 ```
 
-### 3. Use Type-Safe Operations
+### 3. 使用类型安全操作
 
 ```typescript
 import type { InferSelectModel } from 'refine-sqlx';
 import { users } from './schema';
 
-// Automatic type inference
+// 自动类型推断
 type User = InferSelectModel<typeof users>;
 
-// Create with type safety
+// 创建时具有类型安全
 const { data } = await dataProvider.create<User>({
   resource: 'users',
   variables: {
@@ -282,71 +282,71 @@ const { data } = await dataProvider.create<User>({
 });
 ```
 
-## 🏗️ Runtime & Platform Examples
+## 🏗️ 运行时和平台示例
 
-### SQLite Runtimes
+### SQLite 运行时
 
-**Bun (Native SQLite)**:
+**Bun（原生 SQLite）**：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // Your SQLite schema
+import * as schema from './schema'; // 你的 SQLite 模式
 
 const dataProvider = await createRefineSQL({
-  connection: './database.sqlite', // Auto-detects bun:sqlite
+  connection: './database.sqlite', // 自动检测 bun:sqlite
   schema,
 });
 ```
 
-**Node.js 24+ (Native SQLite)**:
+**Node.js 24+（原生 SQLite）**：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const dataProvider = await createRefineSQL({
-  connection: './database.sqlite', // Auto-detects node:sqlite
+  connection: './database.sqlite', // 自动检测 node:sqlite
   schema,
 });
 ```
 
-**Node.js <24 (better-sqlite3)**:
+**Node.js <24（better-sqlite3）**：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
-// Automatically falls back to better-sqlite3 if installed
+// 如果已安装，自动回退到 better-sqlite3
 const dataProvider = await createRefineSQL({
   connection: './database.sqlite',
   schema,
 });
 ```
 
-**Cloudflare D1 (Optimized Build)**:
+**Cloudflare D1（优化构建）**：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx/d1';
-import * as schema from './schema'; // Your SQLite schema
+import * as schema from './schema'; // 你的 SQLite 模式
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }) {
     const dataProvider = createRefineSQL({ connection: env.DB, schema });
-    // Your worker logic here
+    // 你的 worker 逻辑
     return Response.json({ ok: true });
   },
 };
 ```
 
-**Bundle Size (D1)**: ~66KB uncompressed, ~18KB gzipped (includes Drizzle ORM!)
+**包大小（D1）**：~66KB 未压缩，~18KB gzipped（包括 Drizzle ORM！）
 
-### MySQL Connections
+### MySQL 连接
 
-**Connection String** (Auto-detected):
+**连接字符串**（自动检测）：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // Your MySQL schema
+import * as schema from './schema'; // 你的 MySQL 模式
 
 const dataProvider = await createRefineSQL({
   connection: 'mysql://root:password@localhost:3306/mydb',
@@ -354,7 +354,7 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-**Config Object** (Advanced):
+**配置对象**（高级）：
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -371,13 +371,13 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-### PostgreSQL Connections
+### PostgreSQL 连接
 
-**Connection String** (Auto-detected):
+**连接字符串**（自动检测）：
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // Your PostgreSQL schema
+import * as schema from './schema'; // 你的 PostgreSQL 模式
 
 const dataProvider = await createRefineSQL({
   connection: 'postgresql://postgres:password@localhost:5432/mydb',
@@ -385,7 +385,7 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-**Config Object** (Advanced):
+**配置对象**（高级）：
 
 ```typescript
 const dataProvider = await createRefineSQL({
@@ -403,9 +403,9 @@ const dataProvider = await createRefineSQL({
 });
 ```
 
-### Using Existing Drizzle Instance
+### 使用现有的 Drizzle 实例
 
-If you already have a Drizzle instance configured:
+如果你已经配置了 Drizzle 实例：
 
 ```typescript
 import { Database } from 'bun:sqlite';
@@ -419,9 +419,9 @@ const db = drizzle(sqlite, { schema });
 const dataProvider = createRefineSQL({ connection: db, schema });
 ```
 
-## 📊 Complete CRUD Examples
+## 📊 完整 CRUD 示例
 
-### Create Operations
+### 创建操作
 
 ```typescript
 import type { InferInsertModel } from 'refine-sqlx';
@@ -429,7 +429,7 @@ import { users } from './schema';
 
 type UserInsert = InferInsertModel<typeof users>;
 
-// Create single record
+// 创建单条记录
 const { data } = await dataProvider.create<User, UserInsert>({
   resource: 'users',
   variables: {
@@ -440,7 +440,7 @@ const { data } = await dataProvider.create<User, UserInsert>({
   },
 });
 
-// Create multiple records
+// 创建多条记录
 const { data: users } = await dataProvider.createMany<User, UserInsert>({
   resource: 'users',
   variables: [
@@ -460,10 +460,10 @@ const { data: users } = await dataProvider.createMany<User, UserInsert>({
 });
 ```
 
-### Read Operations
+### 读取操作
 
 ```typescript
-// Get list with filtering, sorting, and pagination
+// 获取列表，支持过滤、排序和分页
 const { data, total } = await dataProvider.getList<User>({
   resource: 'users',
   pagination: { current: 1, pageSize: 10 },
@@ -474,30 +474,30 @@ const { data, total } = await dataProvider.getList<User>({
   sorters: [{ field: 'createdAt', order: 'desc' }],
 });
 
-// Get single record
+// 获取单条记录
 const { data: user } = await dataProvider.getOne<User>({
   resource: 'users',
   id: 1,
 });
 
-// Get multiple records by IDs
+// 通过 ID 获取多条记录
 const { data: users } = await dataProvider.getMany<User>({
   resource: 'users',
   ids: [1, 2, 3],
 });
 ```
 
-### Update Operations
+### 更新操作
 
 ```typescript
-// Update single record
+// 更新单条记录
 const { data } = await dataProvider.update<User>({
   resource: 'users',
   id: 1,
   variables: { status: 'inactive' },
 });
 
-// Update multiple records
+// 更新多条记录
 const { data: users } = await dataProvider.updateMany<User>({
   resource: 'users',
   ids: [1, 2, 3],
@@ -505,25 +505,25 @@ const { data: users } = await dataProvider.updateMany<User>({
 });
 ```
 
-### Delete Operations
+### 删除操作
 
 ```typescript
-// Delete single record
+// 删除单条记录
 const { data } = await dataProvider.deleteOne<User>({
   resource: 'users',
   id: 1,
 });
 
-// Delete multiple records
+// 删除多条记录
 const { data: users } = await dataProvider.deleteMany<User>({
   resource: 'users',
   ids: [1, 2, 3],
 });
 ```
 
-## ⏰ Time Travel (SQLite Only)
+## ⏰ 时间旅行（仅限 SQLite）
 
-Enable automatic backup and restore functionality for SQLite databases:
+为 SQLite 数据库启用自动备份和恢复功能：
 
 ```typescript
 import { createRefineSQL, type DataProviderWithTimeTravel } from 'refine-sqlx';
@@ -534,13 +534,13 @@ const dataProvider: DataProviderWithTimeTravel = await createRefineSQL({
   schema,
   timeTravel: {
     enabled: true,
-    backupDir: './.time-travel', // Backup directory (default: './.time-travel')
-    intervalSeconds: 86400, // Backup interval in seconds (default: 86400 = 1 day)
-    retentionDays: 30, // Keep backups for 30 days (default: 30)
+    backupDir: './.time-travel', // 备份目录（默认：'./.time-travel'）
+    intervalSeconds: 86400, // 备份间隔（秒）（默认：86400 = 1 天）
+    retentionDays: 30, // 保留备份 30 天（默认：30）
   },
 });
 
-// List all available snapshots
+// 列出所有可用的快照
 const snapshots = await dataProvider.listSnapshots?.();
 console.log(snapshots);
 // [
@@ -551,62 +551,62 @@ console.log(snapshots);
 //   }
 // ]
 
-// Create a manual snapshot
+// 创建手动快照
 const snapshot = await dataProvider.createSnapshot?.('before-migration');
 
-// Restore to a specific timestamp
+// 恢复到特定时间戳
 await dataProvider.restoreToTimestamp?.('2025-10-16T10:30:00.000Z');
 
-// Restore to the most recent snapshot before a date
+// 恢复到日期之前的最近快照
 await dataProvider.restoreToDate?.(new Date('2025-10-16'));
 
-// Cleanup old snapshots
+// 清理旧快照
 const deletedCount = await dataProvider.cleanupSnapshots?.();
 
-// Stop automatic backups (when shutting down)
+// 停止自动备份（关闭时）
 dataProvider.stopAutoBackup?.();
 ```
 
-### Time Travel Features
+### 时间旅行特性
 
-- 🔄 **Automatic Backups**: Configurable interval-based snapshots
-- 📸 **Manual Snapshots**: Create labeled snapshots on demand
-- 🕰️ **Point-in-Time Restore**: Restore to specific timestamps or dates
-- 🧹 **Automatic Cleanup**: Retention policy for old snapshots
-- 🔒 **Pre-Restore Backup**: Automatically creates backup before restoration
-- 📁 **File-Based**: Simple, efficient file system operations
+- 🔄 **自动备份**：可配置的基于间隔的快照
+- 📸 **手动快照**：按需创建带标签的快照
+- 🕰️ **时间点恢复**：恢复到特定时间戳或日期
+- 🧹 **自动清理**：旧快照的保留策略
+- 🔒 **恢复前备份**：恢复前自动创建备份
+- 📁 **基于文件**：简单、高效的文件系统操作
 
-**Note**: Time Travel is only available for SQLite databases with file-based storage (not `:memory:`).
+**注意**：时间旅行仅适用于基于文件存储的 SQLite 数据库（不支持 `:memory:`）。
 
-## 🔍 Advanced Filtering
+## 🔍 高级过滤
 
-Supports all standard Refine filter operators:
+支持所有标准 Refine 过滤操作符：
 
 ```typescript
 const { data, total } = await dataProvider.getList<User>({
   resource: 'users',
   filters: [
-    // Equality
+    // 相等性
     { field: 'status', operator: 'eq', value: 'active' },
     { field: 'status', operator: 'ne', value: 'deleted' },
 
-    // Comparison
+    // 比较
     { field: 'createdAt', operator: 'gte', value: new Date('2024-01-01') },
     { field: 'createdAt', operator: 'lte', value: new Date() },
 
-    // String operations
+    // 字符串操作
     { field: 'name', operator: 'contains', value: 'John' },
     { field: 'email', operator: 'startswith', value: 'admin' },
 
-    // Array operations
+    // 数组操作
     { field: 'status', operator: 'in', value: ['active', 'pending'] },
     { field: 'status', operator: 'nin', value: ['deleted', 'banned'] },
 
-    // Null checks
+    // 空值检查
     { field: 'deletedAt', operator: 'null' },
     { field: 'email', operator: 'nnull' },
 
-    // Range
+    // 范围
     { field: 'age', operator: 'between', value: [18, 65] },
   ],
   sorters: [
@@ -616,165 +616,165 @@ const { data, total } = await dataProvider.getList<User>({
 });
 ```
 
-### Supported Filter Operators
+### 支持的过滤操作符
 
-- `eq`, `ne` - Equality/inequality
-- `lt`, `lte`, `gt`, `gte` - Comparison
-- `in`, `nin` - Array membership
-- `contains`, `ncontains` - Substring search (case-insensitive)
-- `containss`, `ncontainss` - Substring search (case-sensitive)
-- `startswith`, `nstartswith`, `endswith`, `nendswith` - String position
-- `between`, `nbetween` - Range checks
-- `null`, `nnull` - Null checks
+- `eq`、`ne` - 相等/不相等
+- `lt`、`lte`、`gt`、`gte` - 比较
+- `in`、`nin` - 数组成员资格
+- `contains`、`ncontains` - 子字符串搜索（不区分大小写）
+- `containss`、`ncontainss` - 子字符串搜索（区分大小写）
+- `startswith`、`nstartswith`、`endswith`、`nendswith` - 字符串位置
+- `between`、`nbetween` - 范围检查
+- `null`、`nnull` - 空值检查
 
-## ⚙️ Configuration
+## ⚙️ 配置
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const dataProvider = createRefineSQL({
-  // Database connection
-  connection: './database.sqlite', // or D1Database, Drizzle instance, etc.
+  // 数据库连接
+  connection: './database.sqlite', // 或 D1Database、Drizzle 实例等
 
-  // Drizzle schema (required)
+  // Drizzle 模式（必需）
   schema,
 
-  // Optional Drizzle config
+  // 可选的 Drizzle 配置
   config: {
-    logger: true, // Enable query logging
+    logger: true, // 启用查询日志
   },
 
-  // Field naming convention (default: 'snake_case')
-  casing: 'camelCase', // or 'snake_case' or 'none'
+  // 字段命名约定（默认：'snake_case'）
+  casing: 'camelCase', // 或 'snake_case' 或 'none'
 
-  // Custom logger
-  logger: true, // or custom Logger instance
+  // 自定义日志记录器
+  logger: true, // 或自定义 Logger 实例
 });
 ```
 
-## 🎯 Type Exports
+## 🎯 类型导出
 
 ```typescript
 import type {
-  // Extended DataProvider with Time Travel
+  // 带时间旅行的扩展 DataProvider
   DataProviderWithTimeTravel,
   InferInsertModel,
-  // Infer types from schema
+  // 从模式推断类型
   InferSelectModel,
-  // Configuration
+  // 配置
   RefineSQLConfig,
-  // Runtime detection
+  // 运行时检测
   RuntimeEnvironment,
-  // Table name helper
+  // 表名助手
   TableName,
-  // Time Travel
+  // 时间旅行
   TimeTravelOptions,
   TimeTravelSnapshot,
 } from 'refine-sqlx';
 
-// Usage
+// 用法
 type User = InferSelectModel<typeof users>;
 type UserInsert = InferInsertModel<typeof users>;
 ```
 
-## 📋 Requirements
+## 📋 要求
 
-- **TypeScript**: 5.0+
-- **Node.js**: 20.0+ (24.0+ recommended for native SQLite)
-- **Bun**: 1.0+ (optional)
-- **Peer Dependencies**: `@refinedev/core ^5.0.0`, `@tanstack/react-query ^5.0.0`
-- **Dependencies**: `drizzle-orm ^0.44.0`
-- **Optional**: `better-sqlite3 ^12.0.0` (fallback for Node.js < 24)
+- **TypeScript**：5.0+
+- **Node.js**：20.0+（推荐 24.0+ 以支持原生 SQLite）
+- **Bun**：1.0+（可选）
+- **对等依赖**：`@refinedev/core ^5.0.0`、`@tanstack/react-query ^5.0.0`
+- **依赖**：`drizzle-orm ^0.44.0`
+- **可选**：`better-sqlite3 ^12.0.0`（Node.js < 24 的回退方案）
 
-## 🧪 Testing
+## 🧪 测试
 
 ```bash
-# Run tests
+# 运行测试
 bun test
 
-# Run integration tests
+# 运行集成测试
 bun run test:integration-bun
 bun run test:integration-node
 bun run test:integration-better-sqlite3
 
-# Build
+# 构建
 bun run build
 
-# Format code
+# 格式化代码
 bun run format
 ```
 
-## 📚 Documentation
+## 📚 文档
 
-Comprehensive documentation is available:
+提供全面的文档：
 
-### Current Version (v0.3.x)
+### 当前版本（v0.3.x）
 
-- **[v0.3.0 Release Notes](./.changeset/v0-3-0-release.md)** - Complete rewrite with Drizzle ORM
-- **[D1 Example](./example/D1_EXAMPLE.md)** - Cloudflare Workers setup guide
-- **[Example Code](./example/main-v0.3.0.ts)** - Full usage examples
-- **[Technical Specifications](./docs/specs/CLAUDE_SPEC.md)** - Architecture and standards
+- **[v0.3.0 发布说明](./.changeset/v0-3-0-release.md)** - 使用 Drizzle ORM 完全重写
+- **[D1 示例](./example/D1_EXAMPLE.md)** - Cloudflare Workers 设置指南
+- **[示例代码](./example/main-v0.3.0.ts)** - 完整使用示例
+- **[技术规范](./docs/specs/CLAUDE_SPEC.md)** - 架构和标准
 
-### Roadmap & Future Versions
+### 路线图和未来版本
 
-- **[v0.4.0 Features (Planned)](./docs/features/FEATURES_v0.4.0.md)** - Core features and enhancements (Q1 2025)
-  - custom() method for raw SQL queries
-  - Nested relations loading
-  - Aggregation support
-  - Field selection/projection
-  - Soft delete support
-- **[v0.5.0 Features (Planned)](./docs/features/FEATURES_v0.5.0.md)** - Enterprise & developer experience (Q2-Q3 2025)
-  - Optimistic locking
-  - Live queries / real-time subscriptions
-  - Multi-tenancy / row-level security
-  - Query caching
-  - TypeScript schema generator
-  - Enhanced logging & debugging
+- **[v0.4.0 功能（计划中）](./docs/features/FEATURES_v0.4.0.md)** - 核心功能和增强（2025 年第一季度）
+  - custom() 方法用于原始 SQL 查询
+  - 嵌套关系加载
+  - 聚合支持
+  - 字段选择/投影
+  - 软删除支持
+- **[v0.5.0 功能（计划中）](./docs/features/FEATURES_v0.5.0.md)** - 企业和开发者体验（2025 年第二至第三季度）
+  - 乐观锁定
+  - 实时查询/实时订阅
+  - 多租户/行级安全
+  - 查询缓存
+  - TypeScript 模式生成器
+  - 增强的日志记录和调试
 
-## 🔄 Migration from v0.2.x
+## 🔄 从 v0.2.x 迁移
 
-v0.3.0 is a complete rewrite with breaking changes:
+v0.3.0 是完全重写，具有破坏性更改：
 
-### Breaking Changes
+### 破坏性更改
 
-- **Required**: Drizzle ORM schema definitions (no more schema-less usage)
-- **New API**: `createRefineSQL({ connection, schema })` instead of `createRefineSQL(path)`
-- **ESM Only**: No CommonJS support
-- **TypeScript 5.0+**: Required for modern type features
-- **Node.js 20+**: Minimum version increased
+- **必需**：Drizzle ORM 模式定义（不再支持无模式使用）
+- **新 API**：`createRefineSQL({ connection, schema })` 而不是 `createRefineSQL(path)`
+- **仅 ESM**：不支持 CommonJS
+- **TypeScript 5.0+**：现代类型功能所需
+- **Node.js 20+**：最低版本提高
 
-### Migration Steps
+### 迁移步骤
 
-1. Install Drizzle ORM: `npm install drizzle-orm`
-2. Define your schema using Drizzle
-3. Update `createRefineSQL` call to use new API
-4. Update TypeScript to 5.0+
-5. Verify all imports are ESM
+1. 安装 Drizzle ORM：`npm install drizzle-orm`
+2. 使用 Drizzle 定义模式
+3. 更新 `createRefineSQL` 调用以使用新 API
+4. 将 TypeScript 更新到 5.0+
+5. 验证所有导入都是 ESM
 
-See [CHANGELOG.md](./CHANGELOG.md) for detailed migration guide.
+查看 [CHANGELOG.md](./CHANGELOG.md) 获取详细的迁移指南。
 
-## 📈 Performance
+## 📈 性能
 
-- **Standard Build**: 8.06 KB (main entry point)
-- **D1 Build**: 66 KB uncompressed, ~18 KB gzipped
-- **Zero External Dependencies**: Drizzle ORM fully tree-shaken and bundled (D1 only)
-- **Type-Safe**: Zero runtime overhead for type checking
+- **标准构建**：8.06 KB（主入口点）
+- **D1 构建**：66 KB 未压缩，~18 KB gzipped
+- **零外部依赖**：Drizzle ORM 完全树摇并打包（仅 D1）
+- **类型安全**：类型检查零运行时开销
 
-## 🤝 Contributing
+## 🤝 贡献
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+欢迎贡献！请随时提交 Pull Request。对于重大更改，请先开 issue 讨论你想要更改的内容。
 
-## 📄 License
+## 📄 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
-## 🔗 Links
+## 🔗 链接
 
-- [Refine Documentation](https://refine.dev/docs)
-- [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [GitHub Repository](https://github.com/medz/refine-sqlx)
-- [npm Package](https://www.npmjs.com/package/refine-sqlx)
-- [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
+- [Refine 文档](https://refine.dev/docs)
+- [Drizzle ORM 文档](https://orm.drizzle.team)
+- [GitHub 仓库](https://github.com/medz/refine-sqlx)
+- [npm 包](https://www.npmjs.com/package/refine-sqlx)
+- [Cloudflare D1 文档](https://developers.cloudflare.com/d1/)
 
 ---

@@ -1,3 +1,5 @@
+[English](./README.md) | [中文](./README_zh-CN.md)
+
 # Documentation
 
 This directory contains all project documentation for refine-sqlx.

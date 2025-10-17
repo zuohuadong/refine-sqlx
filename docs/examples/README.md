@@ -1,5 +1,7 @@
 # Examples
 
+[English](./README.md) | [中文](./README_zh-CN.md)
+
 This directory is reserved for future Refine integration examples.
 
 ## About refine-sqlx
