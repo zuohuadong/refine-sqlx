@@ -745,9 +745,9 @@ const dataProvider = await createRefineSQL({
   schema,
   timeTravel: {
     enabled: true,
-    backupDir: './.time-travel',     // Backup directory
-    intervalSeconds: 60,              // Backup every 60 seconds
-    retentionDays: 30,                // Keep backups for 30 days
+    backupDir: './.time-travel', // Backup directory
+    intervalSeconds: 86400, // Backup every day (86400 seconds)
+    retentionDays: 30, // Keep backups for 30 days
   },
 });
 ```

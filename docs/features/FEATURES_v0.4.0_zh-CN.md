@@ -745,9 +745,9 @@ const dataProvider = await createRefineSQL({
   schema,
   timeTravel: {
     enabled: true,
-    backupDir: './.time-travel',     // 备份目录
-    intervalSeconds: 60,              // 每 60 秒备份一次
-    retentionDays: 30,                // 保留备份 30 天
+    backupDir: './.time-travel', // 备份目录
+    intervalSeconds: 86400, // 每天备份一次 (86400 秒)
+    retentionDays: 30, // 保留备份 30 天
   },
 });
 ```

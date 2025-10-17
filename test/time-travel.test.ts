@@ -218,10 +218,7 @@ describe('Time Travel功能测试', () => {
       const providerWithTT = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-        },
+        timeTravel: { enabled: true, backupDir },
       })) as DataProviderWithTimeTravel;
 
       // 创建快照
@@ -267,10 +264,7 @@ describe('Time Travel功能测试', () => {
       const providerWithTT = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-        },
+        timeTravel: { enabled: true, backupDir },
       })) as DataProviderWithTimeTravel;
 
       const snapshot = await providerWithTT.createSnapshot!('test-pre-restore');
@@ -315,11 +309,7 @@ describe('Time Travel功能测试', () => {
       const providerWithTT = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-          retentionDays: 1,
-        },
+        timeTravel: { enabled: true, backupDir, retentionDays: 1 },
       })) as DataProviderWithTimeTravel;
 
       // 获取清理前的快照数量
@@ -361,11 +351,7 @@ describe('Time Travel功能测试', () => {
       dataProvider = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-          intervalSeconds: 1,
-        },
+        timeTravel: { enabled: true, backupDir, intervalSeconds: 1 },
       })) as DataProviderWithTimeTravel;
 
       // 获取当前快照数量
@@ -399,10 +385,7 @@ describe('Time Travel功能测试', () => {
       const invalidProvider = (await createRefineSQL({
         connection: tempDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir: './test-backups-error',
-        },
+        timeTravel: { enabled: true, backupDir: './test-backups-error' },
       })) as DataProviderWithTimeTravel;
 
       // 删除数据库文件
@@ -433,10 +416,7 @@ describe('Time Travel功能测试', () => {
       const providerWithTT = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-        },
+        timeTravel: { enabled: true, backupDir },
       })) as DataProviderWithTimeTravel;
 
       await expect(
@@ -451,10 +431,7 @@ describe('Time Travel功能测试', () => {
       const providerWithTT = (await createRefineSQL({
         connection: testDbPath,
         schema,
-        timeTravel: {
-          enabled: true,
-          backupDir,
-        },
+        timeTravel: { enabled: true, backupDir },
       })) as DataProviderWithTimeTravel;
 
       // 尝试恢复到很早的日期

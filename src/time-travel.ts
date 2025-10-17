@@ -73,7 +73,7 @@ export function createTimeTravelClient(
   options: TimeTravelOptions,
 ): TimeTravelClient {
   const backupDir = options.backupDir ?? './.time-travel';
-  const intervalSeconds = options.intervalSeconds ?? 60;
+  const intervalSeconds = options.intervalSeconds ?? 86400; // 1 day
   const retentionDays = options.retentionDays ?? 30;
 
   let backupTimer: Timer | NodeJS.Timeout | null = null;

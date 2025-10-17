@@ -36,7 +36,7 @@ export class TimeTravelManager {
     options: TimeTravelOptions,
   ) {
     this.backupDir = options.backupDir ?? './.time-travel';
-    this.intervalSeconds = options.intervalSeconds ?? 60;
+    this.intervalSeconds = options.intervalSeconds ?? 86400; // 1 day
     this.retentionDays = options.retentionDays ?? 30;
 
     // Ensure backup directory exists

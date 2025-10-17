@@ -6,34 +6,40 @@ A type-safe, cross-platform SQL data provider for [Refine](https://refine.dev) p
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
+## 🎯 Why Refine SQL X?
+
+**Refine SQL X** combines the power of [Refine](https://refine.dev) and [Drizzle ORM](https://orm.drizzle.team) to provide:
+
+- ✅ **Full TypeScript Type Safety** - Catch errors at compile time, not runtime
+- ✅ **Single Source of Truth** - Define your schema once, use it everywhere
+- ✅ **Multi-Database Support** - Same API for SQLite, MySQL, PostgreSQL, and Cloudflare D1
+- ✅ **IntelliSense Everywhere** - Auto-completion for tables, columns, and types
+- ✅ **Zero Runtime Cost** - Type checking happens at build time
+
+### Why Drizzle ORM?
+
+This library uses [Drizzle ORM](https://orm.drizzle.team) for schema definitions because it provides:
+
+1. **Type Safety** - Automatic TypeScript type inference from your schema
+2. **Cross-Database Compatibility** - Write once, run on SQLite, MySQL, or PostgreSQL
+3. **Familiar API** - SQL-like syntax that's easy to learn
+4. **Zero Magic** - Explicit, predictable behavior without hidden abstractions
+5. **Lightweight** - Minimal runtime overhead
+
 ## ✨ Features
 
-### Core Features
-- 🎯 **Drizzle ORM Integration** - Full type safety with schema-driven development
-- 🔄 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare D1, better-sqlite3
+- 🎯 **Schema-Driven Development** - Define your database schema in TypeScript
+- 🔄 **Multi-Database Support** - SQLite, MySQL, PostgreSQL, and Cloudflare D1
+- 🌐 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare Workers, better-sqlite3
 - 📦 **Optimized D1 Build** - Tree-shaken bundle (~18KB gzipped) for Cloudflare Workers
 - 🛡️ **Type Inference** - Automatic type inference from Drizzle schemas
+- 🔌 **Unified API** - Single interface for all database types with automatic detection
 - 🔍 **Advanced Filtering** - Full Refine filter operators support
+- 💾 **Transaction Support** - Batch operations and atomic transactions
+- ⏰ **Time Travel** - Automatic backup and restore for SQLite databases
 - 📊 **Full CRUD** - Complete Create, Read, Update, Delete operations
 - 🚀 **ESM Only** - Modern ES Module architecture
-- 🎛️ **Automatic Runtime Detection** - Intelligently selects the best SQLite driver
-
-### Enterprise Features (v0.5.0) ✨
-- 🔒 **Optimistic Locking** - Prevent concurrent update conflicts with version-based or timestamp-based locking
-- 🏢 **Multi-Tenancy** - Built-in tenant isolation with automatic filtering
-- 💾 **Query Caching** - Memory and Redis caching with automatic invalidation
-- 🔴 **Live Queries** - Real-time data subscriptions with polling and WebSocket strategies
-- ✅ **Data Validation** - Zod integration for automatic input validation
-- 📝 **Enhanced Logging** - Query logging, performance monitoring, and slow query detection
-- 🔧 **CLI Tools** - TypeScript type generator from Drizzle schemas
-
-### Advanced Features (v0.4.0+)
-- 🔗 **Relations** - Deep Drizzle integration with N+1 query optimization
-- 📊 **Aggregations** - COUNT, SUM, AVG, MIN, MAX with GROUP BY and HAVING clauses
-- 💾 **Transactions** - Full transaction support with timeout and isolation control
-- 📦 **JSON Support** - Automatic JSON field parsing and serialization
-- 👁️ **View Detection** - Automatic read-only enforcement for database views
-- 🔄 **Batch Operations** - Optimized bulk insert, update, and delete
+- 🎛️ **Automatic Detection** - Intelligently selects the best driver based on connection string
 
 ## 📦 Installation
 
@@ -48,11 +54,48 @@ npm install refine-sqlx drizzle-orm
 pnpm add refine-sqlx drizzle-orm
 ```
 
+### Optional Database Drivers
+
+**SQLite** (auto-installed as optional dependency):
+
+```bash
+npm install better-sqlite3  # For Node.js < 24
+```
+
+**MySQL**:
+
+```bash
+npm install mysql2
+```
+
+**PostgreSQL**:
+
+```bash
+npm install postgres
+```
+
+Note: Bun and Node.js 24+ have native SQLite support. Cloudflare D1 is built-in.
+
 ## 🚀 Quick Start
 
-### 1. Define Your Schema
+Get started in 3 simple steps:
+
+### 1. Install Dependencies
+
+```bash
+npm install refine-sqlx drizzle-orm
+```
+
+### 2. Define Your Schema
+
+Create a `schema.ts` file with your database structure using Drizzle ORM.
+
+> ⚠️ **Important**: Drizzle ORM uses **database-specific schema functions** (`sqliteTable`, `mysqlTable`, `pgTable`). Choose the one that matches your target database.
+
+**For SQLite** (Bun, Node.js, Cloudflare D1):
 
 ```typescript
+// schema.ts
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
@@ -74,15 +117,133 @@ export const posts = sqliteTable('posts', {
 });
 ```
 
-### 2. Create Data Provider
+**For MySQL**:
+
+```typescript
+// schema.ts
+import {
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/mysql-core';
+
+export const users = mysqlTable('users', {
+  id: int('id').primaryKey().autoincrement(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  status: varchar('status', { length: 20 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const posts = mysqlTable('posts', {
+  id: int('id').primaryKey().autoincrement(),
+  userId: int('user_id')
+    .notNull()
+    .references(() => users.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  publishedAt: timestamp('published_at'),
+});
+```
+
+**For PostgreSQL**:
+
+```typescript
+// schema.ts
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  status: varchar('status', { length: 20 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  publishedAt: timestamp('published_at'),
+});
+```
+
+> 💡 **Cross-Database Compatibility**: If you need to support multiple databases, create separate schema files (e.g., `schema.sqlite.ts`, `schema.mysql.ts`) or use environment-based imports.
+>
+> 📚 **Learn More**: [Drizzle Schema Syntax](https://orm.drizzle.team/docs/sql-schema-declaration)
+
+### 3. Create Data Provider
+
+**SQLite Quick Setup** (Most Common)
 
 ```typescript
 import { Refine } from '@refinedev/core';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
-const dataProvider = createRefineSQL({
-  connection: './database.sqlite', // or ':memory:'
+// SQLite - File path or :memory:
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+});
+
+// MySQL - Connection string (auto-detected)
+const dataProvider = await createRefineSQL({
+  connection: 'mysql://user:pass@localhost:3306/mydb',
+  schema,
+});
+
+// MySQL - Config object
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'secret',
+    database: 'mydb',
+  },
+  schema,
+});
+
+// PostgreSQL - Connection string (auto-detected)
+const dataProvider = await createRefineSQL({
+  connection: 'postgresql://user:pass@localhost:5432/mydb',
+  schema,
+});
+
+// PostgreSQL - Config object
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: 'secret',
+    database: 'mydb',
+  },
+  schema,
+});
+
+// Cloudflare D1 - Database instance
+const dataProvider = await createRefineSQL({
+  connection: env.DB, // D1Database instance
+  schema,
+});
+
+// Drizzle Instance - Any database (most flexible)
+const dataProvider = await createRefineSQL({
+  connection: drizzleInstance,
   schema,
 });
 
@@ -119,53 +280,130 @@ const { data } = await dataProvider.create<User>({
 });
 ```
 
-## 🏗️ Platform-Specific Usage
+## 🏗️ Runtime & Platform Examples
 
-### Cloudflare D1 (Optimized Build)
+### SQLite Runtimes
 
-Use the optimized D1 entry point for minimal bundle size:
+**Bun (Native SQLite)**:
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema'; // Your SQLite schema
+
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite', // Auto-detects bun:sqlite
+  schema,
+});
+```
+
+**Node.js 24+ (Native SQLite)**:
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite', // Auto-detects node:sqlite
+  schema,
+});
+```
+
+**Node.js <24 (better-sqlite3)**:
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// Automatically falls back to better-sqlite3 if installed
+const dataProvider = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+});
+```
+
+**Cloudflare D1 (Optimized Build)**:
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx/d1';
-import * as schema from './schema';
+import * as schema from './schema'; // Your SQLite schema
 
 export default {
   async fetch(request: Request, env: { DB: D1Database }) {
     const dataProvider = createRefineSQL({ connection: env.DB, schema });
-
     // Your worker logic here
     return Response.json({ ok: true });
   },
 };
 ```
 
-**Bundle Size**: ~66KB (18KB gzipped) - includes Drizzle ORM!
+**Bundle Size (D1)**: ~66KB uncompressed, ~18KB gzipped (includes Drizzle ORM!)
 
-### Bun Runtime
+### MySQL Connections
+
+**Connection String** (Auto-detected):
 
 ```typescript
 import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema';
+import * as schema from './schema'; // Your MySQL schema
 
-const dataProvider = createRefineSQL({
-  connection: './database.sqlite', // Uses bun:sqlite automatically
+const dataProvider = await createRefineSQL({
+  connection: 'mysql://root:password@localhost:3306/mydb',
   schema,
 });
 ```
 
-### Node.js (v24+)
+**Config Object** (Advanced):
 
 ```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema';
-
-const dataProvider = createRefineSQL({
-  connection: './database.sqlite', // Uses node:sqlite automatically
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'password',
+    database: 'mydb',
+    ssl: { rejectUnauthorized: false },
+    pool: { max: 20, min: 5 },
+  },
   schema,
 });
 ```
 
-### With Existing Drizzle Instance
+### PostgreSQL Connections
+
+**Connection String** (Auto-detected):
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema'; // Your PostgreSQL schema
+
+const dataProvider = await createRefineSQL({
+  connection: 'postgresql://postgres:password@localhost:5432/mydb',
+  schema,
+});
+```
+
+**Config Object** (Advanced):
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: {
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: 'password',
+    database: 'mydb',
+    ssl: true,
+    max: 20,
+    idle_timeout: 30,
+  },
+  schema,
+});
+```
+
+### Using Existing Drizzle Instance
+
+If you already have a Drizzle instance configured:
 
 ```typescript
 import { Database } from 'bun:sqlite';
@@ -281,6 +519,63 @@ const { data: users } = await dataProvider.deleteMany<User>({
 });
 ```
 
+## ⏰ Time Travel (SQLite Only)
+
+Enable automatic backup and restore functionality for SQLite databases:
+
+```typescript
+import { createRefineSQL, type DataProviderWithTimeTravel } from 'refine-sqlx';
+import * as schema from './schema';
+
+const dataProvider: DataProviderWithTimeTravel = await createRefineSQL({
+  connection: './database.sqlite',
+  schema,
+  timeTravel: {
+    enabled: true,
+    backupDir: './.time-travel', // Backup directory (default: './.time-travel')
+    intervalSeconds: 86400, // Backup interval in seconds (default: 86400 = 1 day)
+    retentionDays: 30, // Keep backups for 30 days (default: 30)
+  },
+});
+
+// List all available snapshots
+const snapshots = await dataProvider.listSnapshots?.();
+console.log(snapshots);
+// [
+//   {
+//     timestamp: '2025-10-16T10:30:00.000Z',
+//     path: './.time-travel/snapshot-2025-10-16T10-30-00-000Z-auto.db',
+//     createdAt: 1729077000000
+//   }
+// ]
+
+// Create a manual snapshot
+const snapshot = await dataProvider.createSnapshot?.('before-migration');
+
+// Restore to a specific timestamp
+await dataProvider.restoreToTimestamp?.('2025-10-16T10:30:00.000Z');
+
+// Restore to the most recent snapshot before a date
+await dataProvider.restoreToDate?.(new Date('2025-10-16'));
+
+// Cleanup old snapshots
+const deletedCount = await dataProvider.cleanupSnapshots?.();
+
+// Stop automatic backups (when shutting down)
+dataProvider.stopAutoBackup?.();
+```
+
+### Time Travel Features
+
+- 🔄 **Automatic Backups**: Configurable interval-based snapshots
+- 📸 **Manual Snapshots**: Create labeled snapshots on demand
+- 🕰️ **Point-in-Time Restore**: Restore to specific timestamps or dates
+- 🧹 **Automatic Cleanup**: Retention policy for old snapshots
+- 🔒 **Pre-Restore Backup**: Automatically creates backup before restoration
+- 📁 **File-Based**: Simple, efficient file system operations
+
+**Note**: Time Travel is only available for SQLite databases with file-based storage (not `:memory:`).
+
 ## 🔍 Advanced Filtering
 
 Supports all standard Refine filter operators:
@@ -360,6 +655,8 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
+  // Extended DataProvider with Time Travel
+  DataProviderWithTimeTravel,
   InferInsertModel,
   // Infer types from schema
   InferSelectModel,
@@ -369,6 +666,9 @@ import type {
   RuntimeEnvironment,
   // Table name helper
   TableName,
+  // Time Travel
+  TimeTravelOptions,
+  TimeTravelSnapshot,
 } from 'refine-sqlx';
 
 // Usage
@@ -407,36 +707,28 @@ bun run format
 
 Comprehensive documentation is available:
 
-### Current Version (v0.5.0) ✨
+### Current Version (v0.3.x)
 
-- **[v0.5.0 Documentation](./docs/v0.5.0/README.md)** - Complete feature guide and documentation index
-- **[v0.5.0 Usage Examples](./docs/v0.5.0/USAGE_EXAMPLES.md)** - Comprehensive usage examples with HAVING clause support
-- **[v0.5.0 Implementation Report](./docs/v0.5.0/FINAL_REPORT.md)** - Technical implementation details
-
-#### v0.5.0 Highlights
-- ✅ **Optimistic Locking** - Version and timestamp-based conflict prevention
-- ✅ **Multi-Tenancy** - Automatic tenant isolation with row-level security
-- ✅ **Query Caching** - Memory and Redis adapters with automatic invalidation
-- ✅ **Live Queries** - Real-time subscriptions with multiple strategies
-- ✅ **Relations** - Deep Drizzle integration with DataLoader N+1 optimization
-- ✅ **Aggregations** - Full GROUP BY and HAVING clause support
-- ✅ **Data Validation** - Zod integration for type-safe validation
-- ✅ **Enhanced Logging** - Performance monitoring and slow query detection
-- ✅ **CLI Tools** - TypeScript type generator
-
-### Legacy Documentation
-
-- **[v0.3.0 Release Notes](./.changeset/v0-3-0-release.md)** - Drizzle ORM migration
+- **[v0.3.0 Release Notes](./.changeset/v0-3-0-release.md)** - Complete rewrite with Drizzle ORM
 - **[D1 Example](./example/D1_EXAMPLE.md)** - Cloudflare Workers setup guide
-- **[Example Code](./example/main-v0.3.0.ts)** - Basic usage examples
+- **[Example Code](./example/main-v0.3.0.ts)** - Full usage examples
 - **[Technical Specifications](./docs/specs/CLAUDE_SPEC.md)** - Architecture and standards
 
-### Roadmap
+### Roadmap & Future Versions
 
-See our feature documentation for detailed plans:
-- **[v0.4.0 Features](./docs/features/FEATURES_v0.4.0.md)** - ✅ Complete (integrated in v0.5.0)
-- **[v0.5.0 Features](./docs/v0.5.0/FEATURES.md)** - ✅ Complete
-- **v0.6.0** - Additional optimizations and testing improvements
+- **[v0.4.0 Features (Planned)](./docs/features/FEATURES_v0.4.0.md)** - Core features and enhancements (Q1 2025)
+  - custom() method for raw SQL queries
+  - Nested relations loading
+  - Aggregation support
+  - Field selection/projection
+  - Soft delete support
+- **[v0.5.0 Features (Planned)](./docs/features/FEATURES_v0.5.0.md)** - Enterprise & developer experience (Q2-Q3 2025)
+  - Optimistic locking
+  - Live queries / real-time subscriptions
+  - Multi-tenancy / row-level security
+  - Query caching
+  - TypeScript schema generator
+  - Enhanced logging & debugging
 
 ## 🔄 Migration from v0.2.x
 
@@ -484,5 +776,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
 
 ---
-
-Made with ❤️ for Seven

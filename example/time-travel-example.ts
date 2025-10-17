@@ -16,7 +16,7 @@ async function main() {
     timeTravel: {
       enabled: true,
       backupDir: './.time-travel', // Where backups are stored
-      intervalSeconds: 60, // Create backup every 60 seconds
+      intervalSeconds: 86400, // Create backup every day (86400 seconds)
       retentionDays: 30, // Keep backups for 30 days
     },
   });

@@ -433,9 +433,7 @@ describe('refine-sqlx v0.4.0 Integration Tests', () => {
       const result = await dataProvider.custom({
         url: 'query',
         method: 'post',
-        payload: {
-          sql: 'SELECT * FROM users WHERE age > 30',
-        },
+        payload: { sql: 'SELECT * FROM users WHERE age > 30' },
       });
 
       expect(result.data).toBeInstanceOf(Array);
@@ -485,9 +483,7 @@ describe('refine-sqlx v0.4.0 Integration Tests', () => {
     it('should select specific fields', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        meta: {
-          select: ['id', 'name', 'email'],
-        },
+        meta: { select: ['id', 'name', 'email'] },
       });
 
       expect(result.data).toBeInstanceOf(Array);
@@ -503,9 +499,7 @@ describe('refine-sqlx v0.4.0 Integration Tests', () => {
     it('should exclude specific fields', async () => {
       const result = await dataProvider.getList({
         resource: 'users',
-        meta: {
-          exclude: ['age', 'status'],
-        },
+        meta: { exclude: ['age', 'status'] },
       });
 
       expect(result.data).toBeInstanceOf(Array);
@@ -547,10 +541,7 @@ describe('refine-sqlx v0.4.0 Integration Tests', () => {
       const result = await dataProvider.getList({
         resource: 'users',
         meta: {
-          aggregations: {
-            count: { count: '*' },
-            avgAge: { avg: 'age' },
-          },
+          aggregations: { count: { count: '*' }, avgAge: { avg: 'age' } },
           groupBy: ['status'],
         },
       });
@@ -572,10 +563,7 @@ describe('refine-sqlx v0.4.0 Integration Tests', () => {
         resource: 'users',
         filters: [{ field: 'status', operator: 'eq', value: 'active' }],
         meta: {
-          aggregations: {
-            totalActive: { count: '*' },
-            avgAge: { avg: 'age' },
-          },
+          aggregations: { totalActive: { count: '*' }, avgAge: { avg: 'age' } },
         },
       });
 
