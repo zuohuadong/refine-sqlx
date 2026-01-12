@@ -89,17 +89,20 @@ export class LiveEventEmitter {
   }
 }
 
+// Fix for missing types
+declare const Bun: any;
+
 /**
  * Polling strategy for live updates
  */
 export class PollingStrategy {
-  private intervals = new Map<string, NodeJS.Timeout>();
+  private intervals = new Map<string, any>(); // Use any to avoid NodeJS.Timeout dependency
   private lastFetch = new Map<string, number>();
 
   constructor(
     private emitter: LiveEventEmitter,
     private interval: number = 5000,
-  ) {}
+  ) { }
 
   /**
    * Start polling for a resource
@@ -222,7 +225,7 @@ export class WebSocketStrategy {
   constructor(
     private emitter: LiveEventEmitter,
     private port: number = 3001,
-  ) {}
+  ) { }
 
   /**
    * Start WebSocket server

@@ -44,8 +44,6 @@ import {
   filtersToWhere,
   sortersToOrderBy,
 } from './filters';
-import type { TimeTravelSnapshot } from './time-travel-simple';
-import { TimeTravelManager } from './time-travel-simple';
 import type {
   CustomParams,
   CustomResponse,
@@ -56,44 +54,6 @@ import type {
 import { validateD1Options } from './utils/validation';
 
 
-
-/**
- * Extended DataProvider with Time Travel capabilities for SQLite
- */
-export interface DataProviderWithTimeTravel extends DataProvider {
-  /**
-   * List all available snapshots
-   */
-  listSnapshots?(): Promise<TimeTravelSnapshot[]>;
-
-  /**
-   * Restore database to a specific snapshot
-   * @param timestamp - ISO timestamp of the snapshot to restore
-   */
-  restoreToTimestamp?(timestamp: string): Promise<void>;
-
-  /**
-   * Restore database to the most recent snapshot before given date
-   * @param date - Target date/time
-   */
-  restoreToDate?(date: Date): Promise<void>;
-
-  /**
-   * Create a manual snapshot
-   * @param label - Optional label for the snapshot
-   */
-  createSnapshot?(label?: string): Promise<TimeTravelSnapshot>;
-
-  /**
-   * Cleanup old snapshots based on retention policy
-   */
-  cleanupSnapshots?(): Promise<number>;
-
-  /**
-   * Stop the automatic backup scheduler
-   */
-  stopAutoBackup?(): void;
-}
 
 /**
  * Create a Refine DataProvider with Drizzle ORM
@@ -111,7 +71,7 @@ export interface DataProviderWithTimeTravel extends DataProvider {
  */
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
-): Promise<DataProviderWithTimeTravel> {
+): Promise<DataProvider> {
   // Validate D1-specific options if provided
   validateD1Options(config.d1Options);
 

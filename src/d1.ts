@@ -86,7 +86,6 @@ export async function createD1Provider<TSchema extends Record<string, unknown>>(
 ): Promise<ReturnType<typeof createRefineSQL<TSchema>>> {
   const drizzleConfig: DrizzleConfig<TSchema> = {
     schema: config.schema,
-    logger: config.logger ? (typeof config.logger === 'boolean' ? undefined : config.logger) : undefined,
   };
 
   const db = drizzleD1(d1Database, drizzleConfig);

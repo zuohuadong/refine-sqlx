@@ -62,15 +62,7 @@ export {
   type RelationInclude,
 } from './features';
 
-// Runtime utilities
-export {
-  detectRuntime,
-  isD1Database,
-  isDrizzleDatabase,
-  //  isBetterSqlite3Database,
-  //  isBunDatabase,
-  //  isNodeDatabase,
-} from './runtime';
+// Runtime utilities - removed
 
 // Filter and query utilities
 export {
