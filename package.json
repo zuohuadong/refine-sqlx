@@ -9,11 +9,7 @@
     "url": "git+https://github.com/medz/refine-sqlx.git"
   },
   "scripts": {
-    "test": "jest --testPathIgnorePatterns=\"test/integration\"",
-    "test:bun": "bun test test/",
-    "test:integration-bun": "bun test test/integration/bun.test.ts",
-    "test:integration-node": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=\"/node_modules/\" --testMatch=\"**/test/integration/node.test.ts\"",
-    "test:integration-better-sqlite3": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=\"/node_modules/\" --testMatch=\"**/test/integration/better-sqlite3.test.ts\"",
+    "test": "bun test test/",
     "build": "unbuild && bun run tsc --declaration --emitDeclarationOnly --outDir dist",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
