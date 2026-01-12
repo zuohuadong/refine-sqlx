@@ -32,44 +32,30 @@ import {
   sql,
   sum,
 } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { MySqlTable } from 'drizzle-orm/mysql-core';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
-import { createBetterSQLite3Adapter } from './adapters/better-sqlite3-drizzle';
-import { createBunSQLiteAdapter } from './adapters/bun';
-import { createD1Adapter } from './adapters/d1';
-import { createMySQLAdapter } from './adapters/mysql';
-import { createPostgreSQLAdapter } from './adapters/postgresql';
 import { UnsupportedOperatorError } from './errors';
 import {
   calculatePagination,
   filtersToWhere,
   sortersToOrderBy,
 } from './filters';
-import { isD1Database, isDrizzleDatabase } from './runtime';
 import type { TimeTravelSnapshot } from './time-travel-simple';
 import { TimeTravelManager } from './time-travel-simple';
 import type {
   CustomParams,
   CustomResponse,
   RefineSQLConfig,
-  RefineSQLMeta,
-  TableName,
+  //  RefineSQLMeta,
+  //  TableName,
 } from './types';
-import { detectDatabaseType, parseConnectionString } from './utils/connection';
 import { validateD1Options } from './utils/validation';
 
-type DrizzleDatabase<TSchema extends Record<string, unknown>> =
-  | BunSQLiteDatabase<TSchema>
-  | BetterSQLite3Database<TSchema>
-  | DrizzleD1Database<TSchema>
-  | MySql2Database<TSchema>
-  | PostgresJsDatabase<TSchema>;
+
 
 /**
  * Extended DataProvider with Time Travel capabilities for SQLite
@@ -129,72 +115,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   // Validate D1-specific options if provided
   validateD1Options(config.d1Options);
 
-  let db: DrizzleDatabase<TSchema>;
-  let dbPath: string | undefined;
-  let dbType: string;
-
-  // Initialize database connection based on type detection
-  if (isDrizzleDatabase(config.connection)) {
-    // Already a Drizzle instance - use directly
-    db = config.connection as DrizzleDatabase<TSchema>;
-    dbType = 'unknown';
-  } else if (isD1Database(config.connection)) {
-    // Cloudflare D1 database instance
-    db = createD1Adapter(
-      config.connection as any,
-      config.schema,
-      config.config,
-    );
-    dbType = 'd1';
-  } else {
-    // Detect database type from connection string or config
-    dbType = detectDatabaseType(config.connection);
-
-    switch (dbType) {
-      case 'mysql':
-        db = await createMySQLAdapter(
-          config.connection as any,
-          config.schema,
-          config.config,
-        );
-        break;
-
-      case 'postgresql':
-        db = await createPostgreSQLAdapter(
-          config.connection as any,
-          config.schema,
-          config.config,
-        );
-        break;
-
-      case 'sqlite':
-      case 'd1':
-      default:
-        // SQLite: auto-detect runtime (Bun, Node.js, better-sqlite3)
-        // Store the database path for Time Travel
-        if (
-          typeof config.connection === 'string' &&
-          config.connection !== ':memory:'
-        ) {
-          dbPath = config.connection;
-        }
-
-        if (typeof Bun !== 'undefined') {
-          db = await createBunSQLiteAdapter(
-            config.connection as any,
-            config.schema,
-            config.config,
-          );
-        } else {
-          db = await createBetterSQLite3Adapter(
-            config.connection as any,
-            config.schema,
-            config.config,
-          );
-        }
-        break;
-    }
-  }
+  const db = config.connection;
 
   // D1 Time Travel implementation note:
   // Time Travel is primarily a CLI feature for database restoration.
@@ -206,7 +127,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   if (config.d1Options?.timeTravel?.enabled) {
     console.warn(
       '[refine-sqlx] D1 Time Travel is configured, but runtime historical queries are not supported by D1 API. ' +
-        'Use wrangler CLI for database restoration: `wrangler d1 time-travel restore`',
+      'Use wrangler CLI for database restoration: `wrangler d1 time-travel restore`',
     );
   }
 
@@ -257,7 +178,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
           aggregations[key] =
             aggValue.count === '*' ?
               count()
-            : count(table[aggValue.count as string]);
+              : count(table[aggValue.count as string]);
         }
         if (aggValue.min)
           aggregations[key] = min(table[aggValue.min as string]);
@@ -740,22 +661,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     },
   };
 
-  // Add Time Travel functionality for SQLite databases with file path
-  if (config.timeTravel?.enabled && dbPath && dbType === 'sqlite') {
-    const timeTravelManager = new TimeTravelManager(dbPath, config.timeTravel);
 
-    return {
-      ...dataProvider,
-      listSnapshots: () => timeTravelManager.listSnapshots(),
-      restoreToTimestamp: (timestamp: string) =>
-        timeTravelManager.restoreToTimestamp(timestamp),
-      restoreToDate: (date: Date) => timeTravelManager.restoreToDate(date),
-      createSnapshot: (label?: string) =>
-        timeTravelManager.createSnapshot(label),
-      cleanupSnapshots: () => timeTravelManager.cleanupSnapshots(),
-      stopAutoBackup: () => timeTravelManager.stopAutoBackup(),
-    };
-  }
 
   // Return base data provider without Time Travel
   return dataProvider;

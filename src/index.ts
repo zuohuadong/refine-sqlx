@@ -67,9 +67,9 @@ export {
   detectRuntime,
   isD1Database,
   isDrizzleDatabase,
-  isBetterSqlite3Database,
-  isBunDatabase,
-  isNodeDatabase,
+  //  isBetterSqlite3Database,
+  //  isBunDatabase,
+  //  isNodeDatabase,
 } from './runtime';
 
 // Filter and query utilities
@@ -89,14 +89,6 @@ export {
 
 // Validation utilities
 export { validateD1Options, getBatchSize } from './utils/validation';
-
-// Adapters
-export { createBunSQLiteAdapter, isBunSQLiteAvailable } from './adapters/bun';
-export {
-  createBetterSQLite3Adapter,
-  isBetterSQLite3Available,
-} from './adapters/better-sqlite3-drizzle';
-export { createD1Adapter, d1Transaction, isD1Available } from './adapters/d1';
 
 // Cache (v0.5.0)
 export { MemoryCacheAdapter, CacheManager, RedisCacheAdapter } from './cache';

@@ -80,343 +80,109 @@ npm install postgres
 
 ## 🚀 快速开始
 
-通过 3 个简单步骤开始：
+只需 3 个简单步骤即可开始：
 
 ### 1. 安装依赖
 
 ```bash
 npm install refine-sqlx drizzle-orm
+# 安装你的数据库驱动程序（例如：Node.js 使用 better-sqlite3）
+npm install better-sqlite3
+npm install --save-dev drizzle-kit @types/better-sqlite3
 ```
 
-### 2. 定义模式
+### 2. 配置 Drizzle
 
-使用 Drizzle ORM 创建一个包含数据库结构的 `schema.ts` 文件。
-
-> ⚠️ **重要**：Drizzle ORM 使用**特定于数据库的模式函数**（`sqliteTable`、`mysqlTable`、`pgTable`）。选择与目标数据库匹配的函数。
-
-**适用于 SQLite**（Bun、Node.js、Cloudflare D1）：
+定义你的模式并创建 Drizzle 数据库实例。
 
 ```typescript
 // schema.ts
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  status: text('status', { enum: ['active', 'inactive'] }).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
   title: text('title').notNull(),
-  content: text('content').notNull(),
-  publishedAt: integer('published_at', { mode: 'timestamp' }),
+  content: text('content'),
 });
 ```
 
-**适用于 MySQL**：
+### 3. 初始化 Refine 提供程序（依赖注入）
+
+**v0.6.0 中的破坏性变更**：`refine-sqlx` 不再内部创建数据库连接。你必须传递一个配置好的 Drizzle `db` 实例。这确保了与 Edge 运行时（Cloudflare D1）和各种驱动程序的兼容性。
+
+#### Node.js (better-sqlite3)
 
 ```typescript
-// schema.ts
-import {
-  int,
-  mysqlTable,
-  text,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/mysql-core';
-
-export const users = mysqlTable('users', {
-  id: int('id').primaryKey().autoincrement(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  status: varchar('status', { length: 20 }).notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const posts = mysqlTable('posts', {
-  id: int('id').primaryKey().autoincrement(),
-  userId: int('user_id')
-    .notNull()
-    .references(() => users.id),
-  title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').notNull(),
-  publishedAt: timestamp('published_at'),
-});
-```
-
-**适用于 PostgreSQL**：
-
-```typescript
-// schema.ts
-import {
-  integer,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/pg-core';
-
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  status: varchar('status', { length: 20 }).notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').notNull(),
-  publishedAt: timestamp('published_at'),
-});
-```
-
-> 💡 **跨数据库兼容性**：如果需要支持多个数据库，请创建单独的模式文件（例如，`schema.sqlite.ts`、`schema.mysql.ts`）或使用基于环境的导入。
->
-> 📚 **了解更多**：[Drizzle 模式语法](https://orm.drizzle.team/docs/sql-schema-declaration)
-
-### 3. 创建数据提供程序
-
-**SQLite 快速设置**（最常见）
-
-```typescript
-import { Refine } from '@refinedev/core';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
-// SQLite - 文件路径或 :memory:
-const dataProvider = await createRefineSQL({
-  connection: './database.sqlite',
-  schema,
-});
-
-// MySQL - 连接字符串（自动检测）
-const dataProvider = await createRefineSQL({
-  connection: 'mysql://user:pass@localhost:3306/mydb',
-  schema,
-});
-
-// MySQL - 配置对象
-const dataProvider = await createRefineSQL({
-  connection: {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'secret',
-    database: 'mydb',
-  },
-  schema,
-});
-
-// PostgreSQL - 连接字符串（自动检测）
-const dataProvider = await createRefineSQL({
-  connection: 'postgresql://user:pass@localhost:5432/mydb',
-  schema,
-});
-
-// PostgreSQL - 配置对象
-const dataProvider = await createRefineSQL({
-  connection: {
-    host: 'localhost',
-    port: 5432,
-    user: 'postgres',
-    password: 'secret',
-    database: 'mydb',
-  },
-  schema,
-});
-
-// Cloudflare D1 - 数据库实例
-const dataProvider = await createRefineSQL({
-  connection: env.DB, // D1Database 实例
-  schema,
-});
-
-// Drizzle 实例 - 任何数据库（最灵活）
-const dataProvider = await createRefineSQL({
-  connection: drizzleInstance,
-  schema,
-});
-
-const App = () => (
-  <Refine
-    dataProvider={dataProvider}
-    resources={[
-      { name: 'users', list: '/users' },
-      { name: 'posts', list: '/posts' },
-    ]}>
-    {/* 你的应用组件 */}
-  </Refine>
-);
-```
-
-### 3. 使用类型安全操作
-
-```typescript
-import type { InferSelectModel } from 'refine-sqlx';
-import { users } from './schema';
-
-// 自动类型推断
-type User = InferSelectModel<typeof users>;
-
-// 创建时具有类型安全
-const { data } = await dataProvider.create<User>({
-  resource: 'users',
-  variables: {
-    name: 'John Doe',
-    email: 'john@example.com',
-    status: 'active',
-    createdAt: new Date(),
-  },
-});
-```
-
-## 🏗️ 运行时和平台示例
-
-### SQLite 运行时
-
-**Bun（原生 SQLite）**：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // 你的 SQLite 模式
-
-const dataProvider = await createRefineSQL({
-  connection: './database.sqlite', // 自动检测 bun:sqlite
-  schema,
-});
-```
-
-**Node.js 24+（原生 SQLite）**：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema';
-
-const dataProvider = await createRefineSQL({
-  connection: './database.sqlite', // 自动检测 node:sqlite
-  schema,
-});
-```
-
-**Node.js <24（better-sqlite3）**：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema';
-
-// 如果已安装，自动回退到 better-sqlite3
-const dataProvider = await createRefineSQL({
-  connection: './database.sqlite',
-  schema,
-});
-```
-
-**Cloudflare D1（优化构建）**：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx/d1';
-import * as schema from './schema'; // 你的 SQLite 模式
-
-export default {
-  async fetch(request: Request, env: { DB: D1Database }) {
-    const dataProvider = createRefineSQL({ connection: env.DB, schema });
-    // 你的 worker 逻辑
-    return Response.json({ ok: true });
-  },
-};
-```
-
-**包大小（D1）**：~66KB 未压缩，~18KB gzipped（包括 Drizzle ORM！）
-
-### MySQL 连接
-
-**连接字符串**（自动检测）：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // 你的 MySQL 模式
-
-const dataProvider = await createRefineSQL({
-  connection: 'mysql://root:password@localhost:3306/mydb',
-  schema,
-});
-```
-
-**配置对象**（高级）：
-
-```typescript
-const dataProvider = await createRefineSQL({
-  connection: {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'password',
-    database: 'mydb',
-    ssl: { rejectUnauthorized: false },
-    pool: { max: 20, min: 5 },
-  },
-  schema,
-});
-```
-
-### PostgreSQL 连接
-
-**连接字符串**（自动检测）：
-
-```typescript
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema'; // 你的 PostgreSQL 模式
-
-const dataProvider = await createRefineSQL({
-  connection: 'postgresql://postgres:password@localhost:5432/mydb',
-  schema,
-});
-```
-
-**配置对象**（高级）：
-
-```typescript
-const dataProvider = await createRefineSQL({
-  connection: {
-    host: 'localhost',
-    port: 5432,
-    user: 'postgres',
-    password: 'password',
-    database: 'mydb',
-    ssl: true,
-    max: 20,
-    idle_timeout: 30,
-  },
-  schema,
-});
-```
-
-### 使用现有的 Drizzle 实例
-
-如果你已经配置了 Drizzle 实例：
-
-```typescript
-import { Database } from 'bun:sqlite';
-import { drizzle } from 'drizzle-orm/bun-sqlite';
-import { createRefineSQL } from 'refine-sqlx';
-import * as schema from './schema';
-
-const sqlite = new Database('./database.sqlite');
+const sqlite = new Database('sqlite.db');
 const db = drizzle(sqlite, { schema });
 
-const dataProvider = createRefineSQL({ connection: db, schema });
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+});
+```
+
+#### Cloudflare D1
+
+```typescript
+import { drizzle } from 'drizzle-orm/d1';
+import { createRefineSQL } from 'refine-sqlx/d1';
+import * as schema from './schema';
+
+export default {
+  async fetch(request, env) {
+    const db = drizzle(env.DB, { schema });
+
+    // 使用 D1 Drizzle 实例创建 Refine 提供程序
+    const dataProvider = await createRefineSQL({
+      connection: db,
+      schema,
+    });
+
+    // ... 在 Refine Core 中使用提供程序 ...
+    return Response.json({ ok: true });
+  }
+}
+```
+
+#### Bun
+
+```typescript
+import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { Database } from 'bun:sqlite';
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+const sqlite = new Database('sqlite.db');
+const db = drizzle(sqlite, { schema });
+
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+});
+```
+
+### 4. 高级配置
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+
+  // 可选：启用软删除
+  softDelete: {
+    enabled: true,
+    field: 'deleted_at',
+  },
+
+  // 可选：日志记录
+  logger: true,
+});
 ```
 
 ## 📊 完整 CRUD 示例
@@ -530,7 +296,7 @@ import { createRefineSQL, type DataProviderWithTimeTravel } from 'refine-sqlx';
 import * as schema from './schema';
 
 const dataProvider: DataProviderWithTimeTravel = await createRefineSQL({
-  connection: './database.sqlite',
+  connection: db, // 传递你的 Drizzle 实例
   schema,
   timeTravel: {
     enabled: true,
@@ -635,7 +401,7 @@ import * as schema from './schema';
 
 const dataProvider = createRefineSQL({
   // 数据库连接
-  connection: './database.sqlite', // 或 D1Database、Drizzle 实例等
+  connection: db, // Drizzle 实例
 
   // Drizzle 模式（必需）
   schema,
@@ -709,22 +475,22 @@ bun run format
 
 提供全面的文档：
 
-### 当前版本（v0.3.x）
+### 当前版本（v0.6.x）
 
-- **[v0.3.0 发布说明](./.changeset/v0-3-0-release.md)** - 使用 Drizzle ORM 完全重写
+- **[v0.6.0 发布说明](./.changeset/v0-6-0-release.md)** - 破坏性变更和新 API
 - **[D1 示例](./example/D1_EXAMPLE.md)** - Cloudflare Workers 设置指南
 - **[示例代码](./example/main-v0.3.0.ts)** - 完整使用示例
 - **[技术规范](./docs/specs/CLAUDE_SPEC.md)** - 架构和标准
 
 ### 路线图和未来版本
 
-- **[v0.4.0 功能（计划中）](./docs/features/FEATURES_v0.4.0.md)** - 核心功能和增强（2025 年第一季度）
+- **[v0.7.0 功能（计划中）](./docs/features/FEATURES_v0.7.0.md)** - 核心功能和增强
   - custom() 方法用于原始 SQL 查询
   - 嵌套关系加载
   - 聚合支持
   - 字段选择/投影
   - 软删除支持
-- **[v0.5.0 功能（计划中）](./docs/features/FEATURES_v0.5.0.md)** - 企业和开发者体验（2025 年第二至第三季度）
+- **[v0.8.0 功能（计划中）](./docs/features/FEATURES_v0.8.0.md)** - 企业和开发者体验
   - 乐观锁定
   - 实时查询/实时订阅
   - 多租户/行级安全
@@ -732,33 +498,26 @@ bun run format
   - TypeScript 模式生成器
   - 增强的日志记录和调试
 
-## 🔄 从 v0.2.x 迁移
+## 🔄 从 v0.5.x 迁移
 
-v0.3.0 是完全重写，具有破坏性更改：
+v0.6.0 引入了破坏性变更以支持 Edge 运行时：
 
 ### 破坏性更改
 
-- **必需**：Drizzle ORM 模式定义（不再支持无模式使用）
-- **新 API**：`createRefineSQL({ connection, schema })` 而不是 `createRefineSQL(path)`
-- **仅 ESM**：不支持 CommonJS
-- **TypeScript 5.0+**：现代类型功能所需
-- **Node.js 20+**：最低版本提高
+- **连接注入**：`createRefineSQL` 不再接受连接字符串。你必须传递一个预配置的 Drizzle 实例。
+- **移除检测**：已移除自动数据库类型检测，转而支持显式依赖注入。
 
 ### 迁移步骤
 
-1. 安装 Drizzle ORM：`npm install drizzle-orm`
-2. 使用 Drizzle 定义模式
-3. 更新 `createRefineSQL` 调用以使用新 API
-4. 将 TypeScript 更新到 5.0+
-5. 验证所有导入都是 ESM
-
-查看 [CHANGELOG.md](./CHANGELOG.md) 获取详细的迁移指南。
+1. 将 `refine-sqlx` 更新到 v0.6.0
+2. 安装适当的 Drizzle 驱动程序（例如 `better-sqlite3`、`mysql2`）
+3. 更新 `createRefineSQL` 调用以传递 `db` 实例而不是字符串
 
 ## 📈 性能
 
-- **标准构建**：8.06 KB（主入口点）
-- **D1 构建**：66 KB 未压缩，~18 KB gzipped
-- **零外部依赖**：Drizzle ORM 完全树摇并打包（仅 D1）
+- **标准构建**：~8 KB（主入口点）
+- **D1 构建**：~18 KB gzipped
+- **零外部依赖**：通过对等/显式依赖管理 Drizzle ORM
 - **类型安全**：类型检查零运行时开销
 
 ## 🤝 贡献

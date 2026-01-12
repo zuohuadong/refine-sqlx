@@ -2,63 +2,37 @@ import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
   entries: [
-    // Main entry point (all runtimes)
-    // Drizzle ORM is external for main build
+    // Main entry point
     {
       input: 'src/index',
       outDir: 'dist',
       name: 'index',
-      declaration: false, // Temporarily disable to debug D1 build
+      declaration: true,
       externals: [
         '@refinedev/core',
         '@cloudflare/workers-types',
-        'bun:sqlite',
-        'node:sqlite',
-        'better-sqlite3',
-        'drizzle-orm', // External for main build
+        'drizzle-orm',
       ],
     },
-    // D1 optimized entry point (Cloudflare Workers)
-    // Bundle Drizzle ORM for D1 to avoid external dependencies
+    // D1 helper entry point
     {
       input: 'src/d1',
       outDir: 'dist',
       name: 'd1',
-      builder: 'rollup',
-      declaration: false, // Skip declaration for D1 build to avoid Cloudflare types issues
-      rollup: {
-        esbuild: { minify: true, target: 'es2022', treeShaking: true },
-        output: {
-          exports: 'named',
-          format: 'esm',
-          inlineDynamicImports: true, // Create single bundle without code splitting
-        },
-        // Use Rollup's external option directly
-        external: (id: string) => {
-          // Only externalize @refinedev/core
-          if (id === '@refinedev/core' || id.startsWith('@refinedev/core/')) {
-            return true;
-          }
-          // Bundle everything else including drizzle-orm
-          return false;
-        },
-      },
+      declaration: true,
+      externals: [
+        '@refinedev/core',
+        '@cloudflare/workers-types',
+        'drizzle-orm',
+      ],
     },
     // CLI entry point
-    // Note: CLI dependencies are intentionally bundled for standalone execution
     {
       input: 'bin/refine-sqlx',
       outDir: 'dist',
       name: 'refine-sqlx',
       builder: 'rollup',
       declaration: false,
-      externals: [
-        // Only externalize runtime-specific modules that can't be bundled
-        'drizzle-kit',
-        'better-sqlite3',
-        'bun:sqlite',
-        'node:sqlite',
-      ],
       rollup: {
         esbuild: {
           minify: false,
@@ -66,32 +40,16 @@ export default defineBuildConfig({
           banner: '#!/usr/bin/env node',
         },
         output: { format: 'esm' },
-        // Explicitly mark which dependencies to bundle vs externalize
-        external: (id: string) => {
-          // Externalize native modules and runtime-specific packages
-          if (
-            id === 'drizzle-kit' ||
-            id.startsWith('drizzle-kit/') ||
-            id === 'better-sqlite3' ||
-            id.startsWith('better-sqlite3/') ||
-            id.startsWith('bun:') ||
-            id.startsWith('node:')
-          ) {
-            return true;
-          }
-          // Bundle everything else (ora, chalk, commander, prompts, etc.)
-          // for standalone CLI execution
-          return false;
-        },
+        // Simple externals for CLI
+        external: (id) => id.startsWith('node:') || id === 'drizzle-kit' || id.startsWith('drizzle-kit/'),
       },
     },
   ],
   outDir: 'dist',
-  declaration: false, // Disabled globally for now - will re-enable after D1 bundling works
+  declaration: true,
   rollup: {
     esbuild: { minify: true, target: 'es2022', treeShaking: true },
-    emitCJS: false, // ESM only for v0.3.0
-    preserveDynamicImports: false,
+    emitCJS: false, // Pure ESM
   },
   failOnWarn: false,
 });

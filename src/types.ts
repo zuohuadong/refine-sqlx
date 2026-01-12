@@ -1,13 +1,8 @@
-import type { D1Database } from '@cloudflare/workers-types';
-import type BetterSqlite3 from 'better-sqlite3';
-import type { Database as BunDatabase } from 'bun:sqlite';
-import type { DrizzleConfig } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import type { DatabaseSync as NodeDatabase } from 'node:sqlite';
 import type { Logger } from './logger';
 
 // Import FeaturesConfig as a type to avoid circular dependency
@@ -18,35 +13,14 @@ import type { FeaturesConfig } from './config';
  */
 export type DatabaseType = 'sqlite' | 'mysql' | 'postgresql' | 'd1';
 
-/**
- * MySQL connection configuration
- */
-export interface MySQLConfig {
-  host: string;
-  port?: number;
-  user: string;
-  password: string;
-  database: string;
-  ssl?: any;
-  /** Connection pool settings */
-  pool?: { min?: number; max?: number };
-}
-
-/**
- * PostgreSQL connection configuration
- */
-export interface PostgreSQLConfig {
-  host: string;
-  port?: number;
-  user: string;
-  password: string;
-  database: string;
-  ssl?: boolean | any;
-  /** Connection pool settings */
-  max?: number;
-  idle_timeout?: number;
-  connect_timeout?: number;
-}
+export type VariableDrizzleDatabase<
+  TSchema extends Record<string, unknown> = Record<string, unknown>,
+> =
+  | BunSQLiteDatabase<TSchema>
+  | BetterSQLite3Database<TSchema>
+  | DrizzleD1Database<TSchema>
+  | MySql2Database<TSchema>
+  | PostgresJsDatabase<TSchema>;
 
 /**
  * Time Travel configuration for SQLite and D1
@@ -121,70 +95,27 @@ export interface D1Options {
  *
  * @example
  * ```typescript
- * // SQLite - file path
- * { connection: 'database.sqlite', schema }
- *
- * // SQLite - in-memory
- * { connection: ':memory:', schema }
- *
- * // MySQL - connection string
- * { connection: 'mysql://user:pass@localhost:3306/mydb', schema }
- *
- * // MySQL - config object
- * { connection: { host: 'localhost', user: 'root', password: 'secret', database: 'mydb' }, schema }
- *
- * // PostgreSQL - connection string
- * { connection: 'postgresql://user:pass@localhost:5432/mydb', schema }
- *
- * // PostgreSQL - config object
- * { connection: { host: 'localhost', user: 'postgres', password: 'secret', database: 'mydb' }, schema }
- *
- * // Cloudflare D1
- * { connection: env.DB, schema }
- *
  * // Drizzle instance (any database)
- * { connection: drizzleInstance, schema }
+ * const dataProvider = await createRefineSQL({
+ *   connection: drizzleInstance,
+ *   schema
+ * });
  * ```
  */
 export interface RefineSQLConfig<
   TSchema extends Record<string, unknown> = Record<string, unknown>,
 > {
   /**
-   * Database connection - supports multiple formats:
+   * Database connection - Drizzle ORM instance
    *
-   * **SQLite**:
-   * - File path: `'database.sqlite'` or `'data/app.db'`
-   * - Memory: `':memory:'`
-   * - Native instances: BunDatabase, NodeDatabase, BetterSqlite3.Database
-   *
-   * **MySQL**:
-   * - Connection string: `'mysql://user:pass@host:3306/db'`
-   * - Config object: `{ host, user, password, database, ... }`
-   *
-   * **PostgreSQL**:
-   * - Connection string: `'postgresql://user:pass@host:5432/db'` or `'postgres://...'`
-   * - Config object: `{ host, user, password, database, ... }`
-   *
-   * **Cloudflare D1**:
-   * - D1Database instance: `env.DB`
-   *
-   * **Drizzle ORM** (most flexible):
-   * - Any Drizzle database instance (auto-detected)
+   * You must organize the connection yourself and pass the Drizzle instance
+   * 
+   * @example
+   * ```ts
+   * const db = drizzle(client);
+   * ```
    */
-  connection:
-    | string
-    | ':memory:'
-    | MySQLConfig
-    | PostgreSQLConfig
-    | D1Database
-    | BunDatabase
-    | NodeDatabase
-    | BetterSqlite3.Database
-    | BunSQLiteDatabase<TSchema>
-    | BetterSQLite3Database<TSchema>
-    | DrizzleD1Database<TSchema>
-    | MySql2Database<TSchema>
-    | PostgresJsDatabase<TSchema>;
+  connection: VariableDrizzleDatabase<TSchema>;
 
   /**
    * Drizzle ORM schema definition
