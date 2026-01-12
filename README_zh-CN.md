@@ -35,13 +35,12 @@
 - 🌐 **多运行时支持** - Bun、Node.js 24+、Cloudflare Workers、better-sqlite3
 - 📦 **优化的 D1 构建** - 适用于 Cloudflare Workers 的树摇优化包（~18KB gzipped）
 - 🛡️ **类型推断** - 从 Drizzle 模式自动推断类型
-- 🔌 **统一 API** - 所有数据库类型的单一接口，自动检测
+- 🔌 **统一 API** - 所有数据库类型的单一接口
 - 🔍 **高级过滤** - 完整支持 Refine 过滤操作符
 - 💾 **事务支持** - 批量操作和原子事务
-- ⏰ **时间旅行** - SQLite 数据库的自动备份和恢复
 - 📊 **完整 CRUD** - 完整的创建、读取、更新、删除操作
 - 🚀 **仅 ESM** - 现代 ES 模块架构
-- 🎛️ **自动检测** - 根据连接字符串智能选择最佳驱动程序
+- 🎛️ **灵活连接** - 自带 Drizzle 实例 (BYO)
 
 ## 📦 安装
 
@@ -56,9 +55,11 @@ npm install refine-sqlx drizzle-orm
 pnpm add refine-sqlx drizzle-orm
 ```
 
-### 可选数据库驱动
+### 数据库驱动
 
-**SQLite**（作为可选依赖自动安装）：
+安装你需要的驱动程序：
+
+**SQLite**:
 
 ```bash
 npm install better-sqlite3  # 适用于 Node.js < 24
