@@ -35,13 +35,12 @@ This library uses [Drizzle ORM](https://orm.drizzle.team) for schema definitions
 - 🌐 **Multi-Runtime Support** - Bun, Node.js 24+, Cloudflare Workers, better-sqlite3
 - 📦 **Optimized D1 Build** - Tree-shaken bundle (~18KB gzipped) for Cloudflare Workers
 - 🛡️ **Type Inference** - Automatic type inference from Drizzle schemas
-- 🔌 **Unified API** - Single interface for all database types with automatic detection
+- 🔌 **Unified API** - Single interface for all database types
 - 🔍 **Advanced Filtering** - Full Refine filter operators support
 - 💾 **Transaction Support** - Batch operations and atomic transactions
-- ⏰ **Time Travel** - Automatic backup and restore for SQLite databases
 - 📊 **Full CRUD** - Complete Create, Read, Update, Delete operations
 - 🚀 **ESM Only** - Modern ES Module architecture
-- 🎛️ **Automatic Detection** - Intelligently selects the best driver based on connection string
+- 🎛️ **Flexible Connection** - Bring your own Drizzle instance (BYO)
 
 ## 📦 Installation
 
@@ -56,9 +55,11 @@ npm install refine-sqlx drizzle-orm
 pnpm add refine-sqlx drizzle-orm
 ```
 
-### Optional Database Drivers
+### Database Drivers
 
-**SQLite** (auto-installed as optional dependency):
+You install the driver you need:
+
+**SQLite**:
 
 ```bash
 npm install better-sqlite3  # For Node.js < 24
