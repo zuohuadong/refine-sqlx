@@ -4,9 +4,11 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "rootDir": "src",
-    "noEmit": true,
+    // "noEmit": true,
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "skipLibCheck": true,
@@ -15,6 +17,10 @@
     "emitDecoratorMetadata": false,
     "useDefineForClassFields": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

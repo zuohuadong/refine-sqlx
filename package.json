@@ -14,7 +14,7 @@
     "test:integration-bun": "bun test test/integration/bun.test.ts",
     "test:integration-node": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=\"/node_modules/\" --testMatch=\"**/test/integration/node.test.ts\"",
     "test:integration-better-sqlite3": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=\"/node_modules/\" --testMatch=\"**/test/integration/better-sqlite3.test.ts\"",
-    "build": "unbuild",
+    "build": "unbuild && bun run tsc --declaration --emitDeclarationOnly --outDir dist",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "changeset": "changeset",
@@ -32,11 +32,11 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
     "./d1": {
-      "types": "./dist/d1.d.mts",
+      "types": "./dist/d1.d.ts",
       "workerd": "./dist/d1.mjs",
       "import": "./dist/d1.mjs"
     }

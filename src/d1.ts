@@ -1,3 +1,4 @@
+/// <reference types='./cloudflare-workers-shim.d.ts' />
 import type { D1Database } from '@cloudflare/workers-types';
 import type { DrizzleConfig } from 'drizzle-orm';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';

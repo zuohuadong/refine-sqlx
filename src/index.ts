@@ -1,3 +1,4 @@
+/// <reference types='./cloudflare-workers-shim.d.ts' />
 // v0.5.0 - Unified feature integration
 export { createRefineSQL } from './provider';
 
@@ -120,5 +121,4 @@ export {
 } from './validation';
 export type { ValidationSchema } from './validation';
 
-// CLI (v0.5.0)
-export * from './cli';
+// CLI - removed (use bin/refine-sqlx)

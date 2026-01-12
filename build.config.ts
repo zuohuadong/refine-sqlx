@@ -7,7 +7,7 @@ export default defineBuildConfig({
       input: 'src/index',
       outDir: 'dist',
       name: 'index',
-      declaration: true,
+      declaration: false,
       externals: [
         '@refinedev/core',
         '@cloudflare/workers-types',
@@ -19,7 +19,7 @@ export default defineBuildConfig({
       input: 'src/d1',
       outDir: 'dist',
       name: 'd1',
-      declaration: true,
+      declaration: false,
       externals: [
         '@refinedev/core',
         '@cloudflare/workers-types',
@@ -46,7 +46,7 @@ export default defineBuildConfig({
     },
   ],
   outDir: 'dist',
-  declaration: true,
+  declaration: false,
   rollup: {
     esbuild: { minify: true, target: 'es2022', treeShaking: true },
     emitCJS: false, // Pure ESM
