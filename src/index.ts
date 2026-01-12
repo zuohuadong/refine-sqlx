@@ -1,4 +1,3 @@
-/// <reference types='./cloudflare-workers-shim.d.ts' />
 // v0.5.0 - Unified feature integration
 export { createRefineSQL } from './provider';
 
