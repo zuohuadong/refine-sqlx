@@ -105,20 +105,7 @@ export class FeatureRegistry {
   }
 }
 
-/**
- * Create a new feature registry with all features initialized
- */
-export async function createFeatureRegistry(
-  config: ValidatedFeaturesConfig,
-  context: FeatureContext,
-): Promise<FeatureRegistry> {
-  const registry = new FeatureRegistry();
 
-  // Register features based on configuration
-  // Features will be imported and registered in provider.ts
-
-  return registry;
-}
 
 /**
  * Shared context for all features

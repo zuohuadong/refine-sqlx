@@ -31,6 +31,7 @@ import {
   min,
   sql,
   sum,
+  type SQL,
 } from 'drizzle-orm';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { MySqlTable } from 'drizzle-orm/mysql-core';
@@ -44,12 +45,12 @@ import {
   filtersToWhere,
   sortersToOrderBy,
 } from './filters';
+import { validateConfig, validateFeaturesConfig } from './config';
+import { SecurityGuard } from './security';
 import type {
   CustomParams,
   CustomResponse,
   RefineSQLConfig,
-  //  RefineSQLMeta,
-  //  TableName,
 } from './types';
 import { validateD1Options } from './utils/validation';
 
@@ -72,10 +73,19 @@ import { validateD1Options } from './utils/validation';
 export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   config: RefineSQLConfig<TSchema>,
 ): Promise<DataProvider> {
+  // Validate configuration
+  validateConfig(config);
+
   // Validate D1-specific options if provided
   validateD1Options(config.d1Options);
 
+  // Validate and apply feature defaults
+  const features = validateFeaturesConfig(config.features);
+
   const db = config.connection;
+
+  // Initialize security guard if configured
+  const security = config.security ? new SecurityGuard(config.security) : null;
 
   // D1 Time Travel implementation note:
   // Time Travel is primarily a CLI feature for database restoration.
@@ -97,6 +107,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   function getTable(
     resource: string,
   ): SQLiteTableWithColumns<any> | MySqlTable<any> | PgTable<any> {
+    // Security: check table access whitelist
+    security?.checkTableAccess(resource);
+
     const table = config.schema[resource];
     if (!table) {
       throw new Error(`Table "${resource}" not found in schema`);
@@ -108,17 +121,45 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   }
 
   /**
+   * Build WHERE clause combining user filters with soft delete logic
+   */
+  function buildSoftDeleteWhere(
+    baseWhere: SQL | undefined,
+    table: any,
+    meta?: Record<string, any>,
+  ): SQL | undefined {
+    if (!config.softDelete?.enabled) {
+      return baseWhere;
+    }
+    const softDeleteField = config.softDelete?.field ?? 'deleted_at';
+    if (meta?.onlyDeleted) {
+      const deletedCond = isNotNull(table[softDeleteField]);
+      return baseWhere ? sql`${baseWhere} AND ${deletedCond}` : deletedCond;
+    }
+    if (!meta?.includeDeleted) {
+      const notDeletedCond = isNull(table[softDeleteField]);
+      return baseWhere ? sql`${baseWhere} AND ${notDeletedCond}` : notDeletedCond;
+    }
+    return baseWhere;
+  }
+
+  /**
    * Get list of records with filtering, sorting, and pagination
    * Supports: field selection, aggregations, soft delete, relations
    */
   async function getList<T extends BaseRecord = BaseRecord>(
     params: GetListParams,
   ): Promise<GetListResponse<T>> {
+    security?.checkOperation('read', params.resource);
     const table = getTable(params.resource) as any;
-    const softDeleteField = config.softDelete?.field ?? 'deleted_at';
 
     // Handle aggregations
     if (params.meta?.aggregations) {
+      if (!features.aggregations.enabled) {
+        throw new Error(
+          '[refine-sqlx] Aggregations are not enabled. Set features.aggregations.enabled = true.',
+        );
+      }
       const aggregations: Record<string, any> = {};
 
       // Build aggregation select
@@ -173,6 +214,11 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     // Check if using relational queries
     if (params.meta?.include && (db as any).query) {
+      if (!features.relations.enabled) {
+        throw new Error(
+          '[refine-sqlx] Relations are not enabled. Set features.relations.enabled = true.',
+        );
+      }
       const queryApi = (db as any).query[params.resource];
       if (!queryApi) {
         throw new Error(
@@ -236,25 +282,10 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     }
 
     // Build WHERE clause from filters
-    const where = filtersToWhere(params.filters, table);
+    const baseWhere = filtersToWhere(params.filters, table);
+    const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
-    // Apply soft delete filter
-    if (config.softDelete?.enabled) {
-      if (params.meta?.onlyDeleted) {
-        // Only show deleted records
-        const deletedWhere = isNotNull(table[softDeleteField]);
-        query.where(where ? sql`${where} AND ${deletedWhere}` : deletedWhere);
-      } else if (!params.meta?.includeDeleted) {
-        // Exclude deleted records (default behavior)
-        const notDeletedWhere = isNull(table[softDeleteField]);
-        query.where(
-          where ? sql`${where} AND ${notDeletedWhere}` : notDeletedWhere,
-        );
-      } else if (where) {
-        // Include deleted records, just apply filters
-        query.where(where);
-      }
-    } else if (where) {
+    if (where) {
       query.where(where);
     }
 
@@ -265,17 +296,13 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     }
 
     // Calculate pagination
-    const { offset, limit } = calculatePagination(params.pagination ?? {});
+    let { offset, limit } = calculatePagination(params.pagination ?? {});
+    limit = security ? security.enforceMaxLimit(limit) : limit;
 
     const data = await query.limit(limit).offset(offset);
 
-    // Get total count with same filters
-    let countWhere = where;
-    if (config.softDelete?.enabled && !params.meta?.includeDeleted) {
-      const notDeletedWhere = isNull(table[softDeleteField]);
-      countWhere =
-        where ? sql`${where} AND ${notDeletedWhere}` : notDeletedWhere;
-    }
+    // Get total count with same filters + soft delete
+    const countWhere = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
     const countResult: Array<Record<string, unknown>> = await (db as any)
       .select({ total: sql<number>`CAST(COUNT(*) AS INTEGER)` })
@@ -284,7 +311,12 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     const total = Number(countResult[0]?.total ?? 0);
 
-    return { data: data as T[], total };
+    // Security: strip hidden fields
+    const safeData = security
+      ? security.stripHiddenFieldsFromList(params.resource, data as Record<string, unknown>[])
+      : data;
+
+    return { data: safeData as T[], total };
   }
 
   /**
@@ -293,6 +325,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function getMany<T extends BaseRecord = BaseRecord>(
     params: GetManyParams,
   ): Promise<GetManyResponse<T>> {
+    security?.checkOperation('read', params.resource);
     if (!params.ids || params.ids.length === 0) {
       return { data: [] };
     }
@@ -305,7 +338,11 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       .from(table)
       .where(inArray(table[idColumn], params.ids));
 
-    return { data: data as T[] };
+    const safeData = security
+      ? security.stripHiddenFieldsFromList(params.resource, data as Record<string, unknown>[])
+      : data;
+
+    return { data: safeData as T[] };
   }
 
   /**
@@ -315,12 +352,18 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function getOne<T extends BaseRecord = BaseRecord>(
     params: GetOneParams,
   ): Promise<GetOneResponse<T>> {
+    security?.checkOperation('read', params.resource);
     const table = getTable(params.resource) as any;
     const idColumn = params.meta?.idColumnName ?? 'id';
     const softDeleteField = config.softDelete?.field ?? 'deleted_at';
 
     // Check if using relational queries
     if (params.meta?.include && (db as any).query) {
+      if (!features.relations.enabled) {
+        throw new Error(
+          '[refine-sqlx] Relations are not enabled. Set features.relations.enabled = true.',
+        );
+      }
       const queryApi = (db as any).query[params.resource];
       if (!queryApi) {
         throw new Error(
@@ -394,7 +437,12 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       );
     }
 
-    return { data: data as T };
+    // Security: strip hidden fields
+    const safeData = security
+      ? security.stripHiddenFields(params.resource, data as Record<string, unknown>)
+      : data;
+
+    return { data: safeData as T };
   }
 
   /**
@@ -403,6 +451,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function create<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: CreateParams<Variables>,
   ): Promise<CreateResponse<T>> {
+    security?.checkOperation('create', params.resource);
     const table = getTable(params.resource) as any;
 
     const [result] = await (db as any)
@@ -419,6 +468,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function createMany<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: CreateManyParams<Variables>,
   ): Promise<CreateManyResponse<T>> {
+    security?.checkOperation('create', params.resource);
     if (!params.variables || params.variables.length === 0) {
       return { data: [] };
     }
@@ -439,6 +489,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function update<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: UpdateParams<Variables>,
   ): Promise<UpdateResponse<T>> {
+    security?.checkOperation('update', params.resource);
     const table = getTable(params.resource) as any;
     const idColumn = params.meta?.idColumnName ?? 'id';
 
@@ -463,6 +514,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function updateMany<T extends BaseRecord = BaseRecord, Variables = {}>(
     params: UpdateManyParams<Variables>,
   ): Promise<UpdateManyResponse<T>> {
+    security?.checkOperation('update', params.resource);
     if (!params.ids || params.ids.length === 0) {
       return { data: [] };
     }
@@ -486,6 +538,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function deleteOne<T extends BaseRecord = BaseRecord, TVariables = {}>(
     params: DeleteOneParams<TVariables>,
   ): Promise<DeleteOneResponse<T>> {
+    security?.checkOperation('delete', params.resource);
     const table = getTable(params.resource) as any;
     const idColumn = params.meta?.idColumnName ?? 'id';
     const softDeleteField =
@@ -534,6 +587,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   async function deleteMany<T extends BaseRecord = BaseRecord, TVariables = {}>(
     params: DeleteManyParams<TVariables>,
   ): Promise<DeleteManyResponse<T>> {
+    security?.checkOperation('delete', params.resource);
     if (!params.ids || params.ids.length === 0) {
       return { data: [] };
     }
@@ -569,6 +623,10 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
   /**
    * Execute custom SQL queries or complex database operations
+   *
+   * **Security**: Always use parameterized queries via `payload.args`.
+   * Never interpolate user input directly into `payload.sql`.
+   *
    * @param params - Custom query parameters
    * @returns Query result
    */
@@ -578,15 +636,16 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     const { url, payload } = params;
 
     // Execute raw SQL query (SELECT)
+    // ⚠️ Security: sql.raw does not support parameterized queries.
+    // Callers MUST sanitize payload.sql themselves or use the 'drizzle' operation.
     if (url === 'query' && payload?.sql) {
-      // Use db.all() for SELECT queries
       const result = await (db as any).all(sql.raw(payload.sql));
       return { data: result as TData };
     }
 
     // Execute raw SQL statement (INSERT/UPDATE/DELETE)
+    // ⚠️ Security: same warning as above.
     if (url === 'execute' && payload?.sql) {
-      // Use db.run() for INSERT/UPDATE/DELETE
       const result = await (db as any).run(sql.raw(payload.sql));
       return { data: result as TData };
     }

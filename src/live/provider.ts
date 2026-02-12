@@ -1,9 +1,9 @@
 /**
  * Live Provider implementation for real-time updates
- * Supports polling, WebSocket (Bun/Node), and Cloudflare D1 strategies
+ * Supports polling strategy for all platforms
  */
 
-import type { LiveEvent, LiveProvider } from '@refinedev/core';
+import type { DataProvider, LiveEvent, LiveProvider } from '@refinedev/core';
 
 /**
  * Live mode configuration
@@ -18,28 +18,15 @@ export interface LiveModeConfig {
   /**
    * Live mode strategy
    * - 'polling': Regular polling (all platforms)
-   * - 'websocket': WebSocket-based (Bun/Node only)
-   * - 'durable-objects': Cloudflare Durable Objects (D1 only)
    * @default 'polling'
    */
-  strategy?: 'polling' | 'websocket' | 'durable-objects';
+  strategy?: 'polling';
 
   /**
    * Polling interval in milliseconds
    * @default 5000
    */
   pollingInterval?: number;
-
-  /**
-   * WebSocket server port (when strategy is 'websocket')
-   * @default 3001
-   */
-  port?: number;
-
-  /**
-   * Durable Object namespace (when strategy is 'durable-objects')
-   */
-  durableObjectNamespace?: any;
 }
 
 /**
@@ -89,15 +76,13 @@ export class LiveEventEmitter {
   }
 }
 
-// Fix for missing types
-declare const Bun: any;
-
 /**
  * Polling strategy for live updates
  */
 export class PollingStrategy {
-  private intervals = new Map<string, any>(); // Use any to avoid NodeJS.Timeout dependency
+  private intervals = new Map<string, ReturnType<typeof setInterval>>();
   private lastFetch = new Map<string, number>();
+  private lastCache = new Map<string, string>();
 
   constructor(
     private emitter: LiveEventEmitter,
@@ -119,20 +104,21 @@ export class PollingStrategy {
     const poll = async () => {
       try {
         const data = await fetchData();
-        const now = Date.now();
-        const lastFetchTime = this.lastFetch.get(channel);
+        const serialized = JSON.stringify(data);
+        const cached = this.lastCache.get(channel);
 
-        // Only emit if data changed (simple check)
-        if (!lastFetchTime || JSON.stringify(data) !== this.lastCache?.get(channel)) {
+        // Only emit if data actually changed (skip first poll)
+        if (cached !== undefined && cached !== serialized) {
           this.emitter.emit(channel, {
-            type: 'created', // or 'updated', 'deleted'
+            type: 'created',
             channel,
-            date: new Date(now),
-            payload: { ids: [] }, // Should extract actual IDs
+            date: new Date(),
+            payload: { ids: [] },
           });
         }
 
-        this.lastFetch.set(channel, now);
+        this.lastCache.set(channel, serialized);
+        this.lastFetch.set(channel, Date.now());
       } catch (error) {
         console.error(`[Live Polling] Error polling ${channel}:`, error);
       }
@@ -155,6 +141,7 @@ export class PollingStrategy {
       clearInterval(intervalId);
       this.intervals.delete(channel);
       this.lastFetch.delete(channel);
+      this.lastCache.delete(channel);
     }
   }
 
@@ -165,17 +152,21 @@ export class PollingStrategy {
     this.intervals.forEach((intervalId) => clearInterval(intervalId));
     this.intervals.clear();
     this.lastFetch.clear();
+    this.lastCache.clear();
   }
-
-  private lastCache = new Map<string, string>();
 }
 
 /**
  * Create a Live Provider for real-time updates
+ *
+ * @param config - Live mode configuration
+ * @param emitter - Event emitter for broadcasting events
+ * @param dataProvider - Optional DataProvider for polling strategy data fetching
  */
 export function createLiveProvider(
   config: LiveModeConfig,
   emitter: LiveEventEmitter,
+  dataProvider?: DataProvider,
 ): LiveProvider {
   const pollingStrategy = new PollingStrategy(
     emitter,
@@ -191,12 +182,13 @@ export function createLiveProvider(
       });
 
       // Start polling if using polling strategy
-      if (config.strategy === 'polling' && params?.resource) {
-        // Note: We need access to dataProvider to fetch data
-        // This is a simplified implementation
+      if (config.strategy === 'polling' && params?.resource && dataProvider) {
         pollingStrategy.start(channel, params.resource, async () => {
-          // Fetch data logic would go here
-          return {};
+          const result = await dataProvider.getList({
+            resource: params.resource!,
+            pagination: { currentPage: 1, pageSize: 100 },
+          });
+          return result.data;
         });
       }
 
@@ -213,58 +205,4 @@ export function createLiveProvider(
       emitter.emit(event.channel, event);
     },
   };
-}
-
-/**
- * WebSocket strategy (Bun/Node only)
- * Note: This requires additional setup and is platform-specific
- */
-export class WebSocketStrategy {
-  private server: any;
-
-  constructor(
-    private emitter: LiveEventEmitter,
-    private port: number = 3001,
-  ) { }
-
-  /**
-   * Start WebSocket server
-   */
-  async start(): Promise<void> {
-    // Platform detection
-    if (typeof Bun !== 'undefined') {
-      this.startBunServer();
-    } else {
-      // Node.js WebSocket server would go here
-      console.warn(
-        '[Live WebSocket] WebSocket strategy requires Bun or Node.js with ws package',
-      );
-    }
-  }
-
-  /**
-   * Start Bun WebSocket server
-   */
-  private startBunServer(): void {
-    // This is a placeholder - actual implementation would use Bun.serve
-    console.log(`[Live WebSocket] Starting WebSocket server on port ${this.port}`);
-    // Bun.serve({ port: this.port, ... })
-  }
-
-  /**
-   * Stop WebSocket server
-   */
-  stop(): void {
-    if (this.server) {
-      this.server.close();
-    }
-  }
-
-  /**
-   * Broadcast event to all WebSocket clients
-   */
-  broadcast(channel: string, event: LiveEvent): void {
-    // Broadcast to WebSocket clients
-    this.emitter.emit(channel, event);
-  }
 }

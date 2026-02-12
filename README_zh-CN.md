@@ -166,9 +166,48 @@ const dataProvider = await createRefineSQL({
   connection: db,
   schema,
 });
+  schema,
+});
 ```
 
-### 4. 高级配置
+### 3. 初始化 Refine 提供程序（零配置）
+
+如果你有一个包含 schema 的 Drizzle 实例，可以使用快捷方式：
+
+```typescript
+import { drizzleDataProvider } from 'refine-sqlx';
+
+const dataProvider = await drizzleDataProvider(db);
+```
+
+### 4. 初始化 Refine 提供程序（高级配置）
+
+包含安全配置和其他选项：
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  security: {
+    // 仅允许访问这些表
+    allowedTables: ['posts', 'users'],
+    // 隐藏敏感字段
+    hiddenFields: { users: ['password'] },
+    // 限制操作
+    allowedOperations: ['read', 'create', 'update'],
+    // 每次请求最大记录数
+    maxLimit: 1000
+  },
+  softDelete: {
+    enabled: true,
+    field: 'deleted_at',
+  }
+});
+```
+
+### 5. 已配置的提供程序
 
 ```typescript
 const dataProvider = await createRefineSQL({

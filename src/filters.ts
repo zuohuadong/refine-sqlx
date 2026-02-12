@@ -14,17 +14,21 @@ import {
   lt,
   lte,
   ne,
+  not,
   notBetween,
   notInArray,
+  notLike,
   or,
-  SQL,
+  sql,
+  type Column,
+  type SQL,
 } from 'drizzle-orm';
-import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 
 /**
  * Convert Refine filters to Drizzle WHERE conditions
+ * Supports SQLite, MySQL, and PostgreSQL columns
  */
-export function filtersToWhere<T extends Record<string, SQLiteColumn>>(
+export function filtersToWhere<T extends Record<string, Column>>(
   filters: CrudFilters | undefined,
   columns: T,
 ): SQL | undefined {
@@ -85,7 +89,7 @@ export function filtersToWhere<T extends Record<string, SQLiteColumn>>(
  * Convert a single filter to a Drizzle condition
  */
 function filterToCondition(
-  column: SQLiteColumn,
+  column: Column,
   operator: CrudOperators,
   value: any,
 ): SQL {
@@ -115,31 +119,30 @@ function filterToCondition(
       return notInArray(column, Array.isArray(value) ? value : [value]);
 
     case 'contains':
-    case 'containss':
-      // contains: case-insensitive (SQLite LIKE is case-insensitive by default)
-      // containss: case-sensitive (use GLOB instead)
-      if (operator === 'containss') {
-        // For case-sensitive, we need to use a custom SQL expression
-        return like(column, `%${value}%`);
-      }
+      // case-insensitive (SQLite LIKE is case-insensitive by default)
       return like(column, `%${value}%`);
 
+    case 'containss':
+      // case-sensitive: use GLOB for SQLite, LIKE BINARY for MySQL
+      return sql`${column} GLOB ${'*' + value + '*'}`;
+
     case 'ncontains':
+      return notLike(column, `%${value}%`);
+
     case 'ncontainss':
-      // Not contains - negate the LIKE
-      return ne(like(column, `%${value}%`), true as any);
+      return not(sql`${column} GLOB ${'*' + value + '*'}`);
 
     case 'startswith':
       return like(column, `${value}%`);
 
     case 'nstartswith':
-      return ne(like(column, `${value}%`), true as any);
+      return notLike(column, `${value}%`);
 
     case 'endswith':
       return like(column, `%${value}`);
 
     case 'nendswith':
-      return ne(like(column, `%${value}`), true as any);
+      return notLike(column, `%${value}`);
 
     case 'null':
       return value ? isNull(column) : isNotNull(column);
@@ -167,7 +170,7 @@ function filterToCondition(
 /**
  * Convert Refine sorters to Drizzle ORDER BY clauses
  */
-export function sortersToOrderBy<T extends Record<string, SQLiteColumn>>(
+export function sortersToOrderBy<T extends Record<string, Column>>(
   sorters: Array<{ field: string; order: 'asc' | 'desc' }> | undefined,
   columns: T,
 ): SQL[] {
@@ -181,7 +184,6 @@ export function sortersToOrderBy<T extends Record<string, SQLiteColumn>>(
       throw new Error(`Column "${sorter.field}" not found in schema`);
     }
 
-    // Use asc/desc functions from drizzle-orm
     if (sorter.order === 'desc') {
       return desc(column);
     }
@@ -195,16 +197,17 @@ export function sortersToOrderBy<T extends Record<string, SQLiteColumn>>(
  */
 export function calculatePagination(pagination: {
   current?: number;
+  currentPage?: number;
   pageSize?: number;
   mode?: 'off' | 'server' | 'client';
 }): { offset: number; limit: number } {
   // Handle pagination mode
   if (pagination?.mode === 'off' || pagination?.mode === 'client') {
-    // No pagination - return all results
-    return { offset: 0, limit: 999999 };
+    // No server-side pagination — fetch all
+    return { offset: 0, limit: Number.MAX_SAFE_INTEGER };
   }
 
-  const current = pagination?.current ?? 1;
+  const current = pagination?.current ?? pagination?.currentPage ?? 1;
   const pageSize = pagination?.pageSize ?? 10;
 
   return { offset: (current - 1) * pageSize, limit: pageSize };

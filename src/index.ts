@@ -1,5 +1,9 @@
-// v0.5.0 - Unified feature integration
+// v0.6.0 - Unified feature integration
 export { createRefineSQL } from './provider';
+
+// Zero-config shortcut API
+export { drizzleDataProvider } from './shortcut';
+export type { DrizzleDataProviderOptions } from './shortcut';
 
 // Core configuration types
 export type {
@@ -7,18 +11,13 @@ export type {
   RuntimeEnvironment,
   TableName,
   D1Options,
-  OptimisticLockingConfig,
-  MultiTenancyConfig,
   CacheConfig,
   CacheAdapter,
-  LoggingConfig,
-  QueryLogEvent,
-  ValidationConfig,
   InferInsertModel,
   InferSelectModel,
 } from './types';
 
-// Feature configuration and validation (v0.5.0)
+// Feature configuration and validation
 export {
   validateConfig,
   validateFeaturesConfig,
@@ -31,21 +30,21 @@ export {
   type ValidatedFeaturesConfig,
 } from './config';
 
-// Extended DataProvider types (v0.5.0)
+// Extended DataProvider types
 export type {
   DataProviderWithTransactions,
   DataProviderWithAggregations,
   ExtendedDataProvider,
 } from './types/provider';
 
-// Re-export TransactionContext and Aggregate types from their respective modules
+// Re-export TransactionContext and Aggregate types
 export type { TransactionContext } from './features/transactions/manager';
 export type {
   AggregateParams,
   AggregateResponse,
 } from './features/aggregations/executor';
 
-// Feature executors and types (v0.5.0)
+// Feature executors and types
 export {
   AggregationsExecutor,
   JSONParser,
@@ -62,7 +61,9 @@ export {
   type RelationInclude,
 } from './features';
 
-// Runtime utilities - removed
+// Security
+export { SecurityGuard } from './security';
+export type { SecurityConfig } from './security';
 
 // Filter and query utilities
 export {
@@ -71,7 +72,7 @@ export {
   sortersToOrderBy,
 } from './filters';
 
-// Batch operations (compatible with all database adapters)
+// Batch operations
 export {
   batchInsert,
   batchUpdate,
@@ -82,16 +83,15 @@ export {
 // Validation utilities
 export { validateD1Options, getBatchSize } from './utils/validation';
 
-// Cache (v0.5.0)
+// Cache
 export { MemoryCacheAdapter, CacheManager, RedisCacheAdapter } from './cache';
 export type { RedisClient, RedisCacheAdapterOptions } from './cache/redis-adapter';
 
-// Live Queries (v0.5.0)
+// Live Queries
 export {
   createLiveProvider,
   LiveEventEmitter,
   PollingStrategy,
-  WebSocketStrategy,
 } from './live';
 export type { LiveModeConfig } from './live';
 
@@ -112,12 +112,10 @@ export {
 export type { Logger } from './logger';
 export { ConsoleLogger, NoOpLogger, createLogger } from './logger';
 
-// Validation (v0.5.0)
+// Validation
 export {
   Validator,
   ValidationError,
   createValidationConfig,
 } from './validation';
 export type { ValidationSchema } from './validation';
-
-// CLI - removed (use bin/refine-sqlx)

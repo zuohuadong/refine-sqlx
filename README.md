@@ -166,9 +166,48 @@ const dataProvider = await createRefineSQL({
   connection: db,
   schema,
 });
+  schema,
+});
 ```
 
-### 4. Advanced Configuration
+### 3. Initialize Refine Provider (Zero-config)
+
+If you have a Drizzle instance with schema, you can use the shortcut:
+
+```typescript
+import { drizzleDataProvider } from 'refine-sqlx';
+
+const dataProvider = await drizzleDataProvider(db);
+```
+
+### 4. Initialize Refine Provider (Advanced)
+
+Include security configuration and other options:
+
+```typescript
+import { createRefineSQL } from 'refine-sqlx';
+
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  security: {
+    // Only allow access to these tables
+    allowedTables: ['posts', 'users'],
+    // Hide sensitive fields
+    hiddenFields: { users: ['password'] },
+    // Restrict operations
+    allowedOperations: ['read', 'create', 'update'],
+    // Max records per request
+    maxLimit: 1000
+  },
+  softDelete: {
+    enabled: true,
+    field: 'deleted_at',
+  }
+});
+```
+
+### 5. Configured Providers
 
 ```typescript
 const dataProvider = await createRefineSQL({

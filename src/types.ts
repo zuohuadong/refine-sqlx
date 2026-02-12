@@ -8,6 +8,7 @@ import type { Logger } from './logger';
 
 // Import FeaturesConfig as a type to avoid circular dependency
 import type { FeaturesConfig } from './config';
+import type { SecurityConfig } from './security';
 
 /**
  * Database type detection
@@ -218,6 +219,26 @@ export interface RefineSQLConfig<
    * ```
    */
   features?: FeaturesConfig;
+
+  /**
+   * Security configuration
+   * Controls table access, field visibility, and operation permissions
+   *
+   * @example
+   * ```typescript
+   * const dataProvider = await createRefineSQL({
+   *   connection: db,
+   *   schema,
+   *   security: {
+   *     allowedTables: ['users', 'posts'],
+   *     hiddenFields: { users: ['password', 'apiKey'] },
+   *     maxLimit: 1000,
+   *     allowedOperations: ['read', 'create', 'update']
+   *   }
+   * });
+   * ```
+   */
+  security?: SecurityConfig;
 }
 
 /**
@@ -466,114 +487,7 @@ export interface CacheConfig {
   };
 }
 
-/**
- * Optimistic locking configuration
- */
-export interface OptimisticLockingConfig {
-  /**
-   * Enable optimistic locking
-   * @default false
-   */
-  enabled: boolean;
 
-  /**
-   * Version field name
-   * @default 'version'
-   */
-  versionField?: string;
-}
 
-/**
- * Multi-tenancy configuration
- */
-export interface MultiTenancyConfig {
-  /**
-   * Enable multi-tenancy
-   * @default false
-   */
-  enabled: boolean;
 
-  /**
-   * Tenant ID field name
-   * @default 'tenant_id'
-   */
-  tenantField?: string;
-
-  /**
-   * Tenant ID provider function
-   */
-  getTenantId?: () => string | number | Promise<string | number>;
-}
-
-/**
- * Query log event
- */
-export interface QueryLogEvent {
-  /**
-   * SQL query string
-   */
-  query: string;
-
-  /**
-   * Query parameters
-   */
-  params?: any[];
-
-  /**
-   * Execution time in milliseconds
-   */
-  duration: number;
-
-  /**
-   * Timestamp
-   */
-  timestamp: Date;
-
-  /**
-   * Error if query failed
-   */
-  error?: Error;
-}
-
-/**
- * Logging configuration
- */
-export interface LoggingConfig {
-  /**
-   * Enable query logging
-   * @default false
-   */
-  enabled: boolean;
-
-  /**
-   * Log handler function
-   */
-  handler?: (event: QueryLogEvent) => void;
-
-  /**
-   * Log slow queries only (threshold in ms)
-   */
-  slowQueryThreshold?: number;
-}
-
-/**
- * Validation configuration
- */
-export interface ValidationConfig {
-  /**
-   * Enable validation
-   * @default false
-   */
-  enabled: boolean;
-
-  /**
-   * Validation schema or function
-   */
-  schema?: any;
-
-  /**
-   * Custom validator function
-   */
-  validator?: (data: any, resource: string) => Promise<boolean>;
-}
 
