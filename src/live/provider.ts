@@ -1,9 +1,15 @@
 /**
  * Live Provider implementation for real-time updates
- * Supports polling strategy for all platforms
+ * Supports polling strategy for all platforms and PostgreSQL LISTEN/NOTIFY
+ *
+ * @deprecated PostgreSQL LISTEN/NOTIFY will be removed when Drizzle ORM adds native real-time support
  */
 
 import type { DataProvider, LiveEvent, LiveProvider } from '@refinedev/core';
+import type { PostgresNotifyConfig, PostgresNotifyEvent } from './postgres-notify';
+
+export { PostgresNotifyStrategy, createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from './postgres-notify';
+export type { PostgresNotifyConfig, PostgresNotifyEvent, PostgresNotifySubscription } from './postgres-notify';
 
 /**
  * Live mode configuration
@@ -18,15 +24,27 @@ export interface LiveModeConfig {
   /**
    * Live mode strategy
    * - 'polling': Regular polling (all platforms)
+   * - 'postgres-notify': PostgreSQL LISTEN/NOTIFY (PostgreSQL only)
    * @default 'polling'
    */
-  strategy?: 'polling';
+  strategy?: 'polling' | 'postgres-notify';
 
   /**
-   * Polling interval in milliseconds
+   * Polling interval in milliseconds (for polling strategy)
    * @default 5000
    */
   pollingInterval?: number;
+
+  /**
+   * PostgreSQL NOTIFY configuration (for postgres-notify strategy)
+   */
+  postgresConfig?: {
+    connectionString?: string;
+    pool?: unknown;
+    channels?: string[];
+    reconnectInterval?: number;
+    maxReconnectAttempts?: number;
+  };
 }
 
 /**
@@ -173,15 +191,51 @@ export function createLiveProvider(
     config.pollingInterval ?? 5000,
   );
 
+  let postgresStrategy: import('./postgres-notify').PostgresNotifyStrategy | null = null;
+
+  if (config.strategy === 'postgres-notify' && config.postgresConfig) {
+    const { PostgresNotifyStrategy } = require('./postgres-notify');
+    postgresStrategy = new PostgresNotifyStrategy({
+      connectionString: config.postgresConfig.connectionString,
+      pool: config.postgresConfig.pool,
+      channels: config.postgresConfig.channels ?? [],
+      reconnectInterval: config.postgresConfig.reconnectInterval,
+      maxReconnectAttempts: config.postgresConfig.maxReconnectAttempts,
+    });
+    postgresStrategy?.connect().catch((err: unknown) => {
+      console.error('[LiveProvider] Failed to connect PostgreSQL NOTIFY:', err);
+    });
+  }
+
   return {
     subscribe: ({ channel, types, params, callback }) => {
+      if (config.strategy === 'postgres-notify' && postgresStrategy) {
+        const unsubscribe = postgresStrategy.subscribe(channel, (event: PostgresNotifyEvent) => {
+          const liveEvent: LiveEvent = {
+            type: event.action.toLowerCase() === 'insert' ? 'created' :
+                  event.action.toLowerCase() === 'update' ? 'updated' : 'deleted',
+            channel: event.channel,
+            date: event.timestamp,
+            payload: {
+              ids: [event.id],
+              data: event.data,
+            },
+          };
+
+          if (types.includes(liveEvent.type)) {
+            callback(liveEvent);
+          }
+        });
+
+        return unsubscribe;
+      }
+
       const unsubscribe = emitter.on(channel, (event) => {
         if (types.includes(event.type)) {
           callback(event);
         }
       });
 
-      // Start polling if using polling strategy
       if (config.strategy === 'polling' && params?.resource && dataProvider) {
         pollingStrategy.start(channel, params.resource, async () => {
           const result = await dataProvider.getList({
@@ -205,4 +259,89 @@ export function createLiveProvider(
       emitter.emit(event.channel, event);
     },
   };
+}
+
+export async function createLiveProviderAsync(
+  config: LiveModeConfig,
+  emitter: LiveEventEmitter,
+  dataProvider?: DataProvider,
+): Promise<LiveProvider & { disconnect: () => Promise<void> }> {
+  const pollingStrategy = new PollingStrategy(
+    emitter,
+    config.pollingInterval ?? 5000,
+  );
+
+  let postgresStrategy: import('./postgres-notify').PostgresNotifyStrategy | null = null;
+
+  if (config.strategy === 'postgres-notify' && config.postgresConfig) {
+    const { PostgresNotifyStrategy } = await import('./postgres-notify');
+    postgresStrategy = new PostgresNotifyStrategy({
+      connectionString: config.postgresConfig.connectionString,
+      pool: config.postgresConfig.pool,
+      channels: config.postgresConfig.channels ?? [],
+      reconnectInterval: config.postgresConfig.reconnectInterval,
+      maxReconnectAttempts: config.postgresConfig.maxReconnectAttempts,
+    });
+    await postgresStrategy.connect();
+  }
+
+  const provider: LiveProvider & { disconnect: () => Promise<void> } = {
+    subscribe: ({ channel, types, params, callback }) => {
+      if (config.strategy === 'postgres-notify' && postgresStrategy) {
+        return postgresStrategy.subscribe(channel, (event: PostgresNotifyEvent) => {
+          const liveEvent: LiveEvent = {
+            type: event.action.toLowerCase() === 'insert' ? 'created' :
+                  event.action.toLowerCase() === 'update' ? 'updated' : 'deleted',
+            channel: event.channel,
+            date: event.timestamp,
+            payload: {
+              ids: [event.id],
+              data: event.data,
+            },
+          };
+
+          if (types.includes(liveEvent.type)) {
+            callback(liveEvent);
+          }
+        });
+      }
+
+      const unsubscribe = emitter.on(channel, (event) => {
+        if (types.includes(event.type)) {
+          callback(event);
+        }
+      });
+
+      if (config.strategy === 'polling' && params?.resource && dataProvider) {
+        pollingStrategy.start(channel, params.resource, async () => {
+          const result = await dataProvider.getList({
+            resource: params.resource!,
+            pagination: { currentPage: 1, pageSize: 100 },
+          });
+          return result.data;
+        });
+      }
+
+      return unsubscribe;
+    },
+
+    unsubscribe: (subscription) => {
+      if (typeof subscription === 'function') {
+        subscription();
+      }
+    },
+
+    publish: (event) => {
+      emitter.emit(event.channel, event);
+    },
+
+    disconnect: async () => {
+      pollingStrategy.stopAll();
+      if (postgresStrategy) {
+        await postgresStrategy.disconnect();
+      }
+    },
+  };
+
+  return provider;
 }

@@ -1,6 +1,6 @@
 {
   "name": "refine-sqlx",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "A type-safe Refine data provider with Drizzle ORM for SQLite, PostgreSQL, MySQL databases (Bun, Node.js, Cloudflare D1).",
   "type": "module",
   "license": "MIT",

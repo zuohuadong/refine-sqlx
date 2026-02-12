@@ -607,6 +607,80 @@ const { data, total } = await dataProvider.getList({
 | `{field}_gt`, `{field}_gte`, `{field}_lt`, `{field}_lte` | 比较 |
 | `{field}_contains` | 包含（不区分大小写） |
 | `{field}_startswith`, `{field}_endswith` | 前缀/后缀匹配 |
+
+## 📡 实时订阅
+
+refine-sqlx 提供两种实时订阅策略：
+
+### 方式 1：轮询（所有平台）
+
+```typescript
+import { createLiveProvider, LiveEventEmitter } from 'refine-sqlx';
+
+const emitter = new LiveEventEmitter();
+const liveProvider = createLiveProvider({
+  strategy: 'polling',
+  pollingInterval: 5000,  // 每 5 秒轮询一次
+}, emitter, dataProvider);
+
+// 订阅数据变化
+liveProvider.subscribe({
+  channel: 'users',
+  types: ['created', 'updated', 'deleted'],
+  callback: (event) => {
+    console.log('User changed:', event);
+  },
+});
+```
+
+### 方式 2：PostgreSQL LISTEN/NOTIFY（仅 PostgreSQL）
+
+> ⚠️ **注意**：此功能是临时实现，当 Drizzle ORM 支持原生实时订阅后将被移除。
+
+```typescript
+import { createLiveProviderAsync, createPostgresNotifyTriggerSQL } from 'refine-sqlx';
+
+// 1. 首先在数据库中创建触发器（只需执行一次）
+const triggerSQL = createPostgresNotifyTriggerSQL('users', 'users', 'id');
+await db.execute(triggerSQL);
+
+// 2. 创建实时订阅提供者
+const liveProvider = await createLiveProviderAsync({
+  strategy: 'postgres-notify',
+  postgresConfig: {
+    connectionString: process.env.DATABASE_URL,
+    channels: ['users', 'posts', 'comments'],
+  },
+});
+
+// 3. 订阅数据变化
+const unsubscribe = liveProvider.subscribe({
+  channel: 'users',
+  types: ['created', 'updated', 'deleted'],
+  callback: (event) => {
+    console.log('User changed:', event);
+    // event.payload.ids - 变化的记录 ID
+    // event.payload.data - 新数据（INSERT/UPDATE）
+  },
+});
+
+// 4. 应用关闭时断开连接
+await liveProvider.disconnect();
+```
+
+### 生成触发器 SQL
+
+```typescript
+import { createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from 'refine-sqlx';
+
+// 为表创建触发器
+const sql = createPostgresNotifyTriggerSQL('users', 'users_changes', 'id');
+console.log(sql);
+// 执行此 SQL 来创建触发器
+
+// 删除触发器
+const dropSQL = dropPostgresNotifyTriggerSQL('users');
+```
 | `{field}_in` | 数组包含（逗号分隔） |
 | `{field}_between` | 范围（逗号分隔两个值） |
 

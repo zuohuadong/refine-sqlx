@@ -610,6 +610,80 @@ const { data, total } = await dataProvider.getList({
 | `{field}_in` | Array contains (comma-separated) |
 | `{field}_between` | Range (comma-separated two values) |
 
+## 📡 Real-time Subscriptions
+
+refine-sqlx provides two real-time subscription strategies:
+
+### Option 1: Polling (All Platforms)
+
+```typescript
+import { createLiveProvider, LiveEventEmitter } from 'refine-sqlx';
+
+const emitter = new LiveEventEmitter();
+const liveProvider = createLiveProvider({
+  strategy: 'polling',
+  pollingInterval: 5000,  // Poll every 5 seconds
+}, emitter, dataProvider);
+
+// Subscribe to data changes
+liveProvider.subscribe({
+  channel: 'users',
+  types: ['created', 'updated', 'deleted'],
+  callback: (event) => {
+    console.log('User changed:', event);
+  },
+});
+```
+
+### Option 2: PostgreSQL LISTEN/NOTIFY (PostgreSQL Only)
+
+> ⚠️ **Note**: This is a temporary implementation that will be removed when Drizzle ORM adds native real-time support.
+
+```typescript
+import { createLiveProviderAsync, createPostgresNotifyTriggerSQL } from 'refine-sqlx';
+
+// 1. First create triggers in your database (run once)
+const triggerSQL = createPostgresNotifyTriggerSQL('users', 'users', 'id');
+await db.execute(triggerSQL);
+
+// 2. Create live provider
+const liveProvider = await createLiveProviderAsync({
+  strategy: 'postgres-notify',
+  postgresConfig: {
+    connectionString: process.env.DATABASE_URL,
+    channels: ['users', 'posts', 'comments'],
+  },
+});
+
+// 3. Subscribe to data changes
+const unsubscribe = liveProvider.subscribe({
+  channel: 'users',
+  types: ['created', 'updated', 'deleted'],
+  callback: (event) => {
+    console.log('User changed:', event);
+    // event.payload.ids - Changed record IDs
+    // event.payload.data - New data (INSERT/UPDATE)
+  },
+});
+
+// 4. Disconnect when app shuts down
+await liveProvider.disconnect();
+```
+
+### Generate Trigger SQL
+
+```typescript
+import { createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from 'refine-sqlx';
+
+// Create trigger for a table
+const sql = createPostgresNotifyTriggerSQL('users', 'users_changes', 'id');
+console.log(sql);
+// Execute this SQL to create the trigger
+
+// Drop trigger
+const dropSQL = dropPostgresNotifyTriggerSQL('users');
+```
+
 ## ⚙️ Configuration
 
 ```typescript

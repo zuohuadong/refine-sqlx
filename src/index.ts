@@ -101,10 +101,19 @@ export type { RedisClient, RedisCacheAdapterOptions } from './cache/redis-adapte
 // Live Queries
 export {
   createLiveProvider,
+  createLiveProviderAsync,
   LiveEventEmitter,
   PollingStrategy,
+  PostgresNotifyStrategy,
+  createPostgresNotifyTriggerSQL,
+  dropPostgresNotifyTriggerSQL,
 } from './live';
-export type { LiveModeConfig } from './live';
+export type {
+  LiveModeConfig,
+  PostgresNotifyConfig,
+  PostgresNotifyEvent,
+  PostgresNotifySubscription,
+} from './live';
 
 // Errors
 export {
