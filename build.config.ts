@@ -13,6 +13,16 @@ export default defineBuildConfig({
         '@cloudflare/workers-types',
         'drizzle-orm',
       ],
+      builder: 'rollup',
+      rollup: {
+        output: {
+          format: 'esm',
+          // Preserve all exports from entry point
+          preserveEntrySignatures: 'allow-extension',
+          // Enable tree-shaking but keep re-exports
+          interop: 'auto',
+        },
+      },
     },
     // D1 helper entry point
     {
@@ -48,7 +58,7 @@ export default defineBuildConfig({
   outDir: 'dist',
   declaration: false,
   rollup: {
-    esbuild: { minify: true, target: 'es2022' },
+    esbuild: { minify: true, target: 'es2022', treeShaking: true },
     emitCJS: false, // Pure ESM
   },
   failOnWarn: false,

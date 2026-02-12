@@ -4,6 +4,7 @@
   "description": "A type-safe Refine data provider with Drizzle ORM for SQLite, PostgreSQL, MySQL databases (Bun, Node.js, Cloudflare D1).",
   "type": "module",
   "license": "MIT",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/medz/refine-sqlx.git"
