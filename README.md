@@ -38,6 +38,9 @@ This library uses [Drizzle ORM](https://orm.drizzle.team) for schema definitions
 - 🔌 **Unified API** - Single interface for all database types
 - 🔍 **Advanced Filtering** - Full Refine filter operators support
 - 💾 **Transaction Support** - Batch operations and atomic transactions
+- 🔄 **Smart ID Conversion** - Automatically converts string IDs to correct types
+- 🔗 **Relation Queries** - Support for nested relation loading
+- 🛠️ **Simple REST Adapter** - Easily adapt simple-rest style APIs
 - 📊 **Full CRUD** - Complete Create, Read, Update, Delete operations
 - 🚀 **ESM Only** - Modern ES Module architecture
 - 🎛️ **Flexible Connection** - Bring your own Drizzle instance (BYO)
@@ -153,6 +156,8 @@ export default {
 
 #### Bun
 
+**Using Bun native SQLite driver:**
+
 ```typescript
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
@@ -166,6 +171,23 @@ const dataProvider = await createRefineSQL({
   connection: db,
   schema,
 });
+```
+
+**Using Bun native SQL driver (PostgreSQL/MySQL):**
+
+```typescript
+import { drizzle } from 'drizzle-orm/bun-sql';
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// PostgreSQL
+const db = drizzle('postgres://user:pass@localhost:5432/mydb', { schema });
+
+// MySQL
+const db = drizzle('mysql://user:pass@localhost:3306/mydb', { schema });
+
+const dataProvider = await createRefineSQL({
+  connection: db,
   schema,
 });
 ```
@@ -433,6 +455,161 @@ const { data, total } = await dataProvider.getList<User>({
 - `between`, `nbetween` - Range checks
 - `null`, `nnull` - Null checks
 
+## 🔄 Smart ID Type Conversion
+
+Starting from v0.7.0, refine-sqlx automatically converts IDs to the correct type:
+
+```typescript
+// String IDs are automatically converted even if schema id is integer
+const { data } = await dataProvider.getOne({
+  resource: 'users',
+  id: "123",  // Automatically converted to number 123
+});
+
+// Batch operations also supported
+const { data } = await dataProvider.getMany({
+  resource: 'users',
+  ids: ["1", "2", "3"],  // Automatically converted to [1, 2, 3]
+});
+```
+
+### Manual ID Conversion Tools
+
+```typescript
+import { normalizeId, normalizeIds } from 'refine-sqlx';
+
+// Single ID conversion
+const id = normalizeId(table.id, "123");  // 123
+
+// Batch ID conversion
+const ids = normalizeIds(table.id, ["1", "2", "3"]);  // [1, 2, 3]
+```
+
+## 💾 Transaction Support
+
+Enable transactions to execute multiple operations atomically:
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  features: {
+    transactions: {
+      enabled: true,
+      timeout: 5000,           // Transaction timeout (ms)
+      autoRollback: true,      // Auto rollback on error
+    }
+  }
+});
+
+// Execute multiple operations in a transaction
+await dataProvider.transaction(async (tx) => {
+  const order = await tx.create({
+    resource: 'orders',
+    variables: { userId: 1, total: 100 },
+  });
+
+  await tx.create({
+    resource: 'order_items',
+    variables: { orderId: order.data.id, productId: 1, quantity: 2 },
+  });
+
+  await tx.update({
+    resource: 'products',
+    id: 1,
+    variables: { stock: sql`stock - 2` },
+  });
+});
+```
+
+## 🔗 Relation Queries
+
+Enable relations to load associated data:
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  features: {
+    relations: {
+      enabled: true,
+      maxDepth: 3,           // Maximum nesting depth
+      cache: false,          // Cache relation queries
+    }
+  }
+});
+
+// Load related data
+const { data } = await dataProvider.getOne({
+  resource: 'posts',
+  id: 1,
+  meta: {
+    include: {
+      author: true,          // Load author
+      comments: {
+        include: {
+          author: true,      // Nested load comment authors
+        }
+      }
+    }
+  }
+});
+
+// Result includes related data
+console.log(data.author.name);
+console.log(data.comments[0].author.name);
+```
+
+## 🛠️ Simple REST Adapter
+
+If you need to adapt simple-rest style API parameters, use the built-in conversion tool:
+
+```typescript
+import { convertSimpleRestParams } from 'refine-sqlx';
+
+// Convert from URL query parameters
+// GET /posts?_start=0&_end=10&_sort=title&_order=asc&status=active
+const query = {
+  _start: 0,
+  _end: 10,
+  _sort: 'title',
+  _order: 'asc',
+  status: 'active',
+};
+
+const { pagination, sorters, filters } = convertSimpleRestParams(query);
+
+// pagination: { current: 1, pageSize: 10 }
+// sorters: [{ field: 'title', order: 'asc' }]
+// filters: [{ field: 'status', operator: 'eq', value: 'active' }]
+
+// Use converted parameters
+const { data, total } = await dataProvider.getList({
+  resource: 'posts',
+  ...pagination,
+  sorters,
+  filters,
+});
+```
+
+### Supported Simple REST Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `_start`, `_end` | Offset pagination |
+| `_page`, `_perPage` | Page number pagination |
+| `_sort` | Sort field (comma-separated for multiple) |
+| `_order` | Sort direction (asc/desc) |
+| `_fields` | Select fields |
+| `_embed` | Embed relations |
+| `{field}` | Equality filter |
+| `{field}_ne` | Not equal |
+| `{field}_gt`, `{field}_gte`, `{field}_lt`, `{field}_lte` | Comparison |
+| `{field}_contains` | Contains (case-insensitive) |
+| `{field}_startswith`, `{field}_endswith` | Prefix/suffix match |
+| `{field}_in` | Array contains (comma-separated) |
+| `{field}_between` | Range (comma-separated two values) |
+
 ## ⚙️ Configuration
 
 ```typescript
@@ -463,20 +640,36 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
-  // Extended DataProvider with Time Travel
-  DataProviderWithTimeTravel,
-  InferInsertModel,
+  // Extended DataProvider types
+  DataProviderWithTransactions,
+  DataProviderWithAggregations,
+  ExtendedDataProvider,
   // Infer types from schema
+  InferInsertModel,
   InferSelectModel,
   // Configuration
   RefineSQLConfig,
+  FeaturesConfig,
   // Runtime detection
   RuntimeEnvironment,
   // Table name helper
   TableName,
   // Time Travel
   TimeTravelOptions,
-  TimeTravelSnapshot,
+} from 'refine-sqlx';
+
+// Import utility functions
+import {
+  // ID type conversion
+  normalizeId,
+  normalizeIds,
+  // Simple REST adapter
+  convertSimpleRestParams,
+  toSimpleRestParams,
+  // Filter utilities
+  filtersToWhere,
+  sortersToOrderBy,
+  calculatePagination,
 } from 'refine-sqlx';
 
 // Usage
@@ -524,19 +717,28 @@ Comprehensive documentation is available:
 
 ### Roadmap & Future Versions
 
-- **[v0.7.0 Features (Planned)](./docs/features/FEATURES_v0.7.0.md)** - Core features and enhancements
-  - custom() method for raw SQL queries
-  - Nested relations loading
-  - Aggregation support
-  - Field selection/projection
-  - Soft delete support
-- **[v0.8.0 Features (Planned)](./docs/features/FEATURES_v0.8.0.md)** - Enterprise & developer experience
-  - Optimistic locking
-  - Live queries / real-time subscriptions
-  - Multi-tenancy / row-level security
-  - Query caching
-  - TypeScript schema generator
-  - Enhanced logging & debugging
+- **[v0.7.0 Features (Released)](./docs/features/FEATURES_v0.7.0.md)** - Core features and enhancements
+  - ✅ custom() method for raw SQL queries
+  - ✅ Nested relations loading
+  - ✅ Aggregation support
+  - ✅ Field selection/projection
+  - ✅ Soft delete support
+  - ✅ Smart ID type conversion
+  - ✅ Simple REST adapter
+  - ✅ Transaction support exposed to DataProvider
+  - ✅ Bun SQL driver support (PostgreSQL/MySQL)
+
+- **[v0.8.0 Features (Released)](./docs/features/FEATURES_v0.8.0.md)** - Enterprise & developer experience
+  - ✅ Optimistic locking
+  - ✅ Multi-tenancy / row-level security
+  - ✅ Query caching
+  - ✅ Enhanced error handling
+  - ✅ Enhanced logging & debugging
+
+- **v0.9.0 Features (Planned)** - Advanced features
+  - 🔄 Live queries / real-time subscriptions (optional feature)
+  - 🔄 Mock DataProvider for testing
+  - 🔄 Framework integration packages (SvelteKit, Elysia, etc.)
 
 ## 🔄 Migration from v0.5.x
 

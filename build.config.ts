@@ -48,7 +48,7 @@ export default defineBuildConfig({
   outDir: 'dist',
   declaration: false,
   rollup: {
-    esbuild: { minify: true, target: 'es2022', treeShaking: true },
+    esbuild: { minify: true, target: 'es2022' },
     emitCJS: false, // Pure ESM
   },
   failOnWarn: false,

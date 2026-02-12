@@ -83,6 +83,17 @@ export {
 // Validation utilities
 export { validateD1Options, getBatchSize } from './utils/validation';
 
+// ID normalization utilities
+export { normalizeId, normalizeIds, getColumn } from './utils/id-normalization';
+
+// Simple REST parameter conversion
+export {
+  convertSimpleRestParams,
+  toSimpleRestParams,
+  type SimpleRestQuery,
+  type ConvertedParams,
+} from './utils/simple-rest';
+
 // Cache
 export { MemoryCacheAdapter, CacheManager, RedisCacheAdapter } from './cache';
 export type { RedisClient, RedisCacheAdapterOptions } from './cache/redis-adapter';
@@ -106,6 +117,12 @@ export {
   UnsupportedRuntimeError,
   InvalidConfigurationError,
   OptimisticLockError,
+  IdTypeConversionError,
+  AccessDeniedError,
+  InvalidFieldValueError,
+  MissingRequiredFieldError,
+  FeatureNotEnabledError,
+  RelationQueryError,
 } from './errors';
 
 // Logging

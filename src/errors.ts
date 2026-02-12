@@ -118,3 +118,119 @@ export class OptimisticLockError extends RefineSQLError {
     this.name = 'OptimisticLockError';
   }
 }
+
+/**
+ * Error thrown when ID type conversion fails
+ */
+export class IdTypeConversionError extends RefineSQLError {
+  constructor(
+    public resource: string,
+    public id: any,
+    public expectedType: string,
+    public reason?: string,
+  ) {
+    super(
+      `Failed to convert ID "${id}" to ${expectedType} for resource "${resource}"` +
+        (reason ? `: ${reason}` : ''),
+      'ID_TYPE_CONVERSION_ERROR',
+      { resource, id, expectedType, reason },
+    );
+    this.name = 'IdTypeConversionError';
+  }
+}
+
+/**
+ * Error thrown when access is denied by security rules
+ */
+export class AccessDeniedError extends RefineSQLError {
+  constructor(
+    public operation: string,
+    public resource?: string,
+    public reason?: string,
+  ) {
+    super(
+      `Access denied for operation "${operation}"` +
+        (resource ? ` on resource "${resource}"` : '') +
+        (reason ? `: ${reason}` : ''),
+      'ACCESS_DENIED',
+      { operation, resource, reason },
+    );
+    this.name = 'AccessDeniedError';
+  }
+}
+
+/**
+ * Error thrown when a field value is invalid
+ */
+export class InvalidFieldValueError extends RefineSQLError {
+  constructor(
+    public resource: string,
+    public field: string,
+    public value: any,
+    public expectedType?: string,
+    public constraints?: Record<string, any>,
+  ) {
+    super(
+      `Invalid value for field "${field}" in "${resource}": ` +
+        `received ${typeof value} "${value}"` +
+        (expectedType ? `, expected ${expectedType}` : ''),
+      'INVALID_FIELD_VALUE',
+      { resource, field, value, expectedType, constraints },
+    );
+    this.name = 'InvalidFieldValueError';
+  }
+}
+
+/**
+ * Error thrown when a required field is missing
+ */
+export class MissingRequiredFieldError extends RefineSQLError {
+  constructor(
+    public resource: string,
+    public field: string,
+    public operation: string,
+  ) {
+    super(
+      `Missing required field "${field}" for ${operation} operation on "${resource}"`,
+      'MISSING_REQUIRED_FIELD',
+      { resource, field, operation },
+    );
+    this.name = 'MissingRequiredFieldError';
+  }
+}
+
+/**
+ * Error thrown when a feature is not enabled
+ */
+export class FeatureNotEnabledError extends RefineSQLError {
+  constructor(
+    public feature: string,
+    public hint?: string,
+  ) {
+    super(
+      `Feature "${feature}" is not enabled. ` +
+        (hint || `Set features.${feature}.enabled = true in configuration.`),
+      'FEATURE_NOT_ENABLED',
+      { feature, hint },
+    );
+    this.name = 'FeatureNotEnabledError';
+  }
+}
+
+/**
+ * Error thrown when relation query fails
+ */
+export class RelationQueryError extends RefineSQLError {
+  constructor(
+    public resource: string,
+    public relation: string,
+    public reason: string,
+  ) {
+    super(
+      `Failed to load relation "${relation}" on "${resource}": ${reason}`,
+      'RELATION_QUERY_ERROR',
+      { resource, relation, reason },
+    );
+    this.name = 'RelationQueryError';
+  }
+}

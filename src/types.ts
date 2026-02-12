@@ -1,6 +1,7 @@
 import type { DrizzleConfig } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { BunSQLDatabase } from 'drizzle-orm/bun-sql';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -19,6 +20,7 @@ export type VariableDrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, unknown>,
 > =
   | BunSQLiteDatabase<TSchema>
+  | BunSQLDatabase<TSchema>
   | BetterSQLite3Database<TSchema>
   | DrizzleD1Database<TSchema>
   | MySql2Database<TSchema>

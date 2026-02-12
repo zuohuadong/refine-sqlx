@@ -38,6 +38,9 @@
 - 🔌 **统一 API** - 所有数据库类型的单一接口
 - 🔍 **高级过滤** - 完整支持 Refine 过滤操作符
 - 💾 **事务支持** - 批量操作和原子事务
+- 🔄 **智能 ID 转换** - 自动将字符串 ID 转换为正确的类型
+- 🔗 **关系查询** - 支持嵌套关系加载
+- 🛠️ **Simple REST 适配器** - 轻松适配 simple-rest 风格的 API
 - 📊 **完整 CRUD** - 完整的创建、读取、更新、删除操作
 - 🚀 **仅 ESM** - 现代 ES 模块架构
 - 🎛️ **灵活连接** - 自带 Drizzle 实例 (BYO)
@@ -153,6 +156,8 @@ export default {
 
 #### Bun
 
+**使用 Bun 原生 SQLite 驱动：**
+
 ```typescript
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
@@ -166,6 +171,23 @@ const dataProvider = await createRefineSQL({
   connection: db,
   schema,
 });
+```
+
+**使用 Bun 原生 SQL 驱动（PostgreSQL/MySQL）：**
+
+```typescript
+import { drizzle } from 'drizzle-orm/bun-sql';
+import { createRefineSQL } from 'refine-sqlx';
+import * as schema from './schema';
+
+// PostgreSQL
+const db = drizzle('postgres://user:pass@localhost:5432/mydb', { schema });
+
+// MySQL
+const db = drizzle('mysql://user:pass@localhost:3306/mydb', { schema });
+
+const dataProvider = await createRefineSQL({
+  connection: db,
   schema,
 });
 ```
@@ -433,6 +455,161 @@ const { data, total } = await dataProvider.getList<User>({
 - `between`、`nbetween` - 范围检查
 - `null`、`nnull` - 空值检查
 
+## 🔄 智能 ID 类型转换
+
+从 v0.7.0 开始，refine-sqlx 会自动将 ID 转换为正确的类型：
+
+```typescript
+// 即使 schema 中 id 是 integer，字符串也会自动转换
+const { data } = await dataProvider.getOne({
+  resource: 'users',
+  id: "123",  // 自动转换为数字 123
+});
+
+// 批量操作同样支持
+const { data } = await dataProvider.getMany({
+  resource: 'users',
+  ids: ["1", "2", "3"],  // 自动转换为 [1, 2, 3]
+});
+```
+
+### 手动使用 ID 转换工具
+
+```typescript
+import { normalizeId, normalizeIds } from 'refine-sqlx';
+
+// 单个 ID 转换
+const id = normalizeId(table.id, "123");  // 123
+
+// 批量 ID 转换
+const ids = normalizeIds(table.id, ["1", "2", "3"]);  // [1, 2, 3]
+```
+
+## 💾 事务支持
+
+启用事务功能后，可以在事务中执行多个操作：
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  features: {
+    transactions: {
+      enabled: true,
+      timeout: 5000,           // 事务超时时间（毫秒）
+      autoRollback: true,      // 出错时自动回滚
+    }
+  }
+});
+
+// 在事务中执行多个操作
+await dataProvider.transaction(async (tx) => {
+  const order = await tx.create({
+    resource: 'orders',
+    variables: { userId: 1, total: 100 },
+  });
+
+  await tx.create({
+    resource: 'order_items',
+    variables: { orderId: order.data.id, productId: 1, quantity: 2 },
+  });
+
+  await tx.update({
+    resource: 'products',
+    id: 1,
+    variables: { stock: sql`stock - 2` },
+  });
+});
+```
+
+## 🔗 关系查询
+
+启用关系功能后，可以加载关联数据：
+
+```typescript
+const dataProvider = await createRefineSQL({
+  connection: db,
+  schema,
+  features: {
+    relations: {
+      enabled: true,
+      maxDepth: 3,           // 最大嵌套深度
+      cache: false,          // 是否缓存关系查询
+    }
+  }
+});
+
+// 加载关联数据
+const { data } = await dataProvider.getOne({
+  resource: 'posts',
+  id: 1,
+  meta: {
+    include: {
+      author: true,          // 加载作者
+      comments: {
+        include: {
+          author: true,      // 嵌套加载评论的作者
+        }
+      }
+    }
+  }
+});
+
+// 结果包含关联数据
+console.log(data.author.name);
+console.log(data.comments[0].author.name);
+```
+
+## 🛠️ Simple REST 适配器
+
+如果你需要适配 simple-rest 风格的 API 参数，可以使用内置的转换工具：
+
+```typescript
+import { convertSimpleRestParams } from 'refine-sqlx';
+
+// 从 URL 查询参数转换
+// GET /posts?_start=0&_end=10&_sort=title&_order=asc&status=active
+const query = {
+  _start: 0,
+  _end: 10,
+  _sort: 'title',
+  _order: 'asc',
+  status: 'active',
+};
+
+const { pagination, sorters, filters } = convertSimpleRestParams(query);
+
+// pagination: { current: 1, pageSize: 10 }
+// sorters: [{ field: 'title', order: 'asc' }]
+// filters: [{ field: 'status', operator: 'eq', value: 'active' }]
+
+// 使用转换后的参数
+const { data, total } = await dataProvider.getList({
+  resource: 'posts',
+  ...pagination,
+  sorters,
+  filters,
+});
+```
+
+### 支持的 Simple REST 参数
+
+| 参数 | 说明 |
+|------|------|
+| `_start`, `_end` | 偏移量分页 |
+| `_page`, `_perPage` | 页码分页 |
+| `_sort` | 排序字段（支持逗号分隔多字段） |
+| `_order` | 排序方向（asc/desc） |
+| `_fields` | 选择字段 |
+| `_embed` | 嵌入关联 |
+| `{field}` | 相等过滤 |
+| `{field}_ne` | 不相等 |
+| `{field}_gt`, `{field}_gte`, `{field}_lt`, `{field}_lte` | 比较 |
+| `{field}_contains` | 包含（不区分大小写） |
+| `{field}_startswith`, `{field}_endswith` | 前缀/后缀匹配 |
+| `{field}_in` | 数组包含（逗号分隔） |
+| `{field}_between` | 范围（逗号分隔两个值） |
+
 ## ⚙️ 配置
 
 ```typescript
@@ -463,20 +640,36 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
-  // 带时间旅行的扩展 DataProvider
-  DataProviderWithTimeTravel,
-  InferInsertModel,
+  // 扩展的 DataProvider 类型
+  DataProviderWithTransactions,
+  DataProviderWithAggregations,
+  ExtendedDataProvider,
   // 从模式推断类型
+  InferInsertModel,
   InferSelectModel,
   // 配置
   RefineSQLConfig,
+  FeaturesConfig,
   // 运行时检测
   RuntimeEnvironment,
   // 表名助手
   TableName,
   // 时间旅行
   TimeTravelOptions,
-  TimeTravelSnapshot,
+} from 'refine-sqlx';
+
+// 导入工具函数
+import {
+  // ID 类型转换
+  normalizeId,
+  normalizeIds,
+  // Simple REST 适配器
+  convertSimpleRestParams,
+  toSimpleRestParams,
+  // 过滤器工具
+  filtersToWhere,
+  sortersToOrderBy,
+  calculatePagination,
 } from 'refine-sqlx';
 
 // 用法
@@ -524,19 +717,28 @@ bun run format
 
 ### 路线图和未来版本
 
-- **[v0.7.0 功能（计划中）](./docs/features/FEATURES_v0.7.0.md)** - 核心功能和增强
-  - custom() 方法用于原始 SQL 查询
-  - 嵌套关系加载
-  - 聚合支持
-  - 字段选择/投影
-  - 软删除支持
-- **[v0.8.0 功能（计划中）](./docs/features/FEATURES_v0.8.0.md)** - 企业和开发者体验
-  - 乐观锁定
-  - 实时查询/实时订阅
-  - 多租户/行级安全
-  - 查询缓存
-  - TypeScript 模式生成器
-  - 增强的日志记录和调试
+- **[v0.7.0 功能（已发布）](./docs/features/FEATURES_v0.7.0.md)** - 核心功能和增强
+  - ✅ custom() 方法用于原始 SQL 查询
+  - ✅ 嵌套关系加载
+  - ✅ 聚合支持
+  - ✅ 字段选择/投影
+  - ✅ 软删除支持
+  - ✅ 智能 ID 类型转换
+  - ✅ Simple REST 适配器
+  - ✅ 事务支持暴露到 DataProvider
+  - ✅ Bun SQL 驱动支持（PostgreSQL/MySQL）
+
+- **[v0.8.0 功能（已发布）](./docs/features/FEATURES_v0.8.0.md)** - 企业和开发者体验
+  - ✅ 乐观锁定
+  - ✅ 多租户/行级安全
+  - ✅ 查询缓存
+  - ✅ 增强的错误处理
+  - ✅ 增强的日志记录和调试
+
+- **v0.9.0 功能（计划中）** - 高级功能
+  - 🔄 实时查询/实时订阅（可选功能）
+  - 🔄 Mock DataProvider 用于测试
+  - 🔄 框架集成包（SvelteKit、Elysia 等）
 
 ## 🔄 从 v0.5.x 迁移
 
