@@ -39,7 +39,7 @@ import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
-import { UnsupportedOperatorError } from './errors';
+import { UnsupportedOperatorError, TableNotFoundError, RecordNotFoundError } from './errors';
 import {
   calculatePagination,
   filtersToWhere,
@@ -54,7 +54,7 @@ import type {
 } from './types';
 import { validateD1Options } from './utils/validation';
 import { normalizeId, normalizeIds, getColumn } from './utils/id-normalization';
-import { TransactionManager, TransactionContext } from './features/transactions/manager';
+import { TransactionManager, type TransactionContext } from './features/transactions/manager';
 
 
 
@@ -114,7 +114,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     const table = config.schema[resource];
     if (!table) {
-      throw new Error(`Table "${resource}" not found in schema`);
+      throw new TableNotFoundError(resource);
     }
     return table as
       | SQLiteTableWithColumns<any>
@@ -198,8 +198,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
       const query = (db as any).select(aggregations).from(table).$dynamic();
 
-      // Apply filters
-      const where = filtersToWhere(params.filters, table);
+      // Apply filters + soft delete
+      const baseWhere = filtersToWhere(params.filters, table);
+      const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
       if (where) query.where(where);
 
       // Apply groupBy
@@ -228,8 +229,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
         );
       }
 
-      // Build WHERE clause from filters
-      const where = filtersToWhere(params.filters, table);
+      // Build WHERE clause from filters + soft delete
+      const baseWhere = filtersToWhere(params.filters, table);
+      const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
       // Build relational query
       const { offset, limit } = calculatePagination(params.pagination ?? {});
@@ -250,7 +252,12 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
       const total = Number(countResult[0]?.total ?? 0);
 
-      return { data: data as T[], total };
+      // Security: strip hidden fields
+      const safeData = security
+        ? security.stripHiddenFieldsFromList(params.resource, data as Record<string, unknown>[])
+        : data;
+
+      return { data: safeData as T[], total };
     }
 
     // Standard query with field selection
@@ -337,10 +344,14 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     const column = getColumn(table, idColumn);
     const normalizedIds = normalizeIds(column, params.ids);
 
+    // Build WHERE with soft delete
+    const baseWhere = inArray(table[idColumn], normalizedIds);
+    const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
+
     const data = await (db as any)
       .select()
       .from(table)
-      .where(inArray(table[idColumn], normalizedIds));
+      .where(where || baseWhere);
 
     const safeData = security
       ? security.stripHiddenFieldsFromList(params.resource, data as Record<string, unknown>[])
@@ -359,7 +370,6 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     security?.checkOperation('read', params.resource);
     const table = getTable(params.resource) as any;
     const idColumn = params.meta?.idColumnName ?? 'id';
-    const softDeleteField = config.softDelete?.field ?? 'deleted_at';
 
     const column = getColumn(table, idColumn);
     const normalizedId = normalizeId(column, params.id);
@@ -377,25 +387,24 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
         );
       }
 
-      let where = eq(table[idColumn], normalizedId);
-
-      if (config.softDelete?.enabled && !params.meta?.includeDeleted) {
-        where = sql`${where} AND ${isNull(table[softDeleteField])}` as any;
-      }
+      const baseWhere = eq(table[idColumn], normalizedId);
+      const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
       const [data] = await queryApi.findMany({
-        where,
+        where: where || baseWhere,
         with: params.meta.include,
         limit: 1,
       });
 
       if (!data) {
-        throw new Error(
-          `Record with id ${params.id} not found in ${params.resource}`,
-        );
+        throw new RecordNotFoundError(params.resource, params.id);
       }
 
-      return { data: data as T };
+      const safeData = security
+        ? security.stripHiddenFields(params.resource, data as Record<string, unknown>)
+        : data;
+
+      return { data: safeData as T };
     }
 
     let query: any;
@@ -425,18 +434,13 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       query = (db as any).select().from(table);
     }
 
-    let where = eq(table[idColumn], normalizedId);
+    const baseWhere = eq(table[idColumn], normalizedId);
+    const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
-    if (config.softDelete?.enabled && !params.meta?.includeDeleted) {
-      where = sql`${where} AND ${isNull(table[softDeleteField])}` as any;
-    }
-
-    const [data] = await query.where(where);
+    const [data] = await query.where(where || baseWhere);
 
     if (!data) {
-      throw new Error(
-        `Record with id ${params.id} not found in ${params.resource}`,
-      );
+      throw new RecordNotFoundError(params.resource, params.id);
     }
 
     const safeData = security
@@ -503,9 +507,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       .returning();
 
     if (!result) {
-      throw new Error(
-        `Record with id ${params.id} not found in ${params.resource}`,
-      );
+      throw new RecordNotFoundError(params.resource, params.id);
     }
 
     return { data: result as T };
@@ -562,9 +564,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
         .returning();
 
       if (!result) {
-        throw new Error(
-          `Record with id ${params.id} not found in ${params.resource}`,
-        );
+        throw new RecordNotFoundError(params.resource, params.id);
       }
 
       return { data: result as T };
@@ -576,9 +576,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       .returning();
 
     if (!result) {
-      throw new Error(
-        `Record with id ${params.id} not found in ${params.resource}`,
-      );
+      throw new RecordNotFoundError(params.resource, params.id);
     }
 
     return { data: result as T };
