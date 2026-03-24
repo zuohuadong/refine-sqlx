@@ -9,8 +9,19 @@ import type { DataProvider } from '../types/data-provider';
 import type { LiveEvent, LiveProvider } from '../types/live';
 import type { PostgresNotifyConfig, PostgresNotifyEvent } from './postgres-notify';
 
-export { PostgresNotifyStrategy, createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from './postgres-notify';
+// Re-export types only (no runtime cost)
 export type { PostgresNotifyConfig, PostgresNotifyEvent, PostgresNotifySubscription } from './postgres-notify';
+
+// Re-export runtime values via async getter to avoid bundling postgres-notify
+// for consumers that don't use postgres strategy (e.g. D1/SQLite, edge runtimes)
+export async function getPostgresNotifyExports() {
+  const mod = await import('./postgres-notify');
+  return {
+    PostgresNotifyStrategy: mod.PostgresNotifyStrategy,
+    createPostgresNotifyTriggerSQL: mod.createPostgresNotifyTriggerSQL,
+    dropPostgresNotifyTriggerSQL: mod.dropPostgresNotifyTriggerSQL,
+  };
+}
 
 /**
  * Live mode configuration
@@ -195,16 +206,20 @@ export function createLiveProvider(
   let postgresStrategy: import('./postgres-notify').PostgresNotifyStrategy | null = null;
 
   if (config.strategy === 'postgres-notify' && config.postgresConfig) {
-    const { PostgresNotifyStrategy } = require('./postgres-notify');
-    postgresStrategy = new PostgresNotifyStrategy({
-      connectionString: config.postgresConfig.connectionString,
-      pool: config.postgresConfig.pool,
-      channels: config.postgresConfig.channels ?? [],
-      reconnectInterval: config.postgresConfig.reconnectInterval,
-      maxReconnectAttempts: config.postgresConfig.maxReconnectAttempts,
-    });
-    postgresStrategy?.connect().catch((err: unknown) => {
-      console.error('[LiveProvider] Failed to connect PostgreSQL NOTIFY:', err);
+    // Use dynamic import to avoid bundling postgres-notify for non-postgres consumers
+    import('./postgres-notify').then(({ PostgresNotifyStrategy }) => {
+      postgresStrategy = new PostgresNotifyStrategy({
+        connectionString: config.postgresConfig!.connectionString,
+        pool: config.postgresConfig!.pool,
+        channels: config.postgresConfig!.channels ?? [],
+        reconnectInterval: config.postgresConfig!.reconnectInterval,
+        maxReconnectAttempts: config.postgresConfig!.maxReconnectAttempts,
+      });
+      postgresStrategy?.connect().catch((err: unknown) => {
+        console.error('[LiveProvider] Failed to connect PostgreSQL NOTIFY:', err);
+      });
+    }).catch((err: unknown) => {
+      console.error('[LiveProvider] Failed to load postgres-notify module:', err);
     });
   }
 
