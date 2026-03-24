@@ -142,9 +142,7 @@ export {
   createLiveProviderAsync,
   LiveEventEmitter,
   PollingStrategy,
-  PostgresNotifyStrategy,
-  createPostgresNotifyTriggerSQL,
-  dropPostgresNotifyTriggerSQL,
+  getPostgresNotifyExports,
 } from './live';
 export type {
   LiveModeConfig,

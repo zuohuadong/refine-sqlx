@@ -13,9 +13,7 @@ export {
   createLiveProviderAsync,
   LiveEventEmitter,
   PollingStrategy,
-  PostgresNotifyStrategy,
-  createPostgresNotifyTriggerSQL,
-  dropPostgresNotifyTriggerSQL,
+  getPostgresNotifyExports,
 } from './provider';
 
 export type {
