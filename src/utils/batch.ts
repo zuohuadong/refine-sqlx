@@ -5,7 +5,7 @@
  * Compatible across all database adapters: D1, Bun SQLite, Node.js SQLite, better-sqlite3.
  */
 
-import type { DataProvider } from '@refinedev/core';
+import type { DataProvider } from '../types/data-provider';
 
 /**
  * Default batch size for all database adapters

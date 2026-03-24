@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README_zh-CN.md)
 
-A type-safe, cross-platform SQL data provider for [Refine](https://refine.dev) powered by [Drizzle ORM](https://orm.drizzle.team).
+A type-safe, framework-agnostic SQL data provider powered by [Drizzle ORM](https://orm.drizzle.team). Compatible with [Refine](https://refine.dev), [svadmin](https://github.com/zuohuadong/svadmin), and any DataProvider-based framework.
 
 [![npm version](https://img.shields.io/npm/v/refine-sqlx.svg)](https://www.npmjs.com/package/refine-sqlx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,11 +10,12 @@ A type-safe, cross-platform SQL data provider for [Refine](https://refine.dev) p
 
 ## 🎯 Why Refine SQL X?
 
-**Refine SQL X** combines the power of [Refine](https://refine.dev) and [Drizzle ORM](https://orm.drizzle.team) to provide:
+**Refine SQL X** combines the power of [Drizzle ORM](https://orm.drizzle.team) with the DataProvider pattern to provide:
 
 - ✅ **Full TypeScript Type Safety** - Catch errors at compile time, not runtime
 - ✅ **Single Source of Truth** - Define your schema once, use it everywhere
 - ✅ **Multi-Database Support** - Same API for SQLite, MySQL, PostgreSQL, and Cloudflare D1
+- ✅ **Framework Agnostic** - Works with Refine (React), svadmin (Svelte), or any DataProvider consumer
 - ✅ **IntelliSense Everywhere** - Auto-completion for tables, columns, and types
 - ✅ **Zero Runtime Cost** - Type checking happens at build time
 
@@ -36,7 +37,7 @@ This library uses [Drizzle ORM](https://orm.drizzle.team) for schema definitions
 - 📦 **Optimized D1 Build** - Tree-shaken bundle (~18KB gzipped) for Cloudflare Workers
 - 🛡️ **Type Inference** - Automatic type inference from Drizzle schemas
 - 🔌 **Unified API** - Single interface for all database types
-- 🔍 **Advanced Filtering** - Full Refine filter operators support
+- 🔍 **Advanced Filtering** - Full filter operators support (eq, contains, between, etc.)
 - 💾 **Transaction Support** - Batch operations and atomic transactions
 - 🔄 **Smart ID Conversion** - Automatically converts string IDs to correct types
 - 🔗 **Relation Queries** - Support for nested relation loading
@@ -200,6 +201,75 @@ If you have a Drizzle instance with schema, you can use the shortcut:
 import { drizzleDataProvider } from 'refine-sqlx';
 
 const dataProvider = await drizzleDataProvider(db);
+```
+
+## 🔌 Framework Integration
+
+refine-sqlx is **framework-agnostic** — the `DataProvider` it creates can be used with any framework that follows the DataProvider pattern. Here are examples for the two officially supported frameworks:
+
+### Refine (React)
+
+```tsx
+import { Refine } from '@refinedev/core';
+import { drizzleDataProvider } from 'refine-sqlx';
+
+// Create the data provider (server-side)
+const dataProvider = await drizzleDataProvider(db);
+
+// Use in your React app
+function App() {
+  return (
+    <Refine dataProvider={dataProvider}>
+      {/* Your Refine resources and pages */}
+    </Refine>
+  );
+}
+```
+
+For a full Refine setup, see the [Refine Documentation](https://refine.dev/docs).
+
+### svadmin (Svelte)
+
+```typescript
+// src/lib/server/data-provider.ts
+import { drizzleDataProvider } from 'refine-sqlx';
+import { db } from './db';
+
+export const dataProvider = await drizzleDataProvider(db);
+```
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script>
+  import { SvAdmin } from '@svadmin/core';
+  import { dataProvider } from '$lib/server/data-provider';
+</script>
+
+<SvAdmin {dataProvider}>
+  <!-- Your svadmin resources and pages -->
+</SvAdmin>
+```
+
+For a full svadmin setup, see the [svadmin Documentation](https://github.com/zuohuadong/svadmin).
+
+### Using with Any Framework
+
+The `DataProvider` interface is simple and self-contained. You can use it directly in any server-side framework:
+
+```typescript
+import { drizzleDataProvider } from 'refine-sqlx';
+
+const dataProvider = await drizzleDataProvider(db);
+
+// Use in an Elysia / Express / Hono route handler
+app.get('/api/users', async () => {
+  const { data, total } = await dataProvider.getList({
+    resource: 'users',
+    pagination: { current: 1, pageSize: 20 },
+    sorters: [{ field: 'createdAt', order: 'desc' }],
+  });
+  return { data, total };
+});
 ```
 
 ### 4. Initialize Refine Provider (Advanced)
@@ -756,7 +826,7 @@ type UserInsert = InferInsertModel<typeof users>;
 - **TypeScript**: 5.0+
 - **Node.js**: 20.0+ (24.0+ recommended for native SQLite)
 - **Bun**: 1.0+ (optional)
-- **Peer Dependencies**: `@refinedev/core ^5.0.0`, `@tanstack/react-query ^5.0.0`
+- **Peer Dependencies**: None (framework-agnostic)
 - **Dependencies**: `drizzle-orm ^0.44.0`
 - **Optional**: `better-sqlite3 ^12.0.0` (fallback for Node.js < 24)
 
@@ -809,10 +879,10 @@ Comprehensive documentation is available:
   - ✅ Enhanced error handling
   - ✅ Enhanced logging & debugging
 
-- **v0.9.0 Features (Planned)** - Advanced features
-  - 🔄 Live queries / real-time subscriptions (optional feature)
+- **v0.9.0 Features (Released)** - Advanced features
+  - ✅ Live queries / real-time subscriptions (polling + PostgreSQL LISTEN/NOTIFY)
+  - ✅ Framework-agnostic DataProvider (compatible with Refine, svadmin, etc.)
   - 🔄 Mock DataProvider for testing
-  - 🔄 Framework integration packages (SvelteKit, Elysia, etc.)
 
 ## 🔄 Migration from v0.5.x
 
@@ -847,6 +917,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - [Refine Documentation](https://refine.dev/docs)
+- [svadmin Documentation](https://github.com/zuohuadong/svadmin)
 - [Drizzle ORM Documentation](https://orm.drizzle.team)
 - [GitHub Repository](https://github.com/medz/refine-sqlx)
 - [npm Package](https://www.npmjs.com/package/refine-sqlx)

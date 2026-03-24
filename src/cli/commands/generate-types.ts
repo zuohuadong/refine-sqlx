@@ -180,7 +180,7 @@ function generateTypeScriptCode(
     ` * DO NOT EDIT MANUALLY - Changes will be overwritten`,
     ` */`,
     ``,
-    `import type { BaseRecord } from '@refinedev/core';`,
+    `import type { BaseRecord } from 'refine-sqlx';`,
     `import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';`,
     `import * as schema from '${getRelativeImportPath(schemaPath)}';`,
     ``,

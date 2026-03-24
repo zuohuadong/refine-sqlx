@@ -5,7 +5,8 @@
  * @deprecated PostgreSQL LISTEN/NOTIFY will be removed when Drizzle ORM adds native real-time support
  */
 
-import type { DataProvider, LiveEvent, LiveProvider } from '@refinedev/core';
+import type { DataProvider } from '../types/data-provider';
+import type { LiveEvent, LiveProvider } from '../types/live';
 import type { PostgresNotifyConfig, PostgresNotifyEvent } from './postgres-notify';
 
 export { PostgresNotifyStrategy, createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from './postgres-notify';

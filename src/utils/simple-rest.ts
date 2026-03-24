@@ -4,11 +4,11 @@
  * Converts simple-rest style query parameters to Refine DataProvider format
  */
 
-import type { CrudFilters, CrudSorting } from '@refinedev/core';
+import type { CrudFilters, CrudSorting, CrudOperators } from '../types/data-provider';
 
 type LogicalOperator = 'and' | 'or';
 
-type LogicalFilterOperator = Exclude<import('@refinedev/core').CrudOperators, LogicalOperator>;
+type LogicalFilterOperator = Exclude<CrudOperators, LogicalOperator>;
 
 /**
  * Simple REST query parameters

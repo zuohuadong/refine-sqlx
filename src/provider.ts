@@ -19,7 +19,7 @@ import type {
   UpdateManyResponse,
   UpdateParams,
   UpdateResponse,
-} from '@refinedev/core';
+} from './types/data-provider';
 import {
   avg,
   count,
@@ -191,7 +191,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
       // Add groupBy fields to select
       if (params.meta.groupBy) {
-        for (const field of params.meta.groupBy) {
+        for (const field of params.meta.groupBy as string[]) {
           aggregations[field] = table[field];
         }
       }
@@ -205,7 +205,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
       // Apply groupBy
       if (params.meta.groupBy) {
-        const groupByColumns = params.meta.groupBy.map(
+        const groupByColumns = (params.meta.groupBy as string[]).map(
           (field: string) => table[field],
         );
         query.groupBy(...groupByColumns);
@@ -265,7 +265,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     // Build select with specific fields or exclusions
     if (params.meta?.select) {
-      const selectFields = params.meta.select.reduce(
+      const selectFields = (params.meta.select as string[]).reduce(
         (acc: Record<string, any>, field: string) => {
           acc[field] = table[field];
           return acc;
@@ -275,8 +275,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       query = (db as any).select(selectFields).from(table).$dynamic();
     } else if (params.meta?.exclude) {
       // Get all columns except excluded ones
+      const excludeFields = params.meta.exclude as string[];
       const allColumns = Object.keys(table).filter(
-        (key) => !key.startsWith('_') && !params.meta!.exclude!.includes(key),
+        (key) => !key.startsWith('_') && !excludeFields.includes(key),
       );
       const selectFields = allColumns.reduce(
         (acc: Record<string, any>, field: string) => {
@@ -340,7 +341,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     }
 
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
     const column = getColumn(table, idColumn);
     const normalizedIds = normalizeIds(column, params.ids);
 
@@ -369,7 +370,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   ): Promise<GetOneResponse<T>> {
     security?.checkOperation('read', params.resource);
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
 
     const column = getColumn(table, idColumn);
     const normalizedId = normalizeId(column, params.id);
@@ -387,7 +388,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
         );
       }
 
-      const baseWhere = eq(table[idColumn], normalizedId);
+      const baseWhere = eq(table[idColumn as string], normalizedId);
       const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
       const [data] = await queryApi.findMany({
@@ -410,7 +411,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     let query: any;
 
     if (params.meta?.select) {
-      const selectFields = params.meta.select.reduce(
+      const selectFields = (params.meta.select as string[]).reduce(
         (acc: Record<string, any>, field: string) => {
           acc[field] = table[field];
           return acc;
@@ -419,8 +420,9 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       );
       query = (db as any).select(selectFields).from(table);
     } else if (params.meta?.exclude) {
+      const excludeFields = params.meta.exclude as string[];
       const allColumns = Object.keys(table).filter(
-        (key) => !key.startsWith('_') && !params.meta!.exclude!.includes(key),
+        (key) => !key.startsWith('_') && !excludeFields.includes(key),
       );
       const selectFields = allColumns.reduce(
         (acc: Record<string, any>, field: string) => {
@@ -434,7 +436,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
       query = (db as any).select().from(table);
     }
 
-    const baseWhere = eq(table[idColumn], normalizedId);
+    const baseWhere = eq(table[idColumn as string], normalizedId);
     const where = buildSoftDeleteWhere(baseWhere, table, params.meta);
 
     const [data] = await query.where(where || baseWhere);
@@ -496,14 +498,14 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   ): Promise<UpdateResponse<T>> {
     security?.checkOperation('update', params.resource);
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
     const column = getColumn(table, idColumn);
     const normalizedId = normalizeId(column, params.id);
 
     const [result] = await (db as any)
       .update(table)
       .set(params.variables as any)
-      .where(eq(table[idColumn], normalizedId))
+      .where(eq(table[idColumn as string], normalizedId))
       .returning();
 
     if (!result) {
@@ -525,14 +527,14 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     }
 
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
     const column = getColumn(table, idColumn);
     const normalizedIds = normalizeIds(column, params.ids);
 
     const data = await (db as any)
       .update(table)
       .set(params.variables as any)
-      .where(inArray(table[idColumn], normalizedIds))
+      .where(inArray(table[idColumn as string], normalizedIds))
       .returning();
 
     return { data: data as T[] };
@@ -547,20 +549,20 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
   ): Promise<DeleteOneResponse<T>> {
     security?.checkOperation('delete', params.resource);
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
     const softDeleteField =
-      params.meta?.deletedAtField ?? config.softDelete?.field ?? 'deleted_at';
+      (params.meta?.deletedAtField as string) ?? config.softDelete?.field ?? 'deleted_at';
     const column = getColumn(table, idColumn);
     const normalizedId = normalizeId(column, params.id);
 
     const shouldSoftDelete =
-      params.meta?.softDelete ?? config.softDelete?.enabled ?? false;
+      (params.meta?.softDelete as boolean) ?? config.softDelete?.enabled ?? false;
 
     if (shouldSoftDelete) {
       const [result] = await (db as any)
         .update(table)
-        .set({ [softDeleteField]: new Date() } as any)
-        .where(eq(table[idColumn], normalizedId))
+        .set({ [softDeleteField as string]: new Date() } as any)
+        .where(eq(table[idColumn as string], normalizedId))
         .returning();
 
       if (!result) {
@@ -572,7 +574,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     const [result] = await (db as any)
       .delete(table)
-      .where(eq(table[idColumn], normalizedId))
+      .where(eq(table[idColumn as string], normalizedId))
       .returning();
 
     if (!result) {
@@ -595,20 +597,20 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
     }
 
     const table = getTable(params.resource) as any;
-    const idColumn = params.meta?.idColumnName ?? 'id';
+    const idColumn = (params.meta?.idColumnName as string) ?? 'id';
     const softDeleteField =
-      params.meta?.deletedAtField ?? config.softDelete?.field ?? 'deleted_at';
+      (params.meta?.deletedAtField as string) ?? config.softDelete?.field ?? 'deleted_at';
     const column = getColumn(table, idColumn);
     const normalizedIds = normalizeIds(column, params.ids);
 
     const shouldSoftDelete =
-      params.meta?.softDelete ?? config.softDelete?.enabled ?? false;
+      (params.meta?.softDelete as boolean) ?? config.softDelete?.enabled ?? false;
 
     if (shouldSoftDelete) {
       const data = await (db as any)
         .update(table)
-        .set({ [softDeleteField]: new Date() } as any)
-        .where(inArray(table[idColumn], normalizedIds))
+        .set({ [softDeleteField as string]: new Date() } as any)
+        .where(inArray(table[idColumn as string], normalizedIds))
         .returning();
 
       return { data: data as T[] };
@@ -616,7 +618,7 @@ export async function createRefineSQL<TSchema extends Record<string, unknown>>(
 
     const data = await (db as any)
       .delete(table)
-      .where(inArray(table[idColumn], normalizedIds))
+      .where(inArray(table[idColumn as string], normalizedIds))
       .returning();
 
     return { data: data as T[] };

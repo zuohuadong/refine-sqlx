@@ -25,7 +25,7 @@ import type {
   UpdateManyResponse,
   UpdateParams,
   UpdateResponse,
-} from '@refinedev/core';
+} from './data-provider';
 import type { TransactionContext } from '../features/transactions/manager';
 import type {
   AggregateParams,

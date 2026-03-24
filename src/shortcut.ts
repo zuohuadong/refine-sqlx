@@ -5,7 +5,7 @@
  * attached to the Drizzle instance via `drizzle(client, { schema })`
  */
 
-import type { DataProvider } from '@refinedev/core';
+import type { DataProvider } from './types/data-provider';
 import { createRefineSQL } from './provider';
 import type { RefineSQLConfig, VariableDrizzleDatabase } from './types';
 

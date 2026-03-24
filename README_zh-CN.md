@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README_zh-CN.md)
 
-一个类型安全、跨平台的 SQL 数据提供程序，适用于 [Refine](https://refine.dev)，由 [Drizzle ORM](https://orm.drizzle.team) 驱动。
+一个类型安全、框架无关的 SQL 数据提供程序，由 [Drizzle ORM](https://orm.drizzle.team) 驱动。兼容 [Refine](https://refine.dev)、[svadmin](https://github.com/zuohuadong/svadmin) 及任何基于 DataProvider 模式的框架。
 
 [![npm version](https://img.shields.io/npm/v/refine-sqlx.svg)](https://www.npmjs.com/package/refine-sqlx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,11 +10,12 @@
 
 ## 🎯 为什么选择 Refine SQL X？
 
-**Refine SQL X** 结合了 [Refine](https://refine.dev) 和 [Drizzle ORM](https://orm.drizzle.team) 的强大功能，提供：
+**Refine SQL X** 结合了 [Drizzle ORM](https://orm.drizzle.team) 与 DataProvider 模式的强大功能，提供：
 
 - ✅ **完整的 TypeScript 类型安全** - 在编译时捕获错误，而不是运行时
 - ✅ **单一数据源** - 定义一次模式，到处使用
 - ✅ **多数据库支持** - SQLite、MySQL、PostgreSQL 和 Cloudflare D1 使用相同的 API
+- ✅ **框架无关** - 支持 Refine (React)、svadmin (Svelte) 或任何 DataProvider 消费者
 - ✅ **随处可用的智能提示** - 表、列和类型的自动补全
 - ✅ **零运行时成本** - 类型检查在构建时进行
 
@@ -36,7 +37,7 @@
 - 📦 **优化的 D1 构建** - 适用于 Cloudflare Workers 的树摇优化包（~18KB gzipped）
 - 🛡️ **类型推断** - 从 Drizzle 模式自动推断类型
 - 🔌 **统一 API** - 所有数据库类型的单一接口
-- 🔍 **高级过滤** - 完整支持 Refine 过滤操作符
+- 🔍 **高级过滤** - 完整支持过滤操作符（eq、contains、between 等）
 - 💾 **事务支持** - 批量操作和原子事务
 - 🔄 **智能 ID 转换** - 自动将字符串 ID 转换为正确的类型
 - 🔗 **关系查询** - 支持嵌套关系加载
@@ -101,7 +102,7 @@ npm install --save-dev drizzle-kit @types/better-sqlite3
 
 ```typescript
 // schema.ts
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -117,18 +118,15 @@ export const posts = sqliteTable('posts', {
 #### Node.js (better-sqlite3)
 
 ```typescript
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const sqlite = new Database('sqlite.db');
 const db = drizzle(sqlite, { schema });
 
-const dataProvider = await createRefineSQL({
-  connection: db,
-  schema,
-});
+const dataProvider = await createRefineSQL({ connection: db, schema });
 ```
 
 #### Cloudflare D1
@@ -143,15 +141,12 @@ export default {
     const db = drizzle(env.DB, { schema });
 
     // 使用 D1 Drizzle 实例创建 Refine 提供程序
-    const dataProvider = await createRefineSQL({
-      connection: db,
-      schema,
-    });
+    const dataProvider = await createRefineSQL({ connection: db, schema });
 
     // ... 在 Refine Core 中使用提供程序 ...
     return Response.json({ ok: true });
-  }
-}
+  },
+};
 ```
 
 #### Bun
@@ -159,18 +154,15 @@ export default {
 **使用 Bun 原生 SQLite 驱动：**
 
 ```typescript
-import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
+import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const sqlite = new Database('sqlite.db');
 const db = drizzle(sqlite, { schema });
 
-const dataProvider = await createRefineSQL({
-  connection: db,
-  schema,
-});
+const dataProvider = await createRefineSQL({ connection: db, schema });
 ```
 
 **使用 Bun 原生 SQL 驱动（PostgreSQL/MySQL）：**
@@ -186,10 +178,7 @@ const db = drizzle('postgres://user:pass@localhost:5432/mydb', { schema });
 // MySQL
 const db = drizzle('mysql://user:pass@localhost:3306/mydb', { schema });
 
-const dataProvider = await createRefineSQL({
-  connection: db,
-  schema,
-});
+const dataProvider = await createRefineSQL({ connection: db, schema });
 ```
 
 ### 3. 初始化 Refine 提供程序（零配置）
@@ -200,6 +189,73 @@ const dataProvider = await createRefineSQL({
 import { drizzleDataProvider } from 'refine-sqlx';
 
 const dataProvider = await drizzleDataProvider(db);
+```
+
+## 🔌 框架集成
+
+refine-sqlx 是**框架无关**的 —— 它创建的 `DataProvider` 可以用于任何遵循 DataProvider 模式的框架。以下是两个官方支持的框架示例：
+
+### Refine (React)
+
+```tsx
+import { Refine } from '@refinedev/core';
+import { drizzleDataProvider } from 'refine-sqlx';
+
+// 创建数据提供程序（服务端）
+const dataProvider = await drizzleDataProvider(db);
+
+// 在 React 应用中使用
+function App() {
+  return (
+    <Refine dataProvider={dataProvider}>{/* 你的 Refine 资源和页面 */}</Refine>
+  );
+}
+```
+
+完整的 Refine 设置请参考 [Refine 文档](https://refine.dev/docs)。
+
+### svadmin (Svelte)
+
+```typescript
+// src/lib/server/data-provider.ts
+import { drizzleDataProvider } from 'refine-sqlx';
+import { db } from './db';
+
+export const dataProvider = await drizzleDataProvider(db);
+```
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script>
+  import { SvAdmin } from '@svadmin/core';
+  import { dataProvider } from '$lib/server/data-provider';
+</script>
+
+<SvAdmin {dataProvider}>
+  <!-- 你的 svadmin 资源和页面 -->
+</SvAdmin>
+```
+
+完整的 svadmin 设置请参考 [svadmin 文档](https://github.com/zuohuadong/svadmin)。
+
+### 在任何框架中使用
+
+`DataProvider` 接口简单且自包含。你可以在任何服务端框架中直接使用：
+
+```typescript
+import { drizzleDataProvider } from 'refine-sqlx';
+
+const dataProvider = await drizzleDataProvider(db);
+
+// 在 Elysia / Express / Hono 路由处理器中使用
+app.get('/api/users', async () => {
+  const { data, total } = await dataProvider.getList({
+    resource: 'users',
+    pagination: { current: 1, pageSize: 20 },
+    sorters: [{ field: 'createdAt', order: 'desc' }],
+  });
+  return { data, total };
+});
 ```
 
 ### 4. 初始化 Refine 提供程序（高级配置）
@@ -220,12 +276,9 @@ const dataProvider = await createRefineSQL({
     // 限制操作
     allowedOperations: ['read', 'create', 'update'],
     // 每次请求最大记录数
-    maxLimit: 1000
+    maxLimit: 1000,
   },
-  softDelete: {
-    enabled: true,
-    field: 'deleted_at',
-  }
+  softDelete: { enabled: true, field: 'deleted_at' },
 });
 ```
 
@@ -237,10 +290,7 @@ const dataProvider = await createRefineSQL({
   schema,
 
   // 可选：启用软删除
-  softDelete: {
-    enabled: true,
-    field: 'deleted_at',
-  },
+  softDelete: { enabled: true, field: 'deleted_at' },
 
   // 可选：日志记录
   logger: true,
@@ -463,13 +513,13 @@ const { data, total } = await dataProvider.getList<User>({
 // 即使 schema 中 id 是 integer，字符串也会自动转换
 const { data } = await dataProvider.getOne({
   resource: 'users',
-  id: "123",  // 自动转换为数字 123
+  id: '123', // 自动转换为数字 123
 });
 
 // 批量操作同样支持
 const { data } = await dataProvider.getMany({
   resource: 'users',
-  ids: ["1", "2", "3"],  // 自动转换为 [1, 2, 3]
+  ids: ['1', '2', '3'], // 自动转换为 [1, 2, 3]
 });
 ```
 
@@ -479,10 +529,10 @@ const { data } = await dataProvider.getMany({
 import { normalizeId, normalizeIds } from 'refine-sqlx';
 
 // 单个 ID 转换
-const id = normalizeId(table.id, "123");  // 123
+const id = normalizeId(table.id, '123'); // 123
 
 // 批量 ID 转换
-const ids = normalizeIds(table.id, ["1", "2", "3"]);  // [1, 2, 3]
+const ids = normalizeIds(table.id, ['1', '2', '3']); // [1, 2, 3]
 ```
 
 ## 💾 事务支持
@@ -496,10 +546,10 @@ const dataProvider = await createRefineSQL({
   features: {
     transactions: {
       enabled: true,
-      timeout: 5000,           // 事务超时时间（毫秒）
-      autoRollback: true,      // 出错时自动回滚
-    }
-  }
+      timeout: 5000, // 事务超时时间（毫秒）
+      autoRollback: true, // 出错时自动回滚
+    },
+  },
 });
 
 // 在事务中执行多个操作
@@ -533,10 +583,10 @@ const dataProvider = await createRefineSQL({
   features: {
     relations: {
       enabled: true,
-      maxDepth: 3,           // 最大嵌套深度
-      cache: false,          // 是否缓存关系查询
-    }
-  }
+      maxDepth: 3, // 最大嵌套深度
+      cache: false, // 是否缓存关系查询
+    },
+  },
 });
 
 // 加载关联数据
@@ -545,14 +595,14 @@ const { data } = await dataProvider.getOne({
   id: 1,
   meta: {
     include: {
-      author: true,          // 加载作者
+      author: true, // 加载作者
       comments: {
         include: {
-          author: true,      // 嵌套加载评论的作者
-        }
-      }
-    }
-  }
+          author: true, // 嵌套加载评论的作者
+        },
+      },
+    },
+  },
 });
 
 // 结果包含关联数据
@@ -594,19 +644,19 @@ const { data, total } = await dataProvider.getList({
 
 ### 支持的 Simple REST 参数
 
-| 参数 | 说明 |
-|------|------|
-| `_start`, `_end` | 偏移量分页 |
-| `_page`, `_perPage` | 页码分页 |
-| `_sort` | 排序字段（支持逗号分隔多字段） |
-| `_order` | 排序方向（asc/desc） |
-| `_fields` | 选择字段 |
-| `_embed` | 嵌入关联 |
-| `{field}` | 相等过滤 |
-| `{field}_ne` | 不相等 |
-| `{field}_gt`, `{field}_gte`, `{field}_lt`, `{field}_lte` | 比较 |
-| `{field}_contains` | 包含（不区分大小写） |
-| `{field}_startswith`, `{field}_endswith` | 前缀/后缀匹配 |
+| 参数                                                     | 说明                           |
+| -------------------------------------------------------- | ------------------------------ |
+| `_start`, `_end`                                         | 偏移量分页                     |
+| `_page`, `_perPage`                                      | 页码分页                       |
+| `_sort`                                                  | 排序字段（支持逗号分隔多字段） |
+| `_order`                                                 | 排序方向（asc/desc）           |
+| `_fields`                                                | 选择字段                       |
+| `_embed`                                                 | 嵌入关联                       |
+| `{field}`                                                | 相等过滤                       |
+| `{field}_ne`                                             | 不相等                         |
+| `{field}_gt`, `{field}_gte`, `{field}_lt`, `{field}_lte` | 比较                           |
+| `{field}_contains`                                       | 包含（不区分大小写）           |
+| `{field}_startswith`, `{field}_endswith`                 | 前缀/后缀匹配                  |
 
 ## 📡 实时订阅
 
@@ -618,10 +668,14 @@ refine-sqlx 提供两种实时订阅策略：
 import { createLiveProvider, LiveEventEmitter } from 'refine-sqlx';
 
 const emitter = new LiveEventEmitter();
-const liveProvider = createLiveProvider({
-  strategy: 'polling',
-  pollingInterval: 5000,  // 每 5 秒轮询一次
-}, emitter, dataProvider);
+const liveProvider = createLiveProvider(
+  {
+    strategy: 'polling',
+    pollingInterval: 5000, // 每 5 秒轮询一次
+  },
+  emitter,
+  dataProvider,
+);
 
 // 订阅数据变化
 liveProvider.subscribe({
@@ -638,7 +692,10 @@ liveProvider.subscribe({
 > ⚠️ **注意**：此功能是临时实现，当 Drizzle ORM 支持原生实时订阅后将被移除。
 
 ```typescript
-import { createLiveProviderAsync, createPostgresNotifyTriggerSQL } from 'refine-sqlx';
+import {
+  createLiveProviderAsync,
+  createPostgresNotifyTriggerSQL,
+} from 'refine-sqlx';
 
 // 1. 首先在数据库中创建触发器（只需执行一次）
 const triggerSQL = createPostgresNotifyTriggerSQL('users', 'users', 'id');
@@ -671,7 +728,10 @@ await liveProvider.disconnect();
 ### 生成触发器 SQL
 
 ```typescript
-import { createPostgresNotifyTriggerSQL, dropPostgresNotifyTriggerSQL } from 'refine-sqlx';
+import {
+  createPostgresNotifyTriggerSQL,
+  dropPostgresNotifyTriggerSQL,
+} from 'refine-sqlx';
 
 // 为表创建触发器
 const sql = createPostgresNotifyTriggerSQL('users', 'users_changes', 'id');
@@ -681,6 +741,7 @@ console.log(sql);
 // 删除触发器
 const dropSQL = dropPostgresNotifyTriggerSQL('users');
 ```
+
 | `{field}_in` | 数组包含（逗号分隔） |
 | `{field}_between` | 范围（逗号分隔两个值） |
 
@@ -714,16 +775,16 @@ const dataProvider = createRefineSQL({
 
 ```typescript
 import type {
+  DataProviderWithAggregations,
   // 扩展的 DataProvider 类型
   DataProviderWithTransactions,
-  DataProviderWithAggregations,
   ExtendedDataProvider,
+  FeaturesConfig,
   // 从模式推断类型
   InferInsertModel,
   InferSelectModel,
   // 配置
   RefineSQLConfig,
-  FeaturesConfig,
   // 运行时检测
   RuntimeEnvironment,
   // 表名助手
@@ -731,19 +792,18 @@ import type {
   // 时间旅行
   TimeTravelOptions,
 } from 'refine-sqlx';
-
 // 导入工具函数
 import {
+  calculatePagination,
+  // Simple REST 适配器
+  convertSimpleRestParams,
+  // 过滤器工具
+  filtersToWhere,
   // ID 类型转换
   normalizeId,
   normalizeIds,
-  // Simple REST 适配器
-  convertSimpleRestParams,
-  toSimpleRestParams,
-  // 过滤器工具
-  filtersToWhere,
   sortersToOrderBy,
-  calculatePagination,
+  toSimpleRestParams,
 } from 'refine-sqlx';
 
 // 用法
@@ -756,7 +816,7 @@ type UserInsert = InferInsertModel<typeof users>;
 - **TypeScript**：5.0+
 - **Node.js**：20.0+（推荐 24.0+ 以支持原生 SQLite）
 - **Bun**：1.0+（可选）
-- **对等依赖**：`@refinedev/core ^5.0.0`、`@tanstack/react-query ^5.0.0`
+- **对等依赖**：无（框架无关）
 - **依赖**：`drizzle-orm ^0.44.0`
 - **可选**：`better-sqlite3 ^12.0.0`（Node.js < 24 的回退方案）
 
@@ -809,25 +869,10 @@ bun run format
   - ✅ 增强的错误处理
   - ✅ 增强的日志记录和调试
 
-- **v0.9.0 功能（计划中）** - 高级功能
-  - 🔄 实时查询/实时订阅（可选功能）
+- **v0.9.0 功能（已发布）** - 高级功能
+  - ✅ 实时查询/实时订阅（轮询 + PostgreSQL LISTEN/NOTIFY）
+  - ✅ 框架无关的 DataProvider（兼容 Refine、svadmin 等）
   - 🔄 Mock DataProvider 用于测试
-  - 🔄 框架集成包（SvelteKit、Elysia 等）
-
-## 🔄 从 v0.5.x 迁移
-
-v0.6.0 引入了破坏性变更以支持 Edge 运行时：
-
-### 破坏性更改
-
-- **连接注入**：`createRefineSQL` 不再接受连接字符串。你必须传递一个预配置的 Drizzle 实例。
-- **移除检测**：已移除自动数据库类型检测，转而支持显式依赖注入。
-
-### 迁移步骤
-
-1. 将 `refine-sqlx` 更新到 v0.6.0
-2. 安装适当的 Drizzle 驱动程序（例如 `better-sqlite3`、`mysql2`）
-3. 更新 `createRefineSQL` 调用以传递 `db` 实例而不是字符串
 
 ## 📈 性能
 
@@ -847,6 +892,7 @@ v0.6.0 引入了破坏性变更以支持 Edge 运行时：
 ## 🔗 链接
 
 - [Refine 文档](https://refine.dev/docs)
+- [svadmin 文档](https://github.com/zuohuadong/svadmin)
 - [Drizzle ORM 文档](https://orm.drizzle.team)
 - [GitHub 仓库](https://github.com/medz/refine-sqlx)
 - [npm 包](https://www.npmjs.com/package/refine-sqlx)

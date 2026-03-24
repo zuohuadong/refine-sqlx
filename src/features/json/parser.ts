@@ -4,7 +4,7 @@
  * Automatically detects and parses JSON columns from schema
  */
 
-import type { BaseRecord } from '@refinedev/core';
+import type { BaseRecord } from '../../types/data-provider';
 import type { JSONConfig } from '../../config';
 import type { FeatureExecutor } from '../index';
 

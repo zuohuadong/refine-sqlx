@@ -1,4 +1,4 @@
-import type { CrudFilters, CrudOperators } from '@refinedev/core';
+import type { CrudFilters, CrudOperators } from './types/data-provider';
 import {
   and,
   asc,

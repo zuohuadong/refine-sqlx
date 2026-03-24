@@ -1,6 +1,44 @@
 // v0.6.0 - Unified feature integration
 export { createRefineSQL } from './provider';
 
+// Framework-agnostic DataProvider types
+// These types are compatible with Refine, svadmin, and any DataProvider-based framework.
+export type {
+  BaseRecord,
+  BaseKey,
+  DataProvider,
+  Pagination,
+  CrudSort,
+  CrudSorting,
+  CrudOperators,
+  CrudFilter,
+  CrudFilters,
+  LogicalFilter,
+  ConditionalFilter,
+  MetaQuery,
+  GetListParams,
+  GetListResponse,
+  GetOneParams,
+  GetOneResponse,
+  GetManyParams,
+  GetManyResponse,
+  CreateParams,
+  CreateResponse,
+  CreateManyParams,
+  CreateManyResponse,
+  UpdateParams,
+  UpdateResponse,
+  UpdateManyParams,
+  UpdateManyResponse,
+  DeleteOneParams,
+  DeleteOneResponse,
+  DeleteManyParams,
+  DeleteManyResponse,
+} from './types/data-provider';
+
+// Framework-agnostic Live types
+export type { LiveEvent, LiveProvider } from './types/live';
+
 // Zero-config shortcut API
 export { drizzleDataProvider } from './shortcut';
 export type { DrizzleDataProviderOptions } from './shortcut';

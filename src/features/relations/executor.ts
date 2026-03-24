@@ -8,7 +8,7 @@
  */
 
 import { eq, inArray } from 'drizzle-orm';
-import type { BaseRecord, GetListParams, GetOneParams } from '@refinedev/core';
+import type { BaseRecord, GetListParams, GetOneParams } from '../../types/data-provider';
 import type { RelationsConfig } from '../../config';
 import type { FeatureExecutor } from '../index';
 
@@ -262,7 +262,7 @@ export class RelationsExecutor implements FeatureExecutor {
     const include = params.meta?.include;
     if (!include) return baseQuery;
 
-    const includes = this.parseIncludes(include);
+    const includes = this.parseIncludes(include as string | string[]);
     if (includes.length === 0) return baseQuery;
 
     // Validate depth
@@ -303,7 +303,7 @@ export class RelationsExecutor implements FeatureExecutor {
     const include = params.meta?.include;
     if (!include) return baseQuery;
 
-    const includes = this.parseIncludes(include);
+    const includes = this.parseIncludes(include as string | string[]);
     if (includes.length === 0) return baseQuery;
 
     // Validate depth
@@ -376,10 +376,11 @@ export class RelationsExecutor implements FeatureExecutor {
       }
 
       // Apply filters to related query if specified
-      if (params.meta?.relations?.filters?.[relationName]) {
+      const relationsFilters = (params.meta?.relations as Record<string, any> | undefined)?.filters;
+      if (relationsFilters?.[relationName]) {
         relatedQuery = this.applyRelationFilters(
           relatedQuery,
-          params.meta.relations.filters[relationName],
+          relationsFilters[relationName],
           relatedTable,
         );
       }

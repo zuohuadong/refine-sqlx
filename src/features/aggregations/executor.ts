@@ -4,7 +4,7 @@
  * Handles aggregation queries (count, sum, avg, min, max, group by)
  */
 
-import type { BaseRecord, CrudFilter, GetListParams } from '@refinedev/core';
+import type { BaseRecord, CrudFilter, GetListParams } from '../../types/data-provider';
 import { and, avg, between, count, eq, gt, gte, lt, lte, max, min, ne, notBetween, or, sql, sum, type SQL } from 'drizzle-orm';
 import type { AggregationsConfig } from '../../config';
 import { filtersToWhere } from '../../filters';
