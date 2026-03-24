@@ -894,7 +894,7 @@ bun run format
 - [Refine 文档](https://refine.dev/docs)
 - [svadmin 文档](https://github.com/zuohuadong/svadmin)
 - [Drizzle ORM 文档](https://orm.drizzle.team)
-- [GitHub 仓库](https://github.com/medz/refine-sqlx)
+- [GitHub 仓库](https://github.com/zuohuadong/refine-sqlx)
 - [npm 包](https://www.npmjs.com/package/refine-sqlx)
 - [Cloudflare D1 文档](https://developers.cloudflare.com/d1/)
 

@@ -919,7 +919,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Refine Documentation](https://refine.dev/docs)
 - [svadmin Documentation](https://github.com/zuohuadong/svadmin)
 - [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [GitHub Repository](https://github.com/medz/refine-sqlx)
+- [GitHub Repository](https://github.com/zuohuadong/refine-sqlx)
 - [npm Package](https://www.npmjs.com/package/refine-sqlx)
 - [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
 

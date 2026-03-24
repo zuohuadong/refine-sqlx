@@ -1,13 +1,13 @@
 {
   "name": "refine-sqlx",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "A type-safe, framework-agnostic data provider with Drizzle ORM for SQLite, PostgreSQL, MySQL databases (Bun, Node.js, Cloudflare D1). Compatible with Refine, svadmin, and any DataProvider-based framework.",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/medz/refine-sqlx.git"
+    "url": "git+https://github.com/zuohuadong/refine-sqlx.git"
   },
   "scripts": {
     "test": "bun test test/",
