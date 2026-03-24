@@ -10,6 +10,7 @@
       "ES2022",
       "DOM"
     ],
+    "types": ["node"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "skipLibCheck": true,

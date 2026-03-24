@@ -277,7 +277,7 @@ function getRelativeImportPath(schemaPath: string): string {
  */
 function watchSchema(schemaPath: string, callback: () => void) {
   import('fs').then(({ watch }) => {
-    watch(schemaPath, (eventType) => {
+    watch(schemaPath, (eventType: string) => {
       if (eventType === 'change') {
         console.log(chalk.blue('\n📝 Schema changed, regenerating...'));
         callback();
