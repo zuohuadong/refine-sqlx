@@ -166,7 +166,7 @@ import { createRefineSQL } from 'refine-sqlx';
 import * as schema from './schema';
 
 const sqlite = new Database('sqlite.db');
-const db = drizzle(sqlite, { schema });
+const db = drizzle({ client: sqlite, schema });
 
 const dataProvider = await createRefineSQL({
   connection: db,

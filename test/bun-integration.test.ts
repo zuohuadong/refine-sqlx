@@ -17,8 +17,6 @@ describe("RefineSQL with Bun SQLite", () => {
 
     beforeEach(async () => {
         const sqlite = new Database(":memory:");
-        db = drizzle(sqlite);
-
         // Create table
         sqlite.run(`
             CREATE TABLE users (
@@ -28,6 +26,8 @@ describe("RefineSQL with Bun SQLite", () => {
                 created_at INTEGER
             )
         `);
+
+        db = drizzle({ client: sqlite, schema: { users } });
 
         provider = await createRefineSQL({
             connection: db,
