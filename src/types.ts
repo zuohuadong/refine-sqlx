@@ -1,7 +1,8 @@
 import type { DrizzleConfig } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { BunSQLDatabase } from 'drizzle-orm/bun-sql';
+import type { BunMySqlDatabase } from 'drizzle-orm/bun-sql/mysql';
+import type { BunSQLDatabase } from 'drizzle-orm/bun-sql/postgres';
+import type { SQLiteBunDatabase } from 'drizzle-orm/bun-sqlite';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -19,12 +20,13 @@ export type DatabaseType = 'sqlite' | 'mysql' | 'postgresql' | 'd1';
 export type VariableDrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, unknown>,
 > =
-  | BunSQLiteDatabase<TSchema>
-  | BunSQLDatabase<TSchema>
-  | BetterSQLite3Database<TSchema>
-  | DrizzleD1Database<TSchema>
-  | MySql2Database<TSchema>
-  | PostgresJsDatabase<TSchema>;
+  | SQLiteBunDatabase<any>
+  | BunSQLDatabase<any>
+  | BunMySqlDatabase<any>
+  | BetterSQLite3Database<any>
+  | DrizzleD1Database<any>
+  | MySql2Database<any>
+  | PostgresJsDatabase<any>;
 
 /**
  * Time Travel configuration for SQLite and D1
@@ -488,4 +490,3 @@ export interface CacheConfig {
     db?: number;
   };
 }
-
