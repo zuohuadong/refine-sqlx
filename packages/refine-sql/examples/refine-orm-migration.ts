@@ -223,7 +223,7 @@ async function demonstrateCompatibility() {
     // Execute some operations to generate metrics
     await dataProvider.getList({
       resource: 'users',
-      pagination: { current: 1, pageSize: 10, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 10, mode: 'server' },
     });
     
     const metrics = dataProvider.getPerformanceMetrics();

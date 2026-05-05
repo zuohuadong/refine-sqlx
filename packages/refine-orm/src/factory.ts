@@ -369,14 +369,16 @@ export function getRuntimeDiagnostics() {
 export function checkDatabaseSupport(
   database: 'postgresql' | 'mysql' | 'sqlite',
   driver?: string
-): boolean {
+): { supported: boolean; database: string; driver?: string } {
+  const result = (supported: boolean) => ({ supported, database, driver });
+
   if (!driver) {
     // Check if database is supported at all
     try {
       getRecommendedDriver(database);
-      return true;
+      return result(true);
     } catch {
-      return false;
+      return result(false);
     }
   }
 
@@ -384,36 +386,36 @@ export function checkDatabaseSupport(
   switch (database) {
     case 'postgresql':
       if (driver === 'bun:sql') {
-        return detectBunSqlSupport('postgresql');
+        return result(detectBunSqlSupport('postgresql'));
       }
       if (driver === 'postgres' || driver === 'postgres-js') {
-        return detectNodeRuntime();
+        return result(detectNodeRuntime());
       }
-      return false;
+      return result(false);
 
     case 'mysql':
       if (driver === 'bun:sql') {
-        return detectBunSqlSupport('mysql'); // Currently false
+        return result(detectBunSqlSupport('mysql')); // Currently false
       }
       if (driver === 'mysql2') {
-        return true; // Available in both Bun and Node.js
+        return result(true); // Available in both Bun and Node.js
       }
-      return false;
+      return result(false);
 
     case 'sqlite':
       if (driver === 'bun:sqlite') {
-        return detectBunSqlSupport('sqlite');
+        return result(detectBunSqlSupport('sqlite'));
       }
       if (driver === 'better-sqlite3') {
-        return detectNodeRuntime();
+        return result(detectNodeRuntime());
       }
       if (driver === 'd1') {
-        return detectCloudflareD1();
+        return result(detectCloudflareD1());
       }
-      return false;
+      return result(false);
 
     default:
-      return false;
+      return result(false);
   }
 }
 

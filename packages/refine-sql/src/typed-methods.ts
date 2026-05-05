@@ -278,7 +278,7 @@ export class SqlxTypedMethods<TSchema extends TableSchema = TableSchema> {
 
     const query = this.transformer.buildSelectQuery(resource as string, {
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' as const },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' as const },
     });
 
     const result = await this.client.query(query);
@@ -315,7 +315,7 @@ export class SqlxTypedMethods<TSchema extends TableSchema = TableSchema> {
     const pagination =
       options?.limit ?
         {
-          current:
+          currentPage:
             options.offset ? Math.floor(options.offset / options.limit) + 1 : 1,
           pageSize: options.limit,
           mode: 'server' as const,

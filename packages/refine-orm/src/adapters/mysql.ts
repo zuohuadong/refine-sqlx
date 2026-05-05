@@ -14,7 +14,7 @@ import type {
   ConnectionOptions,
 } from '../types/config.js';
 import type { DrizzleClient, RefineOrmDataProvider } from '../types/client.js';
-import { ConnectionError, ConfigurationError } from '../types/errors.js';
+import { ConnectionError, ConfigurationError, QueryError } from '../types/errors.js';
 import { createProvider } from '../core/data-provider.js';
 import {
   detectBunRuntime,
@@ -139,7 +139,7 @@ export class MySQLAdapter<
 
       if (this.config.pool || poolConfig.usePool) {
         // Create optimized connection pool
-        this.connection = mysql.createPool({
+        this.connection = await mysql.createPool({
           ...connectionConfig,
           connectionLimit: poolConfig.connectionLimit,
           acquireTimeout: poolConfig.acquireTimeout,
@@ -195,7 +195,7 @@ export class MySQLAdapter<
 
     // Default optimized values for MySQL
     const defaults = {
-      usePool: true, // Always use pool for better performance
+      usePool: false,
       connectionLimit: 15, // MySQL handles fewer connections than PostgreSQL
       acquireTimeout: 45000, // 45 seconds
       timeout: 60000, // 1 minute
@@ -258,15 +258,7 @@ export class MySQLAdapter<
    * Check if bun:sql supports MySQL (available since Bun 1.2.21)
    */
   private async checkBunSqlMySQLSupport(): Promise<boolean> {
-    try {
-      if (typeof Bun !== 'undefined' && typeof Bun.sql === 'function') {
-        // MySQL support is available since Bun 1.2.21
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
+    return false;
   }
 
   /**
@@ -372,6 +364,26 @@ export class MySQLAdapter<
     if (this.config.type !== 'mysql') {
       throw new ConfigurationError('Invalid database type for MySQL adapter');
     }
+
+    if (typeof this.config.connection === 'string') {
+      try {
+        const url = new URL(this.config.connection);
+        if (url.protocol !== 'mysql:' || !url.hostname || !url.pathname.slice(1)) {
+          throw new Error('Invalid MySQL connection URL');
+        }
+      } catch {
+        throw new ConfigurationError('Invalid MySQL connection string');
+      }
+    }
+
+    if (typeof this.config.connection === 'object') {
+      const conn = this.config.connection as ConnectionOptions;
+      if (!conn.user || !conn.database) {
+        throw new ConfigurationError(
+          'MySQL connection requires user and database'
+        );
+      }
+    }
   }
 
   /**
@@ -392,8 +404,7 @@ export class MySQLAdapter<
       supportsNativeDriver: this.runtimeConfig.supportsNativeDriver,
       isConnected: this.isConnected,
       futureSupport: {
-        bunSql: true, // Available since Bun 1.2.21
-        estimatedVersion: 'Bun 1.2.21+',
+        bunSql: false,
       },
     };
   }
@@ -410,8 +421,10 @@ export class MySQLAdapter<
       const [rows] = await this.connection.execute(sql, params || []);
       return rows as T[];
     } catch (error) {
-      throw new ConnectionError(
+      throw new QueryError(
         `Failed to execute raw MySQL query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        undefined,
+        [],
         error instanceof Error ? error : undefined
       );
     }

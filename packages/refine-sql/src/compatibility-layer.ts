@@ -510,7 +510,7 @@ export function addCompatibilityLayer<
     const existing = await (dataProvider as any).getList({
       resource: params.resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     if (existing.data.length > 0) {
@@ -542,7 +542,7 @@ export function addCompatibilityLayer<
     const existing = await (dataProvider as any).getList({
       resource: params.resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     if (existing.data.length > 0) {

@@ -7,18 +7,18 @@ import type { PaginationTransformResult } from './types.js';
 export function calculatePagination(pagination?: Pagination): {
   limit?: number;
   offset?: number;
-  current: number;
+  currentPage: number;
   pageSize: number;
 } {
   if (!pagination || pagination.mode === 'off') {
-    return { current: 1, pageSize: 10 };
+    return { currentPage: 1, pageSize: 10 };
   }
 
-  const { current = 1, pageSize = 10 } = pagination;
+  const { currentPage = 1, pageSize = 10 } = pagination;
   const limit = pageSize;
-  const offset = (current - 1) * pageSize;
+  const offset = (currentPage - 1) * pageSize;
 
-  return { limit, offset, current, pageSize };
+  return { limit, offset, currentPage, pageSize };
 }
 
 /**

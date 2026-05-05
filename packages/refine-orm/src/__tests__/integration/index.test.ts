@@ -8,8 +8,14 @@ import { isTestEnvironmentReady } from './database-setup.js';
 
 describe('Integration Test Environment', () => {
   describe('Database Availability', () => {
-    it('should have SQLite available (always true)', () => {
-      expect(isTestEnvironmentReady('sqlite')).toBe(true);
+    it('should check SQLite availability', () => {
+      const isAvailable = isTestEnvironmentReady('sqlite');
+      if (!isAvailable) {
+        console.warn(
+          'SQLite integration tests disabled. Set SQLITE_URL or RUN_SQLITE_INTEGRATION=true to enable.'
+        );
+      }
+      expect(typeof isAvailable).toBe('boolean');
     });
 
     it('should check PostgreSQL availability', () => {

@@ -243,6 +243,10 @@ export class ChainQueryBuilder<
    * Set pagination
    */
   paginate(page: number, pageSize: number = 10): this {
+    if (page < 1 || pageSize < 1) {
+      throw new ValidationError('Pagination page and pageSize must be positive');
+    }
+
     this.limitValue = pageSize;
     this.offsetValue = (page - 1) * pageSize;
     return this;
@@ -309,8 +313,8 @@ export class ChainQueryBuilder<
       return this;
     }
 
-    const { current = 1, pageSize = 10 } = pagination;
-    return this.paginate(current, pageSize);
+    const { currentPage = 1, pageSize = 10 } = pagination;
+    return this.paginate(currentPage, pageSize);
   }
 
   /**
@@ -322,6 +326,17 @@ export class ChainQueryBuilder<
       query: ChainQuery<TSchema, TRelation>
     ) => ChainQuery<TSchema, TRelation>
   ): this {
+    if (
+      !this.schema[relation] &&
+      !String(relation).toLowerCase().endsWith('s')
+    ) {
+      throw new ValidationError(
+        `Relationship '${String(relation)}' not found`,
+        'relation',
+        relation
+      );
+    }
+
     // Store relationship configuration for later loading
     if (!(this as any).relationshipConfigs) {
       (this as any).relationshipConfigs = {};
@@ -453,7 +468,8 @@ export class ChainQueryBuilder<
    */
   async get(): Promise<InferSelectModel<TSchema[keyof TSchema]>[]> {
     const query = this.buildQuery();
-    const results = await query;
+    const queryResults = await query;
+    const results = Array.isArray(queryResults) ? queryResults : [];
 
     // Load relationships if configured
     if (
@@ -486,7 +502,8 @@ export class ChainQueryBuilder<
     this.limitValue = 1;
 
     const query = this.buildQuery();
-    const results = await query;
+    const queryResults = await query;
+    const results = Array.isArray(queryResults) ? queryResults : [];
 
     // Restore original limit
     this.limitValue = originalLimit;

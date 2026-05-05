@@ -252,7 +252,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     const existing = await coreProvider.getList({
       resource: params.resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     if (existing.data.length > 0) {
@@ -282,7 +282,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
     const existing = await coreProvider.getList({
       resource: params.resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     if (existing.data.length > 0) {
@@ -328,7 +328,7 @@ export function createSQLiteProvider<TSchema extends TableSchema = TableSchema>(
             const relatedRecords = await coreProvider.getList({
               resource: relation,
               filters: [{ field: foreignKey, operator: 'eq', value: id }],
-              pagination: { current: 1, pageSize: 1000, mode: 'server' },
+              pagination: { currentPage: 1, pageSize: 1000, mode: 'server' },
             });
             recordWithRelations[relation] = relatedRecords.data;
           } else {

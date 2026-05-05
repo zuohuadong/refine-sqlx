@@ -28,10 +28,16 @@ export default defineConfig({
     hookTimeout: 15000,
     teardownTimeout: 10000,
     retry: 1,
-  },
-    resolve: {
-      alias: {
-        '@refine-orm/core-utils': path.resolve(__dirname, 'packages/refine-core-utils/src/index.ts'),
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
       },
     },
+  },
+  resolve: {
+    alias: {
+      '@refine-orm/core-utils': path.resolve(__dirname, 'packages/refine-core-utils/src/index.ts'),
+    },
+  },
 });

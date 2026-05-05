@@ -245,6 +245,19 @@ export async function createTestProvider(
 export class DatabaseTestSetup {
   private providers: Map<string, RefineOrmDataProvider<any>> = new Map();
 
+  private async executeSQLiteSchemaSql(
+    provider: RefineOrmDataProvider<any>,
+    statement: string
+  ): Promise<void> {
+    const connection = (provider as any).adapter?.connection;
+    if (connection && typeof connection.exec === 'function') {
+      connection.exec(statement);
+      return;
+    }
+
+    await provider.executeRaw(statement);
+  }
+
   async setupDatabase(
     dbType: 'postgresql' | 'mysql' | 'sqlite'
   ): Promise<RefineOrmDataProvider<any>> {
@@ -295,7 +308,7 @@ export class DatabaseTestSetup {
     try {
       if (dbType === 'sqlite') {
         // Create SQLite tables since we're using in-memory database
-        await provider.executeRaw(`
+        await this.executeSQLiteSchemaSql(provider, `
           CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -306,7 +319,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await this.executeSQLiteSchemaSql(provider, `
           CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
@@ -318,7 +331,7 @@ export class DatabaseTestSetup {
           )
         `);
 
-        await provider.executeRaw(`
+        await this.executeSQLiteSchemaSql(provider, `
           CREATE TABLE IF NOT EXISTS comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
@@ -445,7 +458,7 @@ export function isTestEnvironmentReady(
     case 'mysql':
       return !!process.env.MYSQL_URL;
     case 'sqlite':
-      return true; // SQLite always available (in-memory)
+      return !!process.env.SQLITE_URL || process.env.RUN_SQLITE_INTEGRATION === 'true';
     default:
       return false;
   }

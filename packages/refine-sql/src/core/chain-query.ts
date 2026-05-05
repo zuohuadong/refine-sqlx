@@ -151,7 +151,7 @@ export class CoreChainQuery<T extends BaseRecord = BaseRecord> {
     const pagination =
       this.limitValue || this.offsetValue ?
         {
-          current:
+          currentPage:
             this.offsetValue ?
               Math.floor(this.offsetValue / (this.limitValue || 10)) + 1
             : 1,

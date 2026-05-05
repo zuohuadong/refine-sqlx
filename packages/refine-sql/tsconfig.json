@@ -8,9 +8,14 @@
     "declarationMap": true,
     "sourceMap": true,
     "noEmit": false,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": false,
+    "types": [
+      "bun"
+    ]
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "dist",
     "node_modules",
@@ -18,5 +23,9 @@
     "**/*.spec.ts",
     "test/**/*"
   ],
-  "references": [{ "path": "../refine-core-utils" }]
+  "references": [
+    {
+      "path": "../refine-core-utils"
+    }
+  ]
 }

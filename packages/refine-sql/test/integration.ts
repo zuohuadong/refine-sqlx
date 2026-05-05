@@ -261,7 +261,7 @@ export function createIntegrationTestSuite(
         // Test pagination
         const listResult = await dataProvider.getList({
           resource: 'users',
-          pagination: { current: 2, pageSize: 5 },
+          pagination: { currentPage: 2, pageSize: 5 },
           sorters: [{ field: 'id', order: 'asc' }],
         });
 

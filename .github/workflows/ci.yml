@@ -93,12 +93,8 @@ jobs:
         if: matrix.database == 'sqlite'
         run: |
           cd packages/refine-sql
-          echo "Running Bun SQLite integration tests with Bun runtime..."
-          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests with Vitest..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
-          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
-          npx vitest run test/integration/bun.test.ts --reporter=verbose
+          echo "Running SQLite integration tests..."
+          npx vitest run test/integration --reporter=verbose
 
       - name: Install MySQL client
         if: matrix.database == 'mysql'
@@ -237,12 +233,8 @@ jobs:
       - name: Run integration tests - SQLite
         run: |
           cd packages/refine-sql
-          echo "Running Bun SQLite integration tests with Bun runtime..."
-          bun test test/integration/bun.test.ts || echo "Bun integration tests failed"
-          echo "Running better-sqlite3 integration tests with Vitest..."
-          npx vitest run test/integration/better-sqlite3.test.ts --reporter=verbose
-          echo "Running Bun SQLite integration tests with Vitest (should skip)..."
-          npx vitest run test/integration/bun.test.ts --reporter=verbose
+          echo "Running SQLite integration tests..."
+          npx vitest run test/integration --reporter=verbose
 
   build:
     name: Build

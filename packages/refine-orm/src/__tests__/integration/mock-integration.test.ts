@@ -111,7 +111,7 @@ describe('Mock Integration Tests', () => {
         resource: 'users',
         filters: [{ field: 'isActive', operator: 'eq', value: true }],
         sorters: [{ field: 'name', order: 'asc' }],
-        pagination: { current: 1, pageSize: 10 },
+        pagination: { currentPage: 1, pageSize: 10 },
       });
 
       expect(listResult.data).toBeDefined();
@@ -423,7 +423,7 @@ describe('Mock Integration Tests', () => {
       const startTime = Date.now();
       const result = await dataProvider.getList({
         resource: 'users',
-        pagination: { current: 1, pageSize: 100 },
+        pagination: { currentPage: 1, pageSize: 100 },
       });
       const duration = Date.now() - startTime;
 

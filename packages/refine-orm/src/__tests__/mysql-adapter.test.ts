@@ -43,11 +43,13 @@ describe('MySQL Adapter', () => {
   let mockConnection: any;
   let mockPool: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     mockConnection = {
-      execute: vi.fn(),
+      execute: vi
+        .fn()
+        .mockResolvedValue([[{ version: '8.0.0', now: new Date() }], []]),
       query: vi.fn(),
       beginTransaction: vi.fn(),
       commit: vi.fn(),
@@ -63,15 +65,14 @@ describe('MySQL Adapter', () => {
       end: vi.fn(),
     };
 
-    const mysql2 = require('mysql2/promise');
-    vi.mocked(mysql2.default.createConnection).mockResolvedValue(
-      mockConnection
-    );
-    vi.mocked(mysql2.default.createPool).mockResolvedValue(mockPool);
+    const mysql2 = await import('mysql2/promise');
+    const mysqlDefault = mysql2.default ?? mysql2;
+    vi.mocked(mysqlDefault.createConnection).mockResolvedValue(mockConnection);
+    vi.mocked(mysqlDefault.createPool).mockResolvedValue(mockPool);
     vi.mocked(mysql2.createConnection).mockResolvedValue(mockConnection);
     vi.mocked(mysql2.createPool).mockResolvedValue(mockPool);
 
-    const drizzle = require('drizzle-orm/mysql2');
+    const drizzle = await import('drizzle-orm/mysql2');
     vi.mocked(drizzle.drizzle).mockReturnValue({
       schema,
       select: vi.fn(),
@@ -182,8 +183,11 @@ describe('MySQL Adapter', () => {
     });
 
     it('should handle connection errors', async () => {
-      const mysql2 = require('mysql2/promise');
-      vi.mocked(mysql2.default.createConnection).mockRejectedValue(
+      const mysql2 = await import('mysql2/promise');
+      vi.mocked((mysql2.default ?? mysql2).createConnection).mockRejectedValue(
+        new Error('Connection refused')
+      );
+      vi.mocked(mysql2.createConnection).mockRejectedValue(
         new Error('Connection refused')
       );
 
@@ -397,8 +401,11 @@ describe('MySQL Adapter', () => {
     });
 
     it('should handle connection test failures', async () => {
-      const mysql2 = require('mysql2/promise');
-      vi.mocked(mysql2.default.createConnection).mockRejectedValue(
+      const mysql2 = await import('mysql2/promise');
+      vi.mocked((mysql2.default ?? mysql2).createConnection).mockRejectedValue(
+        new Error('Connection refused')
+      );
+      vi.mocked(mysql2.createConnection).mockRejectedValue(
         new Error('Connection refused')
       );
 
@@ -458,8 +465,11 @@ describe('MySQL Adapter', () => {
     });
 
     it('should handle connection pool errors', async () => {
-      const mysql2 = require('mysql2/promise');
-      vi.mocked(mysql2.default.createPool).mockRejectedValue(
+      const mysql2 = await import('mysql2/promise');
+      vi.mocked((mysql2.default ?? mysql2).createPool).mockRejectedValue(
+        new Error('Pool creation failed')
+      );
+      vi.mocked(mysql2.createPool).mockRejectedValue(
         new Error('Pool creation failed')
       );
 

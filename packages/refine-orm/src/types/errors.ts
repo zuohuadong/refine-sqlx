@@ -33,7 +33,7 @@ function StatusCode(statusCode: number) {
 
 function Recoverable(recoverable: boolean = true) {
   return function (target: any) {
-    target.prototype.isRecoverable = recoverable;
+    target.prototype.recoverable = recoverable;
     return target;
   };
 }

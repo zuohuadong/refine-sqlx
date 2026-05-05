@@ -140,6 +140,9 @@ export abstract class BaseDatabaseAdapter<
         'Database client not initialized. Call connect() first.'
       );
     }
+    if ((this.client as any).schema === undefined) {
+      (this.client as any).schema = this.config.schema;
+    }
     return this.client;
   }
 

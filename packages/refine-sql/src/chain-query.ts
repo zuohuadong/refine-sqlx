@@ -307,7 +307,7 @@ export class SqlxChainQuery<T extends BaseRecord = BaseRecord> {
       pagination:
         this.limitValue || this.offsetValue ?
           {
-            current:
+            currentPage:
               this.offsetValue ?
                 Math.floor(this.offsetValue / (this.limitValue || 10)) + 1
               : 1,

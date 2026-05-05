@@ -87,7 +87,7 @@ async function main() {
         // 获取用户列表
         const users = await memoryProvider.getList({
             resource: 'users',
-            pagination: { current: 1, pageSize: 10, mode: 'server' }
+            pagination: { currentPage: 1, pageSize: 10, mode: 'server' }
         });
         console.log('✅ 用户列表获取成功:', users.data.length, '条记录');
 

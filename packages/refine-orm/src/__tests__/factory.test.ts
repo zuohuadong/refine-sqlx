@@ -66,7 +66,64 @@ vi.mock('../utils/runtime-detection.js', () => ({
     };
     return drivers[dbType] || 'unknown';
   }),
+  getRuntimeConfig: vi.fn((dbType: string) => ({
+    runtime: 'node',
+    driver:
+      dbType === 'postgresql' ? 'postgres'
+      : dbType === 'mysql' ? 'mysql2'
+      : 'better-sqlite3',
+    supportsNativeDriver: false,
+  })),
+  checkDriverAvailability: vi.fn(() => true),
   detectBunSqlSupport: vi.fn(() => false),
+}));
+
+vi.mock('mysql2/promise', () => ({
+  default: {
+    createConnection: vi.fn(() =>
+      Promise.resolve({
+        execute: vi.fn(),
+        query: vi.fn(),
+        end: vi.fn(),
+        ping: vi.fn(() => Promise.resolve(true)),
+      })
+    ),
+    createPool: vi.fn(() =>
+      Promise.resolve({
+        execute: vi.fn(),
+        query: vi.fn(),
+        getConnection: vi.fn(() => Promise.resolve({ release: vi.fn() })),
+        end: vi.fn(),
+      })
+    ),
+  },
+  createConnection: vi.fn(() =>
+    Promise.resolve({
+      execute: vi.fn(),
+      query: vi.fn(),
+      end: vi.fn(),
+      ping: vi.fn(() => Promise.resolve(true)),
+    })
+  ),
+  createPool: vi.fn(() =>
+    Promise.resolve({
+      execute: vi.fn(),
+      query: vi.fn(),
+      getConnection: vi.fn(() => Promise.resolve({ release: vi.fn() })),
+      end: vi.fn(),
+    })
+  ),
+}));
+
+vi.mock('drizzle-orm/mysql2', () => ({
+  drizzle: vi.fn(() => ({
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    execute: vi.fn(),
+    transaction: vi.fn(),
+  })),
 }));
 
 describe('Factory Functions', () => {

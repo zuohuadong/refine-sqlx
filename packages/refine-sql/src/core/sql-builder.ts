@@ -42,8 +42,8 @@ export class LightweightSqlBuilder {
 
     // LIMIT 和 OFFSET
     if (pagination && pagination.mode === 'server') {
-      const { current = 1, pageSize = 10 } = pagination;
-      sql += ` LIMIT ${pageSize} OFFSET ${(current - 1) * pageSize}`;
+      const { currentPage = 1, pageSize = 10 } = pagination;
+      sql += ` LIMIT ${pageSize} OFFSET ${(currentPage - 1) * pageSize}`;
     }
 
     return { sql, args };

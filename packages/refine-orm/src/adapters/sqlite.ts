@@ -367,6 +367,29 @@ export class SQLiteAdapter<
     }
 
     try {
+      if (
+        (!params || params.length === 0) &&
+        this.connection &&
+        typeof this.connection.exec === 'function' &&
+        !sql.trim().toLowerCase().startsWith('select') &&
+        !sql.trim().toLowerCase().startsWith('with')
+      ) {
+        this.connection.exec(sql);
+        return [] as T[];
+      }
+
+      if (this.connection && typeof this.connection.query === 'function') {
+        const stmt = this.connection.query(sql);
+        const args = params || [];
+        if (
+          sql.trim().toLowerCase().startsWith('select') ||
+          sql.trim().toLowerCase().startsWith('with')
+        ) {
+          return stmt.all(...args) as T[];
+        }
+        return [stmt.run(...args)] as T[];
+      }
+
       // For SQLite with better-sqlite3 or similar drivers
       if (this.connection && typeof this.connection.prepare === 'function') {
         const stmt = this.connection.prepare(sql);

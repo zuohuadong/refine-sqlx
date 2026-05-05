@@ -14,7 +14,7 @@ async function basicUsage() {
   // 基础 CRUD 操作
   const users = await provider.getList({
     resource: 'users',
-    pagination: { current: 1, pageSize: 10, mode: 'server' },
+    pagination: { currentPage: 1, pageSize: 10, mode: 'server' },
   });
   
   const user = await provider.create({

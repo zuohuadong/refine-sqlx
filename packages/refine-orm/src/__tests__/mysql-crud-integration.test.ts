@@ -78,7 +78,7 @@ describe('MySQL CRUD Integration', () => {
 
   describe('Data Provider Integration', () => {
     it('should create data provider with MySQL adapter', async () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       // Mock the connection to avoid actual database connection
       const mockClient = {
@@ -112,7 +112,7 @@ describe('MySQL CRUD Integration', () => {
     });
 
     it('should have all required CRUD methods', () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       const dataProvider = createProvider(adapter);
 
@@ -129,7 +129,7 @@ describe('MySQL CRUD Integration', () => {
     });
 
     it('should have additional ORM methods', () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       const dataProvider = createProvider(adapter);
 
@@ -148,7 +148,7 @@ describe('MySQL CRUD Integration', () => {
 
   describe('MySQL Adapter CRUD Operations', () => {
     it('should support raw query execution', async () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       // Mock connection for testing
       const mockConnection = {
@@ -169,7 +169,7 @@ describe('MySQL CRUD Integration', () => {
     });
 
     it('should support transaction operations', async () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       // Mock connection for testing
       const mockConnection = {
@@ -190,7 +190,7 @@ describe('MySQL CRUD Integration', () => {
     });
 
     it('should provide adapter information', () => {
-      const adapter = createMySQLProvider(testConfig.connection, testSchema);
+      const adapter = new MySQLAdapter(testConfig);
 
       const info = adapter.getAdapterInfo();
 

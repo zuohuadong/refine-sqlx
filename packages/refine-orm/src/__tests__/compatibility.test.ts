@@ -6,7 +6,11 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { CrudFilters, CrudSorting, Pagination } from '@refinedev/core';
-import { DatabaseTestSetup, TEST_DATA } from './integration/database-setup.js';
+import {
+  DatabaseTestSetup,
+  skipIfDatabaseNotAvailable,
+  TEST_DATA,
+} from './integration/database-setup.js';
 import type { RefineOrmDataProvider } from '../types/client.js';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import {
@@ -32,7 +36,9 @@ describe('Basic Compatibility Tests', () => {
   describe('Cross-Database CRUD Consistency', () => {
     // Run the same tests across all database types
     TEST_DATABASES.forEach(({ type: dbType, name: dbName, schema }) => {
-      describe(`${dbName} Basic CRUD Operations`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Basic CRUD Operations`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -138,7 +144,7 @@ describe('Basic Compatibility Tests', () => {
         it('should handle list operations with consistent pagination', async () => {
           const result = await provider.getList({
             resource: 'users',
-            pagination: { current: 1, pageSize: 2 },
+            pagination: { currentPage: 1, pageSize: 2 },
           });
 
           // Verify consistent pagination structure
@@ -219,13 +225,16 @@ describe('Basic Compatibility Tests', () => {
 
           expect(deleteResult.data).toHaveLength(2);
         });
-      });
+        }
+      );
     });
   });
 
   describe('Type Inference Consistency', () => {
     TEST_DATABASES.forEach(({ type: dbType, name: dbName, schema }) => {
-      describe(`${dbName} Type Inference`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Type Inference`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -339,13 +348,16 @@ describe('Basic Compatibility Tests', () => {
             }
           }
         });
-      });
+        }
+      );
     });
   });
 
   describe('Error Handling Consistency', () => {
     TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
-      describe(`${dbName} Error Handling`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Error Handling`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -415,13 +427,16 @@ describe('Basic Compatibility Tests', () => {
             provider.getList({ resource: 'users', filters: invalidFilters })
           ).rejects.toThrow();
         });
-      });
+        }
+      );
     });
   });
 
   describe('Performance Consistency', () => {
     TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
-      describe(`${dbName} Performance`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Performance`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -470,20 +485,23 @@ describe('Basic Compatibility Tests', () => {
               { field: 'name', order: 'asc' },
               { field: 'age', order: 'desc' },
             ],
-            pagination: { current: 1, pageSize: 10 },
+            pagination: { currentPage: 1, pageSize: 10 },
           });
           const duration = Date.now() - startTime;
 
           expect(result.data).toBeDefined();
           expect(duration).toBeLessThan(1000); // Should complete within 1 second
         });
-      });
+        }
+      );
     });
   });
 
   describe('Data Type Compatibility', () => {
     TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
-      describe(`${dbName} Data Types`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Data Types`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -580,13 +598,16 @@ describe('Basic Compatibility Tests', () => {
           const timestampType = typeof result.data.createdAt;
           expect(['string', 'object', 'number']).toContain(timestampType);
         });
-      });
+        }
+      );
     });
   });
 
   describe('Query Operator Compatibility', () => {
     TEST_DATABASES.forEach(({ type: dbType, name: dbName }) => {
-      describe(`${dbName} Query Operators`, () => {
+      describe.skipIf(skipIfDatabaseNotAvailable(dbType))(
+        `${dbName} Query Operators`,
+        () => {
         let provider: RefineOrmDataProvider<any>;
 
         beforeAll(async () => {
@@ -674,7 +695,8 @@ describe('Basic Compatibility Tests', () => {
             expect(user.email).toContain('example.com');
           });
         });
-      });
+        }
+      );
     });
   });
 });

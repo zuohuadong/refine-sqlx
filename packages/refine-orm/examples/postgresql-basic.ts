@@ -64,7 +64,7 @@ async function main() {
     // Example: Get list of users
     const usersList = await dataProvider.getList({
       resource: 'users',
-      pagination: { current: 1, pageSize: 10 },
+      pagination: { currentPage: 1, pageSize: 10 },
       sorters: [{ field: 'createdAt', order: 'desc' }]
     });
     console.log('Users list:', usersList);

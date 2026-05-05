@@ -325,9 +325,9 @@ export class SqlTransformer {
     let limit = options.limit;
     let offset = options.offset;
     if (options.pagination) {
-      const { current = 1, pageSize = 10 } = options.pagination;
+      const { currentPage = 1, pageSize = 10 } = options.pagination;
       limit = pageSize;
-      offset = (current - 1) * pageSize;
+      offset = (currentPage - 1) * pageSize;
     }
 
     const sql = SqlTransformer.buildQuery({

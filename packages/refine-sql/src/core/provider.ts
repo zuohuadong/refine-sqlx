@@ -104,7 +104,7 @@ export function createCoreProvider<TSchema extends TableSchema = TableSchema>(
             filters: [
               { field: 'email', operator: 'eq', value: variables.email },
             ],
-            pagination: { current: 1, pageSize: 1, mode: 'server' },
+            pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
           });
           if (results.data.length > 0) {
             return { data: results.data[0] as T };

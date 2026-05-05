@@ -48,7 +48,10 @@ export class TransactionManager<
       const txContext: TransactionContext<TSchema> = {
         client: tx,
         schema: this.schema,
-        rollback: () => this.rollbackTransaction(transactionId),
+        rollback: async () => {
+          await this.rollbackTransaction(transactionId);
+          throw new TransactionError('Transaction rolled back');
+        },
         commit: () => this.commitTransaction(transactionId),
       };
 

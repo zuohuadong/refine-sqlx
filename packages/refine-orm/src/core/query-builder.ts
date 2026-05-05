@@ -35,13 +35,6 @@ type LogicalOperatorConfig<T> = {
   transform: (conditions: T[], context?: TransformationContext) => T;
 };
 
-// Simplified implementations for testing
-const createDrizzleTransformer = () => ({
-  transformFilters: (filters: any[]) => filters,
-  transformSorting: (sorting: any[]) => sorting,
-  transformPagination: (pagination: any) => pagination,
-});
-
 const validateFieldName = (field: string) => {
   if (!field || typeof field !== 'string') {
     throw new Error('Invalid field name');
@@ -139,14 +132,97 @@ export class RefineQueryBuilder<
       return this.transformerCache.get(table);
     }
 
-    // Note: These transformers are available but not used in this simple implementation
-    // const filterOperators = this.createDrizzleFilterOperators(table);
-    // const logicalOperators = this.createDrizzleLogicalOperators();
-    // const sortingTransformer = this.createDrizzleSortingTransformer(table);
-    // const sortingCombiner = this.createDrizzleSortingCombiner();
-    // const paginationTransformer = this.createDrizzlePaginationTransformer();
+    const filterOperators = new Map(
+      this.createDrizzleFilterOperators(table).map(operator => [
+        operator.operator,
+        operator,
+      ])
+    );
+    const logicalOperators = new Map(
+      this.createDrizzleLogicalOperators().map(operator => [
+        operator.operator,
+        operator,
+      ])
+    );
+    const sortingTransformer = this.createDrizzleSortingTransformer(table);
 
-    const transformer = createDrizzleTransformer();
+    const transformer = {
+      transformFilter: (
+        filter: any,
+        context?: TransformationContext
+      ): SQL | undefined => {
+        if ('field' in filter) {
+          const operator = filterOperators.get(filter.operator);
+          if (!operator) return undefined;
+
+          try {
+            return operator.transform(filter.field, filter.value, context);
+          } catch (error) {
+            if (
+              error instanceof ValidationError ||
+              (error as Error).name === 'ValidationError'
+            ) {
+              throw error;
+            }
+            return sql`1 = 1`;
+          }
+        }
+
+        const logicalOperator = logicalOperators.get(filter.operator);
+        if (!logicalOperator || !Array.isArray(filter.value)) {
+          return undefined;
+        }
+
+        const conditions = filter.value
+          .map((nestedFilter: any) =>
+            transformer.transformFilter(nestedFilter, context)
+          )
+          .filter((condition: SQL | undefined): condition is SQL =>
+            Boolean(condition)
+          );
+
+        return conditions.length > 0 ?
+            logicalOperator.transform(conditions, context)
+          : undefined;
+      },
+      transformFilters: (
+        filters: any[],
+        context?: TransformationContext
+      ): { isEmpty: boolean; result?: SQL } => {
+        const conditions = filters
+          .map(filter => transformer.transformFilter(filter, context))
+          .filter((condition: SQL | undefined): condition is SQL =>
+            Boolean(condition)
+          );
+
+        if (conditions.length === 0) {
+          return { isEmpty: true };
+        }
+
+        return {
+          isEmpty: false,
+          result: conditions.length === 1 ? conditions[0] : and(...conditions),
+        };
+      },
+      transformSorting: (
+        sorting: any[],
+        context?: TransformationContext
+      ): { isEmpty: boolean; result: SQL[] } => {
+        const result = sorting
+          .map(sorter => {
+            try {
+              return sortingTransformer(sorter.field, sorter.order, context);
+            } catch {
+              return undefined;
+            }
+          })
+          .filter((condition: SQL | undefined): condition is SQL =>
+            Boolean(condition)
+          );
+
+        return { isEmpty: result.length === 0, result };
+      },
+    };
 
     this.transformerCache.set(table, transformer);
     return transformer;
@@ -169,6 +245,12 @@ export class RefineQueryBuilder<
       const result = transformer.transformFilters(filters, context);
       return result.isEmpty ? undefined : result.result;
     } catch (error) {
+      if (
+        error instanceof ValidationError ||
+        (error as Error).name === 'ValidationError'
+      ) {
+        throw error;
+      }
       console.warn('Failed to transform filters:', error);
       return undefined;
     }
@@ -339,10 +421,7 @@ export class RefineQueryBuilder<
       order: 'asc' | 'desc',
       _context?: TransformationContext
     ): SQL => {
-      const fieldError = validateFieldName(field);
-      if (fieldError) {
-        throw new Error(`Invalid sort field: ${fieldError}`);
-      }
+      validateFieldName(field);
 
       const column = this.getTableColumn(table, field);
       if (!column) {
@@ -414,10 +493,10 @@ export class RefineQueryBuilder<
       return {};
     }
 
-    const { current = 1, pageSize = 10 } = pagination;
+    const { currentPage = 1, pageSize = 10 } = pagination;
 
     // Validate pagination values
-    const validCurrent = Math.max(1, current);
+    const validCurrent = Math.max(1, currentPage);
     const validPageSize = Math.max(1, pageSize);
 
     return { limit: validPageSize, offset: (validCurrent - 1) * validPageSize };

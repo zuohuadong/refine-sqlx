@@ -231,7 +231,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
     const results = await getList({
       resource,
       filters,
-      pagination: { current: 1, pageSize: 1, mode: 'server' },
+      pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
     });
 
     return results.data[0] || null;
@@ -266,7 +266,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
         const emailResults = await getList({
           resource,
           filters: [{ field: 'email', operator: 'eq', value: variables.email }],
-          pagination: { current: 1, pageSize: 1, mode: 'server' },
+          pagination: { currentPage: 1, pageSize: 1, mode: 'server' },
         });
         if (emailResults.data.length > 0) {
           return { data: emailResults.data[0] as T };
@@ -441,8 +441,21 @@ export default function <TSchema extends TableSchema = TableSchema>(
       .map(result => result?.lastInsertId)
       .filter((id): id is number => typeof id === 'number' && id !== undefined);
 
-    const result = await getMany<T>({ resource: params.resource, ids });
-    return { data: result.data as T[] };
+    if (ids.length > 0) {
+      try {
+        const result = await getMany<T>({ resource: params.resource, ids });
+        return { data: result.data as T[] };
+      } catch {
+        // Some SQL clients only report affected row metadata for batch inserts.
+      }
+    }
+
+    return {
+      data: params.variables.map((variables, index) => ({
+        ...(ids[index] !== undefined && { id: ids[index] }),
+        ...(variables as Record<string, any>),
+      })) as T[],
+    };
   }, 'Failed to create records');
 
   // 使用函数包装器简化 deleteOne 方法
@@ -560,7 +573,7 @@ export default function <TSchema extends TableSchema = TableSchema>(
               const relatedRecords = await getList({
                 resource: relation,
                 filters: [{ field: foreignKey, operator: 'eq', value: id }],
-                pagination: { current: 1, pageSize: 1000, mode: 'server' },
+                pagination: { currentPage: 1, pageSize: 1000, mode: 'server' },
               });
               recordWithRelations[relation] = relatedRecords.data;
             } else {

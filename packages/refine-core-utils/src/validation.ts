@@ -80,9 +80,9 @@ export function validatePagination(
 ): ValidationError | null {
   if (!pagination) return null;
 
-  const { current, pageSize } = pagination;
+  const { currentPage, pageSize } = pagination;
 
-  if (current !== undefined && (typeof current !== 'number' || current < 1)) {
+  if (currentPage !== undefined && (typeof currentPage !== 'number' || currentPage < 1)) {
     return { message: 'Current page must be a positive number' };
   }
 

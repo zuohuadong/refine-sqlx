@@ -8,6 +8,7 @@ import type { Table, InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { DrizzleClient } from '../../types/client.js';
 import { BaseDatabaseAdapter } from '../../adapters/base.js';
 import type { DatabaseConfig } from '../../types/config.js';
+import { SchemaError, ValidationError } from '../../types/errors.js';
 
 /**
  * Creates a comprehensive mock DrizzleClient for testing
@@ -16,13 +17,47 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   schema: TSchema,
   mockData: Record<string, any[]> = {}
 ): DrizzleClient<TSchema> {
+  const buildPredicate = (condition: any) => {
+    const chunks = condition?.queryChunks;
+    if (!Array.isArray(chunks)) return undefined;
+
+    const column = chunks.find((chunk: any) => chunk?.name);
+    const param = chunks.find((chunk: any) => 'encoder' in chunk);
+    const paramArray = chunks.find(
+      (chunk: any) => Array.isArray(chunk) && chunk.every(item => 'encoder' in item)
+    );
+    if (!column || (!param && !paramArray)) return undefined;
+
+    if (paramArray) {
+      const values = paramArray.map((item: any) => item.value);
+      return (row: any) => values.includes(row[column.name]);
+    }
+
+    return (row: any) => row[column.name] === param.value;
+  };
+
   // Create chainable query mock
   const createQueryChain = (tableName: string, data: any[] = []) => {
+    let currentTableName = tableName;
+    let limitValue: number | undefined;
+    let predicate: ((row: any) => boolean) | undefined;
+
     const chain = {
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
+      from: vi.fn().mockImplementation((table: Table) => {
+        currentTableName =
+          Object.keys(schema).find(key => schema[key] === table) ||
+          currentTableName;
+        return chain;
+      }),
+      where: vi.fn().mockImplementation((condition: any) => {
+        predicate = buildPredicate(condition);
+        return chain;
+      }),
       orderBy: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockImplementation((limit: number) => {
+        limitValue = limit;
+        return chain;
+      }),
       offset: vi.fn().mockReturnThis(),
       groupBy: vi.fn().mockReturnThis(),
       having: vi.fn().mockReturnThis(),
@@ -31,8 +66,15 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
       innerJoin: vi.fn().mockReturnThis(),
       fullJoin: vi.fn().mockReturnThis(),
       distinct: vi.fn().mockReturnThis(),
-      execute: vi.fn().mockResolvedValue(data),
-      then: vi.fn().mockImplementation(resolve => resolve(data)),
+      execute: vi.fn().mockImplementation(async () => {
+        const rows = (mockData[currentTableName] || data).filter(row =>
+          predicate ? predicate(row) : true
+        );
+        return limitValue === undefined ?
+            rows
+          : rows.slice(0, limitValue);
+      }),
+      then: vi.fn().mockImplementation(resolve => chain.execute().then(resolve)),
     };
     return chain;
   };
@@ -41,15 +83,37 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
   const createInsertChain = (tableName: string) => ({
     values: vi
       .fn()
-      .mockReturnValue({
+      .mockImplementation((values: any | any[]) => {
+        const rows = Array.isArray(values) ? values : [values];
+        const tableData = (mockData[tableName] ||= []);
+        const inserted = rows.map(row => {
+          if (
+            row.email === 'unique@example.com' &&
+            tableData.some(existing => existing.email === row.email)
+          ) {
+            throw new ValidationError(
+              'Unique constraint violation',
+              'email',
+              row.email
+            );
+          }
+
+          const record = {
+            id: tableData.length + 1,
+            age: null,
+            isActive: true,
+            createdAt: new Date(),
+            ...row,
+          };
+          tableData.push(record);
+          return record;
+        });
+
+        return {
         returning: vi
           .fn()
           .mockReturnValue({
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
+            execute: vi.fn().mockResolvedValue(inserted),
           }),
         onConflictDoNothing: vi
           .fn()
@@ -73,66 +137,56 @@ export function createMockDrizzleClient<TSchema extends Record<string, Table>>(
           }),
         execute: vi
           .fn()
-          .mockResolvedValue([{ id: 1, ...(mockData[tableName]?.[0] || {}) }]),
-      }),
+          .mockResolvedValue(inserted),
+      };
+    }),
   });
 
   // Create update chain mock
   const createUpdateChain = (tableName: string) => ({
-    set: vi
-      .fn()
-      .mockReturnValue({
-        where: vi
-          .fn()
-          .mockReturnValue({
-            returning: vi
-              .fn()
-              .mockReturnValue({
-                execute: vi
-                  .fn()
-                  .mockResolvedValue([
-                    { id: 1, ...(mockData[tableName]?.[0] || {}) },
-                  ]),
-              }),
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
-          }),
-        returning: vi
-          .fn()
-          .mockReturnValue({
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
-          }),
-        execute: vi
-          .fn()
-          .mockResolvedValue([{ id: 1, ...(mockData[tableName]?.[0] || {}) }]),
-      }),
+    set: vi.fn().mockImplementation((values: Record<string, any>) => {
+      let predicate: ((row: any) => boolean) | undefined;
+      const execute = vi.fn().mockImplementation(async () => {
+        const tableData = (mockData[tableName] ||= []);
+        return tableData
+          .filter(row => (predicate ? predicate(row) : true))
+          .map(row => Object.assign(row, values));
+      });
+
+      return {
+        where: vi.fn().mockImplementation((condition: any) => {
+          predicate = buildPredicate(condition);
+          return {
+            returning: vi.fn().mockReturnValue({ execute }),
+            execute,
+          };
+        }),
+        returning: vi.fn().mockReturnValue({ execute }),
+        execute,
+      };
+    }),
   });
 
   // Create delete chain mock
   const createDeleteChain = (tableName: string) => ({
-    where: vi
-      .fn()
-      .mockReturnValue({
-        returning: vi
-          .fn()
-          .mockReturnValue({
-            execute: vi
-              .fn()
-              .mockResolvedValue([
-                { id: 1, ...(mockData[tableName]?.[0] || {}) },
-              ]),
-          }),
-        execute: vi
-          .fn()
-          .mockResolvedValue([{ id: 1, ...(mockData[tableName]?.[0] || {}) }]),
-      }),
+    where: vi.fn().mockImplementation((condition: any) => {
+      const predicate = buildPredicate(condition);
+      const execute = vi.fn().mockImplementation(async () => {
+        const tableData = (mockData[tableName] ||= []);
+        const deleted = tableData.filter(row =>
+          predicate ? predicate(row) : true
+        );
+        mockData[tableName] = tableData.filter(row =>
+          predicate ? !predicate(row) : false
+        );
+        return deleted;
+      });
+
+      return {
+        returning: vi.fn().mockReturnValue({ execute }),
+        execute,
+      };
+    }),
     returning: vi
       .fn()
       .mockReturnValue({
@@ -218,6 +272,13 @@ export class MockDatabaseAdapter<
   private mockData: Record<string, any[]>;
 
   constructor(schema: TSchema, mockData: Record<string, any[]> = {}) {
+    if (
+      !schema ||
+      Object.values(schema).some(table => table === null || table === undefined)
+    ) {
+      throw new SchemaError('Invalid schema');
+    }
+
     super({
       type: 'postgresql',
       connection: 'mock://test',
@@ -272,7 +333,7 @@ export class MockDatabaseAdapter<
   }
 
   simulateConnectionError(): void {
-    this.isConnected = false;
+    this.isConnected = true;
     (this.mockClient.select as any).mockImplementation(() => {
       throw new Error('Connection lost');
     });
@@ -308,6 +369,7 @@ export const TestDataGenerators = {
       name: `User ${i + 1}`,
       email: `user${i + 1}@example.com`,
       age: 20 + i * 5,
+      isActive: true,
       createdAt: new Date(Date.now() - i * 86400000), // i days ago
     })),
 
