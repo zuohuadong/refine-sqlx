@@ -8,3 +8,13 @@ prisma/generated
 .DS_Store
 wrangler.toml
 .agents
+progress.md
+tasks.md
+servers.local.md
+.mailbox/
+.agents/state/
+.agents/automations/
+AGENTS.md
+CLAUDE.md
+.zed/CONVENTIONS.md
+.agents/goal-forge/runs/
